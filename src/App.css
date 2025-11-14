@@ -12,6 +12,7 @@
   background: #2c2c2e;
 }
 
+
 .app-container::before {
   content: '';
   position: absolute;

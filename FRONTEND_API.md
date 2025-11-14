@@ -7,16 +7,12 @@ Guía completa de endpoints para integración frontend.
 ### URLs Base
 
 ```javascript
-// Producción (AWS)
-const API_BASE_URL = 'https://x1bom9m0bd.execute-api.us-east-1.amazonaws.com/dev';
+// Por defecto usa la URL de producción (AWS)
+// Para desarrollo local, configurar VITE_API_URL en el archivo .env
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://x1bom9m0bd.execute-api.us-east-1.amazonaws.com/dev';
 
-// Desarrollo Local
-const API_BASE_URL_LOCAL = 'http://localhost:3000';
-
-// Usar según el entorno
-const API_URL = process.env.NODE_ENV === 'production' 
-  ? API_BASE_URL 
-  : API_BASE_URL_LOCAL;
+// Ejemplo de archivo .env para desarrollo local:
+// VITE_API_URL=http://localhost:3000
 ```
 
 ### CORS
@@ -30,18 +26,104 @@ La API está configurada para aceptar solicitudes desde:
 - `https://pockets.avellaconsulting.com`
 - `https://www.pockets.avellaconsulting.com`
 
+### Autenticación
+
+**⚠️ IMPORTANTE:** Todos los endpoints requieren autenticación JWT, excepto:
+- `POST /auth/register` - Registro de usuarios
+- `POST /auth/login` - Login de usuarios
+
+#### Flujo de Autenticación
+
+1. **Registro de Usuario:**
+```javascript
+import bcrypt from 'bcryptjs';
+
+const passwordHash = await bcrypt.hash('mipassword123', 10);
+const newUser = await fetch(`${API_URL}/auth/register`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    username: "johndoe",
+    password_hash: passwordHash,
+    nombre_usuario: "John Doe",
+    fecha_nacimiento: "1990-01-15"
+  })
+});
+```
+
+2. **Login y Obtención de Token:**
+```javascript
+const loginResponse = await fetch(`${API_URL}/auth/login`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    username: "johndoe",
+    password: "mipassword123"
+  })
+});
+
+const { token, expires_at, user } = await loginResponse.json();
+
+// Guardar token en localStorage o estado de la aplicación
+localStorage.setItem('authToken', token);
+localStorage.setItem('tokenExpiresAt', expires_at);
+```
+
+3. **Usar Token en Requests:**
+```javascript
+const token = localStorage.getItem('authToken');
+
+const headers = {
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO para todos los endpoints protegidos
+};
+```
+
+#### Manejo de Errores de Autenticación
+
+Si recibes un error `401 Unauthorized`, significa que:
+- El token no fue proporcionado
+- El token es inválido
+- El token ha expirado (tokens expiran después de 1 día)
+
+**Ejemplo de manejo:**
+```javascript
+try {
+  const response = await fetch(`${API_URL}/bank-accounts`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  
+  if (response.status === 401) {
+    // Token inválido o expirado - redirigir a login
+    localStorage.removeItem('authToken');
+    window.location.href = '/login';
+    return;
+  }
+  
+  const data = await response.json();
+} catch (error) {
+  console.error('Error:', error);
+}
+```
+
 ### Headers Recomendados
 
 ```javascript
+const token = localStorage.getItem('authToken');
+
 const headers = {
   'Content-Type': 'application/json',
-  // Agregar headers de autenticación si es necesario
+  'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO para todos los endpoints protegidos
 };
 ```
 
 ---
 
 ## Endpoints
+
+> **⚠️ Nota:** Todos los endpoints a continuación requieren autenticación JWT. Incluye el header `Authorization: Bearer <token>` en cada request.
 
 ### Bank Accounts
 
@@ -64,10 +146,12 @@ Crear una nueva cuenta bancaria.
 **Ejemplo JavaScript:**
 ```javascript
 const createBankAccount = async (accountData) => {
+  const token = localStorage.getItem('authToken');
   const response = await fetch(`${API_URL}/bank-accounts`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
     },
     body: JSON.stringify(accountData),
   });
@@ -1077,6 +1161,164 @@ const deleteAllDebts = async () => {
 
 ---
 
+### Authentication
+
+#### POST /auth/register
+Registrar un nuevo usuario.
+
+**URL:** `POST ${API_URL}/auth/register`
+
+**Ejemplo JavaScript:**
+```javascript
+const register = async (userData) => {
+  const response = await fetch(`${API_URL}/auth/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(userData),
+  });
+  return response.json();
+};
+
+// Uso - Nota: password_hash debe ser generado en el cliente usando bcrypt
+import bcrypt from 'bcryptjs';
+
+const password = 'mipassword123';
+const passwordHash = await bcrypt.hash(password, 10);
+
+const newUser = await register({
+  username: "johndoe",
+  password_hash: passwordHash,
+  nombre_usuario: "John Doe",
+  fecha_nacimiento: "1990-01-15"
+});
+```
+
+**Request Body:**
+```json
+{
+  "username": "johndoe",
+  "password_hash": "$2a$10$hashedpasswordhere...",
+  "nombre_usuario": "John Doe",
+  "fecha_nacimiento": "1990-01-15"
+}
+```
+
+**Campos Requeridos:**
+- `username` - Nombre de usuario único (case-insensitive)
+- `password_hash` - Hash bcrypt del password (generado en el cliente)
+- `nombre_usuario` - Nombre completo del usuario
+- `fecha_nacimiento` - Fecha de nacimiento en formato YYYY-MM-DD
+
+**Response (201):**
+```json
+{
+  "message": "User registered successfully",
+  "user": {
+    "id": "uuid-here",
+    "username": "johndoe",
+    "user_details": {
+      "nombre_usuario": "John Doe",
+      "fecha_nacimiento": "1990-01-15"
+    },
+    "created_at": "2024-01-15T00:00:00.000Z",
+    "updated_at": "2024-01-15T00:00:00.000Z"
+  }
+}
+```
+
+**Nota:** El `password_hash` debe ser generado en el cliente usando bcrypt antes de enviarlo. El username se almacena en minúsculas para búsquedas case-insensitive.
+
+---
+
+#### POST /auth/login
+Autenticar usuario y recibir token JWT.
+
+**URL:** `POST ${API_URL}/auth/login`
+
+**Ejemplo JavaScript:**
+```javascript
+const login = async (username, password) => {
+  const response = await fetch(`${API_URL}/auth/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      username,
+      password
+    }),
+  });
+  return response.json();
+};
+
+// Uso
+const loginResult = await login("johndoe", "mipassword123");
+
+// Guardar el token para usar en requests posteriores
+localStorage.setItem('authToken', loginResult.token);
+```
+
+**Request Body:**
+```json
+{
+  "username": "johndoe",
+  "password": "plaintextpassword"
+}
+```
+
+**Campos Requeridos:**
+- `username` - Nombre de usuario
+- `password` - Password en texto plano (se hashea y compara con el hash almacenado)
+
+**Response (200):**
+```json
+{
+  "message": "Login successful",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "expires_at": "2024-01-16T00:00:00.000Z",
+  "expires_in": "1d",
+  "user": {
+    "id": "uuid-here",
+    "username": "johndoe",
+    "user_details": {
+      "nombre_usuario": "John Doe",
+      "fecha_nacimiento": "1990-01-15"
+    }
+  }
+}
+```
+
+**Error Response (401):**
+```json
+{
+  "error": "Invalid username or password"
+}
+```
+
+**Nota:** 
+- El token expira después de 1 día (24 horas)
+- El token debe incluirse en requests posteriores como `Authorization: Bearer <token>`
+- El password se hashea usando bcrypt y se compara con el hash almacenado
+
+**Ejemplo de uso del token en requests:**
+```javascript
+const fetchWithAuth = async (url, options = {}) => {
+  const token = localStorage.getItem('authToken');
+  return fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+};
+```
+
+---
+
 ## Códigos de Estado HTTP
 
 - `200` - OK (operación exitosa)
@@ -1149,28 +1391,48 @@ const handleApiCall = async (apiFunction) => {
 
 10. **Deudas**: Las deudas permiten gestionar obligaciones financieras con información detallada sobre tasas de interés, pagos mínimos, seguros y fechas de corte. Los campos numéricos deben ser valores positivos y las fechas deben estar en formato `YYYY-MM-DD`.
 
+11. **Autenticación**: 
+    - **⚠️ REQUERIDA**: Todos los endpoints requieren autenticación JWT, excepto `/auth/register` y `/auth/login`.
+    - **Registro**: El `password_hash` debe ser generado en el cliente usando bcrypt antes de enviarlo al servidor.
+    - **Login**: El password se envía en texto plano y el servidor lo hashea para comparar con el hash almacenado.
+    - **Tokens JWT**: Los tokens expiran después de 1 día. Deben incluirse en requests como `Authorization: Bearer <token>`.
+    - **Manejo de Token**: Guarda el token después del login y úsalo en todos los requests protegidos.
+    - **Errores 401**: Si recibes un 401, el token es inválido o expirado. Redirige al usuario al login.
+    - **JWT_TOKEN_PASSPHRASE**: Debe configurarse en el archivo `.env` para firmar y verificar tokens.
+
 ## Ejemplo de Cliente API Completo
 
 ```javascript
-// api.js
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+// api.ts (TypeScript) o api.js (JavaScript)
+// Por defecto usa la URL de producción (AWS)
+// Para desarrollo local, configurar VITE_API_URL en el archivo .env
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://x1bom9m0bd.execute-api.us-east-1.amazonaws.com/dev';
 
 class PocketsAPI {
-  constructor(baseURL) {
+  private baseURL: string;
+
+  constructor(baseURL: string) {
     this.baseURL = baseURL;
   }
 
-  async request(endpoint, options = {}) {
+  private getToken(): string | null {
+    return localStorage.getItem('authToken');
+  }
+
+  private async request(endpoint: string, options: RequestInit = {}) {
     const url = `${this.baseURL}${endpoint}`;
-    const config = {
+    const token = this.getToken();
+    
+    const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
+        ...(token && !endpoint.startsWith('/auth/') && { 'Authorization': `Bearer ${token}` }),
         ...options.headers,
       },
       ...options,
     };
 
-    if (config.body && typeof config.body === 'object') {
+    if (config.body && typeof config.body === 'object' && !(config.body instanceof FormData)) {
       config.body = JSON.stringify(config.body);
     }
 
@@ -1183,12 +1445,39 @@ class PocketsAPI {
       }
 
       return data;
-    } catch (error) {
+    } catch (error: any) {
       if (error.response) {
         throw error;
       }
-      throw { response: null, data: { error: 'Error de conexión' } };
+      throw { response: null, data: { error: 'Error de conexión', details: { message: error.message } } };
     }
+  }
+
+  // Authentication
+  async login(username: string, password: string) {
+    const result = await this.request('/auth/login', {
+      method: 'POST',
+      body: { username, password },
+    });
+    
+    // Guardar token automáticamente después del login
+    if (result.token) {
+      localStorage.setItem('authToken', result.token);
+      if (result.expires_at) {
+        localStorage.setItem('tokenExpiresAt', result.expires_at);
+      }
+    }
+    
+    return result;
+  }
+
+  logout() {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('tokenExpiresAt');
+  }
+
+  isAuthenticated(): boolean {
+    return !!this.getToken();
   }
 
   // Bank Accounts
@@ -1334,15 +1623,55 @@ class PocketsAPI {
       method: 'DELETE',
     });
   }
+
+  // Authentication
+  async register(userData) {
+    return this.request('/auth/register', {
+      method: 'POST',
+      body: userData,
+    });
+  }
+
+  async login(username, password) {
+    const result = await this.request('/auth/login', {
+      method: 'POST',
+      body: {
+        username,
+        password,
+      },
+    });
+    
+    // Guardar token automáticamente después del login
+    if (result.token) {
+      this.setToken(result.token);
+    }
+    
+    return result;
+  }
+
+  logout() {
+    this.setToken(null);
+  }
+
+  isAuthenticated() {
+    return !!this.getToken();
+  }
 }
 
 // Exportar instancia
-export const api = new PocketsAPI(API_URL);
+export const api = new PocketsAPI(API_BASE_URL);
 ```
 
 **Uso del cliente:**
 ```javascript
 import { api } from './api';
+
+// 1. Primero, hacer login para obtener el token
+const loginResult = await api.login("johndoe", "mipassword123");
+// El token se guarda automáticamente en localStorage y se usa en todos los requests
+
+// 2. Ahora puedes usar todos los endpoints protegidos
+// El token se incluye automáticamente en cada request
 
 // Crear cuenta bancaria
 const account = await api.createBankAccount({
@@ -1404,6 +1733,38 @@ await api.deleteDebt(debt.debt.id);
 
 // Eliminar todas las deudas
 await api.deleteAllDebts();
+
+// Registro de usuario (password_hash debe generarse en el cliente)
+import bcrypt from 'bcryptjs';
+const passwordHash = await bcrypt.hash('mipassword123', 10);
+const newUser = await api.register({
+  username: "johndoe",
+  password_hash: passwordHash,
+  nombre_usuario: "John Doe",
+  fecha_nacimiento: "1990-01-15"
+});
+
+// Login (el token se guarda automáticamente)
+const loginResult = await api.login("johndoe", "mipassword123");
+// loginResult.token ya está guardado y se usará automáticamente
+
+// Verificar si el usuario está autenticado
+if (api.isAuthenticated()) {
+  console.log('Usuario autenticado');
+}
+
+// Logout (elimina el token)
+api.logout();
+
+// Manejo de errores de autenticación
+try {
+  const accounts = await api.getBankAccounts();
+} catch (error) {
+  if (error.data?.requiresLogin) {
+    // Redirigir al login
+    window.location.href = '/login';
+  }
+}
 ```
 
 

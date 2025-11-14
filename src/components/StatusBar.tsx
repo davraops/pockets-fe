@@ -51,8 +51,14 @@ function StatusBar() {
   }
 
   const isHome = location.pathname === '/'
+  const isLogin = location.pathname === '/login'
   // Mostrar el título si no estamos en home y hay un título definido (no vacío)
   const hasTitle = currentTitle && currentTitle.trim() !== ''
+
+  // No mostrar el StatusBar en la página de login
+  if (isLogin) {
+    return null
+  }
 
   return (
     <div className="status-bar">

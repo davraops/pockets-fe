@@ -1,6 +1,8 @@
 import '../App.css'
 import TrendingUpIcon from '@mui/icons-material/TrendingUp'
+import LogoutIcon from '@mui/icons-material/Logout'
 import { useNavigate } from 'react-router-dom'
+import { api } from '../services/api'
 
 interface App {
   id: string
@@ -24,10 +26,20 @@ const apps: App[] = [
   { id: '10', name: '', hasIcon: false, color: '#FF3B30', path: '/blank-10' },
   { id: '11', name: '', hasIcon: false, color: '#007AFF', path: '/blank-11' },
   { id: '12', name: '', hasIcon: false, color: '#5856D6', path: '/blank-12' },
+  { id: 'logout', name: 'Salir', hasIcon: true, Icon: LogoutIcon, color: '#FF3B30', path: '' },
 ]
 
 function Home() {
   const navigate = useNavigate()
+
+  const handleAppClick = (app: App) => {
+    if (app.id === 'logout') {
+      api.logout()
+      navigate('/login', { replace: true })
+    } else {
+      navigate(app.path)
+    }
+  }
 
   return (
     <div className="app-container">
@@ -40,7 +52,7 @@ function Home() {
                 key={app.id} 
                 className="app-icon" 
                 style={{ '--app-color': app.color } as React.CSSProperties}
-                onClick={() => navigate(app.path)}
+                onClick={() => handleAppClick(app)}
               >
                 <div className="app-icon-wrapper">
                   <div className="app-icon-bg" style={{ backgroundColor: app.color }}>

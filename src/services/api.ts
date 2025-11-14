@@ -10,11 +10,38 @@ class PocketsAPI {
     this.baseURL = baseURL
   }
 
+  private getToken(): string | null {
+    return localStorage.getItem('authToken')
+  }
+
+  private isTokenExpired(): boolean {
+    const expiresAt = localStorage.getItem('tokenExpiresAt')
+    if (!expiresAt) {
+      // Si no hay fecha de expiración, asumimos que el token es válido
+      // (para tokens que no tienen expiración o para compatibilidad hacia atrás)
+      return false
+    }
+
+    try {
+      const expirationDate = new Date(expiresAt)
+      const now = new Date()
+      // Verificar si el token está expirado (con un margen de 1 minuto para evitar problemas de sincronización)
+      return expirationDate.getTime() <= now.getTime() + 60000
+    } catch (error) {
+      // Si hay error al parsear la fecha, asumimos que está expirado para ser seguros
+      console.error('Error al verificar expiración del token:', error)
+      return true
+    }
+  }
+
   private async request(endpoint: string, options: RequestInit = {}) {
     const url = `${this.baseURL}${endpoint}`
+    const token = this.getToken()
+    
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
+        ...(token && !endpoint.startsWith('/auth/') && { 'Authorization': `Bearer ${token}` }),
         ...options.headers,
       },
       ...options,
@@ -29,6 +56,13 @@ class PocketsAPI {
       const data = await response.json()
 
       if (!response.ok) {
+        // Si recibimos un 401 (Unauthorized), el token puede estar expirado o ser inválido
+        if (response.status === 401) {
+          // Limpiar el token y redirigir al login
+          this.logout()
+          // Lanzar error para que el componente pueda manejar la redirección
+          throw { response, data, isUnauthorized: true }
+        }
         throw { response, data }
       }
 
@@ -39,6 +73,45 @@ class PocketsAPI {
       }
       throw { response: null, data: { error: 'Error de conexión', details: { message: error.message } } }
     }
+  }
+
+  // Authentication
+  async login(username: string, password: string) {
+    const result = await this.request('/auth/login', {
+      method: 'POST',
+      body: { username, password },
+    })
+    
+    // Guardar token automáticamente después del login
+    if (result.token) {
+      localStorage.setItem('authToken', result.token)
+      if (result.expires_at) {
+        localStorage.setItem('tokenExpiresAt', result.expires_at)
+      }
+    }
+    
+    return result
+  }
+
+  logout() {
+    localStorage.removeItem('authToken')
+    localStorage.removeItem('tokenExpiresAt')
+  }
+
+  isAuthenticated(): boolean {
+    const token = this.getToken()
+    if (!token) {
+      return false
+    }
+
+    // Verificar si el token está expirado
+    if (this.isTokenExpired()) {
+      // Limpiar el token expirado
+      this.logout()
+      return false
+    }
+
+    return true
   }
 
   // Bank Accounts

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
+import Login from './pages/Login'
 import AppPage from './pages/AppPage'
 import Finanzas from './pages/Finanzas'
 import Cuentas from './pages/Cuentas'
@@ -7,6 +8,7 @@ import Presupuestos from './pages/Presupuestos'
 import Transacciones from './pages/Transacciones'
 import Deudas from './pages/Deudas'
 import StatusBar from './components/StatusBar'
+import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
   // Las tasas de cambio ahora se obtienen desde la API en el componente Cuentas
@@ -15,26 +17,54 @@ function App() {
     <BrowserRouter>
       <StatusBar />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route 
+          path="/" 
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          } 
+        />
         <Route 
           path="/finanzas" 
-          element={<Finanzas />} 
+          element={
+            <ProtectedRoute>
+              <Finanzas />
+            </ProtectedRoute>
+          } 
         />
         <Route 
           path="/finanzas/cuentas" 
-          element={<Cuentas />} 
+          element={
+            <ProtectedRoute>
+              <Cuentas />
+            </ProtectedRoute>
+          } 
         />
         <Route 
           path="/finanzas/presupuestos" 
-          element={<Presupuestos />} 
+          element={
+            <ProtectedRoute>
+              <Presupuestos />
+            </ProtectedRoute>
+          } 
         />
         <Route 
           path="/finanzas/transacciones" 
-          element={<Transacciones />} 
+          element={
+            <ProtectedRoute>
+              <Transacciones />
+            </ProtectedRoute>
+          } 
         />
         <Route 
           path="/finanzas/deudas" 
-          element={<Deudas />} 
+          element={
+            <ProtectedRoute>
+              <Deudas />
+            </ProtectedRoute>
+          } 
         />
         <Route 
           path="/blank-2" 
