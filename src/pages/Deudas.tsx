@@ -9,20 +9,20 @@ import { api } from '../services/api'
 import './AppPage.css'
 import './Deudas.css'
 
-// Interfaz que coincide con la respuesta de la API
+// Interfaz que coincide con la respuesta de la API (campos en inglés)
 interface DebtAPI {
   id: string
-  valor: number
-  divisa: string
-  concepto: string
-  adeudado: number
-  referencia?: string
-  fecha_corte: string
-  tasa_interes: number
-  interes_en_mora: number
-  pago_minimo: number
-  tiene_seguro: boolean
-  valor_seguro: number
+  value: number
+  currency: string
+  concept: string
+  owed: number
+  reference?: string
+  cut_date: string
+  interest_rate: number
+  overdue_interest: number
+  minimum_payment: number
+  has_insurance: boolean
+  insurance_value: number
   created_at: string
   updated_at: string
 }
@@ -77,17 +77,17 @@ function Deudas() {
   const mapDebtFromAPI = (apiDebt: DebtAPI): Debt => {
     return {
       id: apiDebt.id,
-      concepto: apiDebt.concepto,
-      referencia: apiDebt.referencia,
-      valor: apiDebt.valor,
-      adeudado: apiDebt.adeudado,
-      divisa: apiDebt.divisa,
-      fechaCorte: apiDebt.fecha_corte,
-      tasaInteres: apiDebt.tasa_interes,
-      interesEnMora: apiDebt.interes_en_mora,
-      pagoMinimo: apiDebt.pago_minimo,
-      tieneSeguro: apiDebt.tiene_seguro,
-      valorSeguro: apiDebt.valor_seguro
+      concepto: apiDebt.concept,
+      referencia: apiDebt.reference,
+      valor: apiDebt.value,
+      adeudado: apiDebt.owed,
+      divisa: apiDebt.currency,
+      fechaCorte: apiDebt.cut_date,
+      tasaInteres: apiDebt.interest_rate,
+      interesEnMora: apiDebt.overdue_interest,
+      pagoMinimo: apiDebt.minimum_payment,
+      tieneSeguro: apiDebt.has_insurance,
+      valorSeguro: apiDebt.insurance_value
     }
   }
 
@@ -264,17 +264,17 @@ function Deudas() {
       if (isEditMode && selectedDebt) {
         // Editar deuda existente
         await api.updateDebt(selectedDebt.id, {
-          concepto: formData.concepto.trim(),
-          referencia: formData.referencia.trim() || undefined,
-          valor: parseFloat(formData.valor),
-          adeudado: parseFloat(formData.adeudado),
-          divisa: formData.divisa,
-          fecha_corte: formData.fechaCorte,
-          tasa_interes: parseFloat(formData.tasaInteres) || 0,
-          interes_en_mora: parseFloat(formData.interesEnMora) || 0,
-          pago_minimo: parseFloat(formData.pagoMinimo) || 0,
-          tiene_seguro: formData.tieneSeguro,
-          valor_seguro: parseFloat(formData.valorSeguro) || 0
+          concept: formData.concepto.trim(),
+          reference: formData.referencia.trim() || undefined,
+          value: parseFloat(formData.valor),
+          owed: parseFloat(formData.adeudado),
+          currency: formData.divisa,
+          cut_date: formData.fechaCorte,
+          interest_rate: parseFloat(formData.tasaInteres) || 0,
+          overdue_interest: parseFloat(formData.interesEnMora) || 0,
+          minimum_payment: parseFloat(formData.pagoMinimo) || 0,
+          has_insurance: formData.tieneSeguro,
+          insurance_value: parseFloat(formData.valorSeguro) || 0
         })
         
         // Recargar deudas después de actualizar
@@ -287,17 +287,17 @@ function Deudas() {
       } else {
         // Agregar nueva deuda
         await api.createDebt({
-          concepto: formData.concepto.trim(),
-          referencia: formData.referencia.trim() || undefined,
-          valor: parseFloat(formData.valor),
-          adeudado: parseFloat(formData.adeudado),
-          divisa: formData.divisa,
-          fecha_corte: formData.fechaCorte,
-          tasa_interes: parseFloat(formData.tasaInteres) || 0,
-          interes_en_mora: parseFloat(formData.interesEnMora) || 0,
-          pago_minimo: parseFloat(formData.pagoMinimo) || 0,
-          tiene_seguro: formData.tieneSeguro,
-          valor_seguro: parseFloat(formData.valorSeguro) || 0
+          concept: formData.concepto.trim(),
+          reference: formData.referencia.trim() || undefined,
+          value: parseFloat(formData.valor),
+          owed: parseFloat(formData.adeudado),
+          currency: formData.divisa,
+          cut_date: formData.fechaCorte,
+          interest_rate: parseFloat(formData.tasaInteres) || 0,
+          overdue_interest: parseFloat(formData.interesEnMora) || 0,
+          minimum_payment: parseFloat(formData.pagoMinimo) || 0,
+          has_insurance: formData.tieneSeguro,
+          insurance_value: parseFloat(formData.valorSeguro) || 0
         })
 
         // Recargar deudas después de crear
@@ -403,108 +403,108 @@ function Deudas() {
   const handleCreateDemoDebts = async () => {
     const testDebts = [
       {
-        valor: 5000000,
-        divisa: 'COP',
-        concepto: 'Tarjeta de Crédito Bancolombia',
-        adeudado: 3000000,
-        referencia: 'TARJ-1234',
-        fecha_corte: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 15 días desde hoy
-        tasa_interes: 2.5,
-        interes_en_mora: 5.0,
-        pago_minimo: 150000,
-        tiene_seguro: true,
-        valor_seguro: 50000
+        value: 5000000,
+        currency: 'COP',
+        concept: 'Tarjeta de Crédito Bancolombia',
+        owed: 3000000,
+        reference: 'TARJ-1234',
+        cut_date: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 15 días desde hoy
+        interest_rate: 2.5,
+        overdue_interest: 5.0,
+        minimum_payment: 150000,
+        has_insurance: true,
+        insurance_value: 50000
       },
       {
-        valor: 3000000,
-        divisa: 'COP',
-        concepto: 'Tarjeta de Crédito Nu',
-        adeudado: 1800000,
-        referencia: 'NU-5678',
-        fecha_corte: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        tasa_interes: 3.0,
-        interes_en_mora: 6.0,
-        pago_minimo: 90000,
-        tiene_seguro: false,
-        valor_seguro: 0
+        value: 3000000,
+        currency: 'COP',
+        concept: 'Tarjeta de Crédito Nu',
+        owed: 1800000,
+        reference: 'NU-5678',
+        cut_date: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        interest_rate: 3.0,
+        overdue_interest: 6.0,
+        minimum_payment: 90000,
+        has_insurance: false,
+        insurance_value: 0
       },
       {
-        valor: 2000000,
-        divisa: 'COP',
-        concepto: 'Préstamo Personal',
-        adeudado: 2000000,
-        referencia: 'PREST-9012',
-        fecha_corte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        tasa_interes: 1.8,
-        interes_en_mora: 4.5,
-        pago_minimo: 200000,
-        tiene_seguro: false,
-        valor_seguro: 0
+        value: 2000000,
+        currency: 'COP',
+        concept: 'Préstamo Personal',
+        owed: 2000000,
+        reference: 'PREST-9012',
+        cut_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        interest_rate: 1.8,
+        overdue_interest: 4.5,
+        minimum_payment: 200000,
+        has_insurance: false,
+        insurance_value: 0
       },
       {
-        valor: 10000,
-        divisa: 'USD',
-        concepto: 'Tarjeta de Crédito Internacional',
-        adeudado: 7500,
-        referencia: 'INT-3456',
-        fecha_corte: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        tasa_interes: 2.0,
-        interes_en_mora: 5.5,
-        pago_minimo: 500,
-        tiene_seguro: true,
-        valor_seguro: 50
+        value: 10000,
+        currency: 'USD',
+        concept: 'Tarjeta de Crédito Internacional',
+        owed: 7500,
+        reference: 'INT-3456',
+        cut_date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        interest_rate: 2.0,
+        overdue_interest: 5.5,
+        minimum_payment: 500,
+        has_insurance: true,
+        insurance_value: 50
       },
       {
-        valor: 8000000,
-        divisa: 'COP',
-        concepto: 'Crédito Vehicular',
-        adeudado: 6000000,
-        referencia: 'VEH-7890',
-        fecha_corte: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        tasa_interes: 1.5,
-        interes_en_mora: 3.0,
-        pago_minimo: 400000,
-        tiene_seguro: true,
-        valor_seguro: 120000
+        value: 8000000,
+        currency: 'COP',
+        concept: 'Crédito Vehicular',
+        owed: 6000000,
+        reference: 'VEH-7890',
+        cut_date: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        interest_rate: 1.5,
+        overdue_interest: 3.0,
+        minimum_payment: 400000,
+        has_insurance: true,
+        insurance_value: 120000
       },
       {
-        valor: 1500000,
-        divisa: 'COP',
-        concepto: 'Línea de Crédito',
-        adeudado: 500000,
-        referencia: 'LINEA-2468',
-        fecha_corte: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        tasa_interes: 2.2,
-        interes_en_mora: 4.8,
-        pago_minimo: 75000,
-        tiene_seguro: false,
-        valor_seguro: 0
+        value: 1500000,
+        currency: 'COP',
+        concept: 'Línea de Crédito',
+        owed: 500000,
+        reference: 'LINEA-2468',
+        cut_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        interest_rate: 2.2,
+        overdue_interest: 4.8,
+        minimum_payment: 75000,
+        has_insurance: false,
+        insurance_value: 0
       },
       {
-        valor: 4000000,
-        divisa: 'COP',
-        concepto: 'Tarjeta de Crédito Falabella',
-        adeudado: 2500000,
-        referencia: 'FAL-1357',
-        fecha_corte: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        tasa_interes: 2.8,
-        interes_en_mora: 5.5,
-        pago_minimo: 125000,
-        tiene_seguro: true,
-        valor_seguro: 40000
+        value: 4000000,
+        currency: 'COP',
+        concept: 'Tarjeta de Crédito Falabella',
+        owed: 2500000,
+        reference: 'FAL-1357',
+        cut_date: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        interest_rate: 2.8,
+        overdue_interest: 5.5,
+        minimum_payment: 125000,
+        has_insurance: true,
+        insurance_value: 40000
       },
       {
-        valor: 6000,
-        divisa: 'EUR',
-        concepto: 'Préstamo en Euros',
-        adeudado: 4500,
-        referencia: 'EUR-9876',
-        fecha_corte: new Date(Date.now() + 18 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        tasa_interes: 1.9,
-        interes_en_mora: 4.2,
-        pago_minimo: 300,
-        tiene_seguro: false,
-        valor_seguro: 0
+        value: 6000,
+        currency: 'EUR',
+        concept: 'Préstamo en Euros',
+        owed: 4500,
+        reference: 'EUR-9876',
+        cut_date: new Date(Date.now() + 18 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        interest_rate: 1.9,
+        overdue_interest: 4.2,
+        minimum_payment: 300,
+        has_insurance: false,
+        insurance_value: 0
       }
     ]
 
@@ -584,9 +584,11 @@ function Deudas() {
                       </>
                     )}
                   </button>
-                  <button className="debug-button" onClick={() => setIsDebugModalOpen(true)} title="Debug: Opciones de desarrollo">
-                    🐛 Debug
-                  </button>
+                  {api.isTestUser() && (
+                    <button className="debug-button" onClick={() => setIsDebugModalOpen(true)} title="Debug: Opciones de desarrollo">
+                      🐛 Debug
+                    </button>
+                  )}
                 </div>
               </div>
 

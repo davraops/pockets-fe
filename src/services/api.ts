@@ -34,6 +34,15 @@ class PocketsAPI {
     }
   }
 
+  /**
+   * Método base para realizar requests a la API.
+   * 
+   * 🔒 Aislamiento de Datos por Usuario:
+   * - Todos los endpoints filtran automáticamente los datos por el usuario autenticado usando el token JWT.
+   * - No es necesario pasar `user_id` en los requests; el sistema lo obtiene automáticamente del token.
+   * - Los nuevos registros se asignan automáticamente al usuario autenticado.
+   * - Los exchange rates son globales y compartidos entre todos los usuarios.
+   */
   private async request(endpoint: string, options: RequestInit = {}) {
     const url = `${this.baseURL}${endpoint}`
     const token = this.getToken()
@@ -41,6 +50,8 @@ class PocketsAPI {
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
+        // Incluir token JWT en todos los endpoints excepto /auth/register y /auth/login
+        // El backend usa este token para filtrar automáticamente los datos por usuario
         ...(token && !endpoint.startsWith('/auth/') && { 'Authorization': `Bearer ${token}` }),
         ...options.headers,
       },
@@ -114,6 +125,50 @@ class PocketsAPI {
     return true
   }
 
+  /**
+   * Obtiene el username del usuario autenticado desde el token JWT.
+   * Retorna null si no hay token o si no se puede decodificar.
+   */
+  getCurrentUsername(): string | null {
+    const token = this.getToken()
+    if (!token) {
+      return null
+    }
+
+    try {
+      // Los tokens JWT tienen el formato: header.payload.signature
+      // Necesitamos decodificar el payload (segunda parte)
+      const parts = token.split('.')
+      if (parts.length !== 3) {
+        return null
+      }
+
+      // Decodificar el payload (base64url)
+      const payload = parts[1]
+      // Reemplazar caracteres base64url por base64 estándar
+      const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
+      // Agregar padding si es necesario
+      const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4)
+      const decoded = atob(padded)
+      const parsed = JSON.parse(decoded)
+
+      // El username está en el campo 'username' del payload
+      return parsed.username || null
+    } catch (error) {
+      console.error('Error al decodificar token:', error)
+      return null
+    }
+  }
+
+  /**
+   * Verifica si el usuario actual es "testuser".
+   * Útil para mostrar funcionalidades de debug solo a usuarios de prueba.
+   */
+  isTestUser(): boolean {
+    const username = this.getCurrentUsername()
+    return username === 'testuser'
+  }
+
   // Bank Accounts
   async createBankAccount(data: {
     account_name: string
@@ -148,6 +203,12 @@ class PocketsAPI {
 
   async deleteBankAccount(accountId: string) {
     return this.request(`/bank-accounts/${accountId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllBankAccounts() {
+    return this.request('/bank-accounts', {
       method: 'DELETE',
     })
   }
@@ -292,17 +353,17 @@ class PocketsAPI {
 
   // Debts
   async createDebt(data: {
-    valor: number
-    divisa: string
-    concepto: string
-    adeudado: number
-    fecha_corte: string
-    referencia?: string
-    tasa_interes?: number
-    interes_en_mora?: number
-    pago_minimo?: number
-    tiene_seguro?: boolean
-    valor_seguro?: number
+    value: number
+    currency: string
+    concept: string
+    owed: number
+    cut_date: string
+    reference?: string
+    interest_rate?: number
+    overdue_interest?: number
+    minimum_payment?: number
+    has_insurance?: boolean
+    insurance_value?: number
   }) {
     return this.request('/debts', {
       method: 'POST',
@@ -316,17 +377,17 @@ class PocketsAPI {
   }
 
   async updateDebt(debtId: string, updates: {
-    valor?: number
-    divisa?: string
-    concepto?: string
-    adeudado?: number
-    referencia?: string
-    fecha_corte?: string
-    tasa_interes?: number
-    interes_en_mora?: number
-    pago_minimo?: number
-    tiene_seguro?: boolean
-    valor_seguro?: number
+    value?: number
+    currency?: string
+    concept?: string
+    owed?: number
+    reference?: string
+    cut_date?: string
+    interest_rate?: number
+    overdue_interest?: number
+    minimum_payment?: number
+    has_insurance?: boolean
+    insurance_value?: number
   }) {
     return this.request(`/debts/${debtId}`, {
       method: 'PUT',
@@ -342,6 +403,48 @@ class PocketsAPI {
 
   async deleteAllDebts() {
     return this.request('/debts', {
+      method: 'DELETE',
+    })
+  }
+
+  // Cards
+  async createCard(data: {
+    card_name: string
+    bank_account_id: string
+    last_4_digits: string
+    expiration_date: string
+  }) {
+    return this.request('/cards', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getCards(cardId: string | null = null) {
+    const endpoint = cardId ? `/cards?id=${cardId}` : '/cards'
+    return this.request(endpoint)
+  }
+
+  async updateCard(cardId: string, updates: {
+    card_name?: string
+    bank_account_id?: string
+    last_4_digits?: string
+    expiration_date?: string
+  }) {
+    return this.request(`/cards/${cardId}`, {
+      method: 'PUT',
+      body: updates,
+    })
+  }
+
+  async deleteCard(cardId: string) {
+    return this.request(`/cards/${cardId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllCards() {
+    return this.request('/cards', {
       method: 'DELETE',
     })
   }

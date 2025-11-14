@@ -1,0 +1,1053 @@
+import { useState, useEffect } from 'react'
+import AddIcon from '@mui/icons-material/Add'
+import PaymentIcon from '@mui/icons-material/Payment'
+import EditIcon from '@mui/icons-material/Edit'
+import DeleteIcon from '@mui/icons-material/Delete'
+import { api } from '../services/api'
+import './AppPage.css'
+import './TarjetasDebito.css'
+
+// Interfaz que coincide con la respuesta de la API (campos en inglés)
+interface CardAPI {
+  id: string
+  card_name: string
+  bank_account_id: string
+  bank_account: {
+    id: string
+    account_name: string
+    bank: string
+    currency?: string
+  }
+  last_4_digits: string
+  expiration_date: string
+  created_at: string
+  updated_at: string
+}
+
+// Interfaz para uso interno del componente
+interface Card {
+  id: string
+  nombre: string
+  cuentaId: string
+  banco: string
+  nombreCuenta: string
+  ultimos4Digitos: string
+  fechaVencimiento: string
+}
+
+interface BankAccount {
+  id: string
+  nombre: string
+  banco: string
+}
+
+function TarjetasDebito() {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null)
+  const [cards, setCards] = useState<Card[]>([])
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [formData, setFormData] = useState({
+    nombre: '',
+    cuentaId: '',
+    ultimos4Digitos: '',
+    fechaVencimiento: ''
+  })
+  const [formErrors, setFormErrors] = useState({
+    nombre: '',
+    cuentaId: '',
+    ultimos4Digitos: '',
+    fechaVencimiento: ''
+  })
+
+  // Mapear tarjeta de API a formato interno
+  const mapCardFromAPI = (apiCard: CardAPI): Card => {
+    return {
+      id: apiCard.id,
+      nombre: apiCard.card_name,
+      cuentaId: apiCard.bank_account_id,
+      banco: apiCard.bank_account.bank,
+      nombreCuenta: apiCard.bank_account.account_name,
+      ultimos4Digitos: apiCard.last_4_digits,
+      fechaVencimiento: apiCard.expiration_date
+    }
+  }
+
+  // Cargar cuentas bancarias desde la API (solo para el selector del formulario)
+  useEffect(() => {
+    const loadBankAccounts = async () => {
+      try {
+        const response = await api.getBankAccounts()
+        if (response.accounts && Array.isArray(response.accounts)) {
+          const mappedAccounts: BankAccount[] = response.accounts.map((acc: any) => ({
+            id: acc.id,
+            nombre: acc.account_name,
+            banco: acc.bank
+          }))
+          setBankAccounts(mappedAccounts)
+        }
+      } catch (err) {
+        console.error('Error al cargar cuentas:', err)
+      }
+    }
+
+    loadBankAccounts()
+  }, [])
+
+  // Cargar tarjetas desde la API
+  useEffect(() => {
+    const loadCards = async () => {
+      setIsLoading(true)
+      setError(null)
+      try {
+        const response = await api.getCards()
+        if (response.cards && Array.isArray(response.cards)) {
+          const mappedCards = response.cards.map(mapCardFromAPI)
+          setCards(mappedCards)
+        } else {
+          setCards([])
+        }
+      } catch (err: any) {
+        console.error('Error al cargar tarjetas:', err)
+        setError('Error al cargar las tarjetas. Por favor, intenta de nuevo.')
+        setCards([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadCards()
+  }, [])
+
+  const handleOpenModal = () => {
+    if (bankAccounts.length === 0) {
+      alert('No hay cuentas bancarias disponibles. Por favor, crea al menos una cuenta primero.')
+      return
+    }
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setFormData({
+      nombre: '',
+      cuentaId: '',
+      ultimos4Digitos: '',
+      fechaVencimiento: ''
+    })
+    setFormErrors({
+      nombre: '',
+      cuentaId: '',
+      ultimos4Digitos: '',
+      fechaVencimiento: ''
+    })
+  }
+
+  const handleOpenDetailModal = (card: Card) => {
+    setSelectedCard(card)
+    setIsDetailModalOpen(true)
+    setIsEditMode(false)
+    // Convertir fecha de YYYY-MM-DD a YYYY-MM si viene con día
+    const fechaVencimiento = card.fechaVencimiento.includes('-') 
+      ? card.fechaVencimiento.slice(0, 7) 
+      : card.fechaVencimiento
+    setFormData({
+      nombre: card.nombre,
+      cuentaId: card.cuentaId,
+      ultimos4Digitos: card.ultimos4Digitos,
+      fechaVencimiento: fechaVencimiento
+    })
+  }
+
+  const handleCloseDetailModal = () => {
+    setIsDetailModalOpen(false)
+    setSelectedCard(null)
+    setIsEditMode(false)
+    setFormData({
+      nombre: '',
+      cuentaId: '',
+      ultimos4Digitos: '',
+      fechaVencimiento: ''
+    })
+    setFormErrors({
+      nombre: '',
+      cuentaId: '',
+      ultimos4Digitos: '',
+      fechaVencimiento: ''
+    })
+  }
+
+  const handleEditClick = () => {
+    setIsEditMode(true)
+  }
+
+  const handleDeleteClick = async () => {
+    if (selectedCard && window.confirm(`¿Estás seguro de que quieres eliminar la tarjeta "${selectedCard.nombre}"?`)) {
+      try {
+        await api.deleteCard(selectedCard.id)
+        // Recargar tarjetas después de eliminar
+        const response = await api.getCards()
+        if (response.cards && Array.isArray(response.cards)) {
+          const mappedCards = response.cards.map(mapCardFromAPI)
+          setCards(mappedCards)
+        }
+        handleCloseDetailModal()
+      } catch (err: any) {
+        console.error('Error al eliminar tarjeta:', err)
+        alert('Error al eliminar la tarjeta. Por favor, intenta de nuevo.')
+      }
+    }
+  }
+
+  const validateForm = async (): Promise<boolean> => {
+    const errors = {
+      nombre: '',
+      cuentaId: '',
+      ultimos4Digitos: '',
+      fechaVencimiento: ''
+    }
+    let isValid = true
+
+    // Validar nombre
+    if (!formData.nombre.trim()) {
+      errors.nombre = 'El nombre es requerido'
+      isValid = false
+    }
+
+    // Validar cuenta
+    if (!formData.cuentaId.trim()) {
+      errors.cuentaId = 'La cuenta es requerida'
+      isValid = false
+    }
+
+    // Validar últimos 4 dígitos
+    if (!formData.ultimos4Digitos.trim()) {
+      errors.ultimos4Digitos = 'Los últimos 4 dígitos son requeridos'
+      isValid = false
+    } else if (!/^\d{4}$/.test(formData.ultimos4Digitos.trim())) {
+      errors.ultimos4Digitos = 'Debe ser exactamente 4 dígitos'
+      isValid = false
+    }
+
+    // Validar fecha de vencimiento (puede venir en formato MM/YYYY o YYYY-MM)
+    if (!formData.fechaVencimiento) {
+      errors.fechaVencimiento = 'La fecha de vencimiento es requerida'
+      isValid = false
+    } else {
+      let year: string, month: string
+      
+      // Si viene en formato MM/YYYY, convertir a YYYY-MM
+      if (formData.fechaVencimiento.includes('/')) {
+        const [m, y] = formData.fechaVencimiento.split('/')
+        if (!m || !y || m.length !== 2 || y.length !== 4) {
+          errors.fechaVencimiento = 'Formato inválido. Use MM/YYYY'
+          isValid = false
+        } else {
+          month = m
+          year = y
+        }
+      } else if (formData.fechaVencimiento.includes('-')) {
+        // Si viene en formato YYYY-MM
+        [year, month] = formData.fechaVencimiento.split('-')
+      } else {
+        errors.fechaVencimiento = 'Formato inválido. Use MM/YYYY'
+        isValid = false
+      }
+      
+      if (year && month) {
+        const monthNum = parseInt(month)
+        if (monthNum < 1 || monthNum > 12) {
+          errors.fechaVencimiento = 'El mes debe estar entre 01 y 12'
+          isValid = false
+        } else {
+          const expirationDate = new Date(parseInt(year), monthNum - 1, 1)
+          const today = new Date()
+          today.setDate(1) // Primer día del mes actual para comparar solo mes/año
+          today.setHours(0, 0, 0, 0)
+          if (expirationDate < today) {
+            errors.fechaVencimiento = 'La fecha de vencimiento no puede ser en el pasado'
+            isValid = false
+          }
+        }
+      }
+    }
+
+    // Validar nombre único - verificar contra la API
+    try {
+      const allCards = await api.getCards()
+      if (allCards.cards && Array.isArray(allCards.cards)) {
+        const nombreExists = allCards.cards.some(card => 
+          card.card_name.toLowerCase() === formData.nombre.toLowerCase().trim() &&
+          (!isEditMode || card.id !== selectedCard?.id)
+        )
+        if (nombreExists) {
+          errors.nombre = 'Este nombre ya está en uso'
+          isValid = false
+        }
+
+        // Validar últimos 4 dígitos únicos
+        const digitsExists = allCards.cards.some(card => 
+          card.last_4_digits === formData.ultimos4Digitos.trim() &&
+          (!isEditMode || card.id !== selectedCard?.id)
+        )
+        if (digitsExists) {
+          errors.ultimos4Digitos = 'Esta combinación de dígitos ya está en uso'
+          isValid = false
+        }
+      }
+    } catch (err) {
+      console.error('Error al validar:', err)
+      // Continuar con la validación local como fallback
+      const nombreExists = cards.some(card => 
+        card.nombre.toLowerCase() === formData.nombre.toLowerCase().trim() &&
+        (!isEditMode || card.id !== selectedCard?.id)
+      )
+      if (nombreExists) {
+        errors.nombre = 'Este nombre ya está en uso'
+        isValid = false
+      }
+
+      const digitsExists = cards.some(card => 
+        card.ultimos4Digitos === formData.ultimos4Digitos.trim() &&
+        (!isEditMode || card.id !== selectedCard?.id)
+      )
+      if (digitsExists) {
+        errors.ultimos4Digitos = 'Esta combinación de dígitos ya está en uso'
+        isValid = false
+      }
+    }
+
+    setFormErrors(errors)
+    return isValid
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    const isValid = await validateForm()
+    if (!isValid) {
+      return
+    }
+
+    // Validación adicional antes de enviar
+    if (!formData.nombre.trim() || !formData.cuentaId || !formData.ultimos4Digitos.trim() || !formData.fechaVencimiento) {
+      alert('Por favor completa todos los campos requeridos')
+      return
+    }
+
+    // Asegurar que últimos 4 dígitos tengan exactamente 4 dígitos
+    const ultimos4Digitos = formData.ultimos4Digitos.trim()
+    if (!/^\d{4}$/.test(ultimos4Digitos)) {
+      alert('Los últimos 4 dígitos deben ser exactamente 4 números')
+      return
+    }
+
+    try {
+      // Convertir formato MM/YYYY o YYYY-MM a YYYY-MM-DD (primer día del mes)
+      let expirationDate = ''
+      
+      if (formData.fechaVencimiento.includes('/')) {
+        // Si viene en formato MM/YYYY
+        const [month, year] = formData.fechaVencimiento.split('/')
+        if (month && year && month.length === 2 && year.length === 4) {
+          expirationDate = `${year}-${month}-01`
+        } else {
+          alert('Formato de fecha inválido. Use MM/YYYY (ej: 12/2025)')
+          return
+        }
+      } else if (formData.fechaVencimiento.includes('-')) {
+        // Si viene en formato YYYY-MM o YYYY-MM-DD
+        const parts = formData.fechaVencimiento.split('-')
+        if (parts.length === 2) {
+          // YYYY-MM, agregar -01
+          expirationDate = `${formData.fechaVencimiento}-01`
+        } else if (parts.length === 3) {
+          // Ya está en formato YYYY-MM-DD
+          expirationDate = formData.fechaVencimiento
+        } else {
+          alert('Formato de fecha inválido')
+          return
+        }
+      } else {
+        alert('Formato de fecha inválido. Use MM/YYYY (ej: 12/2025)')
+        return
+      }
+      
+      // Validar que expirationDate tenga el formato correcto
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(expirationDate)) {
+        alert('Error al formatear la fecha. Por favor, intenta de nuevo.')
+        return
+      }
+      
+      const cardData = {
+        card_name: formData.nombre.trim(),
+        bank_account_id: formData.cuentaId.trim(),
+        last_4_digits: ultimos4Digitos,
+        expiration_date: expirationDate
+      }
+
+      console.log('Enviando datos de tarjeta:', cardData)
+
+      if (isEditMode && selectedCard) {
+        // Editar tarjeta existente
+        await api.updateCard(selectedCard.id, cardData)
+        
+        // Recargar tarjetas después de actualizar
+        const response = await api.getCards()
+        if (response.cards && Array.isArray(response.cards)) {
+          const mappedCards = response.cards.map(mapCardFromAPI)
+          setCards(mappedCards)
+        }
+        handleCloseDetailModal()
+      } else {
+        // Agregar nueva tarjeta
+        await api.createCard(cardData)
+
+        // Recargar tarjetas después de crear
+        const response = await api.getCards()
+        if (response.cards && Array.isArray(response.cards)) {
+          const mappedCards = response.cards.map(mapCardFromAPI)
+          setCards(mappedCards)
+        }
+        handleCloseModal()
+      }
+    } catch (err: any) {
+      console.error('Error al guardar tarjeta:', err)
+      console.error('Datos enviados:', {
+        card_name: formData.nombre.trim(),
+        bank_account_id: formData.cuentaId,
+        last_4_digits: formData.ultimos4Digitos.trim(),
+        expiration_date: formData.fechaVencimiento
+      })
+      const errorMessage = err.data?.error || err.message || 'Error al guardar la tarjeta. Por favor, intenta de nuevo.'
+      alert(errorMessage)
+    }
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    
+    // Limitar últimos 4 dígitos a solo números y máximo 4 caracteres
+    if (name === 'ultimos4Digitos') {
+      const numericValue = value.replace(/\D/g, '').slice(0, 4)
+      setFormData({
+        ...formData,
+        [name]: numericValue
+      })
+    } else if (name === 'fechaVencimiento') {
+      // Manejar formato MM/YYYY
+      let formattedValue = value.replace(/\D/g, '') // Solo números
+      
+      // Limitar a 6 dígitos (MMYYYY)
+      formattedValue = formattedValue.slice(0, 6)
+      
+      // Agregar slash después del mes
+      if (formattedValue.length > 2) {
+        formattedValue = formattedValue.slice(0, 2) + '/' + formattedValue.slice(2)
+      }
+      
+      // Convertir MM/YYYY a YYYY-MM para almacenar
+      if (formattedValue.length === 7 && formattedValue.includes('/')) {
+        const [month, year] = formattedValue.split('/')
+        if (month && year && month.length === 2 && year.length === 4) {
+          const yyyyMM = `${year}-${month}`
+          setFormData({
+            ...formData,
+            [name]: yyyyMM
+          })
+        } else {
+          // Si no está completo, guardar como está para mostrar
+          setFormData({
+            ...formData,
+            [name]: formattedValue
+          })
+        }
+      } else {
+        setFormData({
+          ...formData,
+          [name]: formattedValue
+        })
+      }
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      })
+    }
+    
+    // Limpiar errores cuando el usuario empiece a escribir
+    if (formErrors[name as keyof typeof formErrors]) {
+      setFormErrors({
+        ...formErrors,
+        [name]: ''
+      })
+    }
+  }
+
+  // Función para convertir YYYY-MM a MM/YYYY para mostrar
+  const formatDateForInput = (dateString: string): string => {
+    if (!dateString) return ''
+    // Si viene en formato YYYY-MM o YYYY-MM-DD
+    if (dateString.includes('-')) {
+      const parts = dateString.split('-')
+      if (parts.length >= 2) {
+        const year = parts[0]
+        const month = parts[1]
+        return `${month}/${year}`
+      }
+    }
+    // Si ya está en formato MM/YYYY, devolverlo tal cual
+    if (dateString.includes('/')) {
+      return dateString
+    }
+    return dateString
+  }
+
+  const bancos = [
+    'Bancolombia',
+    'Davivienda',
+    'Banco de Bogota',
+    'GNB Sudameris',
+    'Citibank',
+    'Banco Agrario',
+    'Banco de Occidente',
+    'BBVA',
+    'BTG Pactual',
+    'Mundo Mujer',
+    'Banco Caja Social',
+    'ITAU',
+    'Falabella',
+    'Santander',
+    'Bancamia',
+    'JP Morgan Chase',
+    'Mi Banco',
+    'W',
+    'Banco Popular',
+    'Finandina',
+    'Coopcentral',
+    'Union',
+    'Serfinanza',
+    'Scotiabank',
+    'Colpatria',
+    'Bancoomeva',
+    'Pichincha',
+    'Av Villas',
+    'Nequi',
+    'Daviplata',
+    'Movii',
+    'Nu',
+    'TPaga',
+    'Tuya Pay',
+    'Dale!',
+    'Rappi',
+    'Leal',
+    'Bold',
+    'Littio',
+    'Uala',
+    'Lulo Bank',
+    'Coink',
+    'Iris Neofinanciera',
+    'Mercadopago',
+    'PayU',
+    'Deel',
+    'Dolar App',
+    'Wise USD',
+    'Wise EUR',
+    'Payoneer USD',
+    'Payoneer EUR',
+    'Paypal'
+  ]
+
+  // Colores para cada banco (mismo que en Cuentas)
+  const bancoColors: Record<string, string> = {
+    'Bancolombia': '#E2001A',
+    'Davivienda': '#FF6B00',
+    'Banco de Bogota': '#0033A0',
+    'GNB Sudameris': '#00A859',
+    'Citibank': '#0066CC',
+    'Banco Agrario': '#00A859',
+    'Banco de Occidente': '#FF6B00',
+    'BBVA': '#004481',
+    'BTG Pactual': '#000000',
+    'Mundo Mujer': '#E91E63',
+    'Banco Caja Social': '#0066CC',
+    'ITAU': '#FF6B00',
+    'Falabella': '#FF6B00',
+    'Santander': '#EC0000',
+    'Bancamia': '#00A859',
+    'JP Morgan Chase': '#0066CC',
+    'Mi Banco': '#0066CC',
+    'W': '#000000',
+    'Banco Popular': '#0066CC',
+    'Finandina': '#0066CC',
+    'Coopcentral': '#0066CC',
+    'Union': '#0066CC',
+    'Serfinanza': '#0066CC',
+    'Scotiabank': '#E2001A',
+    'Colpatria': '#0066CC',
+    'Bancoomeva': '#0066CC',
+    'Pichincha': '#0066CC',
+    'Av Villas': '#0066CC',
+    'Nequi': '#00A859',
+    'Daviplata': '#0066CC',
+    'Movii': '#0066CC',
+    'Nu': '#8B5CF6',
+    'TPaga': '#0066CC',
+    'Tuya Pay': '#0066CC',
+    'Dale!': '#FF6B00',
+    'Rappi': '#00A859',
+    'Leal': '#0066CC',
+    'Bold': '#000000',
+    'Littio': '#0066CC',
+    'Uala': '#0066CC',
+    'Lulo Bank': '#0066CC',
+    'Coink': '#0066CC',
+    'Iris Neofinanciera': '#0066CC',
+    'Mercadopago': '#009EE3',
+    'PayU': '#00A859',
+    'Deel': '#0066CC',
+    'Dolar App': '#00A859',
+    'Wise USD': '#00B9FF',
+    'Wise EUR': '#00B9FF',
+    'Payoneer USD': '#FF6900',
+    'Payoneer EUR': '#FF6900',
+    'Paypal': '#003087'
+  }
+
+  const getBancoColor = (banco: string): string => {
+    return bancoColors[banco] || '#5856D6'
+  }
+
+  const formatDate = (dateString: string) => {
+    // Si viene en formato YYYY-MM-DD, extraer solo YYYY-MM
+    const dateOnly = dateString.split('T')[0] // Remover hora si existe
+    const [year, month] = dateOnly.split('-')
+    return `${month}/${year}`
+  }
+
+  const formatCardNumber = (digits: string) => {
+    return `•••• •••• •••• ${digits}`
+  }
+
+  // Función de debug para crear tarjetas de prueba
+  const handleDebugCreateCards = async () => {
+    if (bankAccounts.length === 0) {
+      alert('No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.')
+      return
+    }
+
+    const testCards = bankAccounts.slice(0, Math.min(5, bankAccounts.length)).map((account, index) => ({
+      card_name: `Tarjeta Débito ${account.nombre}`,
+      bank_account_id: account.id,
+      last_4_digits: String(1000 + index).padStart(4, '0'),
+      expiration_date: new Date(Date.now() + (365 * (index + 1)) * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    }))
+
+    try {
+      setIsLoading(true)
+      for (const card of testCards) {
+        await api.createCard(card)
+      }
+      // Recargar tarjetas después de crear todas
+      const response = await api.getCards()
+      if (response.cards && Array.isArray(response.cards)) {
+        const mappedCards = response.cards.map(mapCardFromAPI)
+        setCards(mappedCards)
+      }
+      setIsDebugModalOpen(false)
+      alert(`${testCards.length} tarjetas de prueba creadas exitosamente`)
+    } catch (err: any) {
+      console.error('Error al crear tarjetas de prueba:', err)
+      alert('Error al crear tarjetas de prueba: ' + (err.data?.error || 'Error desconocido'))
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Función de debug para borrar todas las tarjetas
+  const handleDeleteAllCards = async () => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar TODAS las tarjetas? Esta acción es IRREVERSIBLE.')) {
+      try {
+        setIsLoading(true)
+        await api.deleteAllCards()
+        // Recargar tarjetas después de borrar todas
+        const response = await api.getCards()
+        if (response.cards && Array.isArray(response.cards)) {
+          const mappedCards = response.cards.map(mapCardFromAPI)
+          setCards(mappedCards)
+        }
+        setIsDebugModalOpen(false)
+        alert('Todas las tarjetas han sido eliminadas exitosamente')
+      } catch (err: any) {
+        console.error('Error al eliminar todas las tarjetas:', err)
+        alert('Error al eliminar tarjetas: ' + (err.data?.error || 'Error desconocido'))
+      } finally {
+        setIsLoading(false)
+      }
+    }
+  }
+
+  return (
+    <>
+      <div className="app-page-container">
+        <div className="app-page-content tarjetas-debito-content">
+          {isLoading ? (
+            <div className="loader-container">
+              <div className="loader">
+                <div className="loader-spinner"></div>
+                <p className="loader-text">Cargando tarjetas...</p>
+              </div>
+            </div>
+          ) : error ? (
+            <div className="loader-container">
+              <div className="loader">
+                <p className="loader-text" style={{ color: 'rgba(255, 59, 48, 0.9)' }}>{error}</p>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="tarjetas-header">
+                <button className="add-card-button" onClick={handleOpenModal}>
+                  <AddIcon />
+                  <span>Agregar Tarjeta</span>
+                </button>
+                {api.isTestUser() && (
+                  <button className="debug-button" onClick={() => setIsDebugModalOpen(true)} title="Debug: Opciones de desarrollo">
+                    🐛 Debug
+                  </button>
+                )}
+              </div>
+
+              {cards.length === 0 ? (
+                <div className="empty-state">
+                  <PaymentIcon className="empty-icon" />
+                  <p className="empty-text">No hay tarjetas agregadas</p>
+                  <p className="empty-subtext">Agrega tu primera tarjeta de débito</p>
+                </div>
+              ) : (
+                <div className="cards-grid">
+                  {cards.map((card) => {
+                    const bancoColor = getBancoColor(card.banco)
+                    return (
+                      <div 
+                        key={card.id} 
+                        className="card-item" 
+                        onClick={() => handleOpenDetailModal(card)}
+                        style={{ '--banco-color': bancoColor } as React.CSSProperties}
+                      >
+                        <div className="card-item-header">
+                          <div className="card-icon" style={{ backgroundColor: bancoColor }}>
+                            <PaymentIcon />
+                          </div>
+                          <div className="card-info">
+                            <h3 className="card-name">{card.nombre}</h3>
+                            <p className="card-bank">{card.nombreCuenta} - {card.banco}</p>
+                          </div>
+                        </div>
+                        <div className="card-item-body">
+                          <p className="card-number">{formatCardNumber(card.ultimos4Digitos)}</p>
+                          <p className="card-expiration">Vence: {formatDate(card.fechaVencimiento)}</p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Modal para agregar tarjeta */}
+      {isModalOpen && (
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Nueva Tarjeta de Débito</h2>
+              <button className="modal-close" onClick={handleCloseModal}>×</button>
+            </div>
+            <form className="modal-form" onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="nombre">Nombre</label>
+                <input
+                  type="text"
+                  id="nombre"
+                  name="nombre"
+                  value={formData.nombre}
+                  onChange={handleChange}
+                  required
+                  placeholder="Ej: Tarjeta Débito Principal"
+                  className={formErrors.nombre ? 'input-error' : ''}
+                />
+                {formErrors.nombre && (
+                  <span className="error-message">{formErrors.nombre}</span>
+                )}
+              </div>
+              <div className="form-group">
+                <label htmlFor="cuentaId">Cuenta Bancaria</label>
+                <select
+                  id="cuentaId"
+                  name="cuentaId"
+                  value={formData.cuentaId}
+                  onChange={handleChange}
+                  required
+                  className={formErrors.cuentaId ? 'input-error form-select' : 'form-select'}
+                >
+                  <option value="">Selecciona una cuenta</option>
+                  {bankAccounts.map((account) => (
+                    <option key={account.id} value={account.id}>
+                      {account.nombre} - {account.banco}
+                    </option>
+                  ))}
+                </select>
+                {formErrors.cuentaId && (
+                  <span className="error-message">{formErrors.cuentaId}</span>
+                )}
+              </div>
+              <div className="form-group">
+                <label htmlFor="ultimos4Digitos">Últimos 4 Dígitos</label>
+                <input
+                  type="text"
+                  id="ultimos4Digitos"
+                  name="ultimos4Digitos"
+                  value={formData.ultimos4Digitos}
+                  onChange={handleChange}
+                  required
+                  maxLength={4}
+                  placeholder="1234"
+                  className={formErrors.ultimos4Digitos ? 'input-error' : ''}
+                />
+                {formErrors.ultimos4Digitos && (
+                  <span className="error-message">{formErrors.ultimos4Digitos}</span>
+                )}
+              </div>
+              <div className="form-group">
+                <label htmlFor="fechaVencimiento">Fecha de Vencimiento (Mes/Año)</label>
+                <input
+                  type="text"
+                  id="fechaVencimiento"
+                  name="fechaVencimiento"
+                  value={formatDateForInput(formData.fechaVencimiento)}
+                  onChange={handleChange}
+                  required
+                  maxLength={7}
+                  placeholder="MM/YYYY"
+                  className={formErrors.fechaVencimiento ? 'input-error' : ''}
+                />
+                {formErrors.fechaVencimiento && (
+                  <span className="error-message">{formErrors.fechaVencimiento}</span>
+                )}
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="modal-button cancel" onClick={handleCloseModal}>
+                  Cancelar
+                </button>
+                <button type="submit" className="modal-button submit">
+                  Agregar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de detalles */}
+      {isDetailModalOpen && selectedCard && (
+        <div className="modal-overlay" onClick={handleCloseDetailModal}>
+          <div 
+            className="modal-content detail-modal" 
+            onClick={(e) => e.stopPropagation()}
+            style={{ '--banco-color': getBancoColor(selectedCard.banco) } as React.CSSProperties}
+          >
+            <div className="modal-header">
+              <h2 className="modal-title">Detalles de la Tarjeta</h2>
+              <button className="modal-close" onClick={handleCloseDetailModal}>×</button>
+            </div>
+            
+            {!isEditMode ? (
+              <>
+                <div className="detail-content">
+                  <div className="detail-section">
+                    <div className="detail-icon-large" style={{ backgroundColor: getBancoColor(selectedCard.banco) }}>
+                      <PaymentIcon />
+                    </div>
+                    <div className="detail-info">
+                      <h3 className="detail-name">{selectedCard.nombre}</h3>
+                      <p className="detail-bank">{selectedCard.nombreCuenta} - {selectedCard.banco}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="detail-row">
+                    <span className="detail-label">Cuenta Bancaria:</span>
+                    <span className="detail-value">{selectedCard.nombreCuenta}</span>
+                  </div>
+                  
+                  <div className="detail-row">
+                    <span className="detail-label">Banco:</span>
+                    <span className="detail-value">{selectedCard.banco}</span>
+                  </div>
+                  
+                  <div className="detail-row">
+                    <span className="detail-label">Número de Tarjeta:</span>
+                    <span className="detail-value">{formatCardNumber(selectedCard.ultimos4Digitos)}</span>
+                  </div>
+                  
+                  <div className="detail-row">
+                    <span className="detail-label">Fecha de Vencimiento:</span>
+                    <span className="detail-value">{formatDate(selectedCard.fechaVencimiento)}</span>
+                  </div>
+                </div>
+
+                <div className="detail-actions">
+                  <button className="detail-button edit" onClick={handleEditClick}>
+                    <EditIcon />
+                    <span>Editar Tarjeta</span>
+                  </button>
+                  <button className="detail-button delete" onClick={handleDeleteClick}>
+                    <DeleteIcon />
+                    <span>Eliminar Tarjeta</span>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <form className="modal-form" onSubmit={handleSubmit}>
+                <div className="form-group">
+                  <label htmlFor="edit-nombre">Nombre</label>
+                  <input
+                    type="text"
+                    id="edit-nombre"
+                    name="nombre"
+                    value={formData.nombre}
+                    onChange={handleChange}
+                    required
+                    placeholder="Ej: Tarjeta Débito Principal"
+                    className={formErrors.nombre ? 'input-error' : ''}
+                  />
+                  {formErrors.nombre && (
+                    <span className="error-message">{formErrors.nombre}</span>
+                  )}
+                </div>
+                <div className="form-group">
+                  <label htmlFor="edit-cuentaId">Cuenta Bancaria</label>
+                  <select
+                    id="edit-cuentaId"
+                    name="cuentaId"
+                    value={formData.cuentaId}
+                    onChange={handleChange}
+                    required
+                    className="form-select disabled-input"
+                    disabled
+                  >
+                    <option value="">Selecciona una cuenta</option>
+                    {bankAccounts.map((account) => (
+                      <option key={account.id} value={account.id}>
+                        {account.nombre} - {account.banco}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="form-hint">La cuenta no se puede modificar</p>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="edit-ultimos4Digitos">Últimos 4 Dígitos</label>
+                  <input
+                    type="text"
+                    id="edit-ultimos4Digitos"
+                    name="ultimos4Digitos"
+                    value={formData.ultimos4Digitos}
+                    onChange={handleChange}
+                    required
+                    maxLength={4}
+                    placeholder="1234"
+                    className={formErrors.ultimos4Digitos ? 'input-error' : ''}
+                  />
+                  {formErrors.ultimos4Digitos && (
+                    <span className="error-message">{formErrors.ultimos4Digitos}</span>
+                  )}
+                </div>
+                <div className="form-group">
+                  <label htmlFor="edit-fechaVencimiento">Fecha de Vencimiento (Mes/Año)</label>
+                  <input
+                    type="text"
+                    id="edit-fechaVencimiento"
+                    name="fechaVencimiento"
+                    value={formatDateForInput(formData.fechaVencimiento)}
+                    onChange={handleChange}
+                    required
+                    maxLength={7}
+                    placeholder="MM/YYYY"
+                    className={formErrors.fechaVencimiento ? 'input-error' : ''}
+                  />
+                  {formErrors.fechaVencimiento && (
+                    <span className="error-message">{formErrors.fechaVencimiento}</span>
+                  )}
+                </div>
+                <div className="modal-actions">
+                  <button type="button" className="modal-button cancel" onClick={() => setIsEditMode(false)}>
+                    Cancelar
+                  </button>
+                  <button type="submit" className="modal-button submit">
+                    Guardar Cambios
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Debug */}
+      {isDebugModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Debug - Tarjetas Débito</h2>
+              <button className="modal-close" onClick={() => setIsDebugModalOpen(false)}>×</button>
+            </div>
+            <div className="debug-modal-content">
+              <div className="debug-options">
+                <button
+                  className="debug-option-button create-demo"
+                  onClick={handleDebugCreateCards}
+                  disabled={isLoading}
+                >
+                  <span className="debug-option-icon">📦</span>
+                  <div className="debug-option-info">
+                    <h3 className="debug-option-title">Crear Tarjetas Demo</h3>
+                    <p className="debug-option-description">Crea 5 tarjetas de ejemplo para pruebas</p>
+                  </div>
+                </button>
+                <button
+                  className="debug-option-button delete-all"
+                  onClick={handleDeleteAllCards}
+                  disabled={isLoading}
+                >
+                  <span className="debug-option-icon">🗑️</span>
+                  <div className="debug-option-info">
+                    <h3 className="debug-option-title">Eliminar Todas las Tarjetas</h3>
+                    <p className="debug-option-description">⚠️ PELIGROSO: Elimina todas las tarjetas (IRREVERSIBLE)</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="modal-button cancel"
+                onClick={() => setIsDebugModalOpen(false)}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
+export default TarjetasDebito
+

@@ -617,9 +617,11 @@ function Presupuestos() {
                   <AddIcon />
                   <span>Agregar Presupuesto</span>
                 </button>
-                <button className="debug-button" onClick={() => setIsDebugModalOpen(true)} title="Debug: Opciones de desarrollo">
-                  🐛 Debug
-                </button>
+                {api.isTestUser() && (
+                  <button className="debug-button" onClick={() => setIsDebugModalOpen(true)} title="Debug: Opciones de desarrollo">
+                    🐛 Debug
+                  </button>
+                )}
               </div>
 
               {budgets.length === 0 ? (

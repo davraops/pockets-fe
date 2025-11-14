@@ -7,6 +7,7 @@ import Cuentas from './pages/Cuentas'
 import Presupuestos from './pages/Presupuestos'
 import Transacciones from './pages/Transacciones'
 import Deudas from './pages/Deudas'
+import TarjetasDebito from './pages/TarjetasDebito'
 import StatusBar from './components/StatusBar'
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -63,6 +64,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Deudas />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/finanzas/tarjetas-debito" 
+          element={
+            <ProtectedRoute>
+              <TarjetasDebito />
             </ProtectedRoute>
           } 
         />

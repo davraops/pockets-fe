@@ -7,12 +7,16 @@ Guía completa de endpoints para integración frontend.
 ### URLs Base
 
 ```javascript
-// Por defecto usa la URL de producción (AWS)
-// Para desarrollo local, configurar VITE_API_URL en el archivo .env
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://x1bom9m0bd.execute-api.us-east-1.amazonaws.com/dev';
+// Producción (AWS)
+const API_BASE_URL = 'https://x1bom9m0bd.execute-api.us-east-1.amazonaws.com/dev';
 
-// Ejemplo de archivo .env para desarrollo local:
-// VITE_API_URL=http://localhost:3000
+// Desarrollo Local
+const API_BASE_URL_LOCAL = 'http://localhost:3000';
+
+// Usar según el entorno
+const API_URL = process.env.NODE_ENV === 'production' 
+  ? API_BASE_URL 
+  : API_BASE_URL_LOCAL;
 ```
 
 ### CORS
@@ -124,6 +128,12 @@ const headers = {
 ## Endpoints
 
 > **⚠️ Nota:** Todos los endpoints a continuación requieren autenticación JWT. Incluye el header `Authorization: Bearer <token>` en cada request.
+
+> **🔒 Aislamiento de Datos por Usuario:** Todos los endpoints filtran automáticamente los datos por el usuario autenticado. Esto significa que:
+> - Cada usuario solo verá y gestionará sus propios datos (cuentas bancarias, presupuestos, transacciones, deudas)
+> - Los nuevos registros se asignan automáticamente al usuario autenticado
+> - No es necesario pasar `user_id` en los requests; el sistema lo obtiene del token JWT
+> - Los exchange rates son globales y compartidos entre todos los usuarios
 
 ### Bank Accounts
 
@@ -950,51 +960,51 @@ const createDebt = async (debtData) => {
 
 // Uso
 const newDebt = await createDebt({
-  valor: 5000000,
-  divisa: "COP",
-  concepto: "Tarjeta de crédito",
-  adeudado: 3000000,
-  referencia: "TARJ-1234",
-  fecha_corte: "2024-02-15",
-  tasa_interes: 2.5,
-  interes_en_mora: 5.0,
-  pago_minimo: 150000,
-  tiene_seguro: true,
-  valor_seguro: 50000
+  value: 5000000,
+  currency: "COP",
+  concept: "Tarjeta de crédito",
+  owed: 3000000,
+  reference: "TARJ-1234",
+  cut_date: "2024-02-15",
+  interest_rate: 2.5,
+  overdue_interest: 5.0,
+  minimum_payment: 150000,
+  has_insurance: true,
+  insurance_value: 50000
 });
 ```
 
 **Request Body:**
 ```json
 {
-  "valor": 5000000,
-  "divisa": "COP",
-  "concepto": "Tarjeta de crédito",
-  "adeudado": 3000000,
-  "referencia": "TARJ-1234",
-  "fecha_corte": "2024-02-15",
-  "tasa_interes": 2.5,
-  "interes_en_mora": 5.0,
-  "pago_minimo": 150000,
-  "tiene_seguro": true,
-  "valor_seguro": 50000
+  "value": 5000000,
+  "currency": "COP",
+  "concept": "Tarjeta de crédito",
+  "owed": 3000000,
+  "reference": "TARJ-1234",
+  "cut_date": "2024-02-15",
+  "interest_rate": 2.5,
+  "overdue_interest": 5.0,
+  "minimum_payment": 150000,
+  "has_insurance": true,
+  "insurance_value": 50000
 }
 ```
 
 **Campos Requeridos:**
-- `valor` - Valor total de la deuda (número positivo)
-- `divisa` - Código de moneda (3 letras mayúsculas, ej: USD, EUR, COP)
-- `concepto` - Descripción/concepto de la deuda
-- `adeudado` - Monto actualmente adeudado (número positivo)
-- `fecha_corte` - Fecha de corte en formato YYYY-MM-DD
+- `value` - Valor total de la deuda (número positivo)
+- `currency` - Código de moneda (3 letras mayúsculas, ej: USD, EUR, COP)
+- `concept` - Descripción/concepto de la deuda
+- `owed` - Monto actualmente adeudado (número positivo)
+- `cut_date` - Fecha de corte en formato YYYY-MM-DD
 
 **Campos Opcionales:**
-- `referencia` - Número de referencia o identificador
-- `tasa_interes` - Porcentaje de tasa de interés (default: 0.00)
-- `interes_en_mora` - Porcentaje de interés en mora (default: 0.00)
-- `pago_minimo` - Monto de pago mínimo (default: 0.00)
-- `tiene_seguro` - Si la deuda tiene seguro (default: false)
-- `valor_seguro` - Valor del seguro (default: 0.00)
+- `reference` - Número de referencia o identificador
+- `interest_rate` - Porcentaje de tasa de interés (default: 0.00)
+- `overdue_interest` - Porcentaje de interés en mora (default: 0.00)
+- `minimum_payment` - Monto de pago mínimo (default: 0.00)
+- `has_insurance` - Si la deuda tiene seguro (default: false)
+- `insurance_value` - Valor del seguro (default: 0.00)
 
 **Response (201):**
 ```json
@@ -1002,17 +1012,17 @@ const newDebt = await createDebt({
   "message": "Debt created successfully",
   "debt": {
     "id": "uuid-here",
-    "valor": 5000000,
-    "divisa": "COP",
-    "concepto": "Tarjeta de crédito",
-    "adeudado": 3000000,
-    "referencia": "TARJ-1234",
-    "fecha_corte": "2024-02-15",
-    "tasa_interes": 2.5,
-    "interes_en_mora": 5.0,
-    "pago_minimo": 150000,
-    "tiene_seguro": true,
-    "valor_seguro": 50000,
+    "value": 5000000,
+    "currency": "COP",
+    "concept": "Tarjeta de crédito",
+    "owed": 3000000,
+    "reference": "TARJ-1234",
+    "cut_date": "2024-02-15",
+    "interest_rate": 2.5,
+    "overdue_interest": 5.0,
+    "minimum_payment": 150000,
+    "has_insurance": true,
+    "insurance_value": 50000,
     "created_at": "2024-01-15T00:00:00.000Z",
     "updated_at": "2024-01-15T00:00:00.000Z"
   }
@@ -1051,17 +1061,17 @@ const debt = await getDebts('uuid-here');
   "debts": [
     {
       "id": "uuid-here",
-      "valor": 5000000,
-      "divisa": "COP",
-      "concepto": "Tarjeta de crédito",
-      "adeudado": 3000000,
-      "referencia": "TARJ-1234",
-      "fecha_corte": "2024-02-15",
-      "tasa_interes": 2.5,
-      "interes_en_mora": 5.0,
-      "pago_minimo": 150000,
-      "tiene_seguro": true,
-      "valor_seguro": 50000,
+      "value": 5000000,
+      "currency": "COP",
+      "concept": "Tarjeta de crédito",
+      "owed": 3000000,
+      "reference": "TARJ-1234",
+      "cut_date": "2024-02-15",
+      "interest_rate": 2.5,
+      "overdue_interest": 5.0,
+      "minimum_payment": 150000,
+      "has_insurance": true,
+      "insurance_value": 50000,
       "created_at": "2024-01-15T00:00:00.000Z",
       "updated_at": "2024-01-15T00:00:00.000Z"
     }
@@ -1069,7 +1079,7 @@ const debt = await getDebts('uuid-here');
 }
 ```
 
-**Nota:** Los resultados están ordenados por `fecha_corte` (descendente) y luego por `created_at` (descendente).
+**Nota:** Los resultados están ordenados por `cut_date` (descendente) y luego por `created_at` (descendente).
 
 ---
 
@@ -1093,31 +1103,31 @@ const updateDebt = async (debtId, updates) => {
 
 // Uso - actualizar solo el monto adeudado
 await updateDebt('uuid-here', {
-  adeudado: 2500000
+  owed: 2500000
 });
 
 // Uso - actualizar múltiples campos
 await updateDebt('uuid-here', {
-  adeudado: 2500000,
-  pago_minimo: 200000,
-  fecha_corte: "2024-03-15"
+  owed: 2500000,
+  minimum_payment: 200000,
+  cut_date: "2024-03-15"
 });
 ```
 
 **Request Body (todos los campos son opcionales, pero al menos uno es requerido):**
 ```json
 {
-  "valor": 5000000,
-  "divisa": "COP",
-  "concepto": "Tarjeta de crédito actualizada",
-  "adeudado": 2500000,
-  "referencia": "TARJ-1234",
-  "fecha_corte": "2024-03-15",
-  "tasa_interes": 3.0,
-  "interes_en_mora": 6.0,
-  "pago_minimo": 200000,
-  "tiene_seguro": false,
-  "valor_seguro": 0
+  "value": 5000000,
+  "currency": "COP",
+  "concept": "Tarjeta de crédito actualizada",
+  "owed": 2500000,
+  "reference": "TARJ-1234",
+  "cut_date": "2024-03-15",
+  "interest_rate": 3.0,
+  "overdue_interest": 6.0,
+  "minimum_payment": 200000,
+  "has_insurance": false,
+  "insurance_value": 0
 }
 ```
 
@@ -1152,6 +1162,450 @@ Eliminar todas las deudas.
 const deleteAllDebts = async () => {
   const response = await fetch(`${API_URL}/debts`, {
     method: 'DELETE',
+  });
+  return response.json();
+};
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+### Cards (Tarjetas de Débito)
+
+#### POST /cards
+Crear una nueva tarjeta de débito.
+
+**URL:** `POST ${API_URL}/cards`
+
+**Request Body:**
+```json
+{
+  "card_name": "Tarjeta Débito Principal",
+  "bank_account_id": "uuid-de-cuenta-bancaria",
+  "last_4_digits": "1234",
+  "expiration_date": "2025-12-31"
+}
+```
+
+**Ejemplo JavaScript:**
+```javascript
+const createCard = async (cardData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/cards`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(cardData),
+  });
+  return response.json();
+};
+
+// Uso
+const newCard = await createCard({
+  card_name: "Tarjeta Débito Principal",
+  bank_account_id: "uuid-de-cuenta-bancaria",
+  last_4_digits: "1234",
+  expiration_date: "2025-12-31"
+});
+```
+
+**Campos Requeridos:**
+- `card_name` - Nombre de la tarjeta (string, no vacío)
+- `bank_account_id` - ID de la cuenta bancaria asociada (UUID, debe pertenecer al usuario)
+- `last_4_digits` - Últimos 4 dígitos de la tarjeta (string, exactamente 4 dígitos)
+- `expiration_date` - Fecha de vencimiento en formato YYYY-MM-DD (no puede ser en el pasado)
+
+**Response (201):**
+```json
+{
+  "message": "Card created successfully",
+  "card": {
+    "id": "uuid-here",
+    "card_name": "Tarjeta Débito Principal",
+    "bank_account_id": "uuid-de-cuenta-bancaria",
+    "bank_account": {
+      "id": "uuid-de-cuenta-bancaria",
+      "account_name": "Cuenta Principal",
+      "bank": "Banco Nacional"
+    },
+    "last_4_digits": "1234",
+    "expiration_date": "2025-12-31",
+    "created_at": "2024-01-15T00:00:00.000Z",
+    "updated_at": "2024-01-15T00:00:00.000Z"
+  }
+}
+```
+
+---
+
+#### GET /cards
+Obtener tarjetas de débito.
+
+**URL:** `GET ${API_URL}/cards?id={uuid}` (opcional)
+
+**Ejemplo JavaScript:**
+```javascript
+const getCards = async (cardId = null) => {
+  const token = localStorage.getItem('authToken');
+  const url = cardId 
+    ? `${API_URL}/cards?id=${cardId}`
+    : `${API_URL}/cards`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todas las tarjetas
+const allCards = await getCards();
+
+// Obtener tarjeta específica
+const card = await getCards('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "cards": [
+    {
+      "id": "uuid-here",
+      "card_name": "Tarjeta Débito Principal",
+      "bank_account_id": "uuid-de-cuenta-bancaria",
+      "bank_account": {
+        "id": "uuid-de-cuenta-bancaria",
+        "account_name": "Cuenta Principal",
+        "bank": "Banco Nacional",
+        "currency": "COP"
+      },
+      "last_4_digits": "1234",
+      "expiration_date": "2025-12-31",
+      "created_at": "2024-01-15T00:00:00.000Z",
+      "updated_at": "2024-01-15T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+**Nota:** Los resultados están ordenados por `expiration_date` (ascendente) y luego por `created_at` (descendente).
+
+---
+
+#### PUT /cards/{id}
+Actualizar una tarjeta específica.
+
+**URL:** `PUT ${API_URL}/cards/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const updateCard = async (cardId, updates) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/cards/${cardId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(updates),
+  });
+  return response.json();
+};
+
+// Uso - actualizar solo la fecha de vencimiento
+await updateCard('uuid-here', {
+  expiration_date: "2026-12-31"
+});
+
+// Uso - actualizar múltiples campos
+await updateCard('uuid-here', {
+  card_name: "Tarjeta Débito Actualizada",
+  bank_account_id: "nueva-cuenta-uuid",
+  last_4_digits: "5678"
+});
+```
+
+**Request Body (todos los campos son opcionales, pero al menos uno es requerido):**
+```json
+{
+  "card_name": "Tarjeta Débito Actualizada",
+  "bank_account_id": "nueva-cuenta-uuid",
+  "last_4_digits": "5678",
+  "expiration_date": "2026-12-31"
+}
+```
+
+**Nota:** Si actualizas `bank_account_id`, la nueva cuenta bancaria debe pertenecer al usuario autenticado.
+
+---
+
+#### DELETE /cards/{id}
+Eliminar una tarjeta específica.
+
+**URL:** `DELETE ${API_URL}/cards/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteCard = async (cardId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/cards/${cardId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+#### DELETE /cards
+Eliminar todas las tarjetas.
+
+**URL:** `DELETE ${API_URL}/cards`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllCards = async () => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/cards`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+### Subscriptions (Suscripciones Activas)
+
+#### POST /subscriptions
+Crear una nueva suscripción activa.
+
+**URL:** `POST ${API_URL}/subscriptions`
+
+**Request Body:**
+```json
+{
+  "name": "Netflix",
+  "price": 15.99,
+  "cut_date": "2024-02-15",
+  "card_id": "uuid-de-tarjeta",
+  "is_family": false
+}
+```
+
+**Ejemplo JavaScript:**
+```javascript
+const createSubscription = async (subscriptionData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/subscriptions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(subscriptionData),
+  });
+  return response.json();
+};
+
+// Uso
+const newSubscription = await createSubscription({
+  name: "Netflix",
+  price: 15.99,
+  cut_date: "2024-02-15",
+  card_id: "uuid-de-tarjeta",
+  is_family: false
+});
+```
+
+**Campos Requeridos:**
+- `name` - Nombre de la suscripción (string, no vacío)
+- `price` - Precio de la suscripción (número positivo)
+- `cut_date` - Fecha de corte en formato YYYY-MM-DD
+- `card_id` - ID de la tarjeta de débito asociada (debe pertenecer al usuario)
+
+**Campos Opcionales:**
+- `is_family` - Indica si la suscripción es familiar (boolean, default: false)
+
+**Response (201):**
+```json
+{
+  "message": "Subscription created successfully",
+  "subscription": {
+    "id": "uuid-here",
+    "name": "Netflix",
+    "price": 15.99,
+    "cut_date": "2024-02-15",
+    "card_id": "uuid-de-tarjeta",
+    "is_family": false,
+    "created_at": "2024-01-15T00:00:00.000Z",
+    "updated_at": "2024-01-15T00:00:00.000Z"
+  }
+}
+```
+
+---
+
+#### GET /subscriptions
+Obtener suscripciones activas.
+
+**URL:** `GET ${API_URL}/subscriptions?id={uuid}` (opcional)
+
+**Ejemplo JavaScript:**
+```javascript
+const getSubscriptions = async (subscriptionId = null) => {
+  const token = localStorage.getItem('authToken');
+  const url = subscriptionId 
+    ? `${API_URL}/subscriptions?id=${subscriptionId}`
+    : `${API_URL}/subscriptions`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todas las suscripciones
+const allSubscriptions = await getSubscriptions();
+
+// Obtener suscripción específica
+const subscription = await getSubscriptions('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "subscriptions": [
+    {
+      "id": "uuid-here",
+      "name": "Netflix",
+      "price": 15.99,
+      "cut_date": "2024-02-15",
+      "card_id": "uuid-de-tarjeta",
+      "is_family": false,
+      "card": {
+        "id": "uuid-de-tarjeta",
+        "card_name": "Tarjeta Débito Principal",
+        "issuing_bank": "Banco Nacional",
+        "last_4_digits": "1234",
+        "expiration_date": "2025-12-31"
+      },
+      "created_at": "2024-01-15T00:00:00.000Z",
+      "updated_at": "2024-01-15T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+**Nota:** Los resultados incluyen información de la tarjeta asociada y están ordenados por `cut_date` (ascendente) y luego por `created_at` (descendente).
+
+---
+
+#### PUT /subscriptions/{id}
+Actualizar una suscripción específica.
+
+**URL:** `PUT ${API_URL}/subscriptions/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const updateSubscription = async (subscriptionId, updates) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/subscriptions/${subscriptionId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(updates),
+  });
+  return response.json();
+};
+
+// Uso - actualizar solo el precio
+await updateSubscription('uuid-here', {
+  price: 19.99
+});
+
+// Uso - actualizar múltiples campos
+await updateSubscription('uuid-here', {
+  name: "Netflix Premium",
+  price: 19.99,
+  cut_date: "2024-03-15",
+  card_id: "nueva-tarjeta-uuid",
+  is_family: true
+});
+```
+
+**Request Body (todos los campos son opcionales, pero al menos uno es requerido):**
+```json
+{
+  "name": "Netflix Premium",
+  "price": 19.99,
+  "cut_date": "2024-03-15",
+  "card_id": "nueva-tarjeta-uuid",
+  "is_family": true
+}
+```
+
+**Nota:** Si actualizas `card_id`, la nueva tarjeta debe pertenecer al usuario autenticado.
+
+---
+
+#### DELETE /subscriptions/{id}
+Eliminar una suscripción específica.
+
+**URL:** `DELETE ${API_URL}/subscriptions/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteSubscription = async (subscriptionId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/subscriptions/${subscriptionId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+#### DELETE /subscriptions
+Eliminar todas las suscripciones.
+
+**URL:** `DELETE ${API_URL}/subscriptions`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllSubscriptions = async () => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/subscriptions`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
   });
   return response.json();
 };
@@ -1389,9 +1843,13 @@ const handleApiCall = async (apiFunction) => {
 
 9. **UUIDs**: Todos los IDs son UUIDs (identificadores únicos universales).
 
-10. **Deudas**: Las deudas permiten gestionar obligaciones financieras con información detallada sobre tasas de interés, pagos mínimos, seguros y fechas de corte. Los campos numéricos deben ser valores positivos y las fechas deben estar en formato `YYYY-MM-DD`.
+10. **Deudas**: Las deudas permiten gestionar obligaciones financieras con información detallada sobre tasas de interés, pagos mínimos, seguros y fechas de corte. Los campos numéricos deben ser valores positivos y las fechas deben estar en formato `YYYY-MM-DD`. Los nombres de campos están en inglés: `value`, `currency`, `concept`, `owed`, `reference`, `cut_date`, `interest_rate`, `overdue_interest`, `minimum_payment`, `has_insurance`, `insurance_value`.
 
-11. **Autenticación**: 
+11. **Tarjetas de Débito**: Las tarjetas permiten almacenar información de tarjetas de débito asociadas a una cuenta bancaria. El campo `bank_account_id` debe referenciar una cuenta bancaria que pertenezca al usuario autenticado. El campo `last_4_digits` debe ser exactamente 4 dígitos y la fecha de vencimiento (`expiration_date`) no puede ser en el pasado. Los nombres de campos están en inglés: `card_name`, `bank_account_id`, `last_4_digits`, `expiration_date`. Las respuestas incluyen información de la cuenta bancaria asociada.
+
+12. **Suscripciones Activas**: Las suscripciones permiten gestionar servicios de suscripción activos con nombre, precio, fecha de corte, tarjeta de débito asociada y si es familiar o no. El `card_id` debe referenciar una tarjeta que pertenezca al usuario autenticado. El campo `is_family` es opcional (default: false) e indica si la suscripción es familiar. Los nombres de campos están en inglés: `name`, `price`, `cut_date`, `is_family`. Las suscripciones incluyen información de la tarjeta asociada en las respuestas GET.
+
+13. **Autenticación**: 
     - **⚠️ REQUERIDA**: Todos los endpoints requieren autenticación JWT, excepto `/auth/register` y `/auth/login`.
     - **Registro**: El `password_hash` debe ser generado en el cliente usando bcrypt antes de enviarlo al servidor.
     - **Login**: El password se envía en texto plano y el servidor lo hashea para comparar con el hash almacenado.
@@ -1400,39 +1858,64 @@ const handleApiCall = async (apiFunction) => {
     - **Errores 401**: Si recibes un 401, el token es inválido o expirado. Redirige al usuario al login.
     - **JWT_TOKEN_PASSPHRASE**: Debe configurarse en el archivo `.env` para firmar y verificar tokens.
 
+14. **🔒 Aislamiento de Datos por Usuario**:
+    - **Filtrado Automático**: Todos los endpoints filtran automáticamente los datos por el usuario autenticado usando el token JWT.
+    - **Sin `user_id` Requerido**: No necesitas pasar `user_id` en los requests; el sistema lo obtiene automáticamente del token.
+    - **Asignación Automática**: Los nuevos registros (cuentas bancarias, presupuestos, transacciones, deudas, tarjetas, suscripciones) se asignan automáticamente al usuario autenticado.
+    - **Seguridad**: Cada usuario solo puede ver, crear, actualizar y eliminar sus propios datos. Si intentas acceder a datos de otro usuario, recibirás un error 404.
+    - **Exchange Rates Globales**: Los exchange rates son compartidos entre todos los usuarios y no requieren filtrado por usuario.
+    - **Transacciones**: Al crear una transacción, el sistema verifica automáticamente que la cuenta bancaria y el presupuesto (si aplica) pertenezcan al usuario autenticado.
+
 ## Ejemplo de Cliente API Completo
 
 ```javascript
-// api.ts (TypeScript) o api.js (JavaScript)
-// Por defecto usa la URL de producción (AWS)
-// Para desarrollo local, configurar VITE_API_URL en el archivo .env
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://x1bom9m0bd.execute-api.us-east-1.amazonaws.com/dev';
+// api.js
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 
 class PocketsAPI {
-  private baseURL: string;
-
-  constructor(baseURL: string) {
+  constructor(baseURL) {
     this.baseURL = baseURL;
+    this.token = null;
   }
 
-  private getToken(): string | null {
-    return localStorage.getItem('authToken');
+  // Método para establecer el token de autenticación
+  setToken(token) {
+    this.token = token;
+    if (token) {
+      localStorage.setItem('authToken', token);
+    } else {
+      localStorage.removeItem('authToken');
+    }
   }
 
-  private async request(endpoint: string, options: RequestInit = {}) {
+  // Método para obtener el token desde localStorage
+  getToken() {
+    if (!this.token) {
+      this.token = localStorage.getItem('authToken');
+    }
+    return this.token;
+  }
+
+  async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
-    const token = this.getToken();
     
-    const config: RequestInit = {
+    // Determinar si el endpoint requiere autenticación
+    const requiresAuth = !endpoint.startsWith('/auth/register') && 
+                        !endpoint.startsWith('/auth/login');
+    
+    // Obtener token si es necesario
+    const token = requiresAuth ? this.getToken() : null;
+    
+    const config = {
       headers: {
         'Content-Type': 'application/json',
-        ...(token && !endpoint.startsWith('/auth/') && { 'Authorization': `Bearer ${token}` }),
+        ...(token && requiresAuth && { 'Authorization': `Bearer ${token}` }),
         ...options.headers,
       },
       ...options,
     };
 
-    if (config.body && typeof config.body === 'object' && !(config.body instanceof FormData)) {
+    if (config.body && typeof config.body === 'object') {
       config.body = JSON.stringify(config.body);
     }
 
@@ -1440,44 +1923,31 @@ class PocketsAPI {
       const response = await fetch(url, config);
       const data = await response.json();
 
+      // Manejar errores de autenticación
+      if (response.status === 401) {
+        // Token inválido o expirado
+        this.setToken(null);
+        throw { 
+          response, 
+          data: { 
+            ...data,
+            message: 'Authentication failed. Please login again.',
+            requiresLogin: true
+          } 
+        };
+      }
+
       if (!response.ok) {
         throw { response, data };
       }
 
       return data;
-    } catch (error: any) {
+    } catch (error) {
       if (error.response) {
         throw error;
       }
-      throw { response: null, data: { error: 'Error de conexión', details: { message: error.message } } };
+      throw { response: null, data: { error: 'Error de conexión' } };
     }
-  }
-
-  // Authentication
-  async login(username: string, password: string) {
-    const result = await this.request('/auth/login', {
-      method: 'POST',
-      body: { username, password },
-    });
-    
-    // Guardar token automáticamente después del login
-    if (result.token) {
-      localStorage.setItem('authToken', result.token);
-      if (result.expires_at) {
-        localStorage.setItem('tokenExpiresAt', result.expires_at);
-      }
-    }
-    
-    return result;
-  }
-
-  logout() {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('tokenExpiresAt');
-  }
-
-  isAuthenticated(): boolean {
-    return !!this.getToken();
   }
 
   // Bank Accounts
@@ -1624,6 +2094,70 @@ class PocketsAPI {
     });
   }
 
+  // Cards
+  async createCard(data) {
+    return this.request('/cards', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  async getCards(cardId = null) {
+    const endpoint = cardId ? `/cards?id=${cardId}` : '/cards';
+    return this.request(endpoint);
+  }
+
+  async updateCard(cardId, updates) {
+    return this.request(`/cards/${cardId}`, {
+      method: 'PUT',
+      body: updates,
+    });
+  }
+
+  async deleteCard(cardId) {
+    return this.request(`/cards/${cardId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async deleteAllCards() {
+    return this.request('/cards', {
+      method: 'DELETE',
+    });
+  }
+
+  // Subscriptions
+  async createSubscription(data) {
+    return this.request('/subscriptions', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  async getSubscriptions(subscriptionId = null) {
+    const endpoint = subscriptionId ? `/subscriptions?id=${subscriptionId}` : '/subscriptions';
+    return this.request(endpoint);
+  }
+
+  async updateSubscription(subscriptionId, updates) {
+    return this.request(`/subscriptions/${subscriptionId}`, {
+      method: 'PUT',
+      body: updates,
+    });
+  }
+
+  async deleteSubscription(subscriptionId) {
+    return this.request(`/subscriptions/${subscriptionId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async deleteAllSubscriptions() {
+    return this.request('/subscriptions', {
+      method: 'DELETE',
+    });
+  }
+
   // Authentication
   async register(userData) {
     return this.request('/auth/register', {
@@ -1659,7 +2193,7 @@ class PocketsAPI {
 }
 
 // Exportar instancia
-export const api = new PocketsAPI(API_BASE_URL);
+export const api = new PocketsAPI(API_URL);
 ```
 
 **Uso del cliente:**

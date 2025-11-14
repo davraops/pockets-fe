@@ -43,6 +43,7 @@ interface BankAccount {
 
 function Cuentas() {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null)
@@ -493,12 +494,36 @@ function Cuentas() {
         const mappedAccounts = response.accounts.map(mapAccountFromAPI)
         setAccounts(mappedAccounts)
       }
+      setIsDebugModalOpen(false)
       alert('10 cuentas de prueba creadas exitosamente')
     } catch (err: any) {
       console.error('Error al crear cuentas de prueba:', err)
       alert('Error al crear cuentas de prueba: ' + (err.data?.error || 'Error desconocido'))
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  // Función de debug para borrar todas las cuentas
+  const handleDeleteAllAccounts = async () => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar TODAS las cuentas? Esta acción es IRREVERSIBLE.')) {
+      try {
+        setIsLoading(true)
+        await api.deleteAllBankAccounts()
+        // Recargar cuentas después de borrar todas
+        const response = await api.getBankAccounts()
+        if (response.accounts && Array.isArray(response.accounts)) {
+          const mappedAccounts = response.accounts.map(mapAccountFromAPI)
+          setAccounts(mappedAccounts)
+        }
+        setIsDebugModalOpen(false)
+        alert('Todas las cuentas han sido eliminadas exitosamente')
+      } catch (err: any) {
+        console.error('Error al eliminar todas las cuentas:', err)
+        alert('Error al eliminar cuentas: ' + (err.data?.error || 'Error desconocido'))
+      } finally {
+        setIsLoading(false)
+      }
     }
   }
 
@@ -544,9 +569,11 @@ function Cuentas() {
                   <AddIcon />
                   <span>Agregar Cuenta</span>
                 </button>
-                <button className="debug-button" onClick={handleDebugCreateAccounts} title="Debug: Crear 10 cuentas de prueba">
-                  🐛 Debug
-                </button>
+                {api.isTestUser() && (
+                  <button className="debug-button" onClick={() => setIsDebugModalOpen(true)} title="Debug: Opciones de desarrollo">
+                    🐛 Debug
+                  </button>
+                )}
               </div>
 
               {accounts.length === 0 ? (
@@ -811,6 +838,53 @@ function Cuentas() {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Debug */}
+      {isDebugModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Debug - Cuentas</h2>
+              <button className="modal-close" onClick={() => setIsDebugModalOpen(false)}>×</button>
+            </div>
+            <div className="debug-modal-content">
+              <div className="debug-options">
+                <button
+                  className="debug-option-button create-demo"
+                  onClick={handleDebugCreateAccounts}
+                  disabled={isLoading}
+                >
+                  <span className="debug-option-icon">📦</span>
+                  <div className="debug-option-info">
+                    <h3 className="debug-option-title">Crear Cuentas Demo</h3>
+                    <p className="debug-option-description">Crea 10 cuentas de ejemplo para pruebas</p>
+                  </div>
+                </button>
+                <button
+                  className="debug-option-button delete-all"
+                  onClick={handleDeleteAllAccounts}
+                  disabled={isLoading}
+                >
+                  <span className="debug-option-icon">🗑️</span>
+                  <div className="debug-option-info">
+                    <h3 className="debug-option-title">Eliminar Todas las Cuentas</h3>
+                    <p className="debug-option-description">⚠️ PELIGROSO: Elimina todas las cuentas (IRREVERSIBLE)</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="modal-button cancel"
+                onClick={() => setIsDebugModalOpen(false)}
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -3,6 +3,7 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
 import CalculateIcon from '@mui/icons-material/Calculate'
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz'
 import CreditCardIcon from '@mui/icons-material/CreditCard'
+import PaymentIcon from '@mui/icons-material/Payment'
 import type { SvgIconComponent } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 
@@ -42,6 +43,13 @@ const financeItems: FinanceItem[] = [
     Icon: CreditCardIcon,
     color: '#FF3B30',
     path: '/finanzas/deudas'
+  },
+  {
+    id: '5',
+    title: 'Tarjetas Débito',
+    Icon: PaymentIcon,
+    color: '#5856D6',
+    path: '/finanzas/tarjetas-debito'
   }
 ]
 

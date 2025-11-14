@@ -259,6 +259,51 @@ function Transacciones() {
     }
   }
 
+  // Función para recargar transacciones
+  const reloadTransactions = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const transactionsResponse = await api.getTransactions()
+      const accountsResponse = await api.getBankAccounts()
+      const budgetsResponse = await api.getBudgets()
+
+      const accountsList: BankAccount[] = []
+      if (accountsResponse.accounts && Array.isArray(accountsResponse.accounts)) {
+        accountsResponse.accounts.forEach((acc: any) => {
+          accountsList.push({ id: acc.id, nombre: acc.account_name })
+        })
+      }
+      setAccounts(accountsList)
+      const accountsMap = new Map(accountsList.map(acc => [acc.id, acc.nombre]))
+
+      const budgetsList: Budget[] = []
+      if (budgetsResponse.budgets && Array.isArray(budgetsResponse.budgets)) {
+        budgetsResponse.budgets.forEach((bud: any) => {
+          budgetsList.push({ id: bud.id, nombre: bud.name })
+        })
+      }
+      setBudgets(budgetsList)
+      const budgetsMap = new Map(budgetsList.map(bud => [bud.id, bud.nombre]))
+
+      if (transactionsResponse.transactions && Array.isArray(transactionsResponse.transactions)) {
+        const mappedTransactions = transactionsResponse.transactions.map((tx: TransactionAPI) =>
+          mapTransactionFromAPI(tx, accountsMap, budgetsMap)
+        )
+        mappedTransactions.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
+        setTransactions(mappedTransactions)
+      } else {
+        setTransactions([])
+      }
+    } catch (err: any) {
+      console.error('Error al cargar transacciones:', err)
+      setError('Error al cargar las transacciones. Por favor, intenta de nuevo.')
+      setTransactions([])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const validateForm = (): boolean => {
     const errors = {
       monto: '',
@@ -350,40 +395,13 @@ function Transacciones() {
             // Por ahora asumimos que están en la misma moneda
             const nuevoAdeudado = Math.max(0, selectedDebt.adeudado - montoPago)
             await api.updateDebt(formData.debtId, {
-              adeudado: nuevoAdeudado
+              owed: nuevoAdeudado
             })
           }
         }
 
         // Recargar transacciones después de crear
-        const transactionsResponse = await api.getTransactions()
-        const accountsResponse = await api.getBankAccounts()
-        const budgetsResponse = await api.getBudgets()
-
-        const accountsList: BankAccount[] = []
-        if (accountsResponse.accounts && Array.isArray(accountsResponse.accounts)) {
-          accountsResponse.accounts.forEach((acc: any) => {
-            accountsList.push({ id: acc.id, nombre: acc.account_name })
-          })
-        }
-        const accountsMap = new Map(accountsList.map(acc => [acc.id, acc.nombre]))
-
-        const budgetsList: Budget[] = []
-        if (budgetsResponse.budgets && Array.isArray(budgetsResponse.budgets)) {
-          budgetsResponse.budgets.forEach((bud: any) => {
-            budgetsList.push({ id: bud.id, nombre: bud.name })
-          })
-        }
-        const budgetsMap = new Map(budgetsList.map(bud => [bud.id, bud.nombre]))
-
-        if (transactionsResponse.transactions && Array.isArray(transactionsResponse.transactions)) {
-          const mappedTransactions = transactionsResponse.transactions.map((tx: TransactionAPI) =>
-            mapTransactionFromAPI(tx, accountsMap, budgetsMap)
-          )
-          mappedTransactions.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
-          setTransactions(mappedTransactions)
-        }
-
+        await reloadTransactions()
         handleCloseModal()
       }
     } catch (err: any) {
