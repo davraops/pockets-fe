@@ -5,6 +5,7 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
+import WarningIcon from '@mui/icons-material/Warning'
 import { api } from '../services/api'
 import './AppPage.css'
 import './Transacciones.css'
@@ -56,6 +57,15 @@ interface Debt {
   divisa: string
 }
 
+interface CreditCard {
+  id: string
+  nombre: string
+  banco: string
+  cupoTotal: number
+  cupoUsado: number
+  cupoDisponible: number
+}
+
 function Transacciones() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
@@ -64,6 +74,7 @@ function Transacciones() {
   const [accounts, setAccounts] = useState<BankAccount[]>([])
   const [budgets, setBudgets] = useState<Budget[]>([])
   const [debts, setDebts] = useState<Debt[]>([])
+  const [creditCards, setCreditCards] = useState<CreditCard[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
@@ -76,7 +87,9 @@ function Transacciones() {
     cuentaBancariaId: '',
     presupuestoId: '',
     isDebtPayment: false,
-    debtId: ''
+    debtId: '',
+    isCreditCardPayment: false,
+    creditCardId: ''
   })
   const [formErrors, setFormErrors] = useState({
     monto: '',
@@ -84,7 +97,8 @@ function Transacciones() {
     categoria: '',
     cuentaBancariaId: '',
     presupuestoId: '',
-    debtId: ''
+    debtId: '',
+    creditCardId: ''
   })
 
   // Mapear transacción de API a formato interno
@@ -142,13 +156,32 @@ function Transacciones() {
           debtsResponse.debts.forEach((debt: any) => {
             debtsList.push({ 
               id: debt.id, 
-              concepto: debt.concepto,
-              adeudado: debt.adeudado,
-              divisa: debt.divisa
+              concepto: debt.concept || debt.concepto,
+              adeudado: debt.owed || debt.adeudado,
+              divisa: debt.currency || debt.divisa
             })
           })
         }
         setDebts(debtsList)
+
+        // Cargar tarjetas de crédito
+        const creditCardsResponse = await api.getCreditCards()
+        const creditCardsList: CreditCard[] = []
+        if (creditCardsResponse.credit_cards && Array.isArray(creditCardsResponse.credit_cards)) {
+          creditCardsResponse.credit_cards.forEach((card: any) => {
+            const cupoTotal = card.credit_limit || 0
+            const cupoUsado = card.used_credit || 0
+            creditCardsList.push({
+              id: card.id,
+              nombre: card.name,
+              banco: card.bank,
+              cupoTotal,
+              cupoUsado,
+              cupoDisponible: cupoTotal - cupoUsado
+            })
+          })
+        }
+        setCreditCards(creditCardsList)
 
         // Mapear transacciones
         if (transactionsResponse.transactions && Array.isArray(transactionsResponse.transactions)) {
@@ -187,7 +220,9 @@ function Transacciones() {
       cuentaBancariaId: '',
       presupuestoId: '',
       isDebtPayment: false,
-      debtId: ''
+      debtId: '',
+      isCreditCardPayment: false,
+      creditCardId: ''
     })
     setFormErrors({
       monto: '',
@@ -195,7 +230,8 @@ function Transacciones() {
       categoria: '',
       cuentaBancariaId: '',
       presupuestoId: '',
-      debtId: ''
+      debtId: '',
+      creditCardId: ''
     })
   }
 
@@ -213,7 +249,9 @@ function Transacciones() {
       cuentaBancariaId: '',
       presupuestoId: '',
       isDebtPayment: false,
-      debtId: ''
+      debtId: '',
+      isCreditCardPayment: false,
+      creditCardId: ''
     })
     setFormErrors({
       monto: '',
@@ -221,7 +259,8 @@ function Transacciones() {
       categoria: '',
       cuentaBancariaId: '',
       presupuestoId: '',
-      debtId: ''
+      debtId: '',
+      creditCardId: ''
     })
   }
 
@@ -239,7 +278,9 @@ function Transacciones() {
       cuentaBancariaId: transaction.cuentaBancariaId,
       presupuestoId: transaction.presupuestoId || '',
       isDebtPayment: false,
-      debtId: ''
+      debtId: '',
+      isCreditCardPayment: false,
+      creditCardId: ''
     })
   }
 
@@ -267,6 +308,8 @@ function Transacciones() {
       const transactionsResponse = await api.getTransactions()
       const accountsResponse = await api.getBankAccounts()
       const budgetsResponse = await api.getBudgets()
+      const debtsResponse = await api.getDebts()
+      const creditCardsResponse = await api.getCreditCards()
 
       const accountsList: BankAccount[] = []
       if (accountsResponse.accounts && Array.isArray(accountsResponse.accounts)) {
@@ -285,6 +328,38 @@ function Transacciones() {
       }
       setBudgets(budgetsList)
       const budgetsMap = new Map(budgetsList.map(bud => [bud.id, bud.nombre]))
+
+      // Recargar deudas
+      const debtsList: Debt[] = []
+      if (debtsResponse.debts && Array.isArray(debtsResponse.debts)) {
+        debtsResponse.debts.forEach((debt: any) => {
+          debtsList.push({ 
+            id: debt.id, 
+            concepto: debt.concept || debt.concepto,
+            adeudado: debt.owed || debt.adeudado,
+            divisa: debt.currency || debt.divisa
+          })
+        })
+      }
+      setDebts(debtsList)
+
+      // Recargar tarjetas de crédito
+      const creditCardsList: CreditCard[] = []
+      if (creditCardsResponse.credit_cards && Array.isArray(creditCardsResponse.credit_cards)) {
+        creditCardsResponse.credit_cards.forEach((card: any) => {
+          const cupoTotal = card.credit_limit || 0
+          const cupoUsado = card.used_credit || 0
+          creditCardsList.push({
+            id: card.id,
+            nombre: card.name,
+            banco: card.bank,
+            cupoTotal,
+            cupoUsado,
+            cupoDisponible: cupoTotal - cupoUsado
+          })
+        })
+      }
+      setCreditCards(creditCardsList)
 
       if (transactionsResponse.transactions && Array.isArray(transactionsResponse.transactions)) {
         const mappedTransactions = transactionsResponse.transactions.map((tx: TransactionAPI) =>
@@ -333,22 +408,36 @@ function Transacciones() {
       isValid = false
     }
 
-    // Validar cuenta bancaria
-    if (!formData.cuentaBancariaId) {
+    // Validar cuenta bancaria (solo si no es pago con tarjeta de crédito)
+    if (!formData.isCreditCardPayment && !formData.cuentaBancariaId) {
       errors.cuentaBancariaId = 'Debes seleccionar una cuenta bancaria'
       isValid = false
     }
 
-    // Validar presupuesto para egresos (solo si no es pago de deuda)
-    if (formData.tipo === 'egreso' && !formData.isDebtPayment && !formData.presupuestoId) {
-      errors.presupuestoId = 'Los egresos requieren un presupuesto'
-      isValid = false
-    }
+    // El presupuesto ya no es obligatorio para egresos (el backend ahora lo permite)
 
     // Validar deuda si es pago de deuda
     if (formData.tipo === 'egreso' && formData.isDebtPayment && !formData.debtId) {
       errors.debtId = 'Debes seleccionar una deuda'
       isValid = false
+    }
+
+    // Validar tarjeta de crédito si es pago con tarjeta
+    if (formData.tipo === 'egreso' && formData.isCreditCardPayment && !formData.creditCardId) {
+      errors.creditCardId = 'Debes seleccionar una tarjeta de crédito'
+      isValid = false
+    }
+
+    // Validar cupo disponible si es pago con tarjeta de crédito
+    if (formData.tipo === 'egreso' && formData.isCreditCardPayment && formData.creditCardId) {
+      const selectedCard = creditCards.find(c => c.id === formData.creditCardId)
+      if (selectedCard) {
+        const monto = parseFloat(formData.monto)
+        if (monto > selectedCard.cupoDisponible) {
+          errors.creditCardId = `Cupo insuficiente. Disponible: ${formatBalance(selectedCard.cupoDisponible, formData.moneda)}`
+          isValid = false
+        }
+      }
     }
 
     setFormErrors(errors)
@@ -369,14 +458,33 @@ function Transacciones() {
         amount: parseFloat(formData.monto),
         description: formData.descripcion.trim(),
         category: formData.categoria.trim(),
-        currency: formData.moneda,
-        bank_account_id: formData.cuentaBancariaId
+        currency: formData.moneda
       }
 
-      // Solo agregar budget_id para egresos (si no es pago de deuda)
-      if (formData.tipo === 'egreso' && !formData.isDebtPayment && formData.presupuestoId) {
-        transactionData.budget_id = formData.presupuestoId
+      // Solo agregar bank_account_id si no es pago con tarjeta de crédito
+      if (!formData.isCreditCardPayment) {
+        transactionData.bank_account_id = formData.cuentaBancariaId
+      } else {
+        // Si es pago con tarjeta de crédito, usar una cuenta bancaria por defecto o la primera disponible
+        // Nota: El backend podría requerir bank_account_id, así que usamos la primera cuenta disponible
+        if (accounts.length > 0) {
+          transactionData.bank_account_id = accounts[0].id
+        }
       }
+
+      // Solo agregar budget_id si existe un presupuesto seleccionado (ya no es obligatorio)
+      // Para egresos sin presupuesto, enviar null explícitamente si el backend lo requiere
+      if (formData.tipo === 'egreso') {
+        if (formData.presupuestoId && formData.presupuestoId.trim() !== '') {
+          transactionData.budget_id = formData.presupuestoId
+        } else {
+          // Para egresos sin presupuesto, enviar null explícitamente
+          transactionData.budget_id = null
+        }
+      }
+      // Los ingresos no deben tener budget_id
+
+      console.log('Datos de transacción a enviar:', JSON.stringify(transactionData, null, 2))
 
       if (isEditMode && selectedTransaction) {
         // Nota: La API no tiene PUT, pero podemos implementarlo si existe
@@ -397,6 +505,34 @@ function Transacciones() {
             await api.updateDebt(formData.debtId, {
               owed: nuevoAdeudado
             })
+            // Disparar evento para actualizar tarjetas de crédito
+            window.dispatchEvent(new Event('debtsUpdated'))
+          }
+        }
+
+        // Si es un pago con tarjeta de crédito, actualizar la deuda asociada y el cupo de la tarjeta
+        if (formData.tipo === 'egreso' && formData.isCreditCardPayment && formData.creditCardId) {
+          const selectedCard = creditCards.find(c => c.id === formData.creditCardId)
+          if (selectedCard) {
+            const montoPago = parseFloat(formData.monto)
+            
+            // Incrementar el cupo usado de la tarjeta
+            const nuevoCupoUsado = selectedCard.cupoUsado + montoPago
+            await api.updateCreditCard(formData.creditCardId, {
+              used_credit: nuevoCupoUsado
+            })
+
+            // Buscar la deuda asociada por concepto (nombre de la tarjeta)
+            const associatedDebt = debts.find(d => d.concepto === selectedCard.nombre)
+            if (associatedDebt) {
+              // Incrementar el monto adeudado
+              const nuevoAdeudado = associatedDebt.adeudado + montoPago
+              await api.updateDebt(associatedDebt.id, {
+                owed: nuevoAdeudado
+              })
+              // Disparar evento para actualizar tarjetas de crédito
+              window.dispatchEvent(new Event('debtsUpdated'))
+            }
           }
         }
 
@@ -442,18 +578,42 @@ function Transacciones() {
         tipo: 'ingreso',
         presupuestoId: '',
         isDebtPayment: false,
-        debtId: ''
+        debtId: '',
+        isCreditCardPayment: false,
+        creditCardId: ''
       }))
     }
     
-    // Si se activa el toggle de pago de deuda, limpiar el presupuesto
-    if (name === 'isDebtPayment' && checked) {
-      setFormData(prev => ({
-        ...prev,
-        isDebtPayment: true,
-        presupuestoId: ''
-      }))
-    }
+      // Si se activa el toggle de pago de deuda, limpiar el presupuesto y tarjeta de crédito
+      if (name === 'isDebtPayment' && checked) {
+        setFormData(prev => ({
+          ...prev,
+          isDebtPayment: true,
+          presupuestoId: '',
+          isCreditCardPayment: false,
+          creditCardId: ''
+        }))
+      }
+
+      // Si se activa el toggle de pago con tarjeta de crédito, limpiar el presupuesto y pago de deuda
+      if (name === 'isCreditCardPayment' && checked) {
+        setFormData(prev => ({
+          ...prev,
+          isCreditCardPayment: true,
+          presupuestoId: '',
+          isDebtPayment: false,
+          debtId: ''
+        }))
+      }
+
+      // Si se desactiva el toggle de pago con tarjeta de crédito, limpiar la tarjeta seleccionada
+      if (name === 'isCreditCardPayment' && !checked) {
+        setFormData(prev => ({
+          ...prev,
+          isCreditCardPayment: false,
+          creditCardId: ''
+        }))
+      }
     
     // Limpiar errores cuando el usuario empiece a escribir
     if (formErrors[name as keyof typeof formErrors]) {
@@ -714,28 +874,85 @@ function Transacciones() {
                   <option value="EUR">EUR</option>
                 </select>
               </div>
-              <div className="form-group">
-                <label htmlFor="cuentaBancariaId">Cuenta Bancaria</label>
-                <select
-                  id="cuentaBancariaId"
-                  name="cuentaBancariaId"
-                  value={formData.cuentaBancariaId}
-                  onChange={handleChange}
-                  required
-                  className={formErrors.cuentaBancariaId ? 'input-error form-select' : 'form-select'}
-                >
-                  <option value="">Selecciona una cuenta</option>
-                  {accounts.map((account) => (
-                    <option key={account.id} value={account.id}>
-                      {account.nombre}
-                    </option>
-                  ))}
-                </select>
-                {formErrors.cuentaBancariaId && (
-                  <span className="error-message">{formErrors.cuentaBancariaId}</span>
-                )}
-              </div>
               {formData.tipo === 'egreso' && (
+                <div className="form-group checkbox-group">
+                  <label htmlFor="isCreditCardPayment" className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      id="isCreditCardPayment"
+                      name="isCreditCardPayment"
+                      checked={formData.isCreditCardPayment}
+                      onChange={handleChange}
+                    />
+                    <span>¿Es un pago con tarjeta de crédito?</span>
+                  </label>
+                </div>
+              )}
+              
+              {formData.tipo === 'egreso' && formData.isCreditCardPayment && (
+                <div className="credit-card-warning">
+                  <div className="warning-header">
+                    <WarningIcon className="warning-icon" />
+                    <h4 className="warning-title">Advertencia sobre Tarjetas de Crédito</h4>
+                  </div>
+                  <div className="warning-content">
+                    <p className="warning-text">
+                      Los pagos con tarjeta de crédito son para casos de emergencia y no para lujos o minipréstamos. 
+                      No están presupuestados y el abuso de ellos puede llevar a la quiebra.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {formData.tipo === 'egreso' && formData.isCreditCardPayment && creditCards.length > 0 && (
+                <div className="form-group">
+                  <label htmlFor="creditCardId">Tarjeta de Crédito</label>
+                  <select
+                    id="creditCardId"
+                    name="creditCardId"
+                    value={formData.creditCardId}
+                    onChange={handleChange}
+                    required
+                    className={formErrors.creditCardId ? 'input-error form-select' : 'form-select'}
+                  >
+                    <option value="">Selecciona una tarjeta</option>
+                    {creditCards.map((card) => (
+                      <option key={card.id} value={card.id}>
+                        {card.nombre} ({card.banco}) - Disponible: {formatBalance(card.cupoDisponible, formData.moneda)}
+                      </option>
+                    ))}
+                  </select>
+                  {formErrors.creditCardId && (
+                    <span className="error-message">{formErrors.creditCardId}</span>
+                  )}
+                </div>
+              )}
+
+              {!formData.isCreditCardPayment && (
+                <div className="form-group">
+                  <label htmlFor="cuentaBancariaId">Cuenta Bancaria</label>
+                  <select
+                    id="cuentaBancariaId"
+                    name="cuentaBancariaId"
+                    value={formData.cuentaBancariaId}
+                    onChange={handleChange}
+                    required
+                    className={formErrors.cuentaBancariaId ? 'input-error form-select' : 'form-select'}
+                  >
+                    <option value="">Selecciona una cuenta</option>
+                    {accounts.map((account) => (
+                      <option key={account.id} value={account.id}>
+                        {account.nombre}
+                      </option>
+                    ))}
+                  </select>
+                  {formErrors.cuentaBancariaId && (
+                    <span className="error-message">{formErrors.cuentaBancariaId}</span>
+                  )}
+                </div>
+              )}
+              
+              {formData.tipo === 'egreso' && !formData.isCreditCardPayment && (
                 <>
                   {debts.length > 0 && (
                     <div className="form-group checkbox-group">
@@ -776,16 +993,15 @@ function Transacciones() {
                     </div>
                   ) : (
                     <div className="form-group">
-                      <label htmlFor="presupuestoId">Presupuesto</label>
+                      <label htmlFor="presupuestoId">Presupuesto (Opcional)</label>
                       <select
                         id="presupuestoId"
                         name="presupuestoId"
                         value={formData.presupuestoId}
                         onChange={handleChange}
-                        required
                         className={formErrors.presupuestoId ? 'input-error form-select' : 'form-select'}
                       >
-                        <option value="">Selecciona un presupuesto</option>
+                        <option value="">Selecciona un presupuesto (opcional)</option>
                         {budgets.map((budget) => (
                           <option key={budget.id} value={budget.id}>
                             {budget.nombre}

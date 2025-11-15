@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import AddIcon from '@mui/icons-material/Add'
 import CreditCardIcon from '@mui/icons-material/CreditCard'
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
@@ -50,6 +51,7 @@ function Deudas() {
   const [isEditMode, setIsEditMode] = useState(false)
   const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null)
   const [debts, setDebts] = useState<Debt[]>([])
+  const [creditCards, setCreditCards] = useState<Array<{ id: string, nombre: string }>>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
@@ -91,11 +93,26 @@ function Deudas() {
     }
   }
 
+  // Función para verificar si una deuda está asociada a una tarjeta de crédito
+  const isDebtAssociatedWithCreditCard = (debtConcepto: string): boolean => {
+    return creditCards.some(card => card.nombre === debtConcepto)
+  }
+
   // Función para recargar deudas
   const reloadDebts = async () => {
     setIsLoading(true)
     setError(null)
     try {
+      // Cargar tarjetas de crédito para verificar asociaciones
+      const creditCardsResponse = await api.getCreditCards()
+      const creditCardsList: Array<{ id: string, nombre: string }> = []
+      if (creditCardsResponse.credit_cards && Array.isArray(creditCardsResponse.credit_cards)) {
+        creditCardsResponse.credit_cards.forEach((card: any) => {
+          creditCardsList.push({ id: card.id, nombre: card.name })
+        })
+      }
+      setCreditCards(creditCardsList)
+
       const response = await api.getDebts()
       if (response.debts && Array.isArray(response.debts)) {
         const mappedDebts = response.debts.map(mapDebtFromAPI)
@@ -205,6 +222,14 @@ function Deudas() {
   }
 
   const handleEditClick = () => {
+    if (!selectedDebt) return
+    
+    // Prevenir edición de deudas asociadas a tarjetas de crédito
+    if (isDebtAssociatedWithCreditCard(selectedDebt.concepto)) {
+      alert('Esta deuda está asociada a una tarjeta de crédito y no puede ser editada. Para modificarla, edita la tarjeta de crédito asociada.')
+      return
+    }
+    
     setIsEditMode(true)
   }
 
@@ -283,6 +308,8 @@ function Deudas() {
           const mappedDebts = response.debts.map(mapDebtFromAPI)
           setDebts(mappedDebts)
         }
+        // Disparar evento para actualizar tarjetas de crédito
+        window.dispatchEvent(new Event('debtsUpdated'))
         handleCloseDetailModal()
       } else {
         // Agregar nueva deuda
@@ -306,6 +333,8 @@ function Deudas() {
           const mappedDebts = response.debts.map(mapDebtFromAPI)
           setDebts(mappedDebts)
         }
+        // Disparar evento para actualizar tarjetas de crédito
+        window.dispatchEvent(new Event('debtsUpdated'))
         handleCloseModal()
       }
     } catch (err: any) {
@@ -335,6 +364,12 @@ function Deudas() {
   const handleDeleteClick = async () => {
     if (!selectedDebt) return
 
+    // Verificar si la deuda está asociada a una tarjeta de crédito
+    if (isDebtAssociatedWithCreditCard(selectedDebt.concepto)) {
+      alert('Esta deuda está asociada a una tarjeta de crédito. Para eliminarla, primero debes eliminar la tarjeta de crédito asociada.')
+      return
+    }
+
     if (window.confirm(`¿Estás seguro de que quieres eliminar la deuda "${selectedDebt.concepto}"?`)) {
       try {
         await api.deleteDebt(selectedDebt.id)
@@ -343,6 +378,8 @@ function Deudas() {
           const mappedDebts = response.debts.map(mapDebtFromAPI)
           setDebts(mappedDebts)
         }
+        // Disparar evento para actualizar tarjetas de crédito
+        window.dispatchEvent(new Event('debtsUpdated'))
         handleCloseDetailModal()
       } catch (err: any) {
         console.error('Error al eliminar deuda:', err)
@@ -405,9 +442,9 @@ function Deudas() {
       {
         value: 5000000,
         currency: 'COP',
-        concept: 'Tarjeta de Crédito Bancolombia',
+        concept: 'Préstamo Bancolombia',
         owed: 3000000,
-        reference: 'TARJ-1234',
+        reference: 'PREST-1234',
         cut_date: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 15 días desde hoy
         interest_rate: 2.5,
         overdue_interest: 5.0,
@@ -418,9 +455,9 @@ function Deudas() {
       {
         value: 3000000,
         currency: 'COP',
-        concept: 'Tarjeta de Crédito Nu',
+        concept: 'Crédito de Libre Inversión',
         owed: 1800000,
-        reference: 'NU-5678',
+        reference: 'CRED-5678',
         cut_date: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         interest_rate: 3.0,
         overdue_interest: 6.0,
@@ -444,7 +481,7 @@ function Deudas() {
       {
         value: 10000,
         currency: 'USD',
-        concept: 'Tarjeta de Crédito Internacional',
+        concept: 'Préstamo Internacional',
         owed: 7500,
         reference: 'INT-3456',
         cut_date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -483,9 +520,9 @@ function Deudas() {
       {
         value: 4000000,
         currency: 'COP',
-        concept: 'Tarjeta de Crédito Falabella',
+        concept: 'Crédito Hipotecario',
         owed: 2500000,
-        reference: 'FAL-1357',
+        reference: 'HIP-1357',
         cut_date: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         interest_rate: 2.8,
         overdue_interest: 5.5,
@@ -594,26 +631,29 @@ function Deudas() {
 
               {debts.length === 0 ? (
                 <div className="empty-state">
-                  <CreditCardIcon className="empty-icon" />
+                  <AccountBalanceIcon className="empty-icon" />
                   <p className="empty-text">No hay deudas registradas</p>
                   <p className="empty-subtext">Agrega tu primera deuda</p>
                 </div>
               ) : (
                 <div className="debts-grid">
                   {debts.map((debt) => {
-                    const debtColor = getDebtColor(debt.concepto)
+                    // Verificar si la deuda está asociada a una tarjeta de crédito y está pagada
+                    const isCreditCardDebt = isDebtAssociatedWithCreditCard(debt.concepto)
+                    const isPaidOff = isCreditCardDebt && (debt.adeudado === 0 || Math.abs(debt.adeudado) < 0.01)
+                    const debtColor = isPaidOff ? '#34C759' : getDebtColor(debt.concepto) // Verde si está pagada
                     const paidPercentage = calculatePaidPercentage(debt.valor, debt.adeudado)
                     return (
                       <div 
                         key={debt.id} 
-                        className="debt-card" 
+                        className={`debt-card ${isPaidOff ? 'debt-paid-off' : ''}`}
                         onClick={() => handleOpenDetailModal(debt)}
                         style={{ '--debt-color': debtColor } as React.CSSProperties}
                       >
                         <div className="debt-card-content">
                           <div className="debt-card-left">
                             <div className="debt-icon" style={{ backgroundColor: debtColor }}>
-                              <CreditCardIcon />
+                              {isCreditCardDebt ? <CreditCardIcon /> : <AccountBalanceIcon />}
                             </div>
                             <div className="debt-info">
                               <h3 className="debt-concepto">{debt.concepto}</h3>
@@ -681,6 +721,9 @@ function Deudas() {
               <h2 className="modal-title">Nueva Deuda</h2>
               <button className="modal-close" onClick={handleCloseModal}>×</button>
             </div>
+            <div style={{ padding: '0.75rem 1rem', marginBottom: '1rem', backgroundColor: 'rgba(255, 193, 7, 0.1)', border: '1px solid rgba(255, 193, 7, 0.3)', borderRadius: '8px', fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.9)' }}>
+              <strong>💡 Nota:</strong> Para registrar deudas de tarjetas de crédito, hazlo desde la sección <strong>Tarjetas Crédito</strong> en Finanzas.
+            </div>
             <form className="modal-form" onSubmit={handleSubmit}>
               <div className="form-group">
                 <label htmlFor="concepto">Concepto *</label>
@@ -691,7 +734,7 @@ function Deudas() {
                   value={formData.concepto}
                   onChange={handleChange}
                   required
-                  placeholder="Ej: Tarjeta de crédito"
+                  placeholder="Ej: Préstamo personal"
                   className={formErrors.concepto ? 'input-error' : ''}
                 />
                 {formErrors.concepto && (
@@ -700,14 +743,14 @@ function Deudas() {
               </div>
               <div className="form-group">
                 <label htmlFor="referencia">Referencia</label>
-                <input
-                  type="text"
-                  id="referencia"
-                  name="referencia"
-                  value={formData.referencia}
-                  onChange={handleChange}
-                  placeholder="Ej: TARJ-1234"
-                />
+                  <input
+                    type="text"
+                    id="referencia"
+                    name="referencia"
+                    value={formData.referencia}
+                    onChange={handleChange}
+                    placeholder="Ej: REF-1234"
+                  />
               </div>
               <div className="form-group">
                 <label htmlFor="divisa">Divisa *</label>
@@ -860,7 +903,11 @@ function Deudas() {
           <div 
             className="modal-content detail-modal" 
             onClick={(e) => e.stopPropagation()}
-            style={{ '--debt-color': getDebtColor(selectedDebt.concepto) } as React.CSSProperties}
+            style={{ '--debt-color': (() => {
+              const isCreditCardDebt = isDebtAssociatedWithCreditCard(selectedDebt.concepto)
+              const isPaidOff = isCreditCardDebt && (selectedDebt.adeudado === 0 || Math.abs(selectedDebt.adeudado) < 0.01)
+              return isPaidOff ? '#34C759' : getDebtColor(selectedDebt.concepto)
+            })() } as React.CSSProperties}
           >
             <div className="modal-header">
               <h2 className="modal-title">Detalles de la Deuda</h2>
@@ -871,8 +918,12 @@ function Deudas() {
               <>
                 <div className="detail-content">
                   <div className="detail-section">
-                    <div className="detail-icon-large" style={{ backgroundColor: getDebtColor(selectedDebt.concepto) }}>
-                      <CreditCardIcon />
+                    <div className="detail-icon-large" style={{ backgroundColor: (() => {
+                      const isCreditCardDebt = isDebtAssociatedWithCreditCard(selectedDebt.concepto)
+                      const isPaidOff = isCreditCardDebt && (selectedDebt.adeudado === 0 || Math.abs(selectedDebt.adeudado) < 0.01)
+                      return isPaidOff ? '#34C759' : getDebtColor(selectedDebt.concepto)
+                    })() }}>
+                      {isDebtAssociatedWithCreditCard(selectedDebt.concepto) ? <CreditCardIcon /> : <AccountBalanceIcon />}
                     </div>
                     <div className="detail-info">
                       <h3 className="detail-name">{selectedDebt.concepto}</h3>
@@ -889,7 +940,11 @@ function Deudas() {
                         className="debt-detail-progress-fill" 
                         style={{ 
                           width: `${Math.min(calculatePaidPercentage(selectedDebt.valor, selectedDebt.adeudado), 100)}%`,
-                          backgroundColor: getDebtColor(selectedDebt.concepto)
+                          backgroundColor: (() => {
+                            const isCreditCardDebt = isDebtAssociatedWithCreditCard(selectedDebt.concepto)
+                            const isPaidOff = isCreditCardDebt && (selectedDebt.adeudado === 0 || Math.abs(selectedDebt.adeudado) < 0.01)
+                            return isPaidOff ? '#34C759' : getDebtColor(selectedDebt.concepto)
+                          })()
                         }}
                       ></div>
                     </div>
@@ -944,14 +999,23 @@ function Deudas() {
                 </div>
 
                 <div className="detail-actions">
-                  <button className="detail-button edit" onClick={handleEditClick}>
-                    <EditIcon />
-                    <span>Editar Deuda</span>
-                  </button>
-                  <button className="detail-button delete" onClick={handleDeleteClick}>
-                    <DeleteIcon />
-                    <span>Eliminar Deuda</span>
-                  </button>
+                  {!isDebtAssociatedWithCreditCard(selectedDebt.concepto) && (
+                    <>
+                      <button className="detail-button edit" onClick={handleEditClick}>
+                        <EditIcon />
+                        <span>Editar Deuda</span>
+                      </button>
+                      <button className="detail-button delete" onClick={handleDeleteClick}>
+                        <DeleteIcon />
+                        <span>Eliminar Deuda</span>
+                      </button>
+                    </>
+                  )}
+                  {isDebtAssociatedWithCreditCard(selectedDebt.concepto) && (
+                    <div style={{ padding: '0.5rem', fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.6)', textAlign: 'center', width: '100%' }}>
+                      Esta deuda está asociada a una tarjeta de crédito y no puede ser editada ni eliminada. Para modificarla, edita o elimina la tarjeta de crédito asociada.
+                    </div>
+                  )}
                 </div>
               </>
             ) : (
@@ -965,7 +1029,7 @@ function Deudas() {
                     value={formData.concepto}
                     onChange={handleChange}
                     required
-                    placeholder="Ej: Tarjeta de crédito"
+                    placeholder="Ej: Préstamo personal"
                     className={formErrors.concepto ? 'input-error' : ''}
                   />
                   {formErrors.concepto && (
@@ -980,7 +1044,7 @@ function Deudas() {
                     name="referencia"
                     value={formData.referencia}
                     onChange={handleChange}
-                    placeholder="Ej: TARJ-1234"
+                    placeholder="Ej: REF-1234"
                   />
                 </div>
                 <div className="form-group">

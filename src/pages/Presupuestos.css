@@ -535,9 +535,14 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .presupuestos-content {
+    padding: 0 0.5rem;
+  }
+
   .budgets-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
+    padding: 0;
   }
 
   .budget-card {
@@ -564,6 +569,108 @@
 
   .budget-max-value {
     font-size: 1rem;
+  }
+
+  .presupuestos-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .add-budget-button,
+  .debug-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .modal-content {
+    max-width: 100%;
+    margin: 1rem;
+    border-radius: 24px;
+  }
+
+  .modal-header,
+  .modal-form {
+    padding: 1.5rem;
+  }
+
+  .modal-title {
+    font-size: 1.25rem;
+  }
+
+  .detail-content {
+    padding: 1.5rem;
+  }
+
+  .detail-name {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .presupuestos-content {
+    padding: 0 0.5rem;
+  }
+
+  .budgets-grid {
+    gap: 0.75rem;
+  }
+
+  .budget-card {
+    padding: 1rem;
+    min-height: 160px;
+  }
+
+  .budget-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .budget-icon svg {
+    font-size: 1.5rem;
+  }
+
+  .budget-name {
+    font-size: 1rem;
+  }
+
+  .budget-amount-value {
+    font-size: 0.875rem;
+  }
+
+  .budget-max-value {
+    font-size: 0.9375rem;
+  }
+
+  .modal-content {
+    margin: 0.5rem;
+    border-radius: 20px;
+  }
+
+  .modal-header,
+  .modal-form {
+    padding: 1rem;
+  }
+
+  .modal-title {
+    font-size: 1.125rem;
+  }
+
+  .detail-content {
+    padding: 1rem;
+  }
+
+  .detail-name {
+    font-size: 1.125rem;
+  }
+
+  .detail-icon-large {
+    width: 64px;
+    height: 64px;
+  }
+
+  .detail-icon-large svg {
+    font-size: 2rem;
   }
 }
 

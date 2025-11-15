@@ -784,13 +784,24 @@ await createTransaction({
   bank_account_id: "uuid-of-bank-account"
 });
 
-// Transacción de egreso (requiere budget_id)
+// Transacción de egreso con budget_id (opcional)
 await createTransaction({
   date: "2024-01-15",
   type: "egreso",
   amount: 50000,
   description: "Compra de supermercado",
   budget_id: "uuid-of-budget",
+  category: "Compras",
+  currency: "COP",
+  bank_account_id: "uuid-of-bank-account"
+});
+
+// Transacción de egreso sin budget_id (también válido)
+await createTransaction({
+  date: "2024-01-15",
+  type: "egreso",
+  amount: 50000,
+  description: "Compra de supermercado",
   category: "Compras",
   currency: "COP",
   bank_account_id: "uuid-of-bank-account"
@@ -810,7 +821,7 @@ await createTransaction({
 }
 ```
 
-**Request Body (Egreso):**
+**Request Body (Egreso con presupuesto):**
 ```json
 {
   "date": "2024-01-15",
@@ -824,10 +835,24 @@ await createTransaction({
 }
 ```
 
+**Request Body (Egreso sin presupuesto):**
+```json
+{
+  "date": "2024-01-15",
+  "type": "egreso",
+  "amount": 50000,
+  "description": "Compra de supermercado",
+  "category": "Compras",
+  "currency": "COP",
+  "bank_account_id": "uuid-of-bank-account"
+}
+```
+
 **⚠️ Validación importante:**
-- Los egresos **requieren** `budget_id`
-- Los ingresos **no pueden** tener `budget_id`
-- Los egresos no pueden exceder el `max_amount` del presupuesto asociado
+- Los egresos pueden tener `budget_id` (opcional) - si se proporciona, se valida que el presupuesto exista y pertenezca al usuario
+- Los ingresos **no pueden** tener `budget_id` (debe ser null o no enviarse)
+- Si un egreso tiene `budget_id`, no puede exceder el `max_amount` del presupuesto asociado
+- Si un egreso no tiene `budget_id`, se crea sin asociación a presupuesto
 
 **Error Response (400) - Presupuesto Excedido:**
 ```json
@@ -1390,6 +1415,270 @@ const deleteAllCards = async () => {
 
 ---
 
+### Credit Cards (Tarjetas de Crédito)
+
+#### POST /credit-cards
+Crear una nueva tarjeta de crédito.
+
+**URL:** `POST ${API_URL}/credit-cards`
+
+**Request Body:**
+```json
+{
+  "name": "Visa Gold",
+  "bank": "Banco Nacional",
+  "credit_limit": 5000000,
+  "monthly_rate": 2.5,
+  "management_fee": 25000,
+  "cut_date": "2024-02-15",
+  "used_credit": 1500000,
+  "benefits": ["Millas", "Cashback 2%", "Seguro de viaje"]
+}
+```
+
+**Ejemplo JavaScript:**
+```javascript
+const createCreditCard = async (creditCardData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/credit-cards`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(creditCardData),
+  });
+  return response.json();
+};
+
+// Uso
+const newCreditCard = await createCreditCard({
+  name: "Visa Gold",
+  bank: "Banco Nacional",
+  credit_limit: 5000000,
+  monthly_rate: 2.5,
+  management_fee: 25000,
+  cut_date: "2024-02-15",
+  used_credit: 1500000,
+  benefits: ["Millas", "Cashback 2%", "Seguro de viaje"]
+});
+```
+
+**Campos Requeridos:**
+- `name` - Nombre de la tarjeta de crédito (string, no vacío)
+- `bank` - Banco emisor (string, no vacío)
+- `credit_limit` - Cupo de crédito (número positivo)
+- `monthly_rate` - Tasa mensual de interés (número positivo)
+
+**Campos Opcionales:**
+- `management_fee` - Cuota de manejo (número positivo, default: 0.00)
+- `cut_date` - Fecha de corte en formato YYYY-MM-DD (opcional)
+- `used_credit` - Monto del cupo utilizado (número positivo, default: 0.00, no puede exceder `credit_limit`)
+- `benefits` - Lista de beneficios (array de strings, default: [])
+
+**Response (201):**
+```json
+{
+  "message": "Credit card created successfully",
+  "credit_card": {
+    "id": "uuid-here",
+    "name": "Visa Gold",
+    "bank": "Banco Nacional",
+    "credit_limit": 5000000,
+    "monthly_rate": 2.5,
+    "management_fee": 25000,
+    "cut_date": "2024-02-15",
+    "used_credit": 1500000,
+    "available_credit": 3500000,
+    "benefits": ["Millas", "Cashback 2%", "Seguro de viaje"],
+    "created_at": "2024-01-15T00:00:00.000Z",
+    "updated_at": "2024-01-15T00:00:00.000Z"
+  }
+}
+```
+
+---
+
+#### GET /credit-cards
+Obtener tarjetas de crédito.
+
+**URL:** `GET ${API_URL}/credit-cards?id={uuid}` (opcional)
+
+**Ejemplo JavaScript:**
+```javascript
+const getCreditCards = async (creditCardId = null) => {
+  const token = localStorage.getItem('authToken');
+  const url = creditCardId 
+    ? `${API_URL}/credit-cards?id=${creditCardId}`
+    : `${API_URL}/credit-cards`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todas las tarjetas de crédito
+const allCreditCards = await getCreditCards();
+
+// Obtener tarjeta específica
+const creditCard = await getCreditCards('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "credit_cards": [
+    {
+      "id": "uuid-here",
+      "name": "Visa Gold",
+      "bank": "Banco Nacional",
+      "credit_limit": 5000000,
+      "monthly_rate": 2.5,
+      "management_fee": 25000,
+      "cut_date": "2024-02-15",
+      "used_credit": 1500000,
+      "available_credit": 3500000,
+      "benefits": ["Millas", "Cashback 2%", "Seguro de viaje"],
+      "created_at": "2024-01-15T00:00:00.000Z",
+      "updated_at": "2024-01-15T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+**Nota:** Los resultados están ordenados por `created_at` (descendente).
+
+---
+
+#### PUT /credit-cards/{id}
+Actualizar una tarjeta de crédito específica.
+
+**URL:** `PUT ${API_URL}/credit-cards/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const updateCreditCard = async (creditCardId, updates) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/credit-cards/${creditCardId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(updates),
+  });
+  return response.json();
+};
+
+// Uso - actualizar solo el cupo de crédito
+await updateCreditCard('uuid-here', {
+  credit_limit: 6000000
+});
+
+// Uso - actualizar múltiples campos
+await updateCreditCard('uuid-here', {
+  name: "Visa Platinum",
+  credit_limit: 6000000,
+  monthly_rate: 2.0,
+  management_fee: 30000,
+  cut_date: "2024-03-15",
+  used_credit: 2000000,
+  benefits: ["Millas", "Cashback 3%", "Seguro de viaje", "Lounge acceso"]
+});
+```
+
+**Request Body (todos los campos son opcionales, pero al menos uno es requerido):**
+```json
+{
+  "name": "Visa Platinum",
+  "bank": "Banco Nacional",
+  "credit_limit": 6000000,
+  "monthly_rate": 2.0,
+  "management_fee": 30000,
+  "cut_date": "2024-03-15",
+  "used_credit": 2000000,
+  "benefits": ["Millas", "Cashback 3%", "Seguro de viaje", "Lounge acceso"]
+}
+```
+
+**Response (200):**
+```json
+{
+  "message": "Credit card updated successfully",
+  "credit_card": {
+    "id": "uuid-here",
+    "name": "Visa Platinum",
+    "bank": "Banco Nacional",
+    "credit_limit": 6000000,
+    "monthly_rate": 2.0,
+    "management_fee": 30000,
+    "cut_date": "2024-03-15",
+    "used_credit": 2000000,
+    "available_credit": 4000000,
+    "benefits": ["Millas", "Cashback 3%", "Seguro de viaje", "Lounge acceso"],
+    "created_at": "2024-01-15T00:00:00.000Z",
+    "updated_at": "2024-01-15T00:00:00.000Z"
+  }
+}
+```
+
+**Notas:**
+- El campo `benefits` debe ser un array de strings. Todos los elementos del array deben ser strings.
+- El campo `used_credit` no puede exceder `credit_limit`. Si se actualiza `credit_limit` y `used_credit` al mismo tiempo, se valida contra el nuevo `credit_limit`.
+- El campo `available_credit` se calcula automáticamente como `credit_limit - used_credit` y se incluye en todas las respuestas.
+
+---
+
+#### DELETE /credit-cards/{id}
+Eliminar una tarjeta de crédito específica.
+
+**URL:** `DELETE ${API_URL}/credit-cards/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteCreditCard = async (creditCardId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/credit-cards/${creditCardId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+#### DELETE /credit-cards
+Eliminar todas las tarjetas de crédito.
+
+**URL:** `DELETE ${API_URL}/credit-cards`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllCreditCards = async () => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/credit-cards`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
 ### Subscriptions (Suscripciones Activas)
 
 #### POST /subscriptions
@@ -1827,7 +2116,10 @@ const handleApiCall = async (apiFunction) => {
 
 2. **Total Gastado Automático**: El campo `total_spent` de los presupuestos se actualiza automáticamente cuando se crean/actualizan/eliminan transacciones de tipo "egreso" (mediante triggers de base de datos).
 
-3. **Validación de Presupuestos**: Los egresos no pueden exceder el `max_amount` del presupuesto asociado. Si se intenta crear una transacción que exceda el límite, se recibirá un error 400.
+3. **Validación de Presupuestos**: 
+   - Los egresos pueden crearse con o sin `budget_id`. Si se proporciona `budget_id`, se valida que el presupuesto exista, pertenezca al usuario y que la transacción no exceda el `max_amount` del presupuesto.
+   - Si un egreso tiene `budget_id` y se intenta crear una transacción que exceda el límite del presupuesto, se recibirá un error 400.
+   - Los egresos sin `budget_id` se crean normalmente sin validación de presupuesto.
 
 4. **Soft Delete vs Hard Delete**: 
    - **Soft Delete** (`DELETE /budgets/{id}`): Marca el presupuesto como eliminado (`status = 'deleted'`) pero mantiene los datos. Las transacciones asociadas se mantienen. Se puede restaurar con `/restore`.
@@ -1847,9 +2139,11 @@ const handleApiCall = async (apiFunction) => {
 
 11. **Tarjetas de Débito**: Las tarjetas permiten almacenar información de tarjetas de débito asociadas a una cuenta bancaria. El campo `bank_account_id` debe referenciar una cuenta bancaria que pertenezca al usuario autenticado. El campo `last_4_digits` debe ser exactamente 4 dígitos y la fecha de vencimiento (`expiration_date`) no puede ser en el pasado. Los nombres de campos están en inglés: `card_name`, `bank_account_id`, `last_4_digits`, `expiration_date`. Las respuestas incluyen información de la cuenta bancaria asociada.
 
-12. **Suscripciones Activas**: Las suscripciones permiten gestionar servicios de suscripción activos con nombre, precio, fecha de corte, tarjeta de débito asociada y si es familiar o no. El `card_id` debe referenciar una tarjeta que pertenezca al usuario autenticado. El campo `is_family` es opcional (default: false) e indica si la suscripción es familiar. Los nombres de campos están en inglés: `name`, `price`, `cut_date`, `is_family`. Las suscripciones incluyen información de la tarjeta asociada en las respuestas GET.
+12. **Tarjetas de Crédito**: Las tarjetas de crédito permiten gestionar información de tarjetas de crédito con nombre, banco, cupo de crédito, tasa mensual, cuota de manejo, fecha de corte, cupo utilizado y beneficios. El campo `benefits` es un array de strings que almacena la lista de beneficios de la tarjeta. El campo `cut_date` es opcional y debe estar en formato YYYY-MM-DD. El campo `used_credit` es opcional (default: 0.00) y representa cuánto del cupo se ha gastado; no puede exceder `credit_limit`. La respuesta incluye también `available_credit` que se calcula automáticamente como `credit_limit - used_credit`. Los nombres de campos están en inglés: `name`, `bank`, `credit_limit`, `monthly_rate`, `management_fee`, `cut_date`, `used_credit`, `available_credit`, `benefits`. El campo `benefits` debe ser un array de strings y todos los elementos deben ser strings.
 
-13. **Autenticación**: 
+13. **Suscripciones Activas**: Las suscripciones permiten gestionar servicios de suscripción activos con nombre, precio, fecha de corte, tarjeta de débito asociada y si es familiar o no. El `card_id` debe referenciar una tarjeta que pertenezca al usuario autenticado. El campo `is_family` es opcional (default: false) e indica si la suscripción es familiar. Los nombres de campos están en inglés: `name`, `price`, `cut_date`, `is_family`. Las suscripciones incluyen información de la tarjeta asociada en las respuestas GET.
+
+14. **Autenticación**: 
     - **⚠️ REQUERIDA**: Todos los endpoints requieren autenticación JWT, excepto `/auth/register` y `/auth/login`.
     - **Registro**: El `password_hash` debe ser generado en el cliente usando bcrypt antes de enviarlo al servidor.
     - **Login**: El password se envía en texto plano y el servidor lo hashea para comparar con el hash almacenado.
@@ -1858,7 +2152,7 @@ const handleApiCall = async (apiFunction) => {
     - **Errores 401**: Si recibes un 401, el token es inválido o expirado. Redirige al usuario al login.
     - **JWT_TOKEN_PASSPHRASE**: Debe configurarse en el archivo `.env` para firmar y verificar tokens.
 
-14. **🔒 Aislamiento de Datos por Usuario**:
+15. **🔒 Aislamiento de Datos por Usuario**:
     - **Filtrado Automático**: Todos los endpoints filtran automáticamente los datos por el usuario autenticado usando el token JWT.
     - **Sin `user_id` Requerido**: No necesitas pasar `user_id` en los requests; el sistema lo obtiene automáticamente del token.
     - **Asignación Automática**: Los nuevos registros (cuentas bancarias, presupuestos, transacciones, deudas, tarjetas, suscripciones) se asignan automáticamente al usuario autenticado.
@@ -2126,6 +2420,38 @@ class PocketsAPI {
     });
   }
 
+  // Credit Cards
+  async createCreditCard(data) {
+    return this.request('/credit-cards', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  async getCreditCards(creditCardId = null) {
+    const endpoint = creditCardId ? `/credit-cards?id=${creditCardId}` : '/credit-cards';
+    return this.request(endpoint);
+  }
+
+  async updateCreditCard(creditCardId, updates) {
+    return this.request(`/credit-cards/${creditCardId}`, {
+      method: 'PUT',
+      body: updates,
+    });
+  }
+
+  async deleteCreditCard(creditCardId) {
+    return this.request(`/credit-cards/${creditCardId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async deleteAllCreditCards() {
+    return this.request('/credit-cards', {
+      method: 'DELETE',
+    });
+  }
+
   // Subscriptions
   async createSubscription(data) {
     return this.request('/subscriptions', {
@@ -2267,6 +2593,38 @@ await api.deleteDebt(debt.debt.id);
 
 // Eliminar todas las deudas
 await api.deleteAllDebts();
+
+// Crear tarjeta de crédito
+const creditCard = await api.createCreditCard({
+  name: "Visa Gold",
+  bank: "Banco Nacional",
+  credit_limit: 5000000,
+  monthly_rate: 2.5,
+  management_fee: 25000,
+  cut_date: "2024-02-15",
+  used_credit: 1500000,
+  benefits: ["Millas", "Cashback 2%", "Seguro de viaje"]
+});
+
+// Obtener todas las tarjetas de crédito
+const allCreditCards = await api.getCreditCards();
+
+// Obtener tarjeta de crédito específica
+const specificCreditCard = await api.getCreditCards(creditCard.credit_card.id);
+
+// Actualizar tarjeta de crédito
+await api.updateCreditCard(creditCard.credit_card.id, {
+  credit_limit: 6000000,
+  cut_date: "2024-03-15",
+  used_credit: 2000000,
+  benefits: ["Millas", "Cashback 3%", "Seguro de viaje", "Lounge acceso"]
+});
+
+// Eliminar tarjeta de crédito específica
+await api.deleteCreditCard(creditCard.credit_card.id);
+
+// Eliminar todas las tarjetas de crédito
+await api.deleteAllCreditCards();
 
 // Registro de usuario (password_hash debe generarse en el cliente)
 import bcrypt from 'bcryptjs';

@@ -1,10 +1,63 @@
-.tarjetas-debito-content {
+.tarjetas-credito-content {
   flex-direction: column;
   gap: 0.75rem;
   align-items: stretch;
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
+}
+
+/* Credit Summary Block */
+.credit-summary-block {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 0.75rem;
+  margin-top: 0;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.summary-label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+.summary-value {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.summary-value.available {
+  color: rgba(255, 45, 85, 0.95);
+}
+
+.summary-separator {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* Loader */
@@ -61,8 +114,10 @@
 .tarjetas-header {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 1rem;
   margin-bottom: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .add-card-button {
@@ -70,11 +125,11 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.875rem 1.5rem;
-  background: rgba(88, 86, 214, 0.2);
+  background: rgba(255, 45, 85, 0.2);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border-radius: 16px;
-  border: 1px solid rgba(88, 86, 214, 0.3);
+  border: 1px solid rgba(255, 45, 85, 0.3);
   box-shadow: 
     0 4px 16px 0 rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -88,8 +143,8 @@
 }
 
 .add-card-button:hover {
-  background: rgba(88, 86, 214, 0.3);
-  border-color: rgba(88, 86, 214, 0.5);
+  background: rgba(255, 45, 85, 0.3);
+  border-color: rgba(255, 45, 85, 0.5);
   transform: translateY(-2px);
   box-shadow: 
     0 6px 20px 0 rgba(0, 0, 0, 0.3),
@@ -179,7 +234,7 @@
 /* Cards Grid */
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
   width: 100%;
 }
@@ -213,6 +268,7 @@
   opacity: 0.8;
   border-radius: 20px 0 0 20px;
 }
+
 
 .card-item:hover {
   background: rgba(0, 0, 0, 0.3);
@@ -284,20 +340,120 @@
   flex: 1;
 }
 
-.card-number {
+.card-limit {
   font-size: 1rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-  letter-spacing: 0.1em;
 }
 
-.card-expiration {
+.card-rate {
   font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+.card-fee {
+  font-size: 0.8125rem;
   color: rgba(255, 255, 255, 0.6);
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+.card-usage-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.card-usage-text {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.card-used {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: rgba(255, 59, 48, 0.9);
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+.card-available {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: rgba(52, 199, 89, 0.9);
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+.card-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.card-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(255, 59, 48, 0.8), rgba(255, 59, 48, 1));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 8px rgba(255, 59, 48, 0.5);
+}
+
+.card-usage-percentage {
+  font-size: 0.75rem;
+  color: rgba(255, 59, 48, 0.8);
+  margin: 0;
+  font-weight: 500;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  text-align: right;
+}
+
+.card-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.benefits-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.benefits-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.benefit-item {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  background: rgba(255, 45, 85, 0.15);
+  border: 1px solid rgba(255, 45, 85, 0.25);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  white-space: nowrap;
 }
 
 .card-subscriptions-badge {
@@ -401,6 +557,75 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
+.credit-card-warning {
+  margin: 0 1.5rem;
+  padding: 1.25rem;
+  background: rgba(255, 45, 85, 0.1);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 16px;
+  border: 2px solid rgba(255, 45, 85, 0.3);
+  box-shadow: 
+    0 4px 16px 0 rgba(255, 45, 85, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.warning-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.warning-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.warning-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(255, 45, 85, 0.95);
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  letter-spacing: -0.01em;
+  flex: 1;
+}
+
+.warning-tips {
+  margin-top: 0.75rem;
+}
+
+.warning-subtitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 0.75rem 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+.tips-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.tip-item {
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  padding-left: 0;
+}
+
+.tip-item strong {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+}
+
 .modal-form {
   padding: 1.5rem;
   display: flex;
@@ -423,7 +648,8 @@
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
   padding: 0.875rem 1rem;
   background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(20px) saturate(180%);
@@ -435,12 +661,19 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
   transition: all 0.2s;
   width: 100%;
+  resize: vertical;
+}
+
+.form-group textarea {
+  min-height: 80px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
   outline: none;
-  border-color: rgba(88, 86, 214, 0.5);
+  border-color: rgba(255, 45, 85, 0.5);
   background: rgba(0, 0, 0, 0.4);
 }
 
@@ -449,7 +682,8 @@
 }
 
 .form-group input.input-error,
-.form-group select.input-error {
+.form-group select.input-error,
+.form-group textarea.input-error {
   border-color: rgba(255, 59, 48, 0.5);
 }
 
@@ -612,6 +846,64 @@
   color: rgba(255, 255, 255, 0.9);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
   letter-spacing: 0.1em;
+}
+
+.detail-benefits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.benefit-tag {
+  display: inline-block;
+  padding: 0.375rem 0.75rem;
+  background: rgba(255, 45, 85, 0.2);
+  border: 1px solid rgba(255, 45, 85, 0.3);
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+.detail-progress-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.detail-progress-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.detail-progress-bar {
+  flex: 1;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+}
+
+.detail-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(255, 59, 48, 0.8), rgba(255, 59, 48, 1));
+  border-radius: 5px;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 10px rgba(255, 59, 48, 0.5);
+}
+
+.detail-progress-percentage {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 59, 48, 0.9);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  min-width: 50px;
+  text-align: right;
 }
 
 .detail-actions {
@@ -878,7 +1170,7 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .tarjetas-debito-content {
+  .tarjetas-credito-content {
     padding: 0 0.5rem;
   }
 
@@ -933,10 +1225,19 @@
   .detail-name {
     font-size: 1.25rem;
   }
+
+  .credit-summary-block {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .summary-separator {
+    display: none;
+  }
 }
 
 @media (max-width: 480px) {
-  .tarjetas-debito-content {
+  .tarjetas-credito-content {
     padding: 0 0.5rem;
   }
 
@@ -990,6 +1291,14 @@
 
   .detail-icon-large svg {
     font-size: 2rem;
+  }
+
+  .credit-summary-block {
+    padding: 1rem;
+  }
+
+  .summary-value {
+    font-size: 0.8125rem;
   }
 }
 

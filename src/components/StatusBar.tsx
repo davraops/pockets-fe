@@ -9,6 +9,8 @@ const routeTitles: Record<string, string> = {
   '/finanzas/transacciones': 'Transacciones',
   '/finanzas/deudas': 'Deudas',
   '/finanzas/tarjetas-debito': 'Tarjetas Débito',
+  '/finanzas/subscripciones': 'Subscripciones',
+  '/finanzas/tarjetas-credito': 'Tarjetas Crédito',
   '/blank-2': '',
   '/blank-3': '',
   '/blank-4': '',

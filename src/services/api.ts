@@ -448,6 +448,100 @@ class PocketsAPI {
       method: 'DELETE',
     })
   }
+
+  // Subscriptions
+  async createSubscription(data: {
+    name: string
+    price: number
+    cut_date: string
+    card_id: string
+    is_family?: boolean
+  }) {
+    return this.request('/subscriptions', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getSubscriptions(subscriptionId: string | null = null) {
+    const endpoint = subscriptionId ? `/subscriptions?id=${subscriptionId}` : '/subscriptions'
+    return this.request(endpoint)
+  }
+
+  async updateSubscription(subscriptionId: string, updates: {
+    name?: string
+    price?: number
+    cut_date?: string
+    card_id?: string
+    is_family?: boolean
+  }) {
+    return this.request(`/subscriptions/${subscriptionId}`, {
+      method: 'PUT',
+      body: updates,
+    })
+  }
+
+  async deleteSubscription(subscriptionId: string) {
+    return this.request(`/subscriptions/${subscriptionId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllSubscriptions() {
+    return this.request('/subscriptions', {
+      method: 'DELETE',
+    })
+  }
+
+  // Credit Cards
+  async createCreditCard(data: {
+    name: string
+    bank: string
+    credit_limit: number
+    monthly_rate: number
+    management_fee?: number
+    cut_date?: string
+    used_credit?: number
+    benefits?: string[]
+  }) {
+    return this.request('/credit-cards', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getCreditCards(creditCardId: string | null = null) {
+    const endpoint = creditCardId ? `/credit-cards?id=${creditCardId}` : '/credit-cards'
+    return this.request(endpoint)
+  }
+
+  async updateCreditCard(creditCardId: string, updates: {
+    name?: string
+    bank?: string
+    credit_limit?: number
+    monthly_rate?: number
+    management_fee?: number
+    cut_date?: string
+    used_credit?: number
+    benefits?: string[]
+  }) {
+    return this.request(`/credit-cards/${creditCardId}`, {
+      method: 'PUT',
+      body: updates,
+    })
+  }
+
+  async deleteCreditCard(creditCardId: string) {
+    return this.request(`/credit-cards/${creditCardId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllCreditCards() {
+    return this.request('/credit-cards', {
+      method: 'DELETE',
+    })
+  }
 }
 
 export const api = new PocketsAPI(API_BASE_URL)

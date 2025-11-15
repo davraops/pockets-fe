@@ -8,6 +8,8 @@ import Presupuestos from './pages/Presupuestos'
 import Transacciones from './pages/Transacciones'
 import Deudas from './pages/Deudas'
 import TarjetasDebito from './pages/TarjetasDebito'
+import Subscripciones from './pages/Subscripciones'
+import TarjetasCredito from './pages/TarjetasCredito'
 import StatusBar from './components/StatusBar'
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -72,6 +74,22 @@ function App() {
           element={
             <ProtectedRoute>
               <TarjetasDebito />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/finanzas/subscripciones" 
+          element={
+            <ProtectedRoute>
+              <Subscripciones />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/finanzas/tarjetas-credito" 
+          element={
+            <ProtectedRoute>
+              <TarjetasCredito />
             </ProtectedRoute>
           } 
         />

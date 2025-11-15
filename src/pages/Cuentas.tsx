@@ -3,6 +3,7 @@ import AddIcon from '@mui/icons-material/Add'
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
+import PaymentIcon from '@mui/icons-material/Payment'
 import { api } from '../services/api'
 import './AppPage.css'
 import './Cuentas.css'
@@ -48,6 +49,7 @@ function Cuentas() {
   const [isEditMode, setIsEditMode] = useState(false)
   const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null)
   const [accounts, setAccounts] = useState<BankAccount[]>([])
+  const [cards, setCards] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
@@ -98,6 +100,36 @@ function Cuentas() {
     }
 
     loadAccounts()
+  }, [])
+
+  // Cargar tarjetas de débito desde la API
+  useEffect(() => {
+    const loadCards = async () => {
+      try {
+        const response = await api.getCards()
+        if (response.cards && Array.isArray(response.cards)) {
+          setCards(response.cards)
+        } else {
+          setCards([])
+        }
+      } catch (err) {
+        console.error('Error al cargar tarjetas:', err)
+        setCards([])
+      }
+    }
+
+    loadCards()
+
+    // Escuchar eventos de actualización de tarjetas
+    const handleCardsUpdate = () => {
+      loadCards()
+    }
+
+    window.addEventListener('cardsUpdated', handleCardsUpdate)
+
+    return () => {
+      window.removeEventListener('cardsUpdated', handleCardsUpdate)
+    }
   }, [])
 
   // Cargar tasas de cambio desde la API
@@ -468,6 +500,11 @@ function Cuentas() {
     }, 0)
   }
 
+  // Contar tarjetas de débito por cuenta
+  const getCardCountForAccount = (accountId: string): number => {
+    return cards.filter(card => card.bank_account_id === accountId).length
+  }
+
   // Función de debug para crear 10 cuentas de prueba
   const handleDebugCreateAccounts = async () => {
     const testAccounts = [
@@ -603,7 +640,15 @@ function Cuentas() {
                           </div>
                         </div>
                         <div className="account-card-body">
-                          <p className="account-number">{formatAccountNumber(account.numeroCuenta)}</p>
+                          <div className="account-left-info">
+                            <p className="account-number">{formatAccountNumber(account.numeroCuenta)}</p>
+                            {getCardCountForAccount(account.id) > 0 && (
+                              <div className="account-cards-badge">
+                                <PaymentIcon className="cards-badge-icon" />
+                                <span className="cards-badge-text">{getCardCountForAccount(account.id)} tarjeta{getCardCountForAccount(account.id) !== 1 ? 's' : ''}</span>
+                              </div>
+                            )}
+                          </div>
                           <div className="account-balance-wrapper">
                             <p className="account-balance">{formatBalance(account.balanceInicial, account.currency)}</p>
                             <span className="account-currency">{account.currency}</span>

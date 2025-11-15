@@ -3,6 +3,7 @@ import AddIcon from '@mui/icons-material/Add'
 import PaymentIcon from '@mui/icons-material/Payment'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
+import CardMembershipIcon from '@mui/icons-material/CardMembership'
 import { api } from '../services/api'
 import './AppPage.css'
 import './TarjetasDebito.css'
@@ -45,10 +46,13 @@ function TarjetasDebito() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [selectedCard, setSelectedCard] = useState<Card | null>(null)
+  const [affectedSubscriptions, setAffectedSubscriptions] = useState<any[]>([])
   const [cards, setCards] = useState<Card[]>([])
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([])
+  const [subscriptions, setSubscriptions] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
@@ -123,6 +127,36 @@ function TarjetasDebito() {
     loadCards()
   }, [])
 
+  // Cargar subscripciones desde la API
+  useEffect(() => {
+    const loadSubscriptions = async () => {
+      try {
+        const response = await api.getSubscriptions()
+        if (response.subscriptions && Array.isArray(response.subscriptions)) {
+          setSubscriptions(response.subscriptions)
+        } else {
+          setSubscriptions([])
+        }
+      } catch (err) {
+        console.error('Error al cargar subscripciones:', err)
+        setSubscriptions([])
+      }
+    }
+
+    loadSubscriptions()
+
+    // Escuchar eventos de actualización de subscripciones
+    const handleSubscriptionsUpdate = () => {
+      loadSubscriptions()
+    }
+
+    window.addEventListener('subscriptionsUpdated', handleSubscriptionsUpdate)
+
+    return () => {
+      window.removeEventListener('subscriptionsUpdated', handleSubscriptionsUpdate)
+    }
+  }, [])
+
   const handleOpenModal = () => {
     if (bankAccounts.length === 0) {
       alert('No hay cuentas bancarias disponibles. Por favor, crea al menos una cuenta primero.')
@@ -165,8 +199,10 @@ function TarjetasDebito() {
 
   const handleCloseDetailModal = () => {
     setIsDetailModalOpen(false)
+    setIsDeleteConfirmModalOpen(false)
     setSelectedCard(null)
     setIsEditMode(false)
+    setAffectedSubscriptions([])
     setFormData({
       nombre: '',
       cuentaId: '',
@@ -186,20 +222,68 @@ function TarjetasDebito() {
   }
 
   const handleDeleteClick = async () => {
-    if (selectedCard && window.confirm(`¿Estás seguro de que quieres eliminar la tarjeta "${selectedCard.nombre}"?`)) {
-      try {
-        await api.deleteCard(selectedCard.id)
-        // Recargar tarjetas después de eliminar
-        const response = await api.getCards()
-        if (response.cards && Array.isArray(response.cards)) {
-          const mappedCards = response.cards.map(mapCardFromAPI)
-          setCards(mappedCards)
-        }
-        handleCloseDetailModal()
-      } catch (err: any) {
-        console.error('Error al eliminar tarjeta:', err)
-        alert('Error al eliminar la tarjeta. Por favor, intenta de nuevo.')
+    if (!selectedCard) return
+
+    // Verificar si la tarjeta tiene subscripciones asociadas
+    const cardSubscriptions = subscriptions.filter(sub => sub.card_id === selectedCard.id)
+    
+    if (cardSubscriptions.length > 0) {
+      // Si tiene subscripciones, mostrar modal de confirmación
+      setAffectedSubscriptions(cardSubscriptions)
+      setIsDeleteConfirmModalOpen(true)
+    } else {
+      // Si no tiene subscripciones, proceder con eliminación normal
+      if (window.confirm(`¿Estás seguro de que quieres eliminar la tarjeta "${selectedCard.nombre}"?`)) {
+        await performDeleteCard()
       }
+    }
+  }
+
+  const performDeleteCard = async () => {
+    if (!selectedCard) return
+
+    try {
+      setIsLoading(true)
+      
+      // Primero eliminar todas las subscripciones asociadas
+      const cardSubscriptions = subscriptions.filter(sub => sub.card_id === selectedCard.id)
+      if (cardSubscriptions.length > 0) {
+        for (const sub of cardSubscriptions) {
+          try {
+            await api.deleteSubscription(sub.id)
+          } catch (err) {
+            console.error(`Error al eliminar subscripción ${sub.id}:`, err)
+          }
+        }
+        // Disparar evento para actualizar otros componentes
+        window.dispatchEvent(new Event('subscriptionsUpdated'))
+      }
+
+      // Luego eliminar la tarjeta
+      await api.deleteCard(selectedCard.id)
+      
+      // Recargar tarjetas después de eliminar
+      const response = await api.getCards()
+      if (response.cards && Array.isArray(response.cards)) {
+        const mappedCards = response.cards.map(mapCardFromAPI)
+        setCards(mappedCards)
+      }
+      
+      // Disparar evento para actualizar otros componentes
+      window.dispatchEvent(new Event('cardsUpdated'))
+      
+      setIsDeleteConfirmModalOpen(false)
+      handleCloseDetailModal()
+      
+      // Mostrar mensaje recordatorio si se eliminaron subscripciones
+      if (cardSubscriptions.length > 0) {
+        alert(`Tarjeta eliminada exitosamente.\n\n⚠️ IMPORTANTE: Se eliminaron ${cardSubscriptions.length} subscripción(es) asociada(s). Tendrás que volver a registrarlas si las necesitas.`)
+      }
+    } catch (err: any) {
+      console.error('Error al eliminar tarjeta:', err)
+      alert('Error al eliminar la tarjeta. Por favor, intenta de nuevo.')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -276,48 +360,63 @@ function TarjetasDebito() {
       }
     }
 
-    // Validar nombre único - verificar contra la API
-    try {
-      const allCards = await api.getCards()
-      if (allCards.cards && Array.isArray(allCards.cards)) {
-        const nombreExists = allCards.cards.some(card => 
-          card.card_name.toLowerCase() === formData.nombre.toLowerCase().trim() &&
-          (!isEditMode || card.id !== selectedCard?.id)
-        )
-        if (nombreExists) {
-          errors.nombre = 'Este nombre ya está en uso'
-          isValid = false
-        }
-
-        // Validar últimos 4 dígitos únicos
-        const digitsExists = allCards.cards.some(card => 
-          card.last_4_digits === formData.ultimos4Digitos.trim() &&
-          (!isEditMode || card.id !== selectedCard?.id)
-        )
-        if (digitsExists) {
-          errors.ultimos4Digitos = 'Esta combinación de dígitos ya está en uso'
-          isValid = false
-        }
-      }
-    } catch (err) {
-      console.error('Error al validar:', err)
-      // Continuar con la validación local como fallback
-      const nombreExists = cards.some(card => 
-        card.nombre.toLowerCase() === formData.nombre.toLowerCase().trim() &&
+    // Validar nombre único - primero verificar contra el estado local (más rápido)
+    const nombreNormalizado = formData.nombre.toLowerCase().trim()
+    if (nombreNormalizado) {
+      const nombreExistsLocal = cards.some(card => 
+        card.nombre.toLowerCase() === nombreNormalizado &&
         (!isEditMode || card.id !== selectedCard?.id)
       )
-      if (nombreExists) {
+      if (nombreExistsLocal) {
         errors.nombre = 'Este nombre ya está en uso'
         isValid = false
       }
+    }
 
-      const digitsExists = cards.some(card => 
-        card.ultimos4Digitos === formData.ultimos4Digitos.trim() &&
+    // Validar últimos 4 dígitos únicos contra el estado local
+    const ultimos4DigitosTrim = formData.ultimos4Digitos.trim()
+    if (ultimos4DigitosTrim && /^\d{4}$/.test(ultimos4DigitosTrim)) {
+      const digitsExistsLocal = cards.some(card => 
+        card.ultimos4Digitos === ultimos4DigitosTrim &&
         (!isEditMode || card.id !== selectedCard?.id)
       )
-      if (digitsExists) {
+      if (digitsExistsLocal) {
         errors.ultimos4Digitos = 'Esta combinación de dígitos ya está en uso'
         isValid = false
+      }
+    }
+
+    // Validar contra la API para asegurarse de tener datos actualizados
+    // Solo si no hay errores locales para evitar llamadas innecesarias
+    if (isValid && nombreNormalizado) {
+      try {
+        const allCards = await api.getCards()
+        if (allCards.cards && Array.isArray(allCards.cards)) {
+          const nombreExists = allCards.cards.some(card => 
+            card.card_name.toLowerCase() === nombreNormalizado &&
+            (!isEditMode || card.id !== selectedCard?.id)
+          )
+          if (nombreExists) {
+            errors.nombre = 'Este nombre ya está en uso'
+            isValid = false
+          }
+
+          // Validar últimos 4 dígitos únicos contra la API
+          if (ultimos4DigitosTrim && /^\d{4}$/.test(ultimos4DigitosTrim)) {
+            const digitsExists = allCards.cards.some(card => 
+              card.last_4_digits === ultimos4DigitosTrim &&
+              (!isEditMode || card.id !== selectedCard?.id)
+            )
+            if (digitsExists) {
+              errors.ultimos4Digitos = 'Esta combinación de dígitos ya está en uso'
+              isValid = false
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error al validar contra la API:', err)
+        // Si falla la validación contra la API pero ya validamos localmente,
+        // continuamos con la validación local como fallback
       }
     }
 
@@ -402,6 +501,8 @@ function TarjetasDebito() {
           const mappedCards = response.cards.map(mapCardFromAPI)
           setCards(mappedCards)
         }
+        // Disparar evento para actualizar otros componentes
+        window.dispatchEvent(new Event('cardsUpdated'))
         handleCloseDetailModal()
       } else {
         // Agregar nueva tarjeta
@@ -413,6 +514,8 @@ function TarjetasDebito() {
           const mappedCards = response.cards.map(mapCardFromAPI)
           setCards(mappedCards)
         }
+        // Disparar evento para actualizar otros componentes
+        window.dispatchEvent(new Event('cardsUpdated'))
         handleCloseModal()
       }
     } catch (err: any) {
@@ -633,6 +736,11 @@ function TarjetasDebito() {
     return `•••• •••• •••• ${digits}`
   }
 
+  // Contar subscripciones por tarjeta
+  const getSubscriptionCountForCard = (cardId: string): number => {
+    return subscriptions.filter(sub => sub.card_id === cardId).length
+  }
+
   // Función de debug para crear tarjetas de prueba
   const handleDebugCreateCards = async () => {
     if (bankAccounts.length === 0) {
@@ -658,6 +766,8 @@ function TarjetasDebito() {
         const mappedCards = response.cards.map(mapCardFromAPI)
         setCards(mappedCards)
       }
+      // Disparar evento para actualizar otros componentes
+      window.dispatchEvent(new Event('cardsUpdated'))
       setIsDebugModalOpen(false)
       alert(`${testCards.length} tarjetas de prueba creadas exitosamente`)
     } catch (err: any) {
@@ -680,6 +790,8 @@ function TarjetasDebito() {
           const mappedCards = response.cards.map(mapCardFromAPI)
           setCards(mappedCards)
         }
+        // Disparar evento para actualizar otros componentes
+        window.dispatchEvent(new Event('cardsUpdated'))
         setIsDebugModalOpen(false)
         alert('Todas las tarjetas han sido eliminadas exitosamente')
       } catch (err: any) {
@@ -749,7 +861,15 @@ function TarjetasDebito() {
                           </div>
                         </div>
                         <div className="card-item-body">
-                          <p className="card-number">{formatCardNumber(card.ultimos4Digitos)}</p>
+                          <div className="card-left-info">
+                            <p className="card-number">{formatCardNumber(card.ultimos4Digitos)}</p>
+                            {getSubscriptionCountForCard(card.id) > 0 && (
+                              <div className="card-subscriptions-badge">
+                                <CardMembershipIcon className="subscriptions-badge-icon" />
+                                <span className="subscriptions-badge-text">{getSubscriptionCountForCard(card.id)} subscripción{getSubscriptionCountForCard(card.id) !== 1 ? 'es' : ''}</span>
+                              </div>
+                            )}
+                          </div>
                           <p className="card-expiration">Vence: {formatDate(card.fechaVencimiento)}</p>
                         </div>
                       </div>
@@ -995,6 +1115,67 @@ function TarjetasDebito() {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación de eliminación con subscripciones */}
+      {isDeleteConfirmModalOpen && selectedCard && (
+        <div className="modal-overlay" onClick={() => setIsDeleteConfirmModalOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">⚠️ Advertencia: Eliminar Tarjeta</h2>
+              <button className="modal-close" onClick={() => setIsDeleteConfirmModalOpen(false)}>×</button>
+            </div>
+            <div className="delete-warning-content">
+              <p className="warning-text">
+                Esta tarjeta tiene <strong>{affectedSubscriptions.length} subscripción(es)</strong> asociada(s) que también serán eliminadas.
+              </p>
+              
+              <div className="affected-subscriptions-list">
+                <h3 className="subscriptions-list-title">Subscripciones que serán eliminadas:</h3>
+                <ul className="subscriptions-list">
+                  {affectedSubscriptions.map((sub) => (
+                    <li key={sub.id} className="subscription-list-item">
+                      <CardMembershipIcon className="subscription-list-icon" />
+                      <div className="subscription-list-info">
+                        <span className="subscription-list-name">{sub.name || sub.nombre}</span>
+                        <span className="subscription-list-price">
+                          {new Intl.NumberFormat('es-CO', {
+                            style: 'currency',
+                            currency: 'COP',
+                            minimumFractionDigits: 0
+                          }).format(sub.price || 0)}
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="warning-reminder">
+                <p className="reminder-text">
+                  ⚠️ <strong>IMPORTANTE:</strong> Si eliminas esta tarjeta, tendrás que volver a registrar estas subscripciones manualmente si las necesitas.
+                </p>
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button 
+                type="button" 
+                className="modal-button cancel" 
+                onClick={() => setIsDeleteConfirmModalOpen(false)}
+              >
+                Cancelar
+              </button>
+              <button 
+                type="button" 
+                className="modal-button delete-confirm" 
+                onClick={performDeleteCard}
+                disabled={isLoading}
+              >
+                {isLoading ? 'Eliminando...' : 'Eliminar Tarjeta y Subscripciones'}
+              </button>
+            </div>
           </div>
         </div>
       )}
