@@ -6,7 +6,7 @@ interface AppPageProps {
   color?: string
 }
 
-function AppPage({ title, icon, color }: AppPageProps) {
+function AppPage(_props: AppPageProps) {
   return (
     <div className="app-page-container">
       <div className="app-page-content">

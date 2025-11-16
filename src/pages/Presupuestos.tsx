@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import CalculateIcon from '@mui/icons-material/Calculate'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import RestoreIcon from '@mui/icons-material/Restore'
 import ArchiveIcon from '@mui/icons-material/Archive'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { api } from '../services/api'
 import './AppPage.css'
 import './Presupuestos.css'
@@ -37,6 +39,7 @@ interface Budget {
 }
 
 function Presupuestos() {
+  const navigate = useNavigate()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
@@ -216,7 +219,7 @@ function Presupuestos() {
     try {
       const allBudgets = await api.getBudgets()
       if (allBudgets.budgets && Array.isArray(allBudgets.budgets)) {
-        const nombreExists = allBudgets.budgets.some(b => 
+        const nombreExists = allBudgets.budgets.some((b: any) => 
           b.name.toLowerCase() === formData.nombre.toLowerCase().trim() &&
           (!isEditMode || b.id !== selectedBudget?.id)
         )
@@ -707,6 +710,14 @@ function Presupuestos() {
                   </div>
                 </>
               )}
+
+              {/* Botón de volver */}
+              <div className="back-button-container">
+                <button className="back-button" onClick={() => navigate('/finanzas')}>
+                  <ArrowBackIcon />
+                  <span>Volver a Finanzas</span>
+                </button>
+              </div>
             </>
           )}
         </div>

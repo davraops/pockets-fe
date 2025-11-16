@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import CreditCardIcon from '@mui/icons-material/CreditCard'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { api } from '../services/api'
 import './AppPage.css'
 import './TarjetasCredito.css'
@@ -38,9 +40,12 @@ interface CreditCard {
 }
 
 function TarjetasCredito() {
+  const navigate = useNavigate()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [isBenefitsModalOpen, setIsBenefitsModalOpen] = useState(false)
+  const [allBenefits, setAllBenefits] = useState<{ benefit: string; cards: string[] }[]>([])
   const [isEditMode, setIsEditMode] = useState(false)
   const [selectedCard, setSelectedCard] = useState<CreditCard | null>(null)
   const [cards, setCards] = useState<CreditCard[]>([])
@@ -429,7 +434,7 @@ function TarjetasCredito() {
         handleCloseDetailModal()
       } else {
         // Agregar nueva tarjeta
-        const createResponse = await api.createCreditCard(cardData)
+        await api.createCreditCard(cardData)
         
         // Crear deuda asociada automáticamente
         try {
@@ -879,6 +884,28 @@ function TarjetasCredito() {
     return bancoColors[banco] || '#FF2D55'
   }
 
+  // Función para recopilar todos los beneficios de todas las tarjetas
+  const handleShowAllBenefits = () => {
+    const benefitsMap = new Map<string, string[]>()
+    
+    cards.forEach(card => {
+      card.beneficios.forEach(benefit => {
+        if (!benefitsMap.has(benefit)) {
+          benefitsMap.set(benefit, [])
+        }
+        benefitsMap.get(benefit)!.push(card.nombre)
+      })
+    })
+    
+    const allBenefitsList = Array.from(benefitsMap.entries()).map(([benefit, cards]) => ({
+      benefit,
+      cards
+    }))
+    
+    setAllBenefits(allBenefitsList)
+    setIsBenefitsModalOpen(true)
+  }
+
   return (
     <>
       <div className="app-page-container">
@@ -918,6 +945,11 @@ function TarjetasCredito() {
                   <AddIcon />
                   <span>Agregar Tarjeta</span>
                 </button>
+                {cards.some(card => card.beneficios.length > 0) && (
+                  <button className="benefits-all-button" onClick={handleShowAllBenefits}>
+                    <span>Ver Todos los Beneficios</span>
+                  </button>
+                )}
                 {api.isTestUser() && (
                   <button className="debug-button" onClick={() => setIsDebugModalOpen(true)} title="Debug: Opciones de desarrollo">
                     🐛 Debug
@@ -983,12 +1015,7 @@ function TarjetasCredito() {
                           </div>
                           {card.beneficios.length > 0 && (
                             <div className="card-benefits">
-                              <p className="benefits-label">Beneficios:</p>
-                              <div className="benefits-list">
-                                {card.beneficios.map((benefit, index) => (
-                                  <span key={index} className="benefit-item">{benefit}</span>
-                                ))}
-                              </div>
+                              <span className="benefits-badge">{card.beneficios.length} beneficio{card.beneficios.length !== 1 ? 's' : ''}</span>
                             </div>
                           )}
                         </div>
@@ -997,6 +1024,14 @@ function TarjetasCredito() {
                   })}
                 </div>
               )}
+
+              {/* Botón de volver */}
+              <div className="back-button-container">
+                <button className="back-button" onClick={() => navigate('/finanzas')}>
+                  <ArrowBackIcon />
+                  <span>Volver a Finanzas</span>
+                </button>
+              </div>
             </>
           )}
         </div>
@@ -1495,6 +1530,44 @@ function TarjetasCredito() {
                 type="button"
                 className="modal-button cancel"
                 onClick={() => setIsDebugModalOpen(false)}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Todos los Beneficios */}
+      {isBenefitsModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsBenefitsModalOpen(false)}>
+          <div className="modal-content benefits-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Todos los Beneficios Activos</h2>
+              <button className="modal-close" onClick={() => setIsBenefitsModalOpen(false)}>×</button>
+            </div>
+            <div className="benefits-modal-content">
+              {allBenefits.length === 0 ? (
+                <p className="no-benefits-message">No hay beneficios registrados en tus tarjetas.</p>
+              ) : (
+                <ul className="benefits-list-modal">
+                  {allBenefits.map((item, index) => (
+                    <li key={index} className="benefit-item-modal">
+                      <span className="benefit-icon">✓</span>
+                      <div className="benefit-content">
+                        <span className="benefit-text">{item.benefit}</span>
+                        <span className="benefit-cards">Tarjetas: {item.cards.join(', ')}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="modal-button cancel"
+                onClick={() => setIsBenefitsModalOpen(false)}
               >
                 Cerrar
               </button>

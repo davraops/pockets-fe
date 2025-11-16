@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
@@ -6,6 +7,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import WarningIcon from '@mui/icons-material/Warning'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { api } from '../services/api'
 import './AppPage.css'
 import './Transacciones.css'
@@ -67,6 +69,7 @@ interface CreditCard {
 }
 
 function Transacciones() {
+  const navigate = useNavigate()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
@@ -189,7 +192,7 @@ function Transacciones() {
             mapTransactionFromAPI(tx, accountsMap, budgetsMap)
           )
           // Ordenar por fecha descendente (más recientes primero)
-          mappedTransactions.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
+          mappedTransactions.sort((a: Transaction, b: Transaction) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
           setTransactions(mappedTransactions)
         } else {
           setTransactions([])
@@ -284,7 +287,7 @@ function Transacciones() {
     })
   }
 
-  const handleDeleteClick = async (transaction: Transaction) => {
+  const handleDeleteClick = async (_transaction: Transaction) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar esta transacción?')) {
       try {
         // Nota: La API no tiene DELETE, pero podemos implementarlo si existe
@@ -380,12 +383,14 @@ function Transacciones() {
   }
 
   const validateForm = (): boolean => {
-    const errors = {
+    const errors: any = {
       monto: '',
       descripcion: '',
       categoria: '',
       cuentaBancariaId: '',
-      presupuestoId: ''
+      presupuestoId: '',
+      debtId: '',
+      creditCardId: ''
     }
     let isValid = true
 
@@ -417,20 +422,20 @@ function Transacciones() {
     // El presupuesto ya no es obligatorio para egresos (el backend ahora lo permite)
 
     // Validar deuda si es pago de deuda
-    if (formData.tipo === 'egreso' && formData.isDebtPayment && !formData.debtId) {
+    if (formData.tipo === 'egreso' && (formData as any).isDebtPayment && !(formData as any).debtId) {
       errors.debtId = 'Debes seleccionar una deuda'
       isValid = false
     }
 
     // Validar tarjeta de crédito si es pago con tarjeta
-    if (formData.tipo === 'egreso' && formData.isCreditCardPayment && !formData.creditCardId) {
+    if (formData.tipo === 'egreso' && (formData as any).isCreditCardPayment && !(formData as any).creditCardId) {
       errors.creditCardId = 'Debes seleccionar una tarjeta de crédito'
       isValid = false
     }
 
     // Validar cupo disponible si es pago con tarjeta de crédito
-    if (formData.tipo === 'egreso' && formData.isCreditCardPayment && formData.creditCardId) {
-      const selectedCard = creditCards.find(c => c.id === formData.creditCardId)
+    if (formData.tipo === 'egreso' && (formData as any).isCreditCardPayment && (formData as any).creditCardId) {
+      const selectedCard = creditCards.find(c => c.id === (formData as any).creditCardId)
       if (selectedCard) {
         const monto = parseFloat(formData.monto)
         if (monto > selectedCard.cupoDisponible) {
@@ -440,7 +445,7 @@ function Transacciones() {
       }
     }
 
-    setFormErrors(errors)
+    setFormErrors(errors as any)
     return isValid
   }
 
@@ -558,17 +563,17 @@ function Transacciones() {
       })
       // Si se desactiva el toggle de pago de deuda, limpiar la deuda seleccionada
       if (name === 'isDebtPayment' && !checked) {
-        setFormData(prev => ({
+        setFormData((prev: any) => ({
           ...prev,
           isDebtPayment: false,
           debtId: ''
         }))
       }
     } else {
-      setFormData({
-        ...formData,
+      setFormData((prev: any) => ({
+        ...prev,
         [name]: value
-      })
+      }))
     }
     
     // Limpiar presupuesto si cambia a ingreso
@@ -687,7 +692,7 @@ function Transacciones() {
                   <span className="summary-value expense">{formatBalance(totals.egresos, 'COP')}</span>
                 </div>
                 <div className="summary-separator"></div>
-                <div className="summary-item">
+                <div className="summary-item total-balance">
                   <span className="summary-label">Balance</span>
                   <span className={`summary-value ${totals.balance >= 0 ? 'positive' : 'negative'}`}>
                     {formatBalance(totals.balance, 'COP')}
@@ -768,6 +773,14 @@ function Transacciones() {
                   })}
                 </div>
               )}
+
+              {/* Botón de volver */}
+              <div className="back-button-container">
+                <button className="back-button" onClick={() => navigate('/finanzas')}>
+                  <ArrowBackIcon />
+                  <span>Volver a Finanzas</span>
+                </button>
+              </div>
             </>
           )}
         </div>

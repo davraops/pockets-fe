@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import PaymentIcon from '@mui/icons-material/Payment'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { api } from '../services/api'
 import './AppPage.css'
 import './Cuentas.css'
@@ -43,6 +45,7 @@ interface BankAccount {
 }
 
 function Cuentas() {
+  const navigate = useNavigate()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
@@ -240,7 +243,7 @@ function Cuentas() {
     try {
       const allAccounts = await api.getBankAccounts()
       if (allAccounts.accounts && Array.isArray(allAccounts.accounts)) {
-        const nombreExists = allAccounts.accounts.some(acc => 
+        const nombreExists = allAccounts.accounts.some((acc: any) => 
           acc.account_name.toLowerCase() === formData.nombre.toLowerCase().trim() &&
           (!isEditMode || acc.id !== selectedAccount?.id)
         )
@@ -250,7 +253,7 @@ function Cuentas() {
         }
 
         // Validar número de cuenta único
-        const numeroExists = allAccounts.accounts.some(acc => 
+        const numeroExists = allAccounts.accounts.some((acc: any) => 
           acc.account_id === formData.numeroCuenta.trim() &&
           (!isEditMode || acc.id !== selectedAccount?.id)
         )
@@ -594,7 +597,7 @@ function Cuentas() {
                   <span className="exchange-rate-label">EUR</span>
                   <span className="exchange-rate-value">{exchangeRates.EUR.toLocaleString('es-CO')} COP</span>
                 </div>
-                <div className="exchange-rate-separator"></div>
+                <div className="exchange-rate-separator separator-after-eur"></div>
                 <div className="exchange-rate-item total-cop">
                   <span className="exchange-rate-label">Total</span>
                   <span className="exchange-rate-value total-value">{formatBalance(calculateTotalCOP(), 'COP')}</span>
@@ -664,6 +667,14 @@ function Cuentas() {
                   })}
                 </div>
               )}
+
+              {/* Botón de volver */}
+              <div className="back-button-container">
+                <button className="back-button" onClick={() => navigate('/finanzas')}>
+                  <ArrowBackIcon />
+                  <span>Volver a Finanzas</span>
+                </button>
+              </div>
             </>
           )}
         </div>

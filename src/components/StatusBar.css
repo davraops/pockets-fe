@@ -21,43 +21,52 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  flex: 1;
 }
 
 .status-bar-left {
   justify-content: flex-start;
   gap: 0.75rem;
-}
-
-.status-bar-separator {
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 0.875rem;
+  flex: 1;
+  min-width: 0;
 }
 
 .status-bar-right {
   justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.status-bar-separator {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 1rem;
+  flex-shrink: 0;
 }
 
 .status-bar-date {
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
   letter-spacing: -0.01em;
   text-transform: capitalize;
+  flex-shrink: 0;
 }
 
 .status-bar-title {
-  font-size: 0.9375rem;
+  font-size: 1rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.95);
   letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .status-bar-time {
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.95);
   letter-spacing: -0.01em;
+  flex-shrink: 0;
 }
 
 /* Responsive adjustments */
@@ -67,12 +76,12 @@
   }
 
   .status-bar-title {
-    font-size: 0.875rem;
+    font-size: 1rem;
   }
 
   .status-bar-date,
   .status-bar-time {
-    font-size: 0.8125rem;
+    font-size: 1rem;
   }
 
   .status-bar-left {
@@ -86,16 +95,16 @@
   }
 
   .status-bar-title {
-    font-size: 0.8125rem;
+    font-size: 1rem;
   }
 
   .status-bar-date,
   .status-bar-time {
-    font-size: 0.75rem;
+    font-size: 1rem;
   }
 
   .status-bar-separator {
-    font-size: 0.75rem;
+    font-size: 1rem;
   }
 
   .status-bar-left {
@@ -112,4 +121,3 @@
     border-radius: 0 0 20px 20px;
   }
 }
-

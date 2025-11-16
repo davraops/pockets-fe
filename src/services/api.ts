@@ -1,7 +1,7 @@
 // API Client for Pockets Backend
 // Por defecto usa la URL de producción (AWS)
 // Para desarrollo local, configurar VITE_API_URL en el archivo .env
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://x1bom9m0bd.execute-api.us-east-1.amazonaws.com/dev'
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'https://x1bom9m0bd.execute-api.us-east-1.amazonaws.com/dev'
 
 class PocketsAPI {
   private baseURL: string
@@ -43,7 +43,7 @@ class PocketsAPI {
    * - Los nuevos registros se asignan automáticamente al usuario autenticado.
    * - Los exchange rates son globales y compartidos entre todos los usuarios.
    */
-  private async request(endpoint: string, options: RequestInit = {}) {
+  private async request(endpoint: string, options: any = {}) {
     const url = `${this.baseURL}${endpoint}`
     const token = this.getToken()
     
@@ -58,8 +58,8 @@ class PocketsAPI {
       ...options,
     }
 
-    if (config.body && typeof config.body === 'object' && !(config.body instanceof FormData)) {
-      config.body = JSON.stringify(config.body)
+    if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
+      config.body = JSON.stringify(options.body)
     }
 
     try {

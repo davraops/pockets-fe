@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import PaymentIcon from '@mui/icons-material/Payment'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CardMembershipIcon from '@mui/icons-material/CardMembership'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { api } from '../services/api'
 import './AppPage.css'
 import './TarjetasDebito.css'
@@ -43,6 +45,7 @@ interface BankAccount {
 }
 
 function TarjetasDebito() {
+  const navigate = useNavigate()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
@@ -322,7 +325,8 @@ function TarjetasDebito() {
       errors.fechaVencimiento = 'La fecha de vencimiento es requerida'
       isValid = false
     } else {
-      let year: string, month: string
+      let year: string | undefined
+      let month: string | undefined
       
       // Si viene en formato MM/YYYY, convertir a YYYY-MM
       if (formData.fechaVencimiento.includes('/')) {
@@ -336,7 +340,9 @@ function TarjetasDebito() {
         }
       } else if (formData.fechaVencimiento.includes('-')) {
         // Si viene en formato YYYY-MM
-        [year, month] = formData.fechaVencimiento.split('-')
+        const parts = formData.fechaVencimiento.split('-')
+        year = parts[0]
+        month = parts[1]
       } else {
         errors.fechaVencimiento = 'Formato inválido. Use MM/YYYY'
         isValid = false
@@ -610,60 +616,61 @@ function TarjetasDebito() {
     return dateString
   }
 
-  const bancos = [
-    'Bancolombia',
-    'Davivienda',
-    'Banco de Bogota',
-    'GNB Sudameris',
-    'Citibank',
-    'Banco Agrario',
-    'Banco de Occidente',
-    'BBVA',
-    'BTG Pactual',
-    'Mundo Mujer',
-    'Banco Caja Social',
-    'ITAU',
-    'Falabella',
-    'Santander',
-    'Bancamia',
-    'JP Morgan Chase',
-    'Mi Banco',
-    'W',
-    'Banco Popular',
-    'Finandina',
-    'Coopcentral',
-    'Union',
-    'Serfinanza',
-    'Scotiabank',
-    'Colpatria',
-    'Bancoomeva',
-    'Pichincha',
-    'Av Villas',
-    'Nequi',
-    'Daviplata',
-    'Movii',
-    'Nu',
-    'TPaga',
-    'Tuya Pay',
-    'Dale!',
-    'Rappi',
-    'Leal',
-    'Bold',
-    'Littio',
-    'Uala',
-    'Lulo Bank',
-    'Coink',
-    'Iris Neofinanciera',
-    'Mercadopago',
-    'PayU',
-    'Deel',
-    'Dolar App',
-    'Wise USD',
-    'Wise EUR',
-    'Payoneer USD',
-    'Payoneer EUR',
-    'Paypal'
-  ]
+  // Lista de bancos para referencia (no se usa actualmente)
+  // const bancos = [
+  //   'Bancolombia',
+  //   'Davivienda',
+  //   'Banco de Bogota',
+  //   'GNB Sudameris',
+  //   'Citibank',
+  //   'Banco Agrario',
+  //   'Banco de Occidente',
+  //   'BBVA',
+  //   'BTG Pactual',
+  //   'Mundo Mujer',
+  //   'Banco Caja Social',
+  //   'ITAU',
+  //   'Falabella',
+  //   'Santander',
+  //   'Bancamia',
+  //   'JP Morgan Chase',
+  //   'Mi Banco',
+  //   'W',
+  //   'Banco Popular',
+  //   'Finandina',
+  //   'Coopcentral',
+  //   'Union',
+  //   'Serfinanza',
+  //   'Scotiabank',
+  //   'Colpatria',
+  //   'Bancoomeva',
+  //   'Pichincha',
+  //   'Av Villas',
+  //   'Nequi',
+  //   'Daviplata',
+  //   'Movii',
+  //   'Nu',
+  //   'TPaga',
+  //   'Tuya Pay',
+  //   'Dale!',
+  //   'Rappi',
+  //   'Leal',
+  //   'Bold',
+  //   'Littio',
+  //   'Uala',
+  //   'Lulo Bank',
+  //   'Coink',
+  //   'Iris Neofinanciera',
+  //   'Mercadopago',
+  //   'PayU',
+  //   'Deel',
+  //   'Dolar App',
+  //   'Wise USD',
+  //   'Wise EUR',
+  //   'Payoneer USD',
+  //   'Payoneer EUR',
+  //   'Paypal'
+  // ]
 
   // Colores para cada banco (mismo que en Cuentas)
   const bancoColors: Record<string, string> = {
@@ -877,6 +884,14 @@ function TarjetasDebito() {
                   })}
                 </div>
               )}
+
+              {/* Botón de volver */}
+              <div className="back-button-container">
+                <button className="back-button" onClick={() => navigate('/finanzas')}>
+                  <ArrowBackIcon />
+                  <span>Volver a Finanzas</span>
+                </button>
+              </div>
             </>
           )}
         </div>

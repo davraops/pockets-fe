@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import AppPage from './pages/AppPage'
@@ -12,12 +12,14 @@ import Subscripciones from './pages/Subscripciones'
 import TarjetasCredito from './pages/TarjetasCredito'
 import StatusBar from './components/StatusBar'
 import ProtectedRoute from './components/ProtectedRoute'
+import Footer from './components/Footer'
 
-function App() {
-  // Las tasas de cambio ahora se obtienen desde la API en el componente Cuentas
+function AppContent() {
+  const location = useLocation()
+  const isLogin = location.pathname === '/login'
 
   return (
-    <BrowserRouter>
+    <>
       <StatusBar />
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -138,6 +140,17 @@ function App() {
           element={<AppPage title="" />} 
         />
       </Routes>
+      {!isLogin && <Footer />}
+    </>
+  )
+}
+
+function App() {
+  // Las tasas de cambio ahora se obtienen desde la API en el componente Cuentas
+
+  return (
+    <BrowserRouter>
+      <AppContent />
     </BrowserRouter>
   )
 }

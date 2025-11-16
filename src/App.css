@@ -1,14 +1,14 @@
 .app-container {
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2rem;
   padding-top: calc(2rem + 44px);
+  padding-bottom: calc(2rem + 60px);
   box-sizing: border-box;
   position: relative;
-  overflow: hidden;
   background: #2c2c2e;
 }
 
@@ -45,12 +45,12 @@
   }
 
   .app-icon {
-    width: 100px;
+    width: 140px;
   }
 
   .app-icon-wrapper {
-    width: 80px;
-    height: 80px;
+    width: calc(80px + 0.75rem);
+    height: calc(80px + 0.75rem);
   }
 
   .app-icon-bg {
@@ -65,8 +65,11 @@
 
   .app-name {
     font-size: 0.8rem;
-    max-width: 100px;
+    max-width: 140px;
     letter-spacing: -0.01em;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
   }
 }
 
@@ -120,7 +123,7 @@
 
 .apps-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
   justify-items: center;
   align-items: start;
@@ -133,7 +136,7 @@
   gap: 0.6rem;
   cursor: pointer;
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  width: 90px;
+  width: 140px;
 }
 
 .app-icon:hover {
@@ -141,8 +144,8 @@
 }
 
 .app-icon-wrapper {
-  width: 70px;
-  height: 70px;
+  width: calc(70px + 0.75rem);
+  height: calc(70px + 0.75rem);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -171,8 +174,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0) 100%);
   pointer-events: none;
+  border-radius: 20px;
 }
 
 .app-icon:hover .app-icon-bg {
@@ -197,34 +201,34 @@
 }
 
 .app-name {
-  font-size: 0.75rem;
+  font-size: 1rem;
   color: rgba(255, 255, 255, 0.9);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   font-weight: 500;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
   text-align: center;
-  line-height: 1.3;
+  line-height: 1.2;
   letter-spacing: -0.01em;
-  max-width: 90px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  max-width: 140px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .apps-grid {
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 1.2rem;
   }
 
   .app-icon {
-    width: 80px;
+    width: 120px;
   }
 
   .app-icon-wrapper {
-    width: 60px;
-    height: 60px;
+    width: calc(60px + 0.75rem);
+    height: calc(60px + 0.75rem);
   }
 
   .app-material-icon {
@@ -240,17 +244,17 @@
 
 @media (max-width: 480px) {
   .apps-grid {
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
   }
 
   .app-icon {
-    width: 70px;
+    width: 110px;
   }
 
   .app-icon-wrapper {
-    width: 55px;
-    height: 55px;
+    width: calc(55px + 0.75rem);
+    height: calc(55px + 0.75rem);
   }
 
   .app-material-icon {
@@ -260,6 +264,6 @@
   }
 
   .app-name {
-    font-size: 0.7rem;
+    font-size: 1rem;
   }
 }

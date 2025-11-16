@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import CardMembershipIcon from '@mui/icons-material/CardMembership'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { api } from '../services/api'
 import './AppPage.css'
 import './Subscripciones.css'
 
 // Interfaz que coincide con la respuesta de la API (campos en inglés)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface SubscriptionAPI {
   id: string
   name: string
@@ -54,6 +57,7 @@ interface Card {
 }
 
 function Subscripciones() {
+  const navigate = useNavigate()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
@@ -280,7 +284,7 @@ function Subscripciones() {
     // Validar nombre único - primero verificar contra el estado local
     const nombreNormalizado = formData.nombre.toLowerCase().trim()
     if (nombreNormalizado) {
-      const nombreExistsLocal = subscriptions.some(sub => 
+      const nombreExistsLocal = subscriptions.some((sub: Subscription) => 
         sub.nombre.toLowerCase() === nombreNormalizado &&
         (!isEditMode || sub.id !== selectedSubscription?.id)
       )
@@ -295,7 +299,7 @@ function Subscripciones() {
       try {
         const allSubscriptions = await api.getSubscriptions()
         if (allSubscriptions.subscriptions && Array.isArray(allSubscriptions.subscriptions)) {
-          const nombreExists = allSubscriptions.subscriptions.some(sub => 
+          const nombreExists = allSubscriptions.subscriptions.some((sub: any) => 
             sub.name.toLowerCase() === nombreNormalizado &&
             (!isEditMode || sub.id !== selectedSubscription?.id)
           )
@@ -554,6 +558,14 @@ function Subscripciones() {
                   })}
                 </div>
               )}
+
+              {/* Botón de volver */}
+              <div className="back-button-container">
+                <button className="back-button" onClick={() => navigate('/finanzas')}>
+                  <ArrowBackIcon />
+                  <span>Volver a Finanzas</span>
+                </button>
+              </div>
             </>
           )}
         </div>

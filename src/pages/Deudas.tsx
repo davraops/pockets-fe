@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import CreditCardIcon from '@mui/icons-material/CreditCard'
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
@@ -6,6 +7,7 @@ import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { api } from '../services/api'
 import './AppPage.css'
 import './Deudas.css'
@@ -45,6 +47,7 @@ interface Debt {
 }
 
 function Deudas() {
+  const navigate = useNavigate()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
@@ -117,7 +120,7 @@ function Deudas() {
       if (response.debts && Array.isArray(response.debts)) {
         const mappedDebts = response.debts.map(mapDebtFromAPI)
         // Ordenar por tasa de interés según el orden seleccionado y luego por monto adeudado (descendente)
-        mappedDebts.sort((a, b) => {
+        mappedDebts.sort((a: Debt, b: Debt) => {
           if (a.tasaInteres !== b.tasaInteres) {
             if (sortOrder === 'desc') {
               return b.tasaInteres - a.tasaInteres // Mayor tasa de interés primero
@@ -708,6 +711,14 @@ function Deudas() {
                   })}
                 </div>
               )}
+
+              {/* Botón de volver */}
+              <div className="back-button-container">
+                <button className="back-button" onClick={() => navigate('/finanzas')}>
+                  <ArrowBackIcon />
+                  <span>Volver a Finanzas</span>
+                </button>
+              </div>
             </>
           )}
         </div>
