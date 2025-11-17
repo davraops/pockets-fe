@@ -52,6 +52,7 @@ function Presupuestos() {
   const [isLoading, setIsLoading] = useState(true)
   const [isLoadingDeleted, setIsLoadingDeleted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [projectBudgetIds, setProjectBudgetIds] = useState<Set<string>>(new Set())
   const [formData, setFormData] = useState({
     nombre: '',
     montoMaximo: '',
@@ -81,30 +82,80 @@ function Presupuestos() {
     }
   }
 
-  // Cargar presupuestos desde la API
+  // Cargar proyectos para identificar presupuestos asociados
   useEffect(() => {
-    const loadBudgets = async () => {
-      setIsLoading(true)
-      setError(null)
+    const loadProjects = async () => {
       try {
-        const response = await api.getBudgets()
-        if (response.budgets && Array.isArray(response.budgets)) {
-          const mappedBudgets = response.budgets.map(mapBudgetFromAPI)
-          setBudgets(mappedBudgets)
-        } else {
-          setBudgets([])
+        const response = await api.getProjects()
+        if (response.projects && Array.isArray(response.projects)) {
+          // Crear un Set con los budget_ids de los proyectos activos
+          const budgetIds = new Set<string>()
+          response.projects.forEach((project: any) => {
+            if (project.budget_id) {
+              budgetIds.add(project.budget_id)
+            }
+          })
+          setProjectBudgetIds(budgetIds)
         }
       } catch (err: any) {
-        console.error('Error al cargar presupuestos:', err)
-        setError('Error al cargar los presupuestos. Por favor, intenta de nuevo.')
-        setBudgets([])
-      } finally {
-        setIsLoading(false)
+        console.error('Error al cargar proyectos:', err)
+        // No mostrar error al usuario, solo continuar sin la información de proyectos
       }
     }
 
-    loadBudgets()
+    loadProjects()
   }, [])
+
+  // Función para recargar presupuestos
+  const reloadBudgets = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      console.log('Recargando presupuestos...')
+      const response = await api.getBudgets()
+      console.log('Respuesta de presupuestos:', response)
+      if (response.budgets && Array.isArray(response.budgets)) {
+        const mappedBudgets = response.budgets.map(mapBudgetFromAPI)
+        console.log('Presupuestos mapeados:', mappedBudgets)
+        setBudgets(mappedBudgets)
+      } else {
+        setBudgets([])
+      }
+    } catch (err: any) {
+      console.error('Error al cargar presupuestos:', err)
+      setError('Frontend says: Error al cargar los presupuestos. Por favor, intenta de nuevo.')
+      setBudgets([])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Cargar presupuestos desde la API
+  useEffect(() => {
+    reloadBudgets()
+  }, [])
+
+  // Escuchar eventos de actualización de presupuestos desde otras páginas
+  useEffect(() => {
+    const handleBudgetsUpdated = (event: Event) => {
+      console.log('Evento budgetsUpdated recibido, recargando presupuestos...', event)
+      console.log('Timestamp del evento:', new Date().toISOString())
+      reloadBudgets()
+    }
+
+    console.log('Registrando listener para budgetsUpdated en Presupuestos')
+    window.addEventListener('budgetsUpdated', handleBudgetsUpdated)
+
+    return () => {
+      console.log('Removiendo listener para budgetsUpdated en Presupuestos')
+      window.removeEventListener('budgetsUpdated', handleBudgetsUpdated)
+    }
+  }, [reloadBudgets])
+
+  // Función para verificar si un presupuesto está asociado a un proyecto
+  const isBudgetAssociatedWithProject = (budgetId: string): boolean => {
+    return projectBudgetIds.has(budgetId)
+  }
 
   const handleOpenModal = () => {
     setIsModalOpen(true)
@@ -170,7 +221,7 @@ function Presupuestos() {
         alert('Presupuesto eliminado (soft delete). Puedes restaurarlo más tarde.')
       } catch (err: any) {
         console.error('Error al eliminar presupuesto:', err)
-        alert('Error al eliminar el presupuesto. Por favor, intenta de nuevo.')
+        alert('Frontend says: Error al eliminar el presupuesto. Por favor, intenta de nuevo.')
       }
     }
   }
@@ -199,12 +250,12 @@ function Presupuestos() {
         alert(`Presupuesto eliminado permanentemente.\n${deletedCount} transacción(es) asociada(s) también fueron eliminadas.`)
       } catch (err: any) {
         console.error('Error al eliminar presupuesto:', err)
-        alert('Error al eliminar el presupuesto: ' + (err.data?.error || 'Error desconocido'))
+        alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
       } finally {
         setIsLoading(false)
       }
     } else if (userInput !== null) {
-      alert('Confirmación incorrecta. La eliminación fue cancelada.')
+      alert('Frontend says: Confirmación incorrecta. La eliminación fue cancelada.')
     }
   }
 
@@ -299,7 +350,9 @@ function Presupuestos() {
       }
     } catch (err: any) {
       console.error('Error al guardar presupuesto:', err)
-      const errorMessage = err.data?.error || 'Error al guardar el presupuesto. Por favor, intenta de nuevo.'
+      const errorMessage = err.data?.error 
+        ? `Backend says: ${err.data.error}` 
+        : 'Frontend says: Error al guardar el presupuesto. Por favor, intenta de nuevo.'
       alert(errorMessage)
     }
   }
@@ -437,27 +490,6 @@ function Presupuestos() {
     }, 0)
   }
 
-  // Función para recargar presupuestos
-  const reloadBudgets = async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const response = await api.getBudgets()
-      if (response.budgets && Array.isArray(response.budgets)) {
-        const mappedBudgets = response.budgets.map(mapBudgetFromAPI)
-        setBudgets(mappedBudgets)
-      } else {
-        setBudgets([])
-      }
-    } catch (err: any) {
-      console.error('Error al cargar presupuestos:', err)
-      setError('Error al cargar los presupuestos. Por favor, intenta de nuevo.')
-      setBudgets([])
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   // Cargar presupuestos eliminados
   const loadDeletedBudgets = async () => {
     setIsLoadingDeleted(true)
@@ -496,7 +528,7 @@ function Presupuestos() {
         alert('Presupuesto restaurado exitosamente')
       } catch (err: any) {
         console.error('Error al restaurar presupuesto:', err)
-        alert('Error al restaurar el presupuesto: ' + (err.data?.error || 'Error desconocido'))
+        alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
       }
     }
   }
@@ -524,7 +556,7 @@ function Presupuestos() {
       alert('Presupuestos demo creados exitosamente')
     } catch (err: any) {
       console.error('Error al crear presupuestos demo:', err)
-      alert('Error al crear presupuestos demo: ' + (err.data?.error || 'Error desconocido'))
+      alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
     } finally {
       setIsLoading(false)
     }
@@ -541,7 +573,7 @@ function Presupuestos() {
         alert('Todos los presupuestos han sido eliminados (soft delete). Puedes restaurarlos más tarde.')
       } catch (err: any) {
         console.error('Error al eliminar todos los presupuestos:', err)
-        alert('Error al eliminar presupuestos: ' + (err.data?.error || 'Error desconocido'))
+        alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
       } finally {
         setIsLoading(false)
       }
@@ -569,12 +601,12 @@ function Presupuestos() {
         alert('Todos los presupuestos y sus transacciones asociadas han sido eliminados permanentemente.')
       } catch (err: any) {
         console.error('Error al eliminar todos los presupuestos:', err)
-        alert('Error al eliminar presupuestos: ' + (err.data?.error || 'Error desconocido'))
+        alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
       } finally {
         setIsLoading(false)
       }
     } else if (userInput !== null) {
-      alert('Confirmación incorrecta. La eliminación fue cancelada.')
+      alert('Frontend says: Confirmación incorrecta. La eliminación fue cancelada.')
     }
   }
 
@@ -685,7 +717,9 @@ function Presupuestos() {
                           </div>
                             <div className="budget-amounts">
                               <div className="budget-amount-item">
-                                <span className="budget-amount-label">Gastado</span>
+                                <span className="budget-amount-label">
+                                  {isBudgetAssociatedWithProject(budget.id) ? 'Ahorrado' : 'Gastado'}
+                                </span>
                                 <span className="budget-amount-value spent">{formatBalance(budget.totalGastado)}</span>
                               </div>
                               <div className="budget-amount-item">
@@ -868,7 +902,9 @@ function Presupuestos() {
                     </div>
                   )}
                   <div className="detail-row">
-                    <span className="detail-label">Total Gastado:</span>
+                    <span className="detail-label">
+                      {selectedBudget && isBudgetAssociatedWithProject(selectedBudget.id) ? 'Total Ahorrado:' : 'Total Gastado:'}
+                    </span>
                     <span className="detail-value spent">{formatBalance(selectedBudget.totalGastado)}</span>
                   </div>
 
@@ -1120,7 +1156,7 @@ function Presupuestos() {
                               </span>
                               <span className="deleted-budget-separator">•</span>
                               <span className="deleted-budget-metric">
-                                Gastado: {formatBalance(budget.totalGastado)}
+                                {isBudgetAssociatedWithProject(budget.id) ? 'Ahorrado' : 'Gastado'}: {formatBalance(budget.totalGastado)}
                               </span>
                               <span className="deleted-budget-separator">•</span>
                               <span className="deleted-budget-metric">

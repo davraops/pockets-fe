@@ -1,0 +1,1149 @@
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import AddIcon from '@mui/icons-material/Add'
+import FolderSpecialIcon from '@mui/icons-material/FolderSpecial'
+import EditIcon from '@mui/icons-material/Edit'
+import DeleteIcon from '@mui/icons-material/Delete'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import { api } from '../services/api'
+import './AppPage.css'
+import './Proyectos.css'
+
+// Interfaz que coincide con la respuesta de la API (campos en inglés)
+interface ProjectAPI {
+  id: string
+  name: string
+  target_amount: number
+  current_amount: number
+  remaining: number
+  progress_percentage: number
+  start_date: string
+  end_date: string
+  duration_months: number
+  status: 'active' | 'completed' | 'cancelled'
+  budget_id?: string | null
+  budget?: {
+    id: string
+    name: string
+    max_amount: number
+    total_spent: number
+  }
+  created_at: string
+  updated_at: string
+}
+
+// Interfaz para uso interno del componente
+interface Project {
+  id: string
+  nombre: string
+  montoObjetivo: number
+  montoActual: number
+  restante: number
+  porcentajeProgreso: number
+  fechaInicio: string
+  fechaFin: string
+  duracionMeses: number
+  estado: 'active' | 'completed' | 'cancelled'
+  presupuestoId?: string | null
+}
+
+function Proyectos() {
+  const navigate = useNavigate()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [projects, setProjects] = useState<Project[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [formData, setFormData] = useState({
+    nombre: '',
+    montoObjetivo: '',
+    montoActual: '0',
+    duracionMeses: '',
+    fechaInicio: '',
+    fechaFin: '',
+    estado: 'active' as 'active' | 'completed' | 'cancelled'
+  })
+  const [formErrors, setFormErrors] = useState({
+    nombre: '',
+    montoObjetivo: '',
+    montoActual: '',
+    duracionMeses: '',
+    fechaInicio: '',
+    fechaFin: ''
+  })
+
+  // Mapear proyecto de API a formato interno
+  const mapProjectFromAPI = (apiProject: ProjectAPI): Project => {
+    return {
+      id: apiProject.id,
+      nombre: apiProject.name,
+      montoObjetivo: apiProject.target_amount,
+      montoActual: apiProject.current_amount,
+      restante: apiProject.remaining,
+      porcentajeProgreso: apiProject.progress_percentage,
+      fechaInicio: apiProject.start_date,
+      fechaFin: apiProject.end_date,
+      duracionMeses: apiProject.duration_months,
+      estado: apiProject.status,
+      presupuestoId: apiProject.budget_id || null
+    }
+  }
+
+  // Cargar proyectos desde la API
+  useEffect(() => {
+    const loadProjects = async () => {
+      setIsLoading(true)
+      setError(null)
+      try {
+        const response = await api.getProjects()
+        if (response.projects && Array.isArray(response.projects)) {
+          const mappedProjects = response.projects.map(mapProjectFromAPI)
+          setProjects(mappedProjects)
+        } else {
+          setProjects([])
+        }
+      } catch (err: any) {
+        console.error('Error al cargar proyectos:', err)
+        setError('Frontend says: Error al cargar los proyectos. Por favor, intenta de nuevo.')
+        setProjects([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadProjects()
+  }, [])
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setFormData({
+      nombre: '',
+      montoObjetivo: '',
+      montoActual: '0',
+      duracionMeses: '',
+      fechaInicio: '',
+      fechaFin: '',
+      estado: 'active'
+    })
+    setFormErrors({
+      nombre: '',
+      montoObjetivo: '',
+      montoActual: '',
+      duracionMeses: '',
+      fechaInicio: '',
+      fechaFin: ''
+    })
+  }
+
+  const handleOpenDetailModal = (project: Project) => {
+    setSelectedProject(project)
+    setIsDetailModalOpen(true)
+    setIsEditMode(false)
+    setFormData({
+      nombre: project.nombre,
+      montoObjetivo: project.montoObjetivo.toString(),
+      montoActual: project.montoActual.toString(),
+      duracionMeses: project.duracionMeses.toString(),
+      fechaInicio: project.fechaInicio,
+      fechaFin: project.fechaFin,
+      estado: project.estado
+    })
+  }
+
+  const handleCloseDetailModal = () => {
+    setIsDetailModalOpen(false)
+    setSelectedProject(null)
+    setIsEditMode(false)
+    setFormData({
+      nombre: '',
+      montoObjetivo: '',
+      montoActual: '0',
+      duracionMeses: '',
+      fechaInicio: '',
+      fechaFin: '',
+      estado: 'active'
+    })
+    setFormErrors({
+      nombre: '',
+      montoObjetivo: '',
+      montoActual: '',
+      duracionMeses: '',
+      fechaInicio: '',
+      fechaFin: ''
+    })
+  }
+
+  const handleEditClick = () => {
+    setIsEditMode(true)
+  }
+
+  const handleCompleteClick = async () => {
+    if (!selectedProject) return
+
+    if (window.confirm(`¿Estás seguro de que quieres marcar el proyecto "${selectedProject.nombre}" como completado? El presupuesto asociado será eliminado.`)) {
+      try {
+        setIsLoading(true)
+        
+        // Actualizar el proyecto a estado "completed"
+        await api.updateProject(selectedProject.id, {
+          status: 'completed'
+        })
+
+        // Si tiene presupuesto asociado, eliminarlo
+        if (selectedProject.presupuestoId) {
+          try {
+            await api.deleteBudget(selectedProject.presupuestoId)
+          } catch (budgetErr: any) {
+            console.error('Error al eliminar presupuesto:', budgetErr)
+            // Continuar aunque falle la eliminación del presupuesto
+          }
+        }
+        
+        // Recargar proyectos después de completar
+        const response = await api.getProjects()
+        if (response.projects && Array.isArray(response.projects)) {
+          const mappedProjects = response.projects.map(mapProjectFromAPI)
+          setProjects(mappedProjects)
+        }
+        
+        handleCloseDetailModal()
+      } catch (err: any) {
+        console.error('Error al completar proyecto:', err)
+        alert('Frontend says: Error al completar el proyecto. Por favor, intenta de nuevo.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+  }
+
+  const handleDeleteClick = async () => {
+    if (!selectedProject) return
+
+    if (window.confirm(`¿Estás seguro de que quieres eliminar el proyecto "${selectedProject.nombre}"?`)) {
+      try {
+        setIsLoading(true)
+        await api.deleteProject(selectedProject.id)
+        
+        // Recargar proyectos después de eliminar
+        const response = await api.getProjects()
+        if (response.projects && Array.isArray(response.projects)) {
+          const mappedProjects = response.projects.map(mapProjectFromAPI)
+          setProjects(mappedProjects)
+        }
+        
+        handleCloseDetailModal()
+      } catch (err: any) {
+        console.error('Error al eliminar proyecto:', err)
+        alert('Frontend says: Error al eliminar el proyecto. Por favor, intenta de nuevo.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+  }
+
+  const validateForm = async (): Promise<boolean> => {
+    const errors = {
+      nombre: '',
+      montoObjetivo: '',
+      montoActual: '',
+      duracionMeses: '',
+      fechaInicio: '',
+      fechaFin: ''
+    }
+    let isValid = true
+
+    // Validar nombre
+    if (!formData.nombre.trim()) {
+      errors.nombre = 'El nombre es requerido'
+      isValid = false
+    }
+
+    // Validar monto objetivo
+    const montoObjetivo = parseFloat(formData.montoObjetivo)
+    if (!formData.montoObjetivo.trim() || isNaN(montoObjetivo) || montoObjetivo <= 0) {
+      errors.montoObjetivo = 'El monto objetivo debe ser un número positivo'
+      isValid = false
+    }
+
+    // Validar monto actual
+    const montoActual = parseFloat(formData.montoActual)
+    if (formData.montoActual.trim() && (isNaN(montoActual) || montoActual < 0)) {
+      errors.montoActual = 'El monto actual debe ser un número positivo o cero'
+      isValid = false
+    }
+
+    // Validar que monto actual no exceda monto objetivo
+    if (!errors.montoObjetivo && !errors.montoActual && montoActual > montoObjetivo) {
+      errors.montoActual = 'El monto actual no puede exceder el monto objetivo'
+      isValid = false
+    }
+
+    // Validar duración en meses (máximo 9 meses)
+    const duracionMeses = parseInt(formData.duracionMeses)
+    if (!formData.duracionMeses.trim() || isNaN(duracionMeses) || duracionMeses < 1) {
+      errors.duracionMeses = 'La duración debe ser al menos 1 mes'
+      isValid = false
+    } else if (duracionMeses > 9) {
+      errors.duracionMeses = 'La duración máxima es de 9 meses (después de eso el dinero sufre depreciación por inflación). Si planeas ahorrar más de 1 año, lo más recomendable es poner el dinero en uno o varios CDT a más de la tasa inflacionaria.'
+      isValid = false
+    }
+
+    // Validar fechas
+    if (!formData.fechaInicio) {
+      errors.fechaInicio = 'La fecha de inicio es requerida'
+      isValid = false
+    }
+
+    if (!formData.fechaFin) {
+      errors.fechaFin = 'La fecha de fin es requerida'
+      isValid = false
+    }
+
+    // Validar que fecha fin sea posterior a fecha inicio
+    if (formData.fechaInicio && formData.fechaFin) {
+      const fechaInicio = new Date(formData.fechaInicio)
+      const fechaFin = new Date(formData.fechaFin)
+      if (fechaFin <= fechaInicio) {
+        errors.fechaFin = 'La fecha de fin debe ser posterior a la fecha de inicio'
+        isValid = false
+      }
+
+      // Validar que la duración coincida con las fechas
+      if (!errors.duracionMeses && !errors.fechaInicio && !errors.fechaFin) {
+        const diffTime = Math.abs(fechaFin.getTime() - fechaInicio.getTime())
+        const diffMonths = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 30))
+        if (Math.abs(diffMonths - duracionMeses) > 1) {
+          errors.duracionMeses = `La duración debe coincidir aproximadamente con las fechas seleccionadas (${diffMonths} meses)`
+          isValid = false
+        }
+      }
+    }
+
+    setFormErrors(errors)
+    return isValid
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    const isValid = await validateForm()
+    if (!isValid) {
+      return
+    }
+
+    try {
+      if (isEditMode && selectedProject) {
+        // Editar proyecto existente
+        const previousStatus = selectedProject.estado
+        const newStatus = formData.estado
+        
+        const montoObjetivo = parseFloat(formData.montoObjetivo)
+        const duracionMeses = parseInt(formData.duracionMeses)
+        const nuevaMetaMensual = montoObjetivo / duracionMeses
+        
+        const projectData: any = {
+          name: formData.nombre.trim(),
+          target_amount: montoObjetivo,
+          current_amount: parseFloat(formData.montoActual) || 0,
+          duration_months: duracionMeses,
+          start_date: formData.fechaInicio,
+          end_date: formData.fechaFin,
+          status: newStatus
+        }
+
+        // Si el estado cambió a "completed" y tiene un presupuesto asociado, eliminarlo
+        if (previousStatus !== 'completed' && newStatus === 'completed' && selectedProject.presupuestoId) {
+          // Actualizar el proyecto primero
+          await api.updateProject(selectedProject.id, projectData)
+          
+          // Luego eliminar el presupuesto
+          try {
+            await api.deleteBudget(selectedProject.presupuestoId)
+          } catch (budgetErr: any) {
+            console.error('Error al eliminar presupuesto:', budgetErr)
+            // Continuar aunque falle la eliminación del presupuesto
+          }
+        } else {
+          // Si el proyecto sigue activo y tiene presupuesto asociado, actualizar la meta mensual del presupuesto
+          if (selectedProject.presupuestoId && newStatus !== 'completed') {
+            try {
+              // Actualizar el presupuesto con la nueva meta mensual
+              await api.updateBudget(selectedProject.presupuestoId, {
+                max_amount: nuevaMetaMensual
+              })
+            } catch (budgetErr: any) {
+              console.error('Error al actualizar presupuesto:', budgetErr)
+              // Continuar aunque falle la actualización del presupuesto
+            }
+          }
+          
+          // Actualizar el proyecto
+          await api.updateProject(selectedProject.id, projectData)
+        }
+        
+        // Recargar proyectos después de actualizar
+        const response = await api.getProjects()
+        if (response.projects && Array.isArray(response.projects)) {
+          const mappedProjects = response.projects.map(mapProjectFromAPI)
+          setProjects(mappedProjects)
+        }
+        handleCloseDetailModal()
+      } else {
+        // Agregar nuevo proyecto
+        // Calcular la meta de ahorro mensual (monto objetivo / duración en meses)
+        const montoObjetivo = parseFloat(formData.montoObjetivo)
+        const duracionMeses = parseInt(formData.duracionMeses)
+        const metaMensual = montoObjetivo / duracionMeses
+
+        // Crear el presupuesto mensual asociado con la meta mensual
+        const budgetResponse = await api.createBudget({
+          name: formData.nombre.trim(),
+          max_amount: metaMensual
+        })
+
+        const budgetId = budgetResponse.budget?.id
+
+        if (!budgetId) {
+          throw new Error('Error al crear el presupuesto asociado')
+        }
+
+        // Crear el proyecto con el budget_id
+        const projectData = {
+          name: formData.nombre.trim(),
+          target_amount: montoObjetivo,
+          current_amount: parseFloat(formData.montoActual) || 0,
+          duration_months: duracionMeses,
+          start_date: formData.fechaInicio,
+          end_date: formData.fechaFin,
+          status: 'active' as const,
+          budget_id: budgetId
+        }
+
+        await api.createProject(projectData)
+
+        // Recargar proyectos después de crear
+        const response = await api.getProjects()
+        if (response.projects && Array.isArray(response.projects)) {
+          const mappedProjects = response.projects.map(mapProjectFromAPI)
+          setProjects(mappedProjects)
+        }
+        handleCloseModal()
+      }
+    } catch (err: any) {
+      console.error('Error al guardar proyecto:', err)
+      const errorMessage = err.data?.error || err.message
+        ? `Backend says: ${err.data?.error || err.message}`
+        : 'Frontend says: Error al guardar el proyecto. Por favor, intenta de nuevo.'
+      alert(errorMessage)
+    }
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    
+    // Manejar el campo de estado con tipo correcto
+    if (name === 'estado') {
+      setFormData({
+        ...formData,
+        [name]: value as 'active' | 'completed' | 'cancelled'
+      })
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      })
+    }
+    
+    // Limpiar errores cuando el usuario empiece a escribir
+    if (formErrors[name as keyof typeof formErrors]) {
+      setFormErrors({
+        ...formErrors,
+        [name]: ''
+      })
+    }
+  }
+
+  const formatPrice = (amount: number) => {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount)
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('es-CO', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return '#34C759'
+      case 'cancelled':
+        return '#FF3B30'
+      default:
+        return '#00C7BE'
+    }
+  }
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'Completado'
+      case 'cancelled':
+        return 'Cancelado'
+      default:
+        return 'Activo'
+    }
+  }
+
+  // Función de debug para crear proyectos de prueba
+  const handleDebugCreateProjects = async () => {
+    const testProjects = [
+      {
+        name: 'Viaje a Europa',
+        target_amount: 5000000,
+        duration_months: 6,
+        end_date: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        start_date: new Date().toISOString().split('T')[0],
+        current_amount: 1500000
+      },
+      {
+        name: 'Laptop Nueva',
+        target_amount: 3000000,
+        duration_months: 3,
+        end_date: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        start_date: new Date().toISOString().split('T')[0],
+        current_amount: 500000
+      },
+      {
+        name: 'Fondo de Emergencia',
+        target_amount: 10000000,
+        duration_months: 9,
+        end_date: new Date(Date.now() + 270 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        start_date: new Date().toISOString().split('T')[0],
+        current_amount: 2000000
+      }
+    ]
+
+    try {
+      setIsLoading(true)
+      for (const project of testProjects) {
+        // Calcular la meta de ahorro mensual (monto objetivo / duración en meses)
+        const metaMensual = project.target_amount / project.duration_months
+
+        // Crear presupuesto mensual asociado con la meta mensual
+        const budgetResponse = await api.createBudget({
+          name: project.name,
+          max_amount: metaMensual
+        })
+
+        const budgetId = budgetResponse.budget?.id
+
+        if (budgetId) {
+          // Crear proyecto con el budget_id
+          await api.createProject({
+            ...project,
+            status: 'active' as const,
+            budget_id: budgetId
+          })
+        } else {
+          // Si falla la creación del presupuesto, crear proyecto sin presupuesto
+          await api.createProject({
+            ...project,
+            status: 'active' as const
+          })
+        }
+      }
+      // Recargar proyectos después de crear todas
+      const response = await api.getProjects()
+      if (response.projects && Array.isArray(response.projects)) {
+        const mappedProjects = response.projects.map(mapProjectFromAPI)
+        setProjects(mappedProjects)
+      }
+      setIsDebugModalOpen(false)
+      alert(`${testProjects.length} proyectos de prueba creados exitosamente (con sus presupuestos asociados)`)
+    } catch (err: any) {
+      console.error('Error al crear proyectos de prueba:', err)
+      alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Función de debug para borrar todos los proyectos
+  const handleDeleteAllProjects = async () => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar TODOS los proyectos? Esta acción es IRREVERSIBLE.')) {
+      try {
+        setIsLoading(true)
+        await api.deleteAllProjects()
+        // Recargar proyectos después de borrar todas
+        const response = await api.getProjects()
+        if (response.projects && Array.isArray(response.projects)) {
+          const mappedProjects = response.projects.map(mapProjectFromAPI)
+          setProjects(mappedProjects)
+        }
+        setIsDebugModalOpen(false)
+        alert('Todos los proyectos han sido eliminados exitosamente')
+      } catch (err: any) {
+        console.error('Error al eliminar todos los proyectos:', err)
+        alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
+      } finally {
+        setIsLoading(false)
+      }
+    }
+  }
+
+  return (
+    <>
+      <div className="app-page-container">
+        <div className="app-page-content proyectos-content">
+          {isLoading ? (
+            <div className="loader-container">
+              <div className="loader">
+                <div className="loader-spinner"></div>
+                <p className="loader-text">Cargando proyectos...</p>
+              </div>
+            </div>
+          ) : error ? (
+            <div className="loader-container">
+              <div className="loader">
+                <p className="loader-text" style={{ color: 'rgba(255, 59, 48, 0.9)' }}>{error}</p>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="proyectos-header">
+                <button className="add-project-button" onClick={handleOpenModal}>
+                  <AddIcon />
+                  <span>Agregar Proyecto</span>
+                </button>
+                <button className="debug-button" onClick={() => setIsDebugModalOpen(true)} title="Debug: Opciones de desarrollo">
+                  🐛 Debug
+                </button>
+              </div>
+
+              {projects.length === 0 ? (
+                <div className="empty-state">
+                  <FolderSpecialIcon className="empty-icon" />
+                  <p className="empty-text">No hay proyectos agregados</p>
+                  <p className="empty-subtext">Agrega tu primer proyecto de ahorro (máximo 9 meses)</p>
+                </div>
+              ) : (
+                <div className="projects-grid">
+                  {projects.map((project) => {
+                    const statusColor = getStatusColor(project.estado)
+                    return (
+                      <div 
+                        key={project.id} 
+                        className="project-item" 
+                        onClick={() => handleOpenDetailModal(project)}
+                        style={{ '--project-color': statusColor } as React.CSSProperties}
+                      >
+                        <div className="project-item-header">
+                          <div className="project-icon" style={{ backgroundColor: statusColor }}>
+                            <FolderSpecialIcon />
+                          </div>
+                          <div className="project-info">
+                            <h3 className="project-name">{project.nombre}</h3>
+                            <p className="project-status" style={{ color: statusColor }}>
+                              {getStatusText(project.estado)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="project-item-body">
+                          <div className="project-progress">
+                            <div className="project-progress-bar">
+                              <div 
+                                className="project-progress-fill" 
+                                style={{ 
+                                  width: `${Math.min(project.porcentajeProgreso, 100)}%`,
+                                  backgroundColor: statusColor
+                                }}
+                              />
+                            </div>
+                            <span className="project-progress-text">{project.porcentajeProgreso.toFixed(1)}%</span>
+                          </div>
+                          <div className="project-amounts">
+                            <div className="project-amount-row">
+                              <span className="project-amount-label">Meta Mensual:</span>
+                              <span className="project-amount-value" style={{ color: 'rgba(0, 199, 190, 0.9)', fontWeight: 600 }}>
+                                {formatPrice(project.montoObjetivo / project.duracionMeses)}
+                              </span>
+                            </div>
+                            <div className="project-amount-row">
+                              <span className="project-amount-label">Objetivo:</span>
+                              <span className="project-amount-value">{formatPrice(project.montoObjetivo)}</span>
+                            </div>
+                            <div className="project-amount-row">
+                              <span className="project-amount-label">Actual:</span>
+                              <span className="project-amount-value">{formatPrice(project.montoActual)}</span>
+                            </div>
+                            <div className="project-amount-row">
+                              <span className="project-amount-label">Restante:</span>
+                              <span className="project-amount-value">{formatPrice(project.restante)}</span>
+                            </div>
+                          </div>
+                          <div className="project-dates">
+                            <p className="project-date">
+                              <span className="project-date-label">Duración:</span> {project.duracionMeses} mes{project.duracionMeses !== 1 ? 'es' : ''}
+                            </p>
+                            <p className="project-date">
+                              <span className="project-date-label">Fin:</span> {formatDate(project.fechaFin)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* Botón de volver */}
+              <div className="back-button-container">
+                <button className="back-button" onClick={() => navigate('/finanzas')}>
+                  <ArrowBackIcon />
+                  <span>Volver a Finanzas</span>
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Modal para agregar proyecto */}
+      {isModalOpen && (
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Nuevo Proyecto de Ahorro</h2>
+              <button className="modal-close" onClick={handleCloseModal}>×</button>
+            </div>
+            <form className="modal-form" onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="nombre">Nombre del Proyecto</label>
+                <input
+                  type="text"
+                  id="nombre"
+                  name="nombre"
+                  value={formData.nombre}
+                  onChange={handleChange}
+                  required
+                  placeholder="Ej: Viaje a Europa"
+                  className={formErrors.nombre ? 'input-error' : ''}
+                />
+                {formErrors.nombre && (
+                  <span className="error-message">{formErrors.nombre}</span>
+                )}
+              </div>
+              <div className="form-group">
+                <label htmlFor="montoObjetivo">Monto Objetivo (COP)</label>
+                <input
+                  type="number"
+                  id="montoObjetivo"
+                  name="montoObjetivo"
+                  value={formData.montoObjetivo}
+                  onChange={handleChange}
+                  required
+                  min="1"
+                  step="1000"
+                  placeholder="5000000"
+                  className={formErrors.montoObjetivo ? 'input-error' : ''}
+                />
+                {formErrors.montoObjetivo && (
+                  <span className="error-message">{formErrors.montoObjetivo}</span>
+                )}
+                {formData.montoObjetivo && formData.duracionMeses && !formErrors.montoObjetivo && !formErrors.duracionMeses && (
+                  <p className="form-hint" style={{ color: 'rgba(0, 199, 190, 0.9)', marginTop: '0.5rem' }}>
+                    💰 Meta mensual: {formatPrice(parseFloat(formData.montoObjetivo) / parseInt(formData.duracionMeses))}
+                  </p>
+                )}
+              </div>
+              <div className="form-group">
+                <label htmlFor="montoActual">Monto Actual (COP)</label>
+                <input
+                  type="number"
+                  id="montoActual"
+                  name="montoActual"
+                  value={formData.montoActual}
+                  onChange={handleChange}
+                  min="0"
+                  step="1000"
+                  placeholder="0"
+                  className={formErrors.montoActual ? 'input-error' : ''}
+                />
+                {formErrors.montoActual && (
+                  <span className="error-message">{formErrors.montoActual}</span>
+                )}
+              </div>
+              <div className="form-group">
+                <label htmlFor="duracionMeses">Duración en Meses (Máximo 9)</label>
+                <input
+                  type="number"
+                  id="duracionMeses"
+                  name="duracionMeses"
+                  value={formData.duracionMeses}
+                  onChange={handleChange}
+                  required
+                  min="1"
+                  max="9"
+                  placeholder="6"
+                  className={formErrors.duracionMeses ? 'input-error' : ''}
+                />
+                {formErrors.duracionMeses && (
+                  <span className="error-message">{formErrors.duracionMeses}</span>
+                )}
+                <p className="form-hint">
+                  ⚠️ Máximo 9 meses: después de eso el dinero sufre depreciación por inflación. Si planeas ahorrar más de 1 año, lo más recomendable es poner el dinero en uno o varios CDT a más de la tasa inflacionaria.
+                </p>
+              </div>
+              <div className="form-group">
+                <label htmlFor="fechaInicio">Fecha de Inicio</label>
+                <input
+                  type="date"
+                  id="fechaInicio"
+                  name="fechaInicio"
+                  value={formData.fechaInicio}
+                  onChange={handleChange}
+                  required
+                  className={formErrors.fechaInicio ? 'input-error' : ''}
+                />
+                {formErrors.fechaInicio && (
+                  <span className="error-message">{formErrors.fechaInicio}</span>
+                )}
+              </div>
+              <div className="form-group">
+                <label htmlFor="fechaFin">Fecha de Fin</label>
+                <input
+                  type="date"
+                  id="fechaFin"
+                  name="fechaFin"
+                  value={formData.fechaFin}
+                  onChange={handleChange}
+                  required
+                  className={formErrors.fechaFin ? 'input-error' : ''}
+                />
+                {formErrors.fechaFin && (
+                  <span className="error-message">{formErrors.fechaFin}</span>
+                )}
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="modal-button cancel" onClick={handleCloseModal}>
+                  Cancelar
+                </button>
+                <button type="submit" className="modal-button submit">
+                  Agregar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de detalles */}
+      {isDetailModalOpen && selectedProject && (
+        <div className="modal-overlay" onClick={handleCloseDetailModal}>
+          <div 
+            className="modal-content detail-modal" 
+            onClick={(e) => e.stopPropagation()}
+            style={{ '--project-color': getStatusColor(selectedProject.estado) } as React.CSSProperties}
+          >
+            <div className="modal-header">
+              <h2 className="modal-title">Detalles del Proyecto</h2>
+              <button className="modal-close" onClick={handleCloseDetailModal}>×</button>
+            </div>
+            
+            {!isEditMode ? (
+              <>
+                <div className="detail-content">
+                  <div className="detail-section">
+                    <div className="detail-icon-large" style={{ backgroundColor: getStatusColor(selectedProject.estado) }}>
+                      <FolderSpecialIcon />
+                    </div>
+                    <div className="detail-info">
+                      <h3 className="detail-name">{selectedProject.nombre}</h3>
+                      <p className="detail-status" style={{ color: getStatusColor(selectedProject.estado) }}>
+                        {getStatusText(selectedProject.estado)}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="project-detail-progress">
+                    <div className="project-detail-progress-bar">
+                      <div 
+                        className="project-detail-progress-fill" 
+                        style={{ 
+                          width: `${Math.min(selectedProject.porcentajeProgreso, 100)}%`,
+                          backgroundColor: getStatusColor(selectedProject.estado)
+                        }}
+                      />
+                    </div>
+                    <span className="project-detail-progress-text">{selectedProject.porcentajeProgreso.toFixed(1)}%</span>
+                  </div>
+                  
+                  <div className="detail-row">
+                    <span className="detail-label">Monto Objetivo:</span>
+                    <span className="detail-value">{formatPrice(selectedProject.montoObjetivo)}</span>
+                  </div>
+                  
+                  <div className="detail-row">
+                    <span className="detail-label">Monto Actual:</span>
+                    <span className="detail-value">{formatPrice(selectedProject.montoActual)}</span>
+                  </div>
+                  
+                  <div className="detail-row">
+                    <span className="detail-label">Monto Restante:</span>
+                    <span className="detail-value">{formatPrice(selectedProject.restante)}</span>
+                  </div>
+                  
+                  <div className="detail-row">
+                    <span className="detail-label">Meta Mensual:</span>
+                    <span className="detail-value" style={{ color: 'rgba(0, 199, 190, 0.9)', fontWeight: 600 }}>
+                      {formatPrice(selectedProject.montoObjetivo / selectedProject.duracionMeses)}
+                    </span>
+                  </div>
+                  
+                  <div className="detail-row">
+                    <span className="detail-label">Duración:</span>
+                    <span className="detail-value">{selectedProject.duracionMeses} mes{selectedProject.duracionMeses !== 1 ? 'es' : ''}</span>
+                  </div>
+                  
+                  <div className="detail-row">
+                    <span className="detail-label">Fecha de Inicio:</span>
+                    <span className="detail-value">{formatDate(selectedProject.fechaInicio)}</span>
+                  </div>
+                  
+                  <div className="detail-row">
+                    <span className="detail-label">Fecha de Fin:</span>
+                    <span className="detail-value">{formatDate(selectedProject.fechaFin)}</span>
+                  </div>
+                </div>
+
+                <div className="detail-actions">
+                  {selectedProject.estado === 'active' && (
+                    <button className="detail-button complete" onClick={handleCompleteClick}>
+                      <CheckCircleIcon />
+                      <span>Marcar como Completado</span>
+                    </button>
+                  )}
+                  <button className="detail-button edit" onClick={handleEditClick}>
+                    <EditIcon />
+                    <span>Editar Proyecto</span>
+                  </button>
+                  <button className="detail-button delete" onClick={handleDeleteClick}>
+                    <DeleteIcon />
+                    <span>Eliminar Proyecto</span>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <form className="modal-form" onSubmit={handleSubmit}>
+                <div className="form-group">
+                  <label htmlFor="edit-nombre">Nombre del Proyecto</label>
+                  <input
+                    type="text"
+                    id="edit-nombre"
+                    name="nombre"
+                    value={formData.nombre}
+                    onChange={handleChange}
+                    required
+                    placeholder="Ej: Viaje a Europa"
+                    className={formErrors.nombre ? 'input-error' : ''}
+                  />
+                  {formErrors.nombre && (
+                    <span className="error-message">{formErrors.nombre}</span>
+                  )}
+                </div>
+                <div className="form-group">
+                  <label htmlFor="edit-montoObjetivo">Monto Objetivo (COP)</label>
+                  <input
+                    type="number"
+                    id="edit-montoObjetivo"
+                    name="montoObjetivo"
+                    value={formData.montoObjetivo}
+                    onChange={handleChange}
+                    required
+                    min="1"
+                    step="1000"
+                    placeholder="5000000"
+                    className={formErrors.montoObjetivo ? 'input-error' : ''}
+                  />
+                  {formErrors.montoObjetivo && (
+                    <span className="error-message">{formErrors.montoObjetivo}</span>
+                  )}
+                  {formData.montoObjetivo && formData.duracionMeses && !formErrors.montoObjetivo && !formErrors.duracionMeses && (
+                    <p className="form-hint" style={{ color: 'rgba(0, 199, 190, 0.9)', marginTop: '0.5rem' }}>
+                      💰 Meta mensual: {formatPrice(parseFloat(formData.montoObjetivo) / parseInt(formData.duracionMeses))}
+                    </p>
+                  )}
+                </div>
+                <div className="form-group">
+                  <label htmlFor="edit-montoActual">Monto Actual (COP)</label>
+                  <input
+                    type="number"
+                    id="edit-montoActual"
+                    name="montoActual"
+                    value={formData.montoActual}
+                    onChange={handleChange}
+                    min="0"
+                    step="1000"
+                    placeholder="0"
+                    className={formErrors.montoActual ? 'input-error' : ''}
+                  />
+                  {formErrors.montoActual && (
+                    <span className="error-message">{formErrors.montoActual}</span>
+                  )}
+                </div>
+                <div className="form-group">
+                  <label htmlFor="edit-duracionMeses">Duración en Meses (Máximo 9)</label>
+                  <input
+                    type="number"
+                    id="edit-duracionMeses"
+                    name="duracionMeses"
+                    value={formData.duracionMeses}
+                    onChange={handleChange}
+                    required
+                    min="1"
+                    max="9"
+                    placeholder="6"
+                    className={formErrors.duracionMeses ? 'input-error' : ''}
+                  />
+                  {formErrors.duracionMeses && (
+                    <span className="error-message">{formErrors.duracionMeses}</span>
+                  )}
+                  <p className="form-hint">
+                    ⚠️ Máximo 9 meses: después de eso el dinero sufre depreciación por inflación. Si planeas ahorrar más de 1 año, lo más recomendable es poner el dinero en uno o varios CDT a más de la tasa inflacionaria.
+                  </p>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="edit-fechaInicio">Fecha de Inicio</label>
+                  <input
+                    type="date"
+                    id="edit-fechaInicio"
+                    name="fechaInicio"
+                    value={formData.fechaInicio}
+                    onChange={handleChange}
+                    required
+                    className={formErrors.fechaInicio ? 'input-error' : ''}
+                  />
+                  {formErrors.fechaInicio && (
+                    <span className="error-message">{formErrors.fechaInicio}</span>
+                  )}
+                </div>
+                <div className="form-group">
+                  <label htmlFor="edit-fechaFin">Fecha de Fin</label>
+                  <input
+                    type="date"
+                    id="edit-fechaFin"
+                    name="fechaFin"
+                    value={formData.fechaFin}
+                    onChange={handleChange}
+                    required
+                    className={formErrors.fechaFin ? 'input-error' : ''}
+                  />
+                  {formErrors.fechaFin && (
+                    <span className="error-message">{formErrors.fechaFin}</span>
+                  )}
+                </div>
+                <div className="form-group">
+                  <label htmlFor="edit-estado">Estado</label>
+                  <select
+                    id="edit-estado"
+                    name="estado"
+                    value={formData.estado}
+                    onChange={handleChange}
+                    className="form-select"
+                  >
+                    <option value="active">Activo</option>
+                    <option value="completed">Completado</option>
+                    <option value="cancelled">Cancelado</option>
+                  </select>
+                  {formData.estado === 'completed' && selectedProject?.presupuestoId && (
+                    <p className="form-hint">
+                      ⚠️ Al marcar como completado, el presupuesto asociado será eliminado automáticamente.
+                    </p>
+                  )}
+                </div>
+                <div className="modal-actions">
+                  <button type="button" className="modal-button cancel" onClick={() => setIsEditMode(false)}>
+                    Cancelar
+                  </button>
+                  <button type="submit" className="modal-button submit">
+                    Guardar Cambios
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Debug */}
+      {isDebugModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Debug - Proyectos</h2>
+              <button className="modal-close" onClick={() => setIsDebugModalOpen(false)}>×</button>
+            </div>
+            <div className="debug-modal-content">
+              <div className="debug-options">
+                <button
+                  className="debug-option-button create-demo"
+                  onClick={handleDebugCreateProjects}
+                  disabled={isLoading}
+                >
+                  <span className="debug-option-icon">📦</span>
+                  <div className="debug-option-info">
+                    <h3 className="debug-option-title">Crear Proyectos Demo</h3>
+                    <p className="debug-option-description">
+                      Crea 3 proyectos de ejemplo para pruebas. 
+                      Todos respetan el límite de máximo 9 meses.
+                    </p>
+                  </div>
+                </button>
+                <button
+                  className="debug-option-button delete-all"
+                  onClick={handleDeleteAllProjects}
+                  disabled={isLoading}
+                >
+                  <span className="debug-option-icon">🗑️</span>
+                  <div className="debug-option-info">
+                    <h3 className="debug-option-title">Eliminar Todos los Proyectos</h3>
+                    <p className="debug-option-description">⚠️ PELIGROSO: Elimina todos los proyectos (IRREVERSIBLE)</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="modal-button cancel"
+                onClick={() => setIsDebugModalOpen(false)}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
+export default Proyectos
+

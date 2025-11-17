@@ -259,6 +259,7 @@ class PocketsAPI {
   async updateBudget(budgetId: string, updates: {
     name?: string
     max_amount?: number
+    total_spent?: number
     periodicity?: 'mensual' | 'bimestral' | 'trimestral' | 'semestral' | 'anual'
   }) {
     return this.request(`/budgets/${budgetId}`, {
@@ -312,13 +313,15 @@ class PocketsAPI {
   // Transactions
   async createTransaction(data: {
     date: string
-    type: 'ingreso' | 'egreso'
+    type: 'ingreso' | 'egreso' | 'ahorro'
     amount: number
     description: string
     category: string
     currency: string
-    bank_account_id: string
-    budget_id?: string
+    bank_account_id: string | null
+    budget_id?: string | null
+    credit_card_id?: string | null
+    debt_id?: string | null
   }) {
     return this.request('/transactions', {
       method: 'POST',
@@ -330,7 +333,7 @@ class PocketsAPI {
     id?: string
     bank_account_id?: string
     budget_id?: string
-    type?: 'ingreso' | 'egreso'
+    type?: 'ingreso' | 'egreso' | 'ahorro'
     category?: string
     start_date?: string
     end_date?: string
@@ -349,6 +352,18 @@ class PocketsAPI {
       : '/transactions'
 
     return this.request(endpoint)
+  }
+
+  async deleteTransaction(transactionId: string) {
+    return this.request(`/transactions/${transactionId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllTransactions() {
+    return this.request('/transactions/all', {
+      method: 'DELETE',
+    })
   }
 
   // Debts
@@ -413,6 +428,7 @@ class PocketsAPI {
     bank_account_id: string
     last_4_digits: string
     expiration_date: string
+    is_virtual?: boolean
   }) {
     return this.request('/cards', {
       method: 'POST',
@@ -430,6 +446,7 @@ class PocketsAPI {
     bank_account_id?: string
     last_4_digits?: string
     expiration_date?: string
+    is_virtual?: boolean
   }) {
     return this.request(`/cards/${cardId}`, {
       method: 'PUT',
@@ -539,6 +556,56 @@ class PocketsAPI {
 
   async deleteAllCreditCards() {
     return this.request('/credit-cards', {
+      method: 'DELETE',
+    })
+  }
+
+  // Projects
+  async createProject(data: {
+    name: string
+    target_amount: number
+    duration_months: number
+    end_date: string
+    start_date?: string
+    current_amount?: number
+    status?: 'active' | 'completed' | 'cancelled'
+    budget_id?: string | null
+  }) {
+    return this.request('/projects', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getProjects(projectId: string | null = null) {
+    const endpoint = projectId ? `/projects?id=${projectId}` : '/projects'
+    return this.request(endpoint)
+  }
+
+  async updateProject(projectId: string, updates: {
+    name?: string
+    target_amount?: number
+    current_amount?: number
+    start_date?: string
+    end_date?: string
+    duration_months?: number
+    status?: 'active' | 'completed' | 'cancelled'
+    budget_id?: string | null
+  }) {
+    return this.request(`/projects/${projectId}`, {
+      method: 'PUT',
+      body: updates,
+    })
+  }
+
+  async deleteProject(projectId: string) {
+    return this.request(`/projects/${projectId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllProjects() {
+    return this.request('/projects', {
       method: 'DELETE',
     })
   }

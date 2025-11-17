@@ -143,7 +143,7 @@ function Subscripciones() {
       } catch (err: any) {
         console.error('Error al cargar subscripciones:', err)
         console.error('Detalles del error:', err.data || err.message)
-        setError('Error al cargar las subscripciones. Por favor, intenta de nuevo.')
+        setError('Frontend says: Error al cargar las subscripciones. Por favor, intenta de nuevo.')
         setSubscriptions([])
       } finally {
         setIsLoading(false)
@@ -155,7 +155,7 @@ function Subscripciones() {
 
   const handleOpenModal = () => {
     if (cards.length === 0) {
-      alert('No hay tarjetas de débito disponibles. Por favor, crea al menos una tarjeta primero.')
+      alert('Frontend says: No hay tarjetas de débito disponibles. Por favor, crea al menos una tarjeta primero.')
       return
     }
     setIsModalOpen(true)
@@ -229,7 +229,7 @@ function Subscripciones() {
         handleCloseDetailModal()
       } catch (err: any) {
         console.error('Error al eliminar subscripción:', err)
-        alert('Error al eliminar la subscripción. Por favor, intenta de nuevo.')
+        alert('Frontend says: Error al eliminar la subscripción. Por favor, intenta de nuevo.')
       }
     }
   }
@@ -327,13 +327,13 @@ function Subscripciones() {
 
     // Validación adicional antes de enviar
     if (!formData.nombre.trim() || !formData.precio.trim() || !formData.fechaCorte || !formData.tarjetaId.trim()) {
-      alert('Por favor completa todos los campos requeridos')
+      alert('Frontend says: Por favor completa todos los campos requeridos')
       return
     }
 
     const precioNum = parseFloat(formData.precio)
     if (isNaN(precioNum) || precioNum <= 0) {
-      alert('El precio debe ser un número positivo')
+      alert('Frontend says: El precio debe ser un número positivo')
       return
     }
 
@@ -377,7 +377,9 @@ function Subscripciones() {
       }
     } catch (err: any) {
       console.error('Error al guardar subscripción:', err)
-      const errorMessage = err.data?.error || err.message || 'Error al guardar la subscripción. Por favor, intenta de nuevo.'
+      const errorMessage = err.data?.error || err.message
+        ? `Backend says: ${err.data?.error || err.message}`
+        : 'Frontend says: Error al guardar la subscripción. Por favor, intenta de nuevo.'
       alert(errorMessage)
     }
   }
@@ -459,7 +461,7 @@ function Subscripciones() {
       alert(`${testSubscriptions.length} subscripciones de prueba creadas exitosamente`)
     } catch (err: any) {
       console.error('Error al crear subscripciones de prueba:', err)
-      alert('Error al crear subscripciones de prueba: ' + (err.data?.error || 'Error desconocido'))
+      alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
     } finally {
       setIsLoading(false)
     }
@@ -483,7 +485,7 @@ function Subscripciones() {
         alert('Todas las subscripciones han sido eliminadas exitosamente')
       } catch (err: any) {
         console.error('Error al eliminar todas las subscripciones:', err)
-        alert('Error al eliminar subscripciones: ' + (err.data?.error || 'Error desconocido'))
+        alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
       } finally {
         setIsLoading(false)
       }

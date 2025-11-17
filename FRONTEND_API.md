@@ -848,11 +848,51 @@ await createTransaction({
 }
 ```
 
+**Request Body (Egreso con tarjeta de crédito):**
+```json
+{
+  "date": "2024-01-15",
+  "type": "egreso",
+  "amount": 50000,
+  "description": "Compra con tarjeta de crédito",
+  "category": "Compras",
+  "currency": "COP",
+  "bank_account_id": null,
+  "credit_card_id": "uuid-of-credit-card"
+}
+```
+
+**Request Body (Egreso como pago de deuda):**
+```json
+{
+  "date": "2024-01-15",
+  "type": "egreso",
+  "amount": 50000,
+  "description": "Pago de deuda",
+  "category": "Pago de Deuda",
+  "currency": "COP",
+  "bank_account_id": "uuid-of-bank-account",
+  "debt_id": "uuid-of-debt"
+}
+```
+
 **⚠️ Validación importante:**
-- Los egresos pueden tener `budget_id` (opcional) - si se proporciona, se valida que el presupuesto exista y pertenezca al usuario
+- Los egresos y ahorros pueden tener `budget_id` (opcional) - si se proporciona, se valida que el presupuesto exista y pertenezca al usuario
 - Los ingresos **no pueden** tener `budget_id` (debe ser null o no enviarse)
-- Si un egreso tiene `budget_id`, no puede exceder el `max_amount` del presupuesto asociado
-- Si un egreso no tiene `budget_id`, se crea sin asociación a presupuesto
+- Si un egreso o ahorro tiene `budget_id`, no puede exceder el `max_amount` del presupuesto asociado
+- Si un egreso o ahorro no tiene `budget_id`, se crea sin asociación a presupuesto
+- **Para transacciones de tipo "egreso"**: Puedes usar `bank_account_id` O `credit_card_id` (pero no ambos)
+  - Si usas `credit_card_id`, `bank_account_id` debe ser `null` (el dinero se carga a la tarjeta de crédito)
+  - Si usas `bank_account_id`, `credit_card_id` debe ser `null` o no enviarse
+  - Puedes usar `debt_id` (opcional) para asociar la transacción con un pago de deuda
+  - `debt_id` solo se permite para transacciones tipo "egreso"
+- **Para transacciones de tipo "ingreso" o "ahorro"**: Solo se permite `bank_account_id` (no se puede usar `credit_card_id` ni `debt_id`)
+
+**⚠️ Actualización Manual Requerida:**
+- Después de crear/actualizar/eliminar una transacción, el frontend DEBE actualizar manualmente:
+  - El `balance` de la cuenta bancaria si la transacción tiene `bank_account_id` (`PUT /bank-accounts/{id}`)
+  - El `used_credit` de la tarjeta de crédito si la transacción tiene `credit_card_id` (`PUT /credit-cards/{id}`)
+  - El `total_spent` del presupuesto si la transacción tiene `budget_id` (`PUT /budgets/{id}`)
 
 **Error Response (400) - Presupuesto Excedido:**
 ```json
@@ -921,7 +961,7 @@ const budgetTransactions = await getTransactions({
 - `id` - ID de transacción específica
 - `bank_account_id` - Filtrar por cuenta bancaria
 - `budget_id` - Filtrar por presupuesto
-- `type` - Filtrar por tipo ("ingreso" o "egreso")
+- `type` - Filtrar por tipo ("ingreso", "egreso" o "ahorro")
 - `category` - Filtrar por categoría
 - `start_date` - Fecha inicio (YYYY-MM-DD)
 - `end_date` - Fecha fin (YYYY-MM-DD)
@@ -929,7 +969,7 @@ const budgetTransactions = await getTransactions({
 **Response (200):**
 ```json
 {
-  "count": 2,
+  "count": 4,
   "transactions": [
     {
       "id": "uuid-here",
@@ -941,6 +981,8 @@ const budgetTransactions = await getTransactions({
       "category": "Salario",
       "currency": "COP",
       "bank_account_id": "uuid-of-bank-account",
+      "credit_card_id": null,
+      "debt_id": null,
       "created_at": "2024-01-15T00:00:00.000Z",
       "updated_at": "2024-01-15T00:00:00.000Z"
     },
@@ -954,8 +996,222 @@ const budgetTransactions = await getTransactions({
       "category": "Compras",
       "currency": "COP",
       "bank_account_id": "uuid-of-bank-account",
+      "credit_card_id": null,
+      "debt_id": null,
       "created_at": "2024-01-15T00:00:00.000Z",
       "updated_at": "2024-01-15T00:00:00.000Z"
+    },
+    {
+      "id": "uuid-here-3",
+      "date": "2024-01-15",
+      "type": "egreso",
+      "amount": 50000,
+      "description": "Compra con tarjeta de crédito",
+      "budget_id": null,
+      "category": "Compras",
+      "currency": "COP",
+      "bank_account_id": null,
+      "credit_card_id": "uuid-of-credit-card",
+      "debt_id": null,
+      "created_at": "2024-01-15T00:00:00.000Z",
+      "updated_at": "2024-01-15T00:00:00.000Z"
+    },
+    {
+      "id": "uuid-here-4",
+      "date": "2024-01-15",
+      "type": "egreso",
+      "amount": 50000,
+      "description": "Pago de deuda",
+      "budget_id": null,
+      "category": "Pago de Deuda",
+      "currency": "COP",
+      "bank_account_id": "uuid-of-bank-account",
+      "credit_card_id": null,
+      "debt_id": "uuid-of-debt",
+      "created_at": "2024-01-15T00:00:00.000Z",
+      "updated_at": "2024-01-15T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+#### DELETE /transactions/{id}
+Eliminar una transacción específica.
+
+**⚠️ IMPORTANTE**: Después de eliminar una transacción, el frontend DEBE revertir manualmente:
+- El `balance` de la cuenta bancaria:
+  - Si era **ingreso**: Resta el monto (`balance = balance - amount`)
+  - Si era **egreso/ahorro**: Suma el monto (`balance = balance + amount`)
+- El `total_spent` del presupuesto (si tenía `budget_id`):
+  - Resta el monto (`total_spent = total_spent - amount`)
+
+**URL:** `DELETE ${API_URL}/transactions/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteTransaction = async (transactionId) => {
+  // Primero obtener la transacción para saber qué revertir
+  const transaction = await getTransactions({ id: transactionId });
+  
+  if (!transaction.transactions || transaction.transactions.length === 0) {
+    throw new Error('Transaction not found');
+  }
+  
+  const tx = transaction.transactions[0];
+  
+  // Eliminar la transacción
+  const response = await fetch(`${API_URL}/transactions/${transactionId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  
+  const result = await response.json();
+  
+  if (response.ok) {
+    // Revertir balance de cuenta bancaria
+    const bankAccount = await getBankAccount(tx.bank_account_id);
+    let newBalance = parseFloat(bankAccount.accounts[0].balance.original.amount);
+    
+    if (tx.type === 'ingreso') {
+      newBalance -= parseFloat(tx.amount);
+    } else if (tx.type === 'egreso' || tx.type === 'ahorro') {
+      newBalance += parseFloat(tx.amount);
+    }
+    
+    await updateBankAccount(tx.bank_account_id, {
+      balance: newBalance
+    });
+    
+    // Revertir total_spent del presupuesto si tenía budget_id
+    if (tx.budget_id) {
+      const budget = await getBudget(tx.budget_id);
+      const newTotalSpent = parseFloat(budget.budgets[0].total_spent) - parseFloat(tx.amount);
+      
+      await updateBudget(tx.budget_id, {
+        total_spent: Math.max(0, newTotalSpent) // No permitir valores negativos
+      });
+    }
+  }
+  
+  return result;
+};
+```
+
+**Response (200):**
+```json
+{
+  "message": "Transaction deleted successfully",
+  "deleted_transaction": {
+    "id": "uuid-here",
+    "type": "egreso",
+    "amount": 50000,
+    "bank_account_id": "uuid-of-bank-account",
+    "budget_id": "uuid-of-budget"
+  }
+}
+```
+
+---
+
+#### DELETE /transactions/all
+Eliminar todas las transacciones del usuario autenticado.
+
+**⚠️ IMPORTANTE**: Después de eliminar todas las transacciones, el frontend DEBE revertir manualmente:
+- Los `balance` de todas las cuentas bancarias afectadas
+- Los `total_spent` de todos los presupuestos afectados
+
+**URL:** `DELETE ${API_URL}/transactions/all`
+
+**Nota:** La ruta es `/transactions/all` (no `/transactions`). Esto evita conflictos con la ruta `/transactions/{id}`.
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllTransactions = async () => {
+  // Primero obtener todas las transacciones para saber qué revertir
+  const allTransactions = await getTransactions();
+  
+  // Eliminar todas las transacciones
+  const response = await fetch(`${API_URL}/transactions/all`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  
+  const result = await response.json();
+  
+  if (response.ok) {
+    // Agrupar por cuenta bancaria y presupuesto
+    const balanceChanges = {};
+    const budgetChanges = {};
+    
+    allTransactions.transactions.forEach(tx => {
+      // Calcular cambios de balance
+      if (!balanceChanges[tx.bank_account_id]) {
+        balanceChanges[tx.bank_account_id] = 0;
+      }
+      
+      if (tx.type === 'ingreso') {
+        balanceChanges[tx.bank_account_id] -= parseFloat(tx.amount);
+      } else if (tx.type === 'egreso' || tx.type === 'ahorro') {
+        balanceChanges[tx.bank_account_id] += parseFloat(tx.amount);
+      }
+      
+      // Calcular cambios de presupuesto
+      if (tx.budget_id) {
+        if (!budgetChanges[tx.budget_id]) {
+          budgetChanges[tx.budget_id] = 0;
+        }
+        budgetChanges[tx.budget_id] -= parseFloat(tx.amount);
+      }
+    });
+    
+    // Aplicar cambios de balance
+    for (const [accountId, change] of Object.entries(balanceChanges)) {
+      const account = await getBankAccount(accountId);
+      const currentBalance = parseFloat(account.accounts[0].balance.original.amount);
+      await updateBankAccount(accountId, {
+        balance: currentBalance + change
+      });
+    }
+    
+    // Aplicar cambios de presupuesto
+    for (const [budgetId, change] of Object.entries(budgetChanges)) {
+      const budget = await getBudget(budgetId);
+      const currentTotalSpent = parseFloat(budget.budgets[0].total_spent);
+      await updateBudget(budgetId, {
+        total_spent: Math.max(0, currentTotalSpent + change)
+      });
+    }
+  }
+  
+  return result;
+};
+```
+
+**Response (200):**
+```json
+{
+  "message": "Successfully deleted 5 transaction(s)",
+  "deleted_count": 5,
+  "deleted_transactions": [
+    {
+      "id": "uuid-here-1",
+      "type": "ingreso",
+      "amount": 1000000,
+      "bank_account_id": "uuid-of-bank-account-1",
+      "budget_id": null
+    },
+    {
+      "id": "uuid-here-2",
+      "type": "egreso",
+      "amount": 50000,
+      "bank_account_id": "uuid-of-bank-account-1",
+      "budget_id": "uuid-of-budget-1"
     }
   ]
 }
@@ -1209,7 +1465,8 @@ Crear una nueva tarjeta de débito.
   "card_name": "Tarjeta Débito Principal",
   "bank_account_id": "uuid-de-cuenta-bancaria",
   "last_4_digits": "1234",
-  "expiration_date": "2025-12-31"
+  "expiration_date": "2025-12-31",
+  "is_virtual": false
 }
 ```
 
@@ -1233,7 +1490,8 @@ const newCard = await createCard({
   card_name: "Tarjeta Débito Principal",
   bank_account_id: "uuid-de-cuenta-bancaria",
   last_4_digits: "1234",
-  expiration_date: "2025-12-31"
+  expiration_date: "2025-12-31",
+  is_virtual: false
 });
 ```
 
@@ -1242,6 +1500,9 @@ const newCard = await createCard({
 - `bank_account_id` - ID de la cuenta bancaria asociada (UUID, debe pertenecer al usuario)
 - `last_4_digits` - Últimos 4 dígitos de la tarjeta (string, exactamente 4 dígitos)
 - `expiration_date` - Fecha de vencimiento en formato YYYY-MM-DD (no puede ser en el pasado)
+
+**Campos Opcionales:**
+- `is_virtual` - Indica si la tarjeta es virtual o física (boolean, default: false)
 
 **Response (201):**
 ```json
@@ -1258,6 +1519,7 @@ const newCard = await createCard({
     },
     "last_4_digits": "1234",
     "expiration_date": "2025-12-31",
+    "is_virtual": false,
     "created_at": "2024-01-15T00:00:00.000Z",
     "updated_at": "2024-01-15T00:00:00.000Z"
   }
@@ -1311,6 +1573,7 @@ const card = await getCards('uuid-here');
       },
       "last_4_digits": "1234",
       "expiration_date": "2025-12-31",
+      "is_virtual": false,
       "created_at": "2024-01-15T00:00:00.000Z",
       "updated_at": "2024-01-15T00:00:00.000Z"
     }
@@ -1351,7 +1614,8 @@ await updateCard('uuid-here', {
 await updateCard('uuid-here', {
   card_name: "Tarjeta Débito Actualizada",
   bank_account_id: "nueva-cuenta-uuid",
-  last_4_digits: "5678"
+  last_4_digits: "5678",
+  is_virtual: true
 });
 ```
 
@@ -1361,7 +1625,8 @@ await updateCard('uuid-here', {
   "card_name": "Tarjeta Débito Actualizada",
   "bank_account_id": "nueva-cuenta-uuid",
   "last_4_digits": "5678",
-  "expiration_date": "2026-12-31"
+  "expiration_date": "2026-12-31",
+  "is_virtual": true
 }
 ```
 
@@ -1402,6 +1667,265 @@ Eliminar todas las tarjetas.
 const deleteAllCards = async () => {
   const token = localStorage.getItem('authToken');
   const response = await fetch(`${API_URL}/cards`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+### Projects (Proyectos de Ahorro)
+
+#### POST /projects
+Crear un nuevo proyecto de ahorro.
+
+**URL:** `POST ${API_URL}/projects`
+
+**Request Body:**
+```json
+{
+  "name": "Viaje a Europa",
+  "target_amount": 5000000,
+  "duration_months": 6,
+  "end_date": "2024-12-31",
+  "start_date": "2024-06-01",
+  "current_amount": 0,
+  "status": "active",
+  "budget_id": "uuid-del-presupuesto"
+}
+```
+
+**Ejemplo JavaScript:**
+```javascript
+const createProject = async (projectData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/projects`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(projectData),
+  });
+  return response.json();
+};
+
+// Uso
+const newProject = await createProject({
+  name: "Viaje a Europa",
+  target_amount: 5000000,
+  duration_months: 6,
+  end_date: "2024-12-31"
+});
+```
+
+**Campos Requeridos:**
+- `name` - Nombre del proyecto (string, no vacío)
+- `target_amount` - Monto objetivo del ahorro (number, positivo)
+- `duration_months` - Duración en meses (integer, entre 1 y 9)
+- `end_date` - Fecha de finalización en formato YYYY-MM-DD
+
+**Campos Opcionales:**
+- `start_date` - Fecha de inicio en formato YYYY-MM-DD (default: fecha actual)
+- `current_amount` - Monto actual ahorrado (number, default: 0, no puede exceder target_amount)
+- `status` - Estado del proyecto: 'active', 'completed', 'cancelled' (default: 'active')
+- `budget_id` - ID del presupuesto asociado (UUID, debe pertenecer al usuario)
+
+**Response (201):**
+```json
+{
+  "message": "Project created successfully",
+  "project": {
+    "id": "uuid-here",
+    "name": "Viaje a Europa",
+    "target_amount": 5000000,
+    "current_amount": 0,
+    "remaining": 5000000,
+    "progress_percentage": 0,
+    "start_date": "2024-06-01",
+    "end_date": "2024-12-31",
+    "duration_months": 6,
+    "status": "active",
+    "budget_id": "uuid-del-presupuesto",
+    "created_at": "2024-06-01T00:00:00.000Z",
+    "updated_at": "2024-06-01T00:00:00.000Z"
+  }
+}
+```
+
+---
+
+#### GET /projects
+Obtener proyectos de ahorro.
+
+**URL:** `GET ${API_URL}/projects?id={uuid}` (opcional)
+
+**Ejemplo JavaScript:**
+```javascript
+const getProjects = async (projectId = null) => {
+  const token = localStorage.getItem('authToken');
+  const url = projectId 
+    ? `${API_URL}/projects?id=${projectId}`
+    : `${API_URL}/projects`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todos los proyectos
+const allProjects = await getProjects();
+
+// Obtener proyecto específico
+const project = await getProjects('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "projects": [
+    {
+      "id": "uuid-here",
+      "name": "Viaje a Europa",
+      "target_amount": 5000000,
+      "current_amount": 1500000,
+      "remaining": 3500000,
+      "progress_percentage": 30,
+      "start_date": "2024-06-01",
+      "end_date": "2024-12-31",
+      "duration_months": 6,
+      "status": "active",
+      "budget_id": "uuid-del-presupuesto",
+      "budget": {
+        "id": "uuid-del-presupuesto",
+        "name": "Viaje a Europa",
+        "max_amount": 5000000,
+        "total_spent": 1500000
+      },
+      "created_at": "2024-06-01T00:00:00.000Z",
+      "updated_at": "2024-06-01T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+**Nota:** Los resultados están ordenados por `end_date` (ascendente) y luego por `created_at` (descendente).
+
+---
+
+#### PUT /projects/{id}
+Actualizar un proyecto específico.
+
+**URL:** `PUT ${API_URL}/projects/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const updateProject = async (projectId, updates) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/projects/${projectId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(updates),
+  });
+  return response.json();
+};
+
+// Uso - actualizar monto actual
+await updateProject('uuid-here', {
+  current_amount: 2000000
+});
+
+// Uso - marcar como completado
+await updateProject('uuid-here', {
+  status: "completed"
+});
+
+// Uso - actualizar múltiples campos
+await updateProject('uuid-here', {
+  name: "Viaje a Europa Actualizado",
+  current_amount: 2500000,
+  budget_id: "nuevo-presupuesto-uuid"
+});
+```
+
+**Request Body (todos los campos son opcionales, pero al menos uno es requerido):**
+```json
+{
+  "name": "Viaje a Europa Actualizado",
+  "target_amount": 6000000,
+  "current_amount": 2000000,
+  "start_date": "2024-07-01",
+  "end_date": "2025-01-31",
+  "duration_months": 7,
+  "status": "active",
+  "budget_id": "nuevo-presupuesto-uuid"
+}
+```
+
+**Nota:** Si actualizas `budget_id`, el nuevo presupuesto debe pertenecer al usuario autenticado. Puedes establecer `budget_id` a `null` para desvincular el presupuesto.
+
+---
+
+#### DELETE /projects/{id}
+Eliminar un proyecto específico.
+
+**URL:** `DELETE ${API_URL}/projects/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteProject = async (projectId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/projects/${projectId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+```
+
+**Response (200):**
+```json
+{
+  "message": "Project deleted successfully",
+  "deleted_project": {
+    "id": "uuid-here",
+    "name": "Viaje a Europa",
+    "target_amount": 5000000,
+    "current_amount": 1500000
+  },
+  "note": "Budget association was removed. Budget was not deleted."
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible. El presupuesto asociado NO se elimina automáticamente.
+
+---
+
+#### DELETE /projects
+Eliminar todos los proyectos.
+
+**URL:** `DELETE ${API_URL}/projects`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllProjects = async () => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/projects`, {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
@@ -2112,9 +2636,16 @@ const handleApiCall = async (apiFunction) => {
 
 ## Notas Importantes
 
-1. **Balance Automático**: Los balances de las cuentas bancarias se actualizan automáticamente cuando se crean/actualizan/eliminan transacciones (mediante triggers de base de datos).
+1. **Balance Manual**: Los balances de las cuentas bancarias NO se actualizan automáticamente. El frontend debe actualizar manualmente el balance de la cuenta bancaria cuando se crean, actualizan o eliminan transacciones:
+   - **Ingreso**: Suma el monto al balance (`balance = balance + amount`)
+   - **Egreso/Ahorro**: Resta el monto del balance (`balance = balance - amount`)
+   - Usa el endpoint `PUT /bank-accounts/{id}` para actualizar el balance
 
-2. **Total Gastado Automático**: El campo `total_spent` de los presupuestos se actualiza automáticamente cuando se crean/actualizan/eliminan transacciones de tipo "egreso" (mediante triggers de base de datos).
+2. **Total Gastado Manual**: El campo `total_spent` de los presupuestos NO se actualiza automáticamente. El frontend debe actualizar manualmente el `total_spent` cuando se crean, actualizan o eliminan transacciones de tipo "egreso" o "ahorro" con `budget_id`:
+   - **Crear transacción**: Suma el monto al `total_spent` (`total_spent = total_spent + amount`)
+   - **Eliminar transacción**: Resta el monto del `total_spent` (`total_spent = total_spent - amount`)
+   - **Actualizar transacción**: Revierte el monto anterior y aplica el nuevo monto
+   - Usa el endpoint `PUT /budgets/{id}` para actualizar el `total_spent`
 
 3. **Validación de Presupuestos**: 
    - Los egresos pueden crearse con o sin `budget_id`. Si se proporciona `budget_id`, se valida que el presupuesto exista, pertenezca al usuario y que la transacción no exceda el `max_amount` del presupuesto.
@@ -2137,13 +2668,15 @@ const handleApiCall = async (apiFunction) => {
 
 10. **Deudas**: Las deudas permiten gestionar obligaciones financieras con información detallada sobre tasas de interés, pagos mínimos, seguros y fechas de corte. Los campos numéricos deben ser valores positivos y las fechas deben estar en formato `YYYY-MM-DD`. Los nombres de campos están en inglés: `value`, `currency`, `concept`, `owed`, `reference`, `cut_date`, `interest_rate`, `overdue_interest`, `minimum_payment`, `has_insurance`, `insurance_value`.
 
-11. **Tarjetas de Débito**: Las tarjetas permiten almacenar información de tarjetas de débito asociadas a una cuenta bancaria. El campo `bank_account_id` debe referenciar una cuenta bancaria que pertenezca al usuario autenticado. El campo `last_4_digits` debe ser exactamente 4 dígitos y la fecha de vencimiento (`expiration_date`) no puede ser en el pasado. Los nombres de campos están en inglés: `card_name`, `bank_account_id`, `last_4_digits`, `expiration_date`. Las respuestas incluyen información de la cuenta bancaria asociada.
+11. **Tarjetas de Débito**: Las tarjetas permiten almacenar información de tarjetas de débito asociadas a una cuenta bancaria. El campo `bank_account_id` debe referenciar una cuenta bancaria que pertenezca al usuario autenticado. El campo `last_4_digits` debe ser exactamente 4 dígitos y la fecha de vencimiento (`expiration_date`) no puede ser en el pasado. El campo `is_virtual` es opcional (default: false) e indica si la tarjeta es virtual o física. Los nombres de campos están en inglés: `card_name`, `bank_account_id`, `last_4_digits`, `expiration_date`, `is_virtual`. Las respuestas incluyen información de la cuenta bancaria asociada.
 
 12. **Tarjetas de Crédito**: Las tarjetas de crédito permiten gestionar información de tarjetas de crédito con nombre, banco, cupo de crédito, tasa mensual, cuota de manejo, fecha de corte, cupo utilizado y beneficios. El campo `benefits` es un array de strings que almacena la lista de beneficios de la tarjeta. El campo `cut_date` es opcional y debe estar en formato YYYY-MM-DD. El campo `used_credit` es opcional (default: 0.00) y representa cuánto del cupo se ha gastado; no puede exceder `credit_limit`. La respuesta incluye también `available_credit` que se calcula automáticamente como `credit_limit - used_credit`. Los nombres de campos están en inglés: `name`, `bank`, `credit_limit`, `monthly_rate`, `management_fee`, `cut_date`, `used_credit`, `available_credit`, `benefits`. El campo `benefits` debe ser un array de strings y todos los elementos deben ser strings.
 
 13. **Suscripciones Activas**: Las suscripciones permiten gestionar servicios de suscripción activos con nombre, precio, fecha de corte, tarjeta de débito asociada y si es familiar o no. El `card_id` debe referenciar una tarjeta que pertenezca al usuario autenticado. El campo `is_family` es opcional (default: false) e indica si la suscripción es familiar. Los nombres de campos están en inglés: `name`, `price`, `cut_date`, `is_family`. Las suscripciones incluyen información de la tarjeta asociada en las respuestas GET.
 
-14. **Autenticación**: 
+14. **Proyectos de Ahorro**: Los proyectos permiten gestionar metas de ahorro con duración máxima de 9 meses (por inflación). El campo `duration_months` debe estar entre 1 y 9. El campo `target_amount` es el monto objetivo y `current_amount` es el monto actual ahorrado (no puede exceder `target_amount`). El campo `budget_id` es opcional y permite asociar un presupuesto al proyecto. El campo `status` puede ser 'active', 'completed' o 'cancelled' (default: 'active'). La respuesta incluye `remaining` (monto restante) y `progress_percentage` (porcentaje de progreso) calculados automáticamente. Los nombres de campos están en inglés: `name`, `target_amount`, `current_amount`, `start_date`, `end_date`, `duration_months`, `status`, `budget_id`. El frontend debe manejar la creación del presupuesto asociado y su eliminación cuando el proyecto se completa.
+
+15. **Autenticación**: 
     - **⚠️ REQUERIDA**: Todos los endpoints requieren autenticación JWT, excepto `/auth/register` y `/auth/login`.
     - **Registro**: El `password_hash` debe ser generado en el cliente usando bcrypt antes de enviarlo al servidor.
     - **Login**: El password se envía en texto plano y el servidor lo hashea para comparar con el hash almacenado.
@@ -2152,10 +2685,10 @@ const handleApiCall = async (apiFunction) => {
     - **Errores 401**: Si recibes un 401, el token es inválido o expirado. Redirige al usuario al login.
     - **JWT_TOKEN_PASSPHRASE**: Debe configurarse en el archivo `.env` para firmar y verificar tokens.
 
-15. **🔒 Aislamiento de Datos por Usuario**:
+16. **🔒 Aislamiento de Datos por Usuario**:
     - **Filtrado Automático**: Todos los endpoints filtran automáticamente los datos por el usuario autenticado usando el token JWT.
     - **Sin `user_id` Requerido**: No necesitas pasar `user_id` en los requests; el sistema lo obtiene automáticamente del token.
-    - **Asignación Automática**: Los nuevos registros (cuentas bancarias, presupuestos, transacciones, deudas, tarjetas, suscripciones) se asignan automáticamente al usuario autenticado.
+    - **Asignación Automática**: Los nuevos registros (cuentas bancarias, presupuestos, transacciones, deudas, tarjetas, suscripciones, proyectos) se asignan automáticamente al usuario autenticado.
     - **Seguridad**: Cada usuario solo puede ver, crear, actualizar y eliminar sus propios datos. Si intentas acceder a datos de otro usuario, recibirás un error 404.
     - **Exchange Rates Globales**: Los exchange rates son compartidos entre todos los usuarios y no requieren filtrado por usuario.
     - **Transacciones**: Al crear una transacción, el sistema verifica automáticamente que la cuenta bancaria y el presupuesto (si aplica) pertenezcan al usuario autenticado.
@@ -2484,6 +3017,38 @@ class PocketsAPI {
     });
   }
 
+  // Projects
+  async createProject(data) {
+    return this.request('/projects', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  async getProjects(projectId = null) {
+    const endpoint = projectId ? `/projects?id=${projectId}` : '/projects';
+    return this.request(endpoint);
+  }
+
+  async updateProject(projectId, updates) {
+    return this.request(`/projects/${projectId}`, {
+      method: 'PUT',
+      body: updates,
+    });
+  }
+
+  async deleteProject(projectId) {
+    return this.request(`/projects/${projectId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async deleteAllProjects() {
+    return this.request('/projects', {
+      method: 'DELETE',
+    });
+  }
+
   // Authentication
   async register(userData) {
     return this.request('/auth/register', {
@@ -2625,6 +3190,32 @@ await api.deleteCreditCard(creditCard.credit_card.id);
 
 // Eliminar todas las tarjetas de crédito
 await api.deleteAllCreditCards();
+
+// Crear proyecto de ahorro
+const project = await api.createProject({
+  name: "Viaje a Europa",
+  target_amount: 5000000,
+  duration_months: 6,
+  end_date: "2024-12-31"
+});
+
+// Obtener todos los proyectos
+const allProjects = await api.getProjects();
+
+// Obtener proyecto específico
+const specificProject = await api.getProjects(project.project.id);
+
+// Actualizar proyecto
+await api.updateProject(project.project.id, {
+  current_amount: 2000000,
+  status: "active"
+});
+
+// Eliminar proyecto específico
+await api.deleteProject(project.project.id);
+
+// Eliminar todos los proyectos
+await api.deleteAllProjects();
 
 // Registro de usuario (password_hash debe generarse en el cliente)
 import bcrypt from 'bcryptjs';

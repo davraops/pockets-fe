@@ -9,6 +9,7 @@ import SwapHorizIcon from '@mui/icons-material/SwapHoriz'
 import CreditCardIcon from '@mui/icons-material/CreditCard'
 import PaymentIcon from '@mui/icons-material/Payment'
 import CardMembershipIcon from '@mui/icons-material/CardMembership'
+import FolderSpecialIcon from '@mui/icons-material/FolderSpecial'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { api } from '../services/api'
 import type { SvgIconProps } from '@mui/material'
@@ -70,6 +71,13 @@ const financeItems: FinanceItem[] = [
     Icon: CreditCardIcon,
     color: '#FF2D55',
     path: '/finanzas/tarjetas-credito'
+  },
+  {
+    id: '8',
+    title: 'Proyectos',
+    Icon: FolderSpecialIcon,
+    color: '#00C7BE',
+    path: '/finanzas/proyectos'
   }
 ]
 

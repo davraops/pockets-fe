@@ -95,7 +95,7 @@ function Cuentas() {
         }
       } catch (err: any) {
         console.error('Error al cargar cuentas:', err)
-        setError('Error al cargar las cuentas. Por favor, intenta de nuevo.')
+        setError('Frontend says: Error al cargar las cuentas. Por favor, intenta de nuevo.')
         setAccounts([])
       } finally {
         setIsLoading(false)
@@ -227,7 +227,7 @@ function Cuentas() {
         handleCloseDetailModal()
       } catch (err: any) {
         console.error('Error al eliminar cuenta:', err)
-        alert('Error al eliminar la cuenta. Por favor, intenta de nuevo.')
+        alert('Frontend says: Error al eliminar la cuenta. Por favor, intenta de nuevo.')
       }
     }
   }
@@ -332,7 +332,9 @@ function Cuentas() {
       }
     } catch (err: any) {
       console.error('Error al guardar cuenta:', err)
-      const errorMessage = err.data?.error || 'Error al guardar la cuenta. Por favor, intenta de nuevo.'
+      const errorMessage = err.data?.error
+        ? `Backend says: ${err.data.error}`
+        : 'Frontend says: Error al guardar la cuenta. Por favor, intenta de nuevo.'
       alert(errorMessage)
     }
   }
@@ -538,7 +540,7 @@ function Cuentas() {
       alert('10 cuentas de prueba creadas exitosamente')
     } catch (err: any) {
       console.error('Error al crear cuentas de prueba:', err)
-      alert('Error al crear cuentas de prueba: ' + (err.data?.error || 'Error desconocido'))
+      alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
     } finally {
       setIsLoading(false)
     }
@@ -560,7 +562,7 @@ function Cuentas() {
         alert('Todas las cuentas han sido eliminadas exitosamente')
       } catch (err: any) {
         console.error('Error al eliminar todas las cuentas:', err)
-        alert('Error al eliminar cuentas: ' + (err.data?.error || 'Error desconocido'))
+        alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
       } finally {
         setIsLoading(false)
       }

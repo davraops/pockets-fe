@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import AppPage from './pages/AppPage'
@@ -10,6 +11,7 @@ import Deudas from './pages/Deudas'
 import TarjetasDebito from './pages/TarjetasDebito'
 import Subscripciones from './pages/Subscripciones'
 import TarjetasCredito from './pages/TarjetasCredito'
+import Proyectos from './pages/Proyectos'
 import StatusBar from './components/StatusBar'
 import ProtectedRoute from './components/ProtectedRoute'
 import Footer from './components/Footer'
@@ -17,6 +19,11 @@ import Footer from './components/Footer'
 function AppContent() {
   const location = useLocation()
   const isLogin = location.pathname === '/login'
+
+  // Scroll to top cuando cambia la ruta
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+  }, [location.pathname])
 
   return (
     <>
@@ -92,6 +99,14 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <TarjetasCredito />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/finanzas/proyectos" 
+          element={
+            <ProtectedRoute>
+              <Proyectos />
             </ProtectedRoute>
           } 
         />

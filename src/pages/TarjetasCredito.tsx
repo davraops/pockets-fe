@@ -104,7 +104,7 @@ function TarjetasCredito() {
         }
       } catch (err: any) {
         console.error('Error al cargar tarjetas de crédito:', err)
-        setError('Error al cargar las tarjetas de crédito. Por favor, intenta de nuevo.')
+        setError('Frontend says: Error al cargar las tarjetas de crédito. Por favor, intenta de nuevo.')
         setCards([])
       } finally {
         setIsLoading(false)
@@ -222,7 +222,7 @@ function TarjetasCredito() {
         handleCloseDetailModal()
       } catch (err: any) {
         console.error('Error al eliminar tarjeta:', err)
-        alert('Error al eliminar la tarjeta. Por favor, intenta de nuevo.')
+        alert('Frontend says: Error al eliminar la tarjeta. Por favor, intenta de nuevo.')
       }
     }
   }
@@ -346,7 +346,7 @@ function TarjetasCredito() {
 
     // Validación adicional antes de enviar
     if (!formData.nombre.trim() || !formData.banco.trim() || !formData.cupo.trim() || !formData.tasaMensual.trim()) {
-      alert('Por favor completa todos los campos requeridos')
+      alert('Frontend says: Por favor completa todos los campos requeridos')
       return
     }
 
@@ -356,27 +356,27 @@ function TarjetasCredito() {
     const cupoUsadoNum = formData.cupoUsado.trim() ? parseFloat(formData.cupoUsado) : 0
 
     if (isNaN(cupoNum) || cupoNum <= 0) {
-      alert('El cupo debe ser un número positivo')
+      alert('Frontend says: El cupo debe ser un número positivo')
       return
     }
 
     if (isNaN(tasaNum) || tasaNum < 0) {
-      alert('La tasa mensual debe ser un número positivo')
+      alert('Frontend says: La tasa mensual debe ser un número positivo')
       return
     }
 
     if (formData.cuotaManejo.trim() && (isNaN(cuotaNum) || cuotaNum < 0)) {
-      alert('La cuota de manejo debe ser un número positivo')
+      alert('Frontend says: La cuota de manejo debe ser un número positivo')
       return
     }
 
     if (formData.cupoUsado.trim() && (isNaN(cupoUsadoNum) || cupoUsadoNum < 0)) {
-      alert('El cupo usado debe ser un número positivo')
+      alert('Frontend says: El cupo usado debe ser un número positivo')
       return
     }
 
     if (cupoUsadoNum > cupoNum) {
-      alert('El cupo usado no puede exceder el cupo de crédito')
+      alert('Frontend says: El cupo usado no puede exceder el cupo de crédito')
       return
     }
 
@@ -490,7 +490,9 @@ function TarjetasCredito() {
       }
     } catch (err: any) {
       console.error('Error al guardar tarjeta:', err)
-      const errorMessage = err.data?.error || err.message || 'Error al guardar la tarjeta. Por favor, intenta de nuevo.'
+      const errorMessage = err.data?.error || err.message
+        ? `Backend says: ${err.data?.error || err.message}`
+        : 'Frontend says: Error al guardar la tarjeta. Por favor, intenta de nuevo.'
       alert(errorMessage)
     }
   }
@@ -654,7 +656,7 @@ function TarjetasCredito() {
       alert(message + debtMessage + errorMessage)
     } catch (err: any) {
       console.error('Error al crear tarjetas de prueba:', err)
-      alert('Error al crear tarjetas de prueba: ' + (err.data?.error || 'Error desconocido'))
+      alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
     } finally {
       setIsLoading(false)
     }
@@ -742,7 +744,7 @@ function TarjetasCredito() {
       console.log('=== FIN DEBUG ===')
     } catch (err: any) {
       console.error('Error en debug logs:', err)
-      alert('Error al obtener información de debug: ' + (err.data?.error || err.message))
+      alert('Backend says: ' + (err.data?.error || err.message))
     }
   }
 
@@ -762,7 +764,7 @@ function TarjetasCredito() {
         alert('Todas las tarjetas de crédito han sido eliminadas exitosamente')
       } catch (err: any) {
         console.error('Error al eliminar todas las tarjetas:', err)
-        alert('Error al eliminar tarjetas: ' + (err.data?.error || 'Error desconocido'))
+        alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
       } finally {
         setIsLoading(false)
       }

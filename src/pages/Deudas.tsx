@@ -136,7 +136,7 @@ function Deudas() {
       }
     } catch (err: any) {
       console.error('Error al cargar deudas:', err)
-      setError('Error al cargar las deudas. Por favor, intenta de nuevo.')
+      setError('Frontend says: Error al cargar las deudas. Por favor, intenta de nuevo.')
       setDebts([])
     } finally {
       setIsLoading(false)
@@ -229,7 +229,7 @@ function Deudas() {
     
     // Prevenir edición de deudas asociadas a tarjetas de crédito
     if (isDebtAssociatedWithCreditCard(selectedDebt.concepto)) {
-      alert('Esta deuda está asociada a una tarjeta de crédito y no puede ser editada. Para modificarla, edita la tarjeta de crédito asociada.')
+      alert('Frontend says: Esta deuda está asociada a una tarjeta de crédito y no puede ser editada. Para modificarla, edita la tarjeta de crédito asociada.')
       return
     }
     
@@ -342,7 +342,9 @@ function Deudas() {
       }
     } catch (err: any) {
       console.error('Error al guardar deuda:', err)
-      const errorMessage = err.data?.error || 'Error al guardar la deuda. Por favor, intenta de nuevo.'
+      const errorMessage = err.data?.error
+        ? `Backend says: ${err.data.error}`
+        : 'Frontend says: Error al guardar la deuda. Por favor, intenta de nuevo.'
       alert(errorMessage)
     }
   }
@@ -369,7 +371,7 @@ function Deudas() {
 
     // Verificar si la deuda está asociada a una tarjeta de crédito
     if (isDebtAssociatedWithCreditCard(selectedDebt.concepto)) {
-      alert('Esta deuda está asociada a una tarjeta de crédito. Para eliminarla, primero debes eliminar la tarjeta de crédito asociada.')
+      alert('Frontend says: Esta deuda está asociada a una tarjeta de crédito. Para eliminarla, primero debes eliminar la tarjeta de crédito asociada.')
       return
     }
 
@@ -386,7 +388,7 @@ function Deudas() {
         handleCloseDetailModal()
       } catch (err: any) {
         console.error('Error al eliminar deuda:', err)
-        alert('Error al eliminar la deuda. Por favor, intenta de nuevo.')
+        alert('Frontend says: Error al eliminar la deuda. Por favor, intenta de nuevo.')
       }
     }
   }
@@ -558,7 +560,7 @@ function Deudas() {
       alert('8 deudas de prueba creadas exitosamente')
     } catch (err: any) {
       console.error('Error al crear deudas de prueba:', err)
-      alert('Error al crear deudas de prueba: ' + (err.data?.error || 'Error desconocido'))
+      alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
     } finally {
       setIsLoading(false)
     }
@@ -575,7 +577,7 @@ function Deudas() {
         alert('Todas las deudas han sido eliminadas exitosamente')
       } catch (err: any) {
         console.error('Error al eliminar todas las deudas:', err)
-        alert('Error al eliminar deudas: ' + (err.data?.error || 'Error desconocido'))
+        alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
       } finally {
         setIsLoading(false)
       }

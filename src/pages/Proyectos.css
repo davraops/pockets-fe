@@ -1,4 +1,4 @@
-.tarjetas-debito-content {
+.proyectos-content {
   flex-direction: column;
   gap: 0.75rem;
   align-items: stretch;
@@ -58,23 +58,23 @@
 }
 
 /* Header */
-.tarjetas-header {
+.proyectos-header {
   display: flex;
   align-items: center;
   gap: 1rem;
   margin-bottom: 0.75rem;
 }
 
-.add-card-button {
+.add-project-button {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.875rem 1.5rem;
-  background: rgba(88, 86, 214, 0.2);
+  background: rgba(0, 199, 190, 0.2);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border-radius: 16px;
-  border: 1px solid rgba(88, 86, 214, 0.3);
+  border: 1px solid rgba(0, 199, 190, 0.3);
   box-shadow: 
     0 4px 16px 0 rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -87,17 +87,21 @@
   letter-spacing: -0.01em;
 }
 
-.add-card-button:hover {
-  background: rgba(88, 86, 214, 0.3);
-  border-color: rgba(88, 86, 214, 0.5);
+.add-project-button:hover {
+  background: rgba(0, 199, 190, 0.3);
+  border-color: rgba(0, 199, 190, 0.5);
   transform: translateY(-2px);
   box-shadow: 
     0 6px 20px 0 rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
-.add-card-button:active {
+.add-project-button:active {
   transform: translateY(0);
+}
+
+.add-project-button svg {
+  font-size: 1.5rem;
 }
 
 .debug-button {
@@ -133,10 +137,6 @@
 
 .debug-button:active {
   transform: translateY(0);
-}
-
-.add-card-button svg {
-  font-size: 1.5rem;
 }
 
 /* Empty State */
@@ -176,15 +176,15 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
 }
 
-/* Cards Grid */
-.cards-grid {
+/* Projects Grid */
+.projects-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1rem;
   width: 100%;
 }
 
-.card-item {
+.project-item {
   position: relative;
   padding: 1.5rem;
   background: rgba(0, 0, 0, 0.2);
@@ -203,21 +203,21 @@
   overflow: hidden;
 }
 
-.card-item::before {
+.project-item::before {
   content: '';
   position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
   width: 4px;
-  background: var(--banco-color, #5856D6);
+  background: var(--project-color, #00C7BE);
   opacity: 0.8;
   border-radius: 20px 0 0 20px;
   pointer-events: none;
   z-index: 1;
 }
 
-.card-item:hover {
+.project-item:hover {
   background: rgba(0, 0, 0, 0.3);
   border-color: rgba(255, 255, 255, 0.15);
   transform: translateY(-2px);
@@ -226,17 +226,17 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
-.card-item-header {
+.project-item-header {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-.card-icon {
+.project-icon {
   width: 56px;
   height: 56px;
   border-radius: 14px;
-  background: var(--banco-color, #5856D6);
+  background: var(--project-color, #00C7BE);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -244,17 +244,17 @@
   flex-shrink: 0;
 }
 
-.card-icon svg {
+.project-icon svg {
   color: rgba(255, 255, 255, 0.9);
   font-size: 2rem;
 }
 
-.card-info {
+.project-info {
   flex: 1;
   min-width: 0;
 }
 
-.card-name {
+.project-name {
   font-size: 1.125rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.95);
@@ -265,109 +265,268 @@
   overflow-wrap: break-word;
 }
 
-.card-bank {
+.project-status {
   font-size: 1rem;
-  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
 }
 
-.card-item-body {
+.project-item-body {
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: flex-end;
+  flex-direction: column;
   gap: 1rem;
 }
 
-.card-left-info {
+.project-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.project-progress-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.project-progress-fill {
+  height: 100%;
+  background: var(--project-color, #00C7BE);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.project-progress-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  min-width: 45px;
+  text-align: right;
+}
+
+.project-amounts {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  flex: 1;
 }
 
-.card-number {
-  font-size: 1rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0;
+.project-amount-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.project-amount-label {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-  letter-spacing: 0.1em;
 }
 
-.card-expiration {
-  font-size: 1rem;
+.project-amount-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+.project-dates {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.project-date {
+  font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.6);
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
 }
 
-.card-subscriptions-badge {
+.project-date-label {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Detail Modal */
+.detail-modal {
+  max-width: 600px;
+}
+
+.detail-content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.detail-section {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.625rem;
-  background: rgba(175, 82, 222, 0.2);
-  border: 1px solid rgba(175, 82, 222, 0.3);
-  border-radius: 12px;
-  width: fit-content;
-  transition: all 0.2s ease;
+  gap: 1.25rem;
 }
 
-.card-subscriptions-badge:hover {
-  background: rgba(175, 82, 222, 0.3);
-  border-color: rgba(175, 82, 222, 0.5);
-}
-
-.subscriptions-badge-icon {
-  font-size: 1rem;
-  color: rgba(175, 82, 222, 0.9);
-}
-
-.subscriptions-badge-text {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 500;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-  letter-spacing: -0.01em;
-}
-
-.card-type-badge {
-  display: inline-flex;
+.detail-icon-large {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  background: var(--project-color, #00C7BE);
+  display: flex;
   align-items: center;
-  width: fit-content;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
 }
 
-.card-type-text {
-  font-size: 0.875rem;
-  font-weight: 500;
-  padding: 0.25rem 0.625rem;
-  border-radius: 8px;
+.detail-icon-large svg {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 2.5rem;
+}
+
+.detail-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0 0 0.25rem 0;
+  letter-spacing: -0.02em;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.detail-status {
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+.project-detail-progress {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.project-detail-progress-bar {
+  flex: 1;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.project-detail-progress-fill {
+  height: 100%;
+  background: var(--project-color, #00C7BE);
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+.project-detail-progress-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  min-width: 60px;
+  text-align: right;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.detail-label {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+.detail-value {
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem 1.5rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  border-radius: 12px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
   letter-spacing: -0.01em;
 }
 
-.card-type-text.virtual {
-  background: rgba(88, 86, 214, 0.2);
-  color: rgba(88, 86, 214, 0.9);
-  border: 1px solid rgba(88, 86, 214, 0.3);
-}
-
-.card-type-text.fisica {
+.detail-button.edit {
   background: rgba(52, 199, 89, 0.2);
-  color: rgba(52, 199, 89, 0.9);
+  color: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(52, 199, 89, 0.3);
 }
 
-.detail-value.virtual {
-  color: rgba(88, 86, 214, 0.9);
-  font-weight: 600;
+.detail-button.edit:hover {
+  background: rgba(52, 199, 89, 0.3);
+  border-color: rgba(52, 199, 89, 0.5);
 }
 
-.detail-value.fisica {
-  color: rgba(52, 199, 89, 0.9);
-  font-weight: 600;
+.detail-button.complete {
+  background: rgba(52, 199, 89, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(52, 199, 89, 0.3);
+}
+
+.detail-button.complete:hover {
+  background: rgba(52, 199, 89, 0.3);
+  border-color: rgba(52, 199, 89, 0.5);
+}
+
+.detail-button.delete {
+  background: rgba(255, 59, 48, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 59, 48, 0.3);
+}
+
+.detail-button.delete:hover {
+  background: rgba(255, 59, 48, 0.3);
+  border-color: rgba(255, 59, 48, 0.5);
+}
+
+.detail-button svg {
+  font-size: 1.125rem;
 }
 
 /* Modal Styles */
@@ -480,7 +639,7 @@
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
-  border-color: rgba(88, 86, 214, 0.5);
+  border-color: rgba(0, 199, 190, 0.5);
   background: rgba(0, 0, 0, 0.4);
 }
 
@@ -499,132 +658,11 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
 }
 
-.form-select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  padding-right: 2.5rem;
-}
-
-.form-select:hover {
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-.form-select:focus {
-  border-color: rgba(88, 86, 214, 0.5);
-}
-
-.form-select option {
-  background: rgba(0, 0, 0, 0.9);
-  color: rgba(255, 255, 255, 0.9);
-}
-
 .form-hint {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.875rem;
+  color: rgba(255, 193, 7, 0.8);
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 0.875rem;
-  cursor: pointer;
-  user-select: none;
-  width: 100%;
-}
-
-.checkbox-label span {
-  font-size: 1rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-  letter-spacing: -0.01em;
-  line-height: 1.5;
-  flex: 1;
-}
-
-/* Custom Toggle Switch */
-.checkbox-label input[type="checkbox"] {
-  width: 52px;
-  min-width: 52px;
-  height: 32px;
-  margin: 0;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  flex-shrink: 0;
-  position: relative;
-  box-shadow:
-    inset 0 2px 4px rgba(0, 0, 0, 0.2),
-    0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.checkbox-label input[type="checkbox"]::before {
-  content: '';
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 26px;
-  height: 26px;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 50%;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.2),
-    0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.checkbox-label input[type="checkbox"]:checked {
-  background: rgba(88, 86, 214, 0.6);
-  border-color: rgba(88, 86, 214, 0.8);
-  box-shadow:
-    inset 0 2px 4px rgba(0, 0, 0, 0.2),
-    0 0 0 3px rgba(88, 86, 214, 0.2);
-}
-
-.checkbox-label input[type="checkbox"]:checked::before {
-  left: 23px;
-  background: rgba(255, 255, 255, 1);
-  box-shadow:
-    0 2px 6px rgba(88, 86, 214, 0.4),
-    0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.checkbox-label input[type="checkbox"]:hover {
-  border-color: rgba(255, 255, 255, 0.3);
-  box-shadow:
-    inset 0 2px 4px rgba(0, 0, 0, 0.2),
-    0 2px 6px rgba(0, 0, 0, 0.15);
-}
-
-.checkbox-label input[type="checkbox"]:checked:hover {
-  background: rgba(88, 86, 214, 0.7);
-  border-color: rgba(88, 86, 214, 0.9);
-  box-shadow:
-    inset 0 2px 4px rgba(0, 0, 0, 0.2),
-    0 0 0 3px rgba(88, 86, 214, 0.3);
-}
-
-.checkbox-label input[type="checkbox"]:focus {
-  outline: none;
-}
-
-.checkbox-label input[type="checkbox"]:focus-visible {
-  outline: 2px solid rgba(88, 86, 214, 0.5);
-  outline-offset: 2px;
-}
-
-.disabled-input {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .modal-actions {
@@ -657,146 +695,14 @@
 }
 
 .modal-button.submit {
-  background: rgba(88, 86, 214, 0.3);
+  background: rgba(0, 199, 190, 0.3);
   color: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(88, 86, 214, 0.5);
+  border: 1px solid rgba(0, 199, 190, 0.5);
 }
 
 .modal-button.submit:hover {
-  background: rgba(88, 86, 214, 0.4);
-  border-color: rgba(88, 86, 214, 0.6);
-}
-
-/* Detail Modal */
-.detail-modal {
-  max-width: 600px;
-}
-
-.detail-content {
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.detail-section {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-}
-
-.detail-icon-large {
-  width: 72px;
-  height: 72px;
-  border-radius: 18px;
-  background: var(--banco-color, #5856D6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-  flex-shrink: 0;
-}
-
-.detail-icon-large svg {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 2.5rem;
-}
-
-.detail-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.detail-name {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.95);
-  margin: 0 0 0.25rem 0;
-  letter-spacing: -0.02em;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
-.detail-bank {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-}
-
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.detail-label {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.6);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-}
-
-.detail-value {
-  font-size: 1rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-  letter-spacing: 0.1em;
-}
-
-.detail-actions {
-  display: flex;
-  gap: 0.75rem;
-  padding: 1rem 1.5rem 1.5rem 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.detail-button {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.875rem 1.5rem;
-  border-radius: 12px;
-  border: none;
-  font-size: 1rem;
-  font-weight: 500;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-  cursor: pointer;
-  transition: all 0.2s;
-  letter-spacing: -0.01em;
-}
-
-.detail-button.edit {
-  background: rgba(52, 199, 89, 0.2);
-  color: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(52, 199, 89, 0.3);
-}
-
-.detail-button.edit:hover {
-  background: rgba(52, 199, 89, 0.3);
-  border-color: rgba(52, 199, 89, 0.5);
-}
-
-.detail-button.delete {
-  background: rgba(255, 59, 48, 0.2);
-  color: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(255, 59, 48, 0.3);
-}
-
-.detail-button.delete:hover {
-  background: rgba(255, 59, 48, 0.3);
-  border-color: rgba(255, 59, 48, 0.5);
-}
-
-.detail-button svg {
-  font-size: 1.125rem;
+  background: rgba(0, 199, 190, 0.4);
+  border-color: rgba(0, 199, 190, 0.6);
 }
 
 /* Debug Modal Styles */
@@ -895,139 +801,23 @@
   line-height: 1.4;
 }
 
-/* Delete Warning Modal Styles */
-.delete-warning-content {
-  padding: 1.5rem;
-}
-
-.warning-text {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0 0 1.5rem 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-  line-height: 1.5;
-}
-
-.warning-text strong {
-  color: rgba(255, 193, 7, 0.9);
-  font-weight: 600;
-}
-
-.affected-subscriptions-list {
-  margin-bottom: 1.5rem;
-}
-
-.subscriptions-list-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0 0 0.75rem 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-}
-
-.subscriptions-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 12px;
-  padding: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.subscription-list-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.625rem;
-  border-radius: 8px;
-  transition: background 0.2s;
-}
-
-.subscription-list-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.subscription-list-icon {
-  font-size: 1.25rem;
-  color: rgba(175, 82, 222, 0.8);
-  flex-shrink: 0;
-}
-
-.subscription-list-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
-}
-
-.subscription-list-name {
-  font-size: 1rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-}
-
-.subscription-list-price {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.6);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-}
-
-.warning-reminder {
-  background: rgba(255, 193, 7, 0.1);
-  border: 1px solid rgba(255, 193, 7, 0.3);
-  border-radius: 12px;
-  padding: 1rem;
-}
-
-.reminder-text {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-  line-height: 1.5;
-}
-
-.reminder-text strong {
-  color: rgba(255, 193, 7, 0.9);
-}
-
-.modal-button.delete-confirm {
-  background: rgba(255, 59, 48, 0.3);
-  color: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(255, 59, 48, 0.5);
-}
-
-.modal-button.delete-confirm:hover {
-  background: rgba(255, 59, 48, 0.4);
-  border-color: rgba(255, 59, 48, 0.7);
-  transform: translateY(-1px);
-}
-
-.modal-button.delete-confirm:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
-  .tarjetas-debito-content {
+  .proyectos-content {
     padding: 0 0.5rem;
   }
 
-  .cards-grid {
+  .projects-grid {
     grid-template-columns: 1fr;
     padding: 0;
   }
 
-  .tarjetas-header {
+  .proyectos-header {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .add-card-button,
+  .add-project-button,
   .debug-button {
     width: 100%;
     justify-content: center;
@@ -1045,54 +835,31 @@
   .detail-button {
     width: 100%;
   }
-
-  .modal-content {
-    max-width: 100%;
-    margin: 1rem;
-    border-radius: 24px;
-  }
-
-  .modal-header,
-  .modal-form {
-    padding: 1.5rem;
-  }
-
-  .modal-title {
-    font-size: 1.25rem;
-  }
-
-  .detail-content {
-    padding: 1.5rem;
-  }
-
-  .detail-name {
-    font-size: 1.25rem;
-  }
 }
 
 @media (max-width: 480px) {
-  .tarjetas-debito-content {
+  .proyectos-content {
     padding: 0 0.5rem;
   }
 
-  .cards-grid {
+  .projects-grid {
     gap: 0.75rem;
   }
 
-  .card-item {
+  .project-item {
     padding: 1rem;
   }
 
-  .card-icon {
+  .project-icon {
     width: 48px;
     height: 48px;
   }
 
-  .card-icon svg {
+  .project-icon svg {
     font-size: 1.75rem;
   }
 
-  .card-name {
+  .project-name {
     font-size: 1.125rem;
   }
 

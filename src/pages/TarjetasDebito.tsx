@@ -23,6 +23,7 @@ interface CardAPI {
   }
   last_4_digits: string
   expiration_date: string
+  is_virtual: boolean
   created_at: string
   updated_at: string
 }
@@ -36,6 +37,7 @@ interface Card {
   nombreCuenta: string
   ultimos4Digitos: string
   fechaVencimiento: string
+  esVirtual: boolean
 }
 
 interface BankAccount {
@@ -62,7 +64,8 @@ function TarjetasDebito() {
     nombre: '',
     cuentaId: '',
     ultimos4Digitos: '',
-    fechaVencimiento: ''
+    fechaVencimiento: '',
+    esVirtual: false
   })
   const [formErrors, setFormErrors] = useState({
     nombre: '',
@@ -80,7 +83,8 @@ function TarjetasDebito() {
       banco: apiCard.bank_account.bank,
       nombreCuenta: apiCard.bank_account.account_name,
       ultimos4Digitos: apiCard.last_4_digits,
-      fechaVencimiento: apiCard.expiration_date
+      fechaVencimiento: apiCard.expiration_date,
+      esVirtual: apiCard.is_virtual || false
     }
   }
 
@@ -120,7 +124,7 @@ function TarjetasDebito() {
         }
       } catch (err: any) {
         console.error('Error al cargar tarjetas:', err)
-        setError('Error al cargar las tarjetas. Por favor, intenta de nuevo.')
+        setError('Frontend says: Error al cargar las tarjetas. Por favor, intenta de nuevo.')
         setCards([])
       } finally {
         setIsLoading(false)
@@ -162,7 +166,7 @@ function TarjetasDebito() {
 
   const handleOpenModal = () => {
     if (bankAccounts.length === 0) {
-      alert('No hay cuentas bancarias disponibles. Por favor, crea al menos una cuenta primero.')
+      alert('Frontend says: No hay cuentas bancarias disponibles. Por favor, crea al menos una cuenta primero.')
       return
     }
     setIsModalOpen(true)
@@ -174,7 +178,8 @@ function TarjetasDebito() {
       nombre: '',
       cuentaId: '',
       ultimos4Digitos: '',
-      fechaVencimiento: ''
+      fechaVencimiento: '',
+      esVirtual: false
     })
     setFormErrors({
       nombre: '',
@@ -196,7 +201,8 @@ function TarjetasDebito() {
       nombre: card.nombre,
       cuentaId: card.cuentaId,
       ultimos4Digitos: card.ultimos4Digitos,
-      fechaVencimiento: fechaVencimiento
+      fechaVencimiento: fechaVencimiento,
+      esVirtual: card.esVirtual
     })
   }
 
@@ -210,7 +216,8 @@ function TarjetasDebito() {
       nombre: '',
       cuentaId: '',
       ultimos4Digitos: '',
-      fechaVencimiento: ''
+      fechaVencimiento: '',
+      esVirtual: false
     })
     setFormErrors({
       nombre: '',
@@ -284,7 +291,7 @@ function TarjetasDebito() {
       }
     } catch (err: any) {
       console.error('Error al eliminar tarjeta:', err)
-      alert('Error al eliminar la tarjeta. Por favor, intenta de nuevo.')
+      alert('Frontend says: Error al eliminar la tarjeta. Por favor, intenta de nuevo.')
     } finally {
       setIsLoading(false)
     }
@@ -440,14 +447,14 @@ function TarjetasDebito() {
 
     // Validación adicional antes de enviar
     if (!formData.nombre.trim() || !formData.cuentaId || !formData.ultimos4Digitos.trim() || !formData.fechaVencimiento) {
-      alert('Por favor completa todos los campos requeridos')
+      alert('Frontend says: Por favor completa todos los campos requeridos')
       return
     }
 
     // Asegurar que últimos 4 dígitos tengan exactamente 4 dígitos
     const ultimos4Digitos = formData.ultimos4Digitos.trim()
     if (!/^\d{4}$/.test(ultimos4Digitos)) {
-      alert('Los últimos 4 dígitos deben ser exactamente 4 números')
+      alert('Frontend says: Los últimos 4 dígitos deben ser exactamente 4 números')
       return
     }
 
@@ -461,7 +468,7 @@ function TarjetasDebito() {
         if (month && year && month.length === 2 && year.length === 4) {
           expirationDate = `${year}-${month}-01`
         } else {
-          alert('Formato de fecha inválido. Use MM/YYYY (ej: 12/2025)')
+          alert('Frontend says: Formato de fecha inválido. Use MM/YYYY (ej: 12/2025)')
           return
         }
       } else if (formData.fechaVencimiento.includes('-')) {
@@ -474,17 +481,17 @@ function TarjetasDebito() {
           // Ya está en formato YYYY-MM-DD
           expirationDate = formData.fechaVencimiento
         } else {
-          alert('Formato de fecha inválido')
+          alert('Frontend says: Formato de fecha inválido')
           return
         }
       } else {
-        alert('Formato de fecha inválido. Use MM/YYYY (ej: 12/2025)')
+        alert('Frontend says: Formato de fecha inválido. Use MM/YYYY (ej: 12/2025)')
         return
       }
       
       // Validar que expirationDate tenga el formato correcto
       if (!/^\d{4}-\d{2}-\d{2}$/.test(expirationDate)) {
-        alert('Error al formatear la fecha. Por favor, intenta de nuevo.')
+        alert('Frontend says: Error al formatear la fecha. Por favor, intenta de nuevo.')
         return
       }
       
@@ -492,7 +499,8 @@ function TarjetasDebito() {
         card_name: formData.nombre.trim(),
         bank_account_id: formData.cuentaId.trim(),
         last_4_digits: ultimos4Digitos,
-        expiration_date: expirationDate
+        expiration_date: expirationDate,
+        is_virtual: formData.esVirtual
       }
 
       console.log('Enviando datos de tarjeta:', cardData)
@@ -532,13 +540,25 @@ function TarjetasDebito() {
         last_4_digits: formData.ultimos4Digitos.trim(),
         expiration_date: formData.fechaVencimiento
       })
-      const errorMessage = err.data?.error || err.message || 'Error al guardar la tarjeta. Por favor, intenta de nuevo.'
+      const errorMessage = err.data?.error || err.message
+        ? `Backend says: ${err.data?.error || err.message}`
+        : 'Frontend says: Error al guardar la tarjeta. Por favor, intenta de nuevo.'
       alert(errorMessage)
     }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
+    const { name, value, type } = e.target
+    const checked = (e.target as HTMLInputElement).checked
+    
+    // Manejar checkbox
+    if (type === 'checkbox') {
+      setFormData({
+        ...formData,
+        [name]: checked
+      })
+      return
+    }
     
     // Limitar últimos 4 dígitos a solo números y máximo 4 caracteres
     if (name === 'ultimos4Digitos') {
@@ -759,7 +779,8 @@ function TarjetasDebito() {
       card_name: `Tarjeta Débito ${account.nombre}`,
       bank_account_id: account.id,
       last_4_digits: String(1000 + index).padStart(4, '0'),
-      expiration_date: new Date(Date.now() + (365 * (index + 1)) * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      expiration_date: new Date(Date.now() + (365 * (index + 1)) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      is_virtual: index % 2 === 0 // Alternar entre virtual y física para las tarjetas de prueba
     }))
 
     try {
@@ -779,7 +800,7 @@ function TarjetasDebito() {
       alert(`${testCards.length} tarjetas de prueba creadas exitosamente`)
     } catch (err: any) {
       console.error('Error al crear tarjetas de prueba:', err)
-      alert('Error al crear tarjetas de prueba: ' + (err.data?.error || 'Error desconocido'))
+      alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
     } finally {
       setIsLoading(false)
     }
@@ -803,7 +824,7 @@ function TarjetasDebito() {
         alert('Todas las tarjetas han sido eliminadas exitosamente')
       } catch (err: any) {
         console.error('Error al eliminar todas las tarjetas:', err)
-        alert('Error al eliminar tarjetas: ' + (err.data?.error || 'Error desconocido'))
+        alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
       } finally {
         setIsLoading(false)
       }
@@ -870,6 +891,11 @@ function TarjetasDebito() {
                         <div className="card-item-body">
                           <div className="card-left-info">
                             <p className="card-number">{formatCardNumber(card.ultimos4Digitos)}</p>
+                            <div className="card-type-badge">
+                              <span className={`card-type-text ${card.esVirtual ? 'virtual' : 'fisica'}`}>
+                                {card.esVirtual ? 'Virtual' : 'Física'}
+                              </span>
+                            </div>
                             {getSubscriptionCountForCard(card.id) > 0 && (
                               <div className="card-subscriptions-badge">
                                 <CardMembershipIcon className="subscriptions-badge-icon" />
@@ -977,6 +1003,23 @@ function TarjetasDebito() {
                   <span className="error-message">{formErrors.fechaVencimiento}</span>
                 )}
               </div>
+              <div className="form-group">
+                <label htmlFor="esVirtual" className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    id="esVirtual"
+                    name="esVirtual"
+                    checked={formData.esVirtual}
+                    onChange={handleChange}
+                  />
+                  <span>{formData.esVirtual ? 'Tarjeta virtual' : 'Tarjeta física'}</span>
+                </label>
+                <p className="form-hint">
+                  {formData.esVirtual 
+                    ? 'Marcada como tarjeta virtual. Desmarca para cambiarla a física.'
+                    : 'Marcada como tarjeta física. Marca para cambiarla a virtual.'}
+                </p>
+              </div>
               <div className="modal-actions">
                 <button type="button" className="modal-button cancel" onClick={handleCloseModal}>
                   Cancelar
@@ -1034,6 +1077,13 @@ function TarjetasDebito() {
                   <div className="detail-row">
                     <span className="detail-label">Fecha de Vencimiento:</span>
                     <span className="detail-value">{formatDate(selectedCard.fechaVencimiento)}</span>
+                  </div>
+                  
+                  <div className="detail-row">
+                    <span className="detail-label">Tipo:</span>
+                    <span className={`detail-value ${selectedCard.esVirtual ? 'virtual' : 'fisica'}`}>
+                      {selectedCard.esVirtual ? 'Virtual' : 'Física'}
+                    </span>
                   </div>
                 </div>
 
@@ -1119,6 +1169,23 @@ function TarjetasDebito() {
                   {formErrors.fechaVencimiento && (
                     <span className="error-message">{formErrors.fechaVencimiento}</span>
                   )}
+                </div>
+                <div className="form-group">
+                  <label htmlFor="edit-esVirtual" className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      id="edit-esVirtual"
+                      name="esVirtual"
+                      checked={formData.esVirtual}
+                      onChange={handleChange}
+                    />
+                    <span>{formData.esVirtual ? 'Tarjeta virtual' : 'Tarjeta física'}</span>
+                  </label>
+                  <p className="form-hint">
+                    {formData.esVirtual 
+                      ? 'Marcada como tarjeta virtual. Desmarca para cambiarla a física.'
+                      : 'Marcada como tarjeta física. Marca para cambiarla a virtual.'}
+                  </p>
                 </div>
                 <div className="modal-actions">
                   <button type="button" className="modal-button cancel" onClick={() => setIsEditMode(false)}>
@@ -1213,7 +1280,10 @@ function TarjetasDebito() {
                   <span className="debug-option-icon">📦</span>
                   <div className="debug-option-info">
                     <h3 className="debug-option-title">Crear Tarjetas Demo</h3>
-                    <p className="debug-option-description">Crea 5 tarjetas de ejemplo para pruebas</p>
+                    <p className="debug-option-description">
+                      Crea hasta 5 tarjetas de ejemplo para pruebas. 
+                      Se alternarán entre virtuales y físicas automáticamente.
+                    </p>
                   </div>
                 </button>
                 <button
