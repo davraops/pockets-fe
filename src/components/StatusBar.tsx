@@ -11,6 +11,7 @@ const routeTitles: Record<string, string> = {
   '/finanzas/tarjetas-debito': 'Tarjetas Débito',
   '/finanzas/subscripciones': 'Subscripciones',
   '/finanzas/tarjetas-credito': 'Tarjetas Crédito',
+  '/finanzas/proyectos': 'Proyectos',
   '/blank-2': '',
   '/blank-3': '',
   '/blank-4': '',
@@ -28,6 +29,19 @@ function StatusBar() {
   const [time, setTime] = useState(new Date())
   const location = useLocation()
   const currentTitle = routeTitles[location.pathname] || ''
+
+  // Actualizar el título del documento
+  useEffect(() => {
+    if (currentTitle && currentTitle.trim() !== '') {
+      document.title = `Pockets - ${currentTitle}`
+    } else if (location.pathname === '/') {
+      document.title = 'Pockets'
+    } else if (location.pathname === '/login') {
+      document.title = 'Pockets - Iniciar Sesión'
+    } else {
+      document.title = 'Pockets'
+    }
+  }, [location.pathname, currentTitle])
 
   useEffect(() => {
     const timer = setInterval(() => {
