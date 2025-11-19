@@ -12,6 +12,7 @@ import TarjetasDebito from './pages/TarjetasDebito'
 import Subscripciones from './pages/Subscripciones'
 import TarjetasCredito from './pages/TarjetasCredito'
 import Proyectos from './pages/Proyectos'
+import MeDeben from './pages/MeDeben'
 import StatusBar from './components/StatusBar'
 import ProtectedRoute from './components/ProtectedRoute'
 import Footer from './components/Footer'
@@ -107,6 +108,14 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <Proyectos />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/finanzas/me-deben" 
+          element={
+            <ProtectedRoute>
+              <MeDeben />
             </ProtectedRoute>
           } 
         />

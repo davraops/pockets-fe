@@ -12,6 +12,7 @@ const routeTitles: Record<string, string> = {
   '/finanzas/subscripciones': 'Subscripciones',
   '/finanzas/tarjetas-credito': 'Tarjetas Crédito',
   '/finanzas/proyectos': 'Proyectos',
+  '/finanzas/me-deben': 'Me Deben',
   '/blank-2': '',
   '/blank-3': '',
   '/blank-4': '',

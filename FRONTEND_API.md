@@ -806,6 +806,18 @@ await createTransaction({
   currency: "COP",
   bank_account_id: "uuid-of-bank-account"
 });
+
+// Transacción de ingreso con deudor (pago de deuda)
+await createTransaction({
+  date: "2024-01-15",
+  type: "ingreso",
+  amount: 10000,
+  description: "Pago parcial de Juan Pérez",
+  category: "Préstamo",
+  currency: "COP",
+  bank_account_id: "uuid-of-bank-account",
+  debtor_id: "uuid-of-debtor"
+});
 ```
 
 **Request Body (Ingreso):**
@@ -818,6 +830,20 @@ await createTransaction({
   "category": "Salario",
   "currency": "COP",
   "bank_account_id": "uuid-of-bank-account"
+}
+```
+
+**Request Body (Ingreso con deudor - pago de deuda):**
+```json
+{
+  "date": "2024-01-15",
+  "type": "ingreso",
+  "amount": 10000,
+  "description": "Pago parcial de Juan Pérez",
+  "category": "Préstamo",
+  "currency": "COP",
+  "bank_account_id": "uuid-of-bank-account",
+  "debtor_id": "uuid-of-debtor"
 }
 ```
 
@@ -884,9 +910,13 @@ await createTransaction({
 - **Para transacciones de tipo "egreso"**: Puedes usar `bank_account_id` O `credit_card_id` (pero no ambos)
   - Si usas `credit_card_id`, `bank_account_id` debe ser `null` (el dinero se carga a la tarjeta de crédito)
   - Si usas `bank_account_id`, `credit_card_id` debe ser `null` o no enviarse
-  - Puedes usar `debt_id` (opcional) para asociar la transacción con un pago de deuda
+  - Puedes usar `debt_id` (opcional) para asociar la transacción con un pago de deuda de tarjeta de crédito
   - `debt_id` solo se permite para transacciones tipo "egreso"
-- **Para transacciones de tipo "ingreso" o "ahorro"**: Solo se permite `bank_account_id` (no se puede usar `credit_card_id` ni `debt_id`)
+- **Para transacciones de tipo "ingreso"**: 
+  - Solo se permite `bank_account_id` (no se puede usar `credit_card_id` ni `debt_id`)
+  - Puedes usar `debtor_id` (opcional) para asociar el ingreso con un pago de deudor
+  - `debtor_id` solo se permite para transacciones tipo "ingreso"
+- **Para transacciones de tipo "ahorro"**: Solo se permite `bank_account_id` (no se puede usar `credit_card_id`, `debt_id` ni `debtor_id`)
 
 **⚠️ Actualización Manual Requerida:**
 - Después de crear/actualizar/eliminar una transacción, el frontend DEBE actualizar manualmente:
@@ -983,6 +1013,7 @@ const budgetTransactions = await getTransactions({
       "bank_account_id": "uuid-of-bank-account",
       "credit_card_id": null,
       "debt_id": null,
+      "debtor_id": null,
       "created_at": "2024-01-15T00:00:00.000Z",
       "updated_at": "2024-01-15T00:00:00.000Z"
     },
@@ -998,6 +1029,7 @@ const budgetTransactions = await getTransactions({
       "bank_account_id": "uuid-of-bank-account",
       "credit_card_id": null,
       "debt_id": null,
+      "debtor_id": null,
       "created_at": "2024-01-15T00:00:00.000Z",
       "updated_at": "2024-01-15T00:00:00.000Z"
     },
@@ -1013,6 +1045,7 @@ const budgetTransactions = await getTransactions({
       "bank_account_id": null,
       "credit_card_id": "uuid-of-credit-card",
       "debt_id": null,
+      "debtor_id": null,
       "created_at": "2024-01-15T00:00:00.000Z",
       "updated_at": "2024-01-15T00:00:00.000Z"
     },
@@ -1028,6 +1061,23 @@ const budgetTransactions = await getTransactions({
       "bank_account_id": "uuid-of-bank-account",
       "credit_card_id": null,
       "debt_id": "uuid-of-debt",
+      "debtor_id": null,
+      "created_at": "2024-01-15T00:00:00.000Z",
+      "updated_at": "2024-01-15T00:00:00.000Z"
+    },
+    {
+      "id": "uuid-here-5",
+      "date": "2024-01-15",
+      "type": "ingreso",
+      "amount": 10000,
+      "description": "Pago parcial de Juan Pérez",
+      "budget_id": null,
+      "category": "Préstamo",
+      "currency": "COP",
+      "bank_account_id": "uuid-of-bank-account",
+      "credit_card_id": null,
+      "debt_id": null,
+      "debtor_id": "uuid-of-debtor",
       "created_at": "2024-01-15T00:00:00.000Z",
       "updated_at": "2024-01-15T00:00:00.000Z"
     }
@@ -1229,10 +1279,12 @@ Crear una nueva deuda.
 **Ejemplo JavaScript:**
 ```javascript
 const createDebt = async (debtData) => {
+  const token = localStorage.getItem('authToken');
   const response = await fetch(`${API_URL}/debts`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
     },
     body: JSON.stringify(debtData),
   });
@@ -1320,11 +1372,16 @@ Obtener deudas.
 **Ejemplo JavaScript:**
 ```javascript
 const getDebts = async (debtId = null) => {
+  const token = localStorage.getItem('authToken');
   const url = debtId 
     ? `${API_URL}/debts?id=${debtId}`
     : `${API_URL}/debts`;
   
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
   return response.json();
 };
 
@@ -1372,10 +1429,12 @@ Actualizar una deuda específica.
 **Ejemplo JavaScript:**
 ```javascript
 const updateDebt = async (debtId, updates) => {
+  const token = localStorage.getItem('authToken');
   const response = await fetch(`${API_URL}/debts/${debtId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
     },
     body: JSON.stringify(updates),
   });
@@ -1422,8 +1481,12 @@ Eliminar una deuda específica.
 **Ejemplo JavaScript:**
 ```javascript
 const deleteDebt = async (debtId) => {
+  const token = localStorage.getItem('authToken');
   const response = await fetch(`${API_URL}/debts/${debtId}`, {
     method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
   });
   return response.json();
 };
@@ -1441,11 +1504,266 @@ Eliminar todas las deudas.
 **Ejemplo JavaScript:**
 ```javascript
 const deleteAllDebts = async () => {
+  const token = localStorage.getItem('authToken');
   const response = await fetch(`${API_URL}/debts`, {
     method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
   });
   return response.json();
 };
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+### Debtors (Deudores - Personas que te deben dinero)
+
+#### POST /debtors
+Crear un nuevo deudor (persona que te debe dinero).
+
+**URL:** `POST ${API_URL}/debtors`
+
+**Ejemplo JavaScript:**
+```javascript
+const createDebtor = async (debtorData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/debtors`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(debtorData),
+  });
+  return response.json();
+};
+
+// Uso
+const newDebtor = await createDebtor({
+  debtor_name: "Juan Pérez",
+  concept: "Préstamo personal",
+  value: 50000,
+  total_paid: 10000
+});
+```
+
+**Request Body:**
+```json
+{
+  "debtor_name": "Juan Pérez",
+  "concept": "Préstamo personal",
+  "value": 50000,
+  "total_paid": 10000
+}
+```
+
+**Campos Requeridos:**
+- `debtor_name` - Nombre del deudor (string, no vacío)
+- `concept` - Concepto o descripción de la deuda (string, no vacío)
+- `value` - Valor total de la deuda (número positivo)
+
+**Campos Opcionales:**
+- `total_paid` - Total pagado hasta el momento (número, default: 0, no puede exceder `value`)
+
+**Response (201):**
+```json
+{
+  "message": "Debtor created successfully",
+  "debtor": {
+    "id": "uuid-here",
+    "debtor_name": "Juan Pérez",
+    "concept": "Préstamo personal",
+    "value": 50000,
+    "total_paid": 10000,
+    "created_at": "2024-01-15T00:00:00.000Z",
+    "updated_at": "2024-01-15T00:00:00.000Z"
+  }
+}
+```
+
+**Nota:** El campo `total_paid` no puede exceder el `value` de la deuda. Si intentas crear un deudor con `total_paid > value`, recibirás un error 400.
+
+---
+
+#### GET /debtors
+Obtener deudores (personas que te deben dinero).
+
+**URL:** `GET ${API_URL}/debtors?id={uuid}` (opcional)
+
+**Ejemplo JavaScript:**
+```javascript
+const getDebtors = async (debtorId = null) => {
+  const token = localStorage.getItem('authToken');
+  const url = debtorId 
+    ? `${API_URL}/debtors?id=${debtorId}`
+    : `${API_URL}/debtors`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todos los deudores
+const allDebtors = await getDebtors();
+
+// Obtener deudor específico
+const debtor = await getDebtors('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "debtors": [
+    {
+      "id": "uuid-here",
+      "debtor_name": "Juan Pérez",
+      "concept": "Préstamo personal",
+      "value": 50000,
+      "total_paid": 10000,
+      "created_at": "2024-01-15T00:00:00.000Z",
+      "updated_at": "2024-01-15T00:00:00.000Z"
+    },
+    {
+      "id": "uuid-here-2",
+      "debtor_name": "María García",
+      "concept": "Dinero prestado para emergencia",
+      "value": 100000,
+      "total_paid": 0,
+      "created_at": "2024-01-10T00:00:00.000Z",
+      "updated_at": "2024-01-10T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+**Nota:** Los resultados están ordenados por `created_at` (descendente).
+
+---
+
+#### PUT /debtors/{id}
+Actualizar un deudor específico.
+
+**URL:** `PUT ${API_URL}/debtors/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const updateDebtor = async (debtorId, updates) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/debtors/${debtorId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(updates),
+  });
+  return response.json();
+};
+
+// Uso - actualizar solo el total pagado
+await updateDebtor('uuid-here', {
+  total_paid: 25000
+});
+
+// Uso - actualizar múltiples campos
+await updateDebtor('uuid-here', {
+  debtor_name: "Juan Pérez Actualizado",
+  concept: "Préstamo personal - actualizado",
+  value: 60000,
+  total_paid: 30000
+});
+```
+
+**Request Body (todos los campos son opcionales, pero al menos uno es requerido):**
+```json
+{
+  "debtor_name": "Juan Pérez Actualizado",
+  "concept": "Préstamo personal - actualizado",
+  "value": 60000,
+  "total_paid": 30000
+}
+```
+
+**Nota:** Si actualizas `total_paid`, no puede exceder el `value` (ya sea el valor actual o el nuevo valor si también lo actualizas).
+
+---
+
+#### DELETE /debtors/{id}
+Eliminar un deudor específico.
+
+**URL:** `DELETE ${API_URL}/debtors/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteDebtor = async (debtorId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/debtors/${debtorId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+```
+
+**Response (200):**
+```json
+{
+  "message": "Debtor deleted successfully",
+  "deleted_debtor": {
+    "id": "uuid-here",
+    "debtor_name": "Juan Pérez",
+    "concept": "Préstamo personal",
+    "value": 50000
+  }
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+#### DELETE /debtors
+Eliminar todos los deudores.
+
+**URL:** `DELETE ${API_URL}/debtors`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllDebtors = async () => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/debtors`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+```
+
+**Response (200):**
+```json
+{
+  "message": "Successfully deleted 3 debtor(s)",
+  "deleted_count": 3,
+  "deleted_debtors": [
+    {
+      "id": "uuid-here",
+      "debtor_name": "Juan Pérez",
+      "concept": "Préstamo personal",
+      "value": 50000
+    }
+  ]
+}
 ```
 
 **⚠️ Advertencia:** Esta operación es irreversible.

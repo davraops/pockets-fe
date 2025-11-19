@@ -322,6 +322,7 @@ class PocketsAPI {
     budget_id?: string | null
     credit_card_id?: string | null
     debt_id?: string | null
+    debtor_id?: string | null
   }) {
     return this.request('/transactions', {
       method: 'POST',
@@ -606,6 +607,48 @@ class PocketsAPI {
 
   async deleteAllProjects() {
     return this.request('/projects', {
+      method: 'DELETE',
+    })
+  }
+
+  // Debtors (Deudores - Personas que te deben dinero)
+  async createDebtor(data: {
+    debtor_name: string
+    concept: string
+    value: number
+    total_paid?: number
+  }) {
+    return this.request('/debtors', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getDebtors(debtorId: string | null = null) {
+    const endpoint = debtorId ? `/debtors?id=${debtorId}` : '/debtors'
+    return this.request(endpoint)
+  }
+
+  async updateDebtor(debtorId: string, updates: {
+    debtor_name?: string
+    concept?: string
+    value?: number
+    total_paid?: number
+  }) {
+    return this.request(`/debtors/${debtorId}`, {
+      method: 'PUT',
+      body: updates,
+    })
+  }
+
+  async deleteDebtor(debtorId: string) {
+    return this.request(`/debtors/${debtorId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllDebtors() {
+    return this.request('/debtors', {
       method: 'DELETE',
     })
   }

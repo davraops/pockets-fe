@@ -10,6 +10,7 @@ import CreditCardIcon from '@mui/icons-material/CreditCard'
 import PaymentIcon from '@mui/icons-material/Payment'
 import CardMembershipIcon from '@mui/icons-material/CardMembership'
 import FolderSpecialIcon from '@mui/icons-material/FolderSpecial'
+import PersonAddIcon from '@mui/icons-material/PersonAdd'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { api } from '../services/api'
 import type { SvgIconProps } from '@mui/material'
@@ -78,6 +79,13 @@ const financeItems: FinanceItem[] = [
     Icon: FolderSpecialIcon,
     color: '#00C7BE',
     path: '/finanzas/proyectos'
+  },
+  {
+    id: '9',
+    title: 'Me Deben',
+    Icon: PersonAddIcon,
+    color: '#5AC8FA',
+    path: '/finanzas/me-deben'
   }
 ]
 

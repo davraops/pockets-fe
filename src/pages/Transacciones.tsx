@@ -25,6 +25,7 @@ interface TransactionAPI {
   bank_account_id: string | null
   credit_card_id: string | null
   debt_id: string | null
+  debtor_id: string | null
   created_at: string
   updated_at: string
 }
@@ -71,6 +72,14 @@ interface CreditCard {
   cupoDisponible: number
 }
 
+interface Debtor {
+  id: string
+  nombre: string
+  concepto: string
+  valor: number
+  totalPagado: number
+}
+
 function Transacciones() {
   const navigate = useNavigate()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -83,6 +92,7 @@ function Transacciones() {
   const [projectBudgetIds, setProjectBudgetIds] = useState<Set<string>>(new Set())
   const [debts, setDebts] = useState<Debt[]>([])
   const [creditCards, setCreditCards] = useState<CreditCard[]>([])
+  const [debtors, setDebtors] = useState<Debtor[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
@@ -99,7 +109,9 @@ function Transacciones() {
     isDebtPayment: false,
     debtId: '',
     isCreditCardPayment: false,
-    creditCardId: ''
+    creditCardId: '',
+    isDebtorPayment: false,
+    debtorId: ''
   })
   const [formErrors, setFormErrors] = useState({
     monto: '',
@@ -108,7 +120,8 @@ function Transacciones() {
     cuentaBancariaId: '',
     presupuestoId: '',
     debtId: '',
-    creditCardId: ''
+    creditCardId: '',
+    debtorId: ''
   })
 
   // Mapear transacción de API a formato interno
@@ -222,6 +235,22 @@ function Transacciones() {
         }
         setCreditCards(creditCardsList)
 
+        // Cargar deudores
+        const debtorsResponse = await api.getDebtors()
+        const debtorsList: Debtor[] = []
+        if (debtorsResponse.debtors && Array.isArray(debtorsResponse.debtors)) {
+          debtorsResponse.debtors.forEach((debtor: any) => {
+            debtorsList.push({
+              id: debtor.id,
+              nombre: debtor.debtor_name,
+              concepto: debtor.concept,
+              valor: debtor.value,
+              totalPagado: debtor.total_paid
+            })
+          })
+        }
+        setDebtors(debtorsList)
+
         // Mapear transacciones
         if (transactionsResponse.transactions && Array.isArray(transactionsResponse.transactions)) {
           const mappedTransactions = transactionsResponse.transactions.map((tx: TransactionAPI) =>
@@ -262,7 +291,9 @@ function Transacciones() {
       isDebtPayment: false,
       debtId: '',
       isCreditCardPayment: false,
-      creditCardId: ''
+      creditCardId: '',
+      isDebtorPayment: false,
+      debtorId: ''
     })
     setFormErrors({
       monto: '',
@@ -271,7 +302,8 @@ function Transacciones() {
       cuentaBancariaId: '',
       presupuestoId: '',
       debtId: '',
-      creditCardId: ''
+      creditCardId: '',
+      debtorId: ''
     })
   }
 
@@ -292,7 +324,9 @@ function Transacciones() {
       isDebtPayment: false,
       debtId: '',
       isCreditCardPayment: false,
-      creditCardId: ''
+      creditCardId: '',
+      isDebtorPayment: false,
+      debtorId: ''
     })
     setFormErrors({
       monto: '',
@@ -301,7 +335,8 @@ function Transacciones() {
       cuentaBancariaId: '',
       presupuestoId: '',
       debtId: '',
-      creditCardId: ''
+      creditCardId: '',
+      debtorId: ''
     })
   }
 
@@ -322,7 +357,9 @@ function Transacciones() {
       isDebtPayment: false,
       debtId: '',
       isCreditCardPayment: false,
-      creditCardId: ''
+      creditCardId: '',
+      isDebtorPayment: false,
+      debtorId: ''
     })
   }
 
@@ -485,6 +522,31 @@ function Transacciones() {
               debtUpdated = true
               console.log('Pago de deuda revertido exitosamente')
               window.dispatchEvent(new Event('debtsUpdated'))
+            }
+          }
+
+          // 2d. Revertir pago de deudor si la transacción tiene debtor_id
+          if (tx.debtor_id && tx.type === 'ingreso') {
+            // Obtener el deudor actual para saber el total pagado
+            const debtorResponse = await api.getDebtors(tx.debtor_id)
+            if (debtorResponse.debtors && debtorResponse.debtors.length > 0) {
+              const debtor = debtorResponse.debtors[0]
+              const totalPagadoActual = parseFloat(String(debtor.total_paid || 0))
+              const nuevoTotalPagado = Math.max(0, totalPagadoActual - monto) // No puede ser negativo
+              
+              console.log('Revirtiendo pago de deudor:', {
+                debtorId: tx.debtor_id,
+                nombre: debtor.debtor_name,
+                totalPagadoActual,
+                montoTransaccion: monto,
+                nuevoTotalPagado
+              })
+              
+              await api.updateDebtor(tx.debtor_id, {
+                total_paid: nuevoTotalPagado
+              })
+              console.log('Pago de deudor revertido exitosamente')
+              window.dispatchEvent(new Event('debtorsUpdated'))
             }
           }
 
@@ -739,14 +801,14 @@ function Transacciones() {
       isValid = false
     }
 
-    // Validar descripción (solo si no es ahorro)
-    if (formData.tipo !== 'ahorro' && !formData.descripcion.trim()) {
+    // Validar descripción (solo si no es ahorro y no es pago de deudor)
+    if (formData.tipo !== 'ahorro' && !(formData.tipo === 'ingreso' && formData.isDebtorPayment) && !formData.descripcion.trim()) {
       errors.descripcion = 'La descripción es requerida'
       isValid = false
     }
 
-    // Validar categoría (solo si no es ahorro)
-    if (formData.tipo !== 'ahorro' && !formData.categoria.trim()) {
+    // Validar categoría (solo si no es ahorro y no es pago de deudor)
+    if (formData.tipo !== 'ahorro' && !(formData.tipo === 'ingreso' && formData.isDebtorPayment) && !formData.categoria.trim()) {
       errors.categoria = 'La categoría es requerida'
       isValid = false
     }
@@ -788,6 +850,12 @@ function Transacciones() {
       isValid = false
     }
 
+    // Validar deudor si es pago de deudor
+    if (formData.tipo === 'ingreso' && (formData as any).isDebtorPayment && !(formData as any).debtorId) {
+      errors.debtorId = 'Debes seleccionar un deudor'
+      isValid = false
+    }
+
     // Validar cupo disponible si es pago con tarjeta de crédito
     if (formData.tipo === 'egreso' && (formData as any).isCreditCardPayment && (formData as any).creditCardId) {
       const selectedCard = creditCards.find(c => c.id === (formData as any).creditCardId)
@@ -825,8 +893,20 @@ function Transacciones() {
 
       // Solo agregar descripción y categoría si no es ahorro
       if (formData.tipo !== 'ahorro') {
-        transactionData.description = formData.descripcion.trim()
-        transactionData.category = formData.categoria.trim()
+        // Si es ingreso con pago de deudor, generar descripción y categoría automáticamente
+        if (formData.tipo === 'ingreso' && formData.isDebtorPayment && formData.debtorId) {
+          const selectedDebtor = debtors.find(d => d.id === formData.debtorId)
+          if (selectedDebtor) {
+            transactionData.description = `Pago de ${selectedDebtor.nombre} - ${selectedDebtor.concepto}`
+            transactionData.category = 'retorno deuda'
+          } else {
+            transactionData.description = 'Pago de deudor'
+            transactionData.category = 'retorno deuda'
+          }
+        } else {
+          transactionData.description = formData.descripcion.trim()
+          transactionData.category = formData.categoria.trim()
+        }
       } else {
         // Para ahorros, usar valores por defecto según lo que requiera el backend
         transactionData.description = 'Ahorro para proyecto'
@@ -874,6 +954,13 @@ function Transacciones() {
         transactionData.debt_id = null
       }
 
+      // Agregar debtor_id si es un ingreso de pago de deudor
+      if (formData.tipo === 'ingreso' && formData.isDebtorPayment && formData.debtorId) {
+        transactionData.debtor_id = formData.debtorId
+      } else {
+        transactionData.debtor_id = null
+      }
+
       // Agregar información sobre tarjeta de crédito si es un pago con tarjeta
       if (formData.tipo === 'egreso' && formData.isCreditCardPayment && formData.creditCardId) {
         const selectedCard = creditCards.find(c => c.id === formData.creditCardId)
@@ -898,12 +985,15 @@ function Transacciones() {
         let budgetUpdated = false
         let accountUpdated = false
         let projectUpdated = false
+        let debtorUpdated = false
         let originalBudgetTotalSpent: number | null = null
         let originalAccountBalance: number | null = null
         let originalProjectCurrentAmount: number | null = null
+        let originalDebtorTotalPaid: number | null = null
         let budgetId: string | null = null
         let accountId: string | null = null
         let projectId: string | null = null
+        let debtorId: string | null = null
 
         try {
           // Guardar valores originales para rollback si es necesario
@@ -1104,6 +1194,37 @@ function Transacciones() {
             }
           }
 
+          // Si es un ingreso de pago de deudor, actualizar el total_paid del deudor
+          if (formData.tipo === 'ingreso' && formData.isDebtorPayment && formData.debtorId) {
+            debtorId = formData.debtorId
+            const selectedDebtor = debtors.find(d => d.id === formData.debtorId)
+            if (selectedDebtor) {
+              // Guardar valor original para rollback
+              originalDebtorTotalPaid = parseFloat(selectedDebtor.totalPagado.toString()) || 0
+              
+              // Incrementar el total pagado del deudor
+              const totalPagadoActual = originalDebtorTotalPaid
+              const nuevoTotalPagado = Math.min(selectedDebtor.valor, totalPagadoActual + monto) // No puede exceder el valor total
+              
+              console.log('Actualizando total_paid del deudor:', {
+                debtorId: formData.debtorId,
+                nombre: selectedDebtor.nombre,
+                totalPagadoActual,
+                monto,
+                nuevoTotalPagado,
+                valorTotal: selectedDebtor.valor
+              })
+              
+              await api.updateDebtor(formData.debtorId, {
+                total_paid: nuevoTotalPagado
+              })
+              debtorUpdated = true
+              console.log('Total pagado del deudor actualizado exitosamente')
+              // Disparar evento para actualizar deudores en otros componentes
+              window.dispatchEvent(new Event('debtorsUpdated'))
+            }
+          }
+
           // Recargar transacciones después de crear
           await reloadTransactions()
           
@@ -1151,6 +1272,15 @@ function Transacciones() {
               console.log('Haciendo rollback del presupuesto (recalculando):', budgetId)
               await api.recalculateBudget(budgetId)
               console.log('Rollback de presupuesto completado (recalculado)')
+            }
+
+            // Revertir deudor si se actualizó
+            if (debtorUpdated && debtorId && originalDebtorTotalPaid !== null) {
+              console.log('Haciendo rollback del total_paid del deudor:', debtorId)
+              await api.updateDebtor(debtorId, {
+                total_paid: originalDebtorTotalPaid
+              })
+              console.log('Rollback de deudor completado')
             }
           } catch (rollbackErr: any) {
             console.error('Error al hacer rollback:', rollbackErr)
@@ -1282,6 +1412,15 @@ function Transacciones() {
           ...prev,
           isCreditCardPayment: false,
           creditCardId: ''
+        }))
+      }
+
+      // Si se desactiva el toggle de pago de deudor, limpiar el deudor seleccionado
+      if (name === 'isDebtorPayment' && !checked) {
+        setFormData(prev => ({
+          ...prev,
+          isDebtorPayment: false,
+          debtorId: ''
         }))
       }
     
@@ -1935,6 +2074,43 @@ function Transacciones() {
                   <option value="ahorro">Ahorro</option>
                 </select>
               </div>
+              {formData.tipo === 'ingreso' && (
+                <div className="form-group checkbox-group">
+                  <label htmlFor="isDebtorPayment" className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      id="isDebtorPayment"
+                      name="isDebtorPayment"
+                      checked={formData.isDebtorPayment}
+                      onChange={handleChange}
+                    />
+                    <span>¿Es un pago de un deudor?</span>
+                  </label>
+                </div>
+              )}
+              {formData.tipo === 'ingreso' && formData.isDebtorPayment && (
+                <div className="form-group">
+                  <label htmlFor="debtorId">Deudor *</label>
+                  <select
+                    id="debtorId"
+                    name="debtorId"
+                    value={formData.debtorId}
+                    onChange={handleChange}
+                    required
+                    className="form-select"
+                  >
+                    <option value="">Selecciona un deudor</option>
+                    {debtors.map((debtor) => (
+                      <option key={debtor.id} value={debtor.id}>
+                        {debtor.nombre} - {debtor.concepto} (Pendiente: {formatBalance(debtor.valor - debtor.totalPagado)})
+                      </option>
+                    ))}
+                  </select>
+                  {formErrors.debtorId && (
+                    <span className="error-message">{formErrors.debtorId}</span>
+                  )}
+                </div>
+              )}
               <div className="form-group">
                 <label htmlFor="fecha">Fecha</label>
                 <input
@@ -1946,7 +2122,7 @@ function Transacciones() {
                   required
                 />
               </div>
-              {formData.tipo !== 'ahorro' && (
+              {formData.tipo !== 'ahorro' && !(formData.tipo === 'ingreso' && formData.isDebtorPayment) && (
                 <>
                   <div className="form-group">
                     <label htmlFor="descripcion">Descripción</label>
@@ -2015,6 +2191,7 @@ function Transacciones() {
                   <option value="EUR">EUR</option>
                 </select>
               </div>
+
               {formData.tipo === 'egreso' && (
                 <div className="form-group checkbox-group">
                   <label htmlFor="isCreditCardPayment" className="checkbox-label">
