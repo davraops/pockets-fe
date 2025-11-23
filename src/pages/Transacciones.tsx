@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
@@ -8,6 +8,8 @@ import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import WarningIcon from '@mui/icons-material/Warning'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
 import './AppPage.css'
 import './Transacciones.css'
@@ -82,7 +84,9 @@ interface Debtor {
 
 function Transacciones() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -94,8 +98,11 @@ function Transacciones() {
   const [creditCards, setCreditCards] = useState<CreditCard[]>([])
   const [debtors, setDebtors] = useState<Debtor[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
   const [formData, setFormData] = useState({
     fecha: '',
     tipo: 'egreso' as 'ingreso' | 'egreso' | 'ahorro',
@@ -274,6 +281,24 @@ function Transacciones() {
     loadData()
   }, [])
 
+  // Cerrar menú al hacer clic fuera - HIG: Clear Feedback
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (isMenuOpen && menuRef.current && !menuRef.current.contains(target)) {
+        setIsMenuOpen(false)
+      }
+    }
+
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMenuOpen])
+
   const handleOpenModal = () => {
     setIsModalOpen(true)
     setIsEditMode(false)
@@ -306,6 +331,16 @@ function Transacciones() {
       debtorId: ''
     })
   }
+
+  // Abrir modal automáticamente si se navega desde Finanzas con el flag
+  useEffect(() => {
+    if (location.state?.openModal === true) {
+      handleOpenModal()
+      // Limpiar el estado para evitar que se abra en navegaciones posteriores
+      navigate(location.pathname, { replace: true, state: {} })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state])
 
   const handleCloseModal = () => {
     setIsModalOpen(false)
@@ -340,19 +375,32 @@ function Transacciones() {
     })
   }
 
-  const handleEditClick = (transaction: Transaction) => {
+  const handleOpenDetailModal = (transaction: Transaction) => {
     setSelectedTransaction(transaction)
+    setIsDetailModalOpen(true)
+    setIsEditMode(false)
+  }
+
+  const handleCloseDetailModal = () => {
+    setIsDetailModalOpen(false)
+    setSelectedTransaction(null)
+    setIsEditMode(false)
+  }
+
+  const handleEditClick = () => {
+    if (!selectedTransaction) return
+    setIsDetailModalOpen(false)
     setIsEditMode(true)
     setIsModalOpen(true)
     setFormData({
-      fecha: transaction.fecha,
-      tipo: transaction.tipo,
-      monto: transaction.monto.toString(),
-      descripcion: transaction.descripcion,
-      categoria: transaction.categoria,
-      moneda: transaction.moneda,
-      cuentaBancariaId: transaction.cuentaBancariaId,
-      presupuestoId: transaction.presupuestoId || '',
+      fecha: selectedTransaction.fecha,
+      tipo: selectedTransaction.tipo,
+      monto: selectedTransaction.monto.toString(),
+      descripcion: selectedTransaction.descripcion,
+      categoria: selectedTransaction.categoria,
+      moneda: selectedTransaction.moneda,
+      cuentaBancariaId: selectedTransaction.cuentaBancariaId,
+      presupuestoId: selectedTransaction.presupuestoId || '',
       bolsillo: '',
       isDebtPayment: false,
       debtId: '',
@@ -363,7 +411,9 @@ function Transacciones() {
     })
   }
 
-  const handleDeleteClick = async (transaction: Transaction) => {
+  const handleDeleteClick = async () => {
+    if (!selectedTransaction) return
+    
     if (window.confirm('¿Estás seguro de que quieres eliminar esta transacción?')) {
       try {
         setIsLoading(true)
@@ -371,7 +421,7 @@ function Transacciones() {
         // Obtener la transacción completa para saber qué revertir
         let tx: any
         try {
-          const transactionResponse = await api.getTransactions({ id: transaction.id })
+          const transactionResponse = await api.getTransactions({ id: selectedTransaction.id })
           if (!transactionResponse.transactions || transactionResponse.transactions.length === 0) {
             throw new Error('Transaction not found')
           }
@@ -446,8 +496,8 @@ function Transacciones() {
         
         try {
           // 1. PRIMERO: Eliminar la transacción
-          console.log('Eliminando transacción:', transaction.id)
-          await api.deleteTransaction(transaction.id)
+          console.log('Eliminando transacción:', selectedTransaction.id)
+          await api.deleteTransaction(selectedTransaction.id)
           console.log('Transacción eliminada exitosamente')
           
           // 2. SEGUNDO: Revertir balance de cuenta bancaria (solo si tiene bank_account_id)
@@ -616,6 +666,7 @@ function Transacciones() {
             }, 100)
           }
           
+          handleCloseDetailModal()
           alert('Frontend says: Transacción eliminada exitosamente.')
         } catch (err: any) {
           console.error('Error al eliminar transacción:', err)
@@ -880,6 +931,7 @@ function Transacciones() {
     }
 
     try {
+      setIsSubmitting(true)
       setIsLoading(true)
       
       const monto = parseFloat(formData.monto)
@@ -1225,7 +1277,40 @@ function Transacciones() {
             }
           }
 
-          // Recargar transacciones después de crear
+          // Cerrar el modal primero para dar feedback inmediato al usuario
+          setIsModalOpen(false)
+          setIsEditMode(false)
+          setSelectedTransaction(null)
+          // Resetear el formulario
+          setFormData({
+            fecha: new Date().toISOString().split('T')[0],
+            tipo: 'egreso',
+            monto: '',
+            descripcion: '',
+            categoria: '',
+            moneda: 'COP',
+            cuentaBancariaId: '',
+            presupuestoId: '',
+            bolsillo: '',
+            isDebtPayment: false,
+            debtId: '',
+            isCreditCardPayment: false,
+            creditCardId: '',
+            isDebtorPayment: false,
+            debtorId: ''
+          })
+          setFormErrors({
+            monto: '',
+            descripcion: '',
+            categoria: '',
+            cuentaBancariaId: '',
+            presupuestoId: '',
+            debtId: '',
+            creditCardId: '',
+            debtorId: ''
+          })
+          
+          // Recargar transacciones después de cerrar el modal
           await reloadTransactions()
           
           // Disparar evento para actualizar presupuestos si se actualizó uno
@@ -1239,8 +1324,6 @@ function Transacciones() {
           } else {
             console.log('No se dispara evento budgetsUpdated porque budgetUpdated es false')
           }
-          
-          handleCloseModal()
         } catch (err: any) {
           console.error('Error al guardar transacción:', err)
           
@@ -1293,6 +1376,7 @@ function Transacciones() {
           alert(errorMessage)
         } finally {
           setIsLoading(false)
+          setIsSubmitting(false)
         }
       }
     } catch (err: any) {
@@ -1302,6 +1386,7 @@ function Transacciones() {
         : 'Frontend says: Error al guardar la transacción. Por favor, intenta de nuevo.'
       alert(errorMessage)
       setIsLoading(false)
+      setIsSubmitting(false)
     }
   }
 
@@ -1932,6 +2017,59 @@ function Transacciones() {
             </div>
           ) : (
             <>
+              {/* Toolbar - HIG: Navigation */}
+              <div className="transacciones-toolbar">
+                <button
+                  className="transacciones-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="transacciones-toolbar-icon" />
+                </button>
+                <div className="transacciones-toolbar-menu-container" ref={menuRef}>
+                  <button
+                    className="transacciones-toolbar-button"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    aria-label="Opciones"
+                    aria-expanded={isMenuOpen}
+                    type="button"
+                  >
+                    <MoreVertIcon className="transacciones-toolbar-icon" />
+                  </button>
+                  {isMenuOpen && (
+                    <div className="transacciones-menu">
+                      <button
+                        className="transacciones-menu-item"
+                        onClick={() => {
+                          setIsMenuOpen(false)
+                          handleOpenModal()
+                        }}
+                        type="button"
+                      >
+                        <AddIcon className="transacciones-menu-icon" />
+                        <span>Agregar Transacción</span>
+                      </button>
+                      {api.isTestUser() && (
+                        <button
+                          className="transacciones-menu-item"
+                          onClick={() => {
+                            setIsMenuOpen(false)
+                            setIsDebugModalOpen(true)
+                          }}
+                          type="button"
+                        >
+                          <span>🐛 Debug</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Encabezado de Sección - HIG: Clear Navigation */}
+              <h1 className="transacciones-page-title">Transacciones</h1>
+
               {/* Resumen de transacciones */}
               <div className="transactions-summary-block">
                 <div className="summary-item">
@@ -1957,16 +2095,6 @@ function Transacciones() {
                 </div>
               </div>
 
-              <div className="transacciones-header">
-                <button className="add-transaction-button" onClick={handleOpenModal}>
-                  <AddIcon />
-                  <span>Agregar Transacción</span>
-                </button>
-                <button className="debug-button" onClick={() => setIsDebugModalOpen(true)} title="Debug: Opciones de desarrollo">
-                  🐛 Debug
-                </button>
-              </div>
-
               {transactions.length === 0 ? (
                 <div className="empty-state">
                   <SwapHorizIcon className="empty-icon" />
@@ -1980,15 +2108,19 @@ function Transacciones() {
                     const isAhorro = transaction.tipo === 'ahorro'
                     const transactionClass = isIngreso ? 'income' : isAhorro ? 'savings' : 'expense'
                     return (
-                      <div 
+                      <button
                         key={transaction.id} 
                         className={`transaction-item ${transactionClass}`}
+                        onClick={() => handleOpenDetailModal(transaction)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            handleOpenDetailModal(transaction)
+                          }
+                        }}
+                        aria-label={`Ver detalles de transacción ${transaction.descripcion}. ${isIngreso ? 'Ingreso' : isAhorro ? 'Ahorro' : 'Egreso'}: ${formatBalance(transaction.monto, transaction.moneda)}`}
+                        type="button"
                       >
-                        <div className="transaction-icon-wrapper">
-                          <div className={`transaction-icon ${transactionClass}`}>
-                            {isIngreso ? <ArrowUpwardIcon /> : isAhorro ? <SwapHorizIcon /> : <ArrowDownwardIcon />}
-                          </div>
-                        </div>
                         <div className="transaction-content">
                           <div className="transaction-header">
                             <h3 className="transaction-description">{transaction.descripcion}</h3>
@@ -2014,39 +2146,82 @@ function Transacciones() {
                             )}
                           </div>
                         </div>
-                        <div className="transaction-actions">
-                          <button 
-                            className="transaction-action-button edit"
-                            onClick={() => handleEditClick(transaction)}
-                            title="Editar"
-                          >
-                            <EditIcon />
-                          </button>
-                          <button 
-                            className="transaction-action-button delete"
-                            onClick={() => handleDeleteClick(transaction)}
-                            title="Eliminar"
-                          >
-                            <DeleteIcon />
-                          </button>
-                        </div>
-                      </div>
+                        <ChevronRightIcon className="transaction-chevron" />
+                      </button>
                     )
                   })}
                 </div>
               )}
 
               {/* Botón de volver */}
-              <div className="back-button-container">
-                <button className="back-button" onClick={() => navigate('/finanzas')}>
-                  <ArrowBackIcon />
-                  <span>Volver a Finanzas</span>
-                </button>
-              </div>
             </>
           )}
         </div>
       </div>
+
+      {/* Modal de detalles de transacción */}
+      {isDetailModalOpen && selectedTransaction && (
+        <div className="modal-overlay" onClick={handleCloseDetailModal}>
+          <div 
+            className="modal-content detail-modal" 
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <h2 className="modal-title">Detalles de la Transacción</h2>
+              <button className="modal-close" onClick={handleCloseDetailModal}>×</button>
+            </div>
+            
+            <div className="detail-content">
+              <div className="detail-section">
+                <div className={`detail-icon-large ${selectedTransaction.tipo === 'ingreso' ? 'income' : selectedTransaction.tipo === 'ahorro' ? 'savings' : 'expense'}`}>
+                  {selectedTransaction.tipo === 'ingreso' ? <ArrowUpwardIcon /> : selectedTransaction.tipo === 'ahorro' ? <SwapHorizIcon /> : <ArrowDownwardIcon />}
+                </div>
+                <div className="detail-info">
+                  <h3 className="detail-name">{selectedTransaction.descripcion}</h3>
+                  <p className={`detail-amount ${selectedTransaction.tipo === 'ingreso' ? 'income' : selectedTransaction.tipo === 'ahorro' ? 'savings' : 'expense'}`}>
+                    {selectedTransaction.tipo === 'ingreso' ? '+' : selectedTransaction.tipo === 'ahorro' ? '💰' : '-'}{formatBalance(selectedTransaction.monto, selectedTransaction.moneda)}
+                  </p>
+                  <p className="detail-type">
+                    {selectedTransaction.tipo === 'ingreso' ? 'Ingreso' : selectedTransaction.tipo === 'ahorro' ? 'Ahorro' : 'Egreso'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="detail-row">
+                <span className="detail-label">Categoría:</span>
+                <span className="detail-value">{selectedTransaction.categoria}</span>
+              </div>
+              <div className="detail-row">
+                <span className="detail-label">Fecha:</span>
+                <span className="detail-value">{formatDate(selectedTransaction.fecha)}</span>
+              </div>
+              {selectedTransaction.cuentaBancariaNombre && (
+                <div className="detail-row">
+                  <span className="detail-label">Cuenta Bancaria:</span>
+                  <span className="detail-value">{selectedTransaction.cuentaBancariaNombre}</span>
+                </div>
+              )}
+              {selectedTransaction.presupuestoNombre && (
+                <div className="detail-row">
+                  <span className="detail-label">Presupuesto:</span>
+                  <span className="detail-value">{selectedTransaction.presupuestoNombre}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="detail-actions">
+              <button className="detail-button edit" onClick={handleEditClick}>
+                <EditIcon />
+                <span>Editar Transacción</span>
+              </button>
+              <button className="detail-button delete" onClick={handleDeleteClick}>
+                <DeleteIcon />
+                <span>Eliminar Transacción</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal para agregar/editar transacción */}
       {isModalOpen && (
@@ -2056,9 +2231,15 @@ function Transacciones() {
               <h2 className="modal-title">
                 {isEditMode ? 'Editar Transacción' : 'Nueva Transacción'}
               </h2>
-              <button className="modal-close" onClick={handleCloseModal}>×</button>
+              <button className="modal-close" onClick={handleCloseModal} disabled={isSubmitting}>×</button>
             </div>
-            <form className="modal-form" onSubmit={handleSubmit}>
+            {isSubmitting ? (
+              <div className="modal-loading">
+                <div className="loading-spinner"></div>
+                <p className="loading-text">Guardando transacción...</p>
+              </div>
+            ) : (
+              <form className="modal-form" onSubmit={handleSubmit}>
               <div className="form-group">
                 <label htmlFor="tipo">Tipo</label>
                 <select
@@ -2319,7 +2500,7 @@ function Transacciones() {
                     </div>
                   ) : (
                     <div className="form-group">
-                      <label htmlFor="presupuestoId">Presupuesto (Opcional)</label>
+                      <label htmlFor="presupuestoId">Presupuesto</label>
                       <select
                         id="presupuestoId"
                         name="presupuestoId"
@@ -2327,7 +2508,7 @@ function Transacciones() {
                         onChange={handleChange}
                         className={formErrors.presupuestoId ? 'input-error form-select' : 'form-select'}
                       >
-                        <option value="">Selecciona un presupuesto (opcional)</option>
+                        <option value="">Selecciona un presupuesto</option>
                         {budgets.map((budget) => (
                           <option key={budget.id} value={budget.id}>
                             {budget.nombre}
@@ -2381,6 +2562,7 @@ function Transacciones() {
                 </button>
               </div>
             </form>
+            )}
           </div>
         </div>
       )}

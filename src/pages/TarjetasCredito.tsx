@@ -1,10 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import CreditCardIcon from '@mui/icons-material/CreditCard'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import WarningIcon from '@mui/icons-material/Warning'
 import { api } from '../services/api'
 import './AppPage.css'
 import './TarjetasCredito.css'
@@ -51,6 +54,8 @@ function TarjetasCredito() {
   const [cards, setCards] = useState<CreditCard[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
   const [formData, setFormData] = useState({
     nombre: '',
     banco: '',
@@ -113,6 +118,24 @@ function TarjetasCredito() {
 
     loadCards()
   }, [])
+
+  // Cerrar menú al hacer clic fuera - HIG: Clear Feedback
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (isMenuOpen && menuRef.current && !menuRef.current.contains(target)) {
+        setIsMenuOpen(false)
+      }
+    }
+
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMenuOpen])
 
   const handleOpenModal = () => {
     setIsModalOpen(true)
@@ -927,7 +950,72 @@ function TarjetasCredito() {
             </div>
           ) : (
             <>
-              {/* Resumen de cupos */}
+              {/* Toolbar - HIG: Navigation */}
+              <div className="tarjetas-credito-toolbar">
+                <button
+                  className="tarjetas-credito-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="tarjetas-credito-toolbar-icon" />
+                </button>
+                <div className="tarjetas-credito-toolbar-menu-container" ref={menuRef}>
+                  <button
+                    className="tarjetas-credito-toolbar-button"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    aria-label="Opciones"
+                    aria-expanded={isMenuOpen}
+                    type="button"
+                  >
+                    <MoreVertIcon className="tarjetas-credito-toolbar-icon" />
+                  </button>
+                  {isMenuOpen && (
+                    <div className="tarjetas-credito-menu">
+                      <button
+                        className="tarjetas-credito-menu-item"
+                        onClick={() => {
+                          setIsMenuOpen(false)
+                          handleOpenModal()
+                        }}
+                        type="button"
+                      >
+                        <AddIcon className="tarjetas-credito-menu-icon" />
+                        <span>Agregar Tarjeta</span>
+                      </button>
+                      {cards.some(card => card.beneficios.length > 0) && (
+                        <button
+                          className="tarjetas-credito-menu-item"
+                          onClick={() => {
+                            setIsMenuOpen(false)
+                            handleShowAllBenefits()
+                          }}
+                          type="button"
+                        >
+                          <span>Ver Todos los Beneficios</span>
+                        </button>
+                      )}
+                      {api.isTestUser() && (
+                        <button
+                          className="tarjetas-credito-menu-item"
+                          onClick={() => {
+                            setIsMenuOpen(false)
+                            setIsDebugModalOpen(true)
+                          }}
+                          type="button"
+                        >
+                          <span>🐛 Debug</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Encabezado de Sección - HIG: Clear Navigation */}
+              <h1 className="tarjetas-credito-page-title">Tarjetas de Crédito</h1>
+
+              {/* Resumen de cupos - HIG: Relevant Information Highlights */}
               {cards.length > 0 && (
                 <div className="credit-summary-block">
                   <div className="summary-item">
@@ -942,21 +1030,16 @@ function TarjetasCredito() {
                 </div>
               )}
 
-              <div className="tarjetas-header">
-                <button className="add-card-button" onClick={handleOpenModal}>
-                  <AddIcon />
-                  <span>Agregar Tarjeta</span>
-                </button>
-                {cards.some(card => card.beneficios.length > 0) && (
-                  <button className="benefits-all-button" onClick={handleShowAllBenefits}>
-                    <span>Ver Todos los Beneficios</span>
-                  </button>
-                )}
-                {api.isTestUser() && (
-                  <button className="debug-button" onClick={() => setIsDebugModalOpen(true)} title="Debug: Opciones de desarrollo">
-                    🐛 Debug
-                  </button>
-                )}
+              {/* Advertencia de Uso Responsable - HIG: Clear Feedback */}
+              <div className="credit-warning-banner">
+                <div className="credit-warning-icon">
+                  <WarningIcon />
+                </div>
+                <div className="credit-warning-content">
+                  <p className="credit-warning-text">
+                    <strong>Uso responsable:</strong> Las tarjetas de crédito operan con tasas de interés altas. Úsalas preferiblemente a una sola cuota o en compras sin intereses. Recuerda que este es dinero prestado, úsalo con prudencia y principalmente en emergencias. Aprovecha los beneficios y programas de recompensas de tus tarjetas.
+                  </p>
+                </div>
               </div>
 
               {cards.length === 0 ? (
@@ -966,74 +1049,70 @@ function TarjetasCredito() {
                   <p className="empty-subtext">Agrega tu primera tarjeta de crédito</p>
                 </div>
               ) : (
-                <div className="cards-grid">
+                <div className="cards-list">
                   {cards.map((card) => {
-                    // Todas las tarjetas son rojas
                     const cardColor = '#FF2D55'
+                    const usagePercentage = card.cupoUsado !== undefined && card.cupo > 0 
+                      ? (card.cupoUsado / card.cupo) * 100 
+                      : 0
+                    const cupoDisponible = card.cupoDisponible !== undefined 
+                      ? card.cupoDisponible 
+                      : card.cupo - (card.cupoUsado || 0)
                     return (
-                      <div 
+                      <button
                         key={card.id} 
-                        className="card-item"
+                        className="card-row"
                         onClick={() => handleOpenDetailModal(card)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            handleOpenDetailModal(card)
+                          }
+                        }}
+                        aria-label={`Ver detalles de tarjeta ${card.nombre} de ${card.banco}. Cupo disponible: ${formatPrice(cupoDisponible)}`}
+                        type="button"
                         style={{ '--banco-color': cardColor } as React.CSSProperties}
                       >
-                        <div className="card-item-header">
-                          <div className="card-icon" style={{ backgroundColor: cardColor }}>
-                            <CreditCardIcon />
+                        <div className="card-row-content">
+                          <div className="card-row-main">
+                            <h3 className="card-row-title">{card.nombre}</h3>
+                            <span className="card-row-available">{formatPrice(cupoDisponible)} disponible</span>
                           </div>
-                          <div className="card-info">
-                            <h3 className="card-name">{card.nombre}</h3>
-                            <p className="card-bank">{card.banco}</p>
-                          </div>
-                        </div>
-                        <div className="card-item-body">
-                          <div className="card-left-info">
-                            <p className="card-limit">Cupo: {formatPrice(card.cupo)}</p>
+                          <div className="card-row-secondary">
+                            <span className="card-row-bank">{card.banco}</span>
                             {card.cupoUsado !== undefined && card.cupoUsado > 0 && (
                               <>
-                                <div className="card-usage-info">
-                                  <div className="card-usage-text">
-                                    <span className="card-used">Usado: {formatPrice(card.cupoUsado)}</span>
-                                    <span className="card-available">Disponible: {formatPrice(card.cupoDisponible || card.cupo - card.cupoUsado)}</span>
-                                  </div>
-                                  <div className="card-progress-bar">
-                                    <div 
-                                      className="card-progress-fill" 
-                                      style={{ 
-                                        width: `${Math.min((card.cupoUsado / card.cupo) * 100, 100)}%` 
-                                      }}
-                                    ></div>
-                                  </div>
-                                  <p className="card-usage-percentage">
-                                    {((card.cupoUsado / card.cupo) * 100).toFixed(1)}% utilizado
-                                  </p>
-                                </div>
+                                <span className="card-row-separator">•</span>
+                                <span className="card-row-usage">{usagePercentage.toFixed(1)}% usado</span>
                               </>
                             )}
-                            <p className="card-rate">Tasa: {formatPercentage(card.tasaMensual)}/mes</p>
-                            {card.cuotaManejo > 0 && (
-                              <p className="card-fee">Cuota: {formatPrice(card.cuotaManejo)}</p>
+                            {card.beneficios.length > 0 && (
+                              <>
+                                <span className="card-row-separator">•</span>
+                                <span className="card-row-benefits">{card.beneficios.length} beneficio{card.beneficios.length !== 1 ? 's' : ''}</span>
+                              </>
                             )}
                           </div>
-                          {card.beneficios.length > 0 && (
-                            <div className="card-benefits">
-                              <span className="benefits-badge">{card.beneficios.length} beneficio{card.beneficios.length !== 1 ? 's' : ''}</span>
+                          {card.cupoUsado !== undefined && card.cupoUsado > 0 && (
+                            <div className="card-row-progress-container">
+                              <div className="card-row-progress-bar">
+                                <div 
+                                  className="card-row-progress-fill" 
+                                  style={{ 
+                                    width: `${Math.min(usagePercentage, 100)}%`,
+                                    backgroundColor: cardColor
+                                  }}
+                                ></div>
+                              </div>
                             </div>
                           )}
                         </div>
-                      </div>
+                        <ChevronRightIcon className="card-row-chevron" />
+                      </button>
                     )
                   })}
                 </div>
               )}
-
-              {/* Botón de volver */}
-              <div className="back-button-container">
-                <button className="back-button" onClick={() => navigate('/finanzas')}>
-                  <ArrowBackIcon />
-                  <span>Volver a Finanzas</span>
-                </button>
-              </div>
             </>
           )}
         </div>

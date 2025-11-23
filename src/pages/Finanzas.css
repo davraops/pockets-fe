@@ -78,6 +78,84 @@
   border-color: var(--border-glass-hover);
 }
 
+/* Add Transaction Button - HIG: Prominent Action */
+.finanzas-add-transaction-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  width: 100%;
+  max-width: 100%;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.3) 0%, rgba(88, 86, 214, 0.3) 100%);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border: 2px solid rgba(0, 122, 255, 0.5);
+  border-radius: var(--radius-lg);
+  box-shadow: 
+    0 4px 16px rgba(0, 122, 255, 0.25),
+    var(--shadow-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  color: rgba(255, 255, 255, 0.95);
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xl);
+  letter-spacing: var(--letter-spacing-tight);
+  min-height: 64px;
+}
+
+.finanzas-add-transaction-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.4) 0%, rgba(88, 86, 214, 0.4) 100%);
+  border-color: rgba(0, 122, 255, 0.7);
+  box-shadow: 
+    0 6px 20px rgba(0, 122, 255, 0.35),
+    var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.finanzas-add-transaction-button:active:not(:disabled) {
+  transform: translateY(0);
+  transition: transform var(--transition-fast);
+}
+
+.finanzas-add-transaction-button:focus-visible {
+  outline: 3px solid rgba(0, 122, 255, 0.5);
+  outline-offset: 2px;
+}
+
+.finanzas-add-transaction-icon {
+  font-size: 2rem !important;
+  width: 2rem !important;
+  height: 2rem !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+  flex-shrink: 0;
+}
+
+.finanzas-add-transaction-text {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+[data-theme="light"] .finanzas-add-transaction-button {
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.2) 0%, rgba(88, 86, 214, 0.2) 100%);
+  border-color: rgba(0, 122, 255, 0.4);
+  color: rgba(0, 122, 255, 0.95);
+}
+
+[data-theme="light"] .finanzas-add-transaction-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.3) 0%, rgba(88, 86, 214, 0.3) 100%);
+  border-color: rgba(0, 122, 255, 0.6);
+}
+
+[data-theme="light"] .finanzas-add-transaction-icon,
+[data-theme="light"] .finanzas-add-transaction-text {
+  color: rgba(0, 122, 255, 0.95) !important;
+}
+
 /* Page Title - HIG: Clear Navigation & Visual Hierarchy */
 .finanzas-page-title {
   font-size: 2.5rem; /* 40px - grande y prominente */
@@ -347,12 +425,12 @@
 }
 
 .summary-value {
-  font-size: 2rem; /* 32px - más grande para mejor legibilidad */
+  font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   font-family: var(--font-family);
   letter-spacing: var(--letter-spacing-tight);
-  line-height: 1.2;
+  line-height: 1.3;
 }
 
 .summary-label-small {
@@ -865,7 +943,7 @@
   }
 
   .summary-value {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-xl);
   }
 
   .finanzas-toolbar {
@@ -888,6 +966,23 @@
   .finanzas-page-title {
     font-size: 2rem; /* 32px en móvil */
     margin-bottom: var(--spacing-md);
+  }
+
+  .finanzas-add-transaction-button {
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-size-lg);
+    min-height: 56px;
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .finanzas-add-transaction-icon {
+    font-size: 1.75rem !important;
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+  }
+
+  .finanzas-add-transaction-text {
+    font-size: var(--font-size-lg);
   }
 
   .settings-list {

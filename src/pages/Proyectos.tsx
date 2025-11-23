@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import FolderSpecialIcon from '@mui/icons-material/FolderSpecial'
@@ -6,6 +6,8 @@ import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
 import './AppPage.css'
 import './Proyectos.css'
@@ -58,6 +60,8 @@ function Proyectos() {
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
   const [formData, setFormData] = useState({
     nombre: '',
     montoObjetivo: '',
@@ -117,6 +121,23 @@ function Proyectos() {
 
     loadProjects()
   }, [])
+
+  // Cerrar menú al hacer clic fuera - HIG: Clear Feedback
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false)
+      }
+    }
+
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMenuOpen])
 
   const handleOpenModal = () => {
     setIsModalOpen(true)
@@ -480,6 +501,27 @@ function Proyectos() {
     }).format(amount)
   }
 
+  // Calcular highlights - HIG: Relevant Information
+  const calculateHighlights = () => {
+    const totalProyectos = projects.length
+    const proyectosActivos = projects.filter(p => p.estado === 'active').length
+    const proyectosCompletados = projects.filter(p => p.estado === 'completed').length
+    const totalAhorrado = projects.reduce((total, p) => total + p.montoActual, 0)
+    const totalObjetivo = projects.reduce((total, p) => total + p.montoObjetivo, 0)
+    const porcentajePromedio = projects.length > 0 
+      ? projects.reduce((sum, p) => sum + p.porcentajeProgreso, 0) / projects.length 
+      : 0
+    
+    return {
+      totalProyectos,
+      proyectosActivos,
+      proyectosCompletados,
+      totalAhorrado,
+      totalObjetivo,
+      porcentajePromedio
+    }
+  }
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString('es-CO', {
@@ -627,15 +669,92 @@ function Proyectos() {
             </div>
           ) : (
             <>
-              <div className="proyectos-header">
-                <button className="add-project-button" onClick={handleOpenModal}>
-                  <AddIcon />
-                  <span>Agregar Proyecto</span>
+              {/* Toolbar - HIG: Clear Navigation */}
+              <div className="proyectos-toolbar">
+                <button
+                  className="proyectos-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="proyectos-toolbar-icon" />
                 </button>
-                <button className="debug-button" onClick={() => setIsDebugModalOpen(true)} title="Debug: Opciones de desarrollo">
-                  🐛 Debug
-                </button>
+                <div className="proyectos-toolbar-menu-container" ref={menuRef}>
+                  <button
+                    className="proyectos-toolbar-button"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    aria-label="Opciones"
+                    aria-expanded={isMenuOpen}
+                    type="button"
+                  >
+                    <MoreVertIcon className="proyectos-toolbar-icon" />
+                  </button>
+                  {isMenuOpen && (
+                    <div className="proyectos-menu">
+                      <button
+                        className="proyectos-menu-item"
+                        onClick={() => {
+                          handleOpenModal()
+                          setIsMenuOpen(false)
+                        }}
+                        type="button"
+                      >
+                        <AddIcon className="proyectos-menu-icon" />
+                        Agregar Proyecto
+                      </button>
+                      {api.isTestUser() && (
+                        <button
+                          className="proyectos-menu-item"
+                          onClick={() => {
+                            setIsDebugModalOpen(true)
+                            setIsMenuOpen(false)
+                          }}
+                          type="button"
+                        >
+                          <span className="proyectos-menu-icon">🐛</span>
+                          Debug
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
+
+              {/* Page Title - HIG: Clear Orientation */}
+              <h1 className="proyectos-page-title">Proyectos</h1>
+
+              {/* Highlights - HIG: Relevant Information */}
+              {projects.length > 0 && (() => {
+                const highlights = calculateHighlights()
+                return (
+                  <div className="proyectos-summary-block">
+                    <div className="summary-item">
+                      <span className="summary-label">Total</span>
+                      <span className="summary-value">{highlights.totalProyectos}</span>
+                    </div>
+                    <div className="summary-separator"></div>
+                    <div className="summary-item">
+                      <span className="summary-label">Activos</span>
+                      <span className="summary-value">{highlights.proyectosActivos}</span>
+                    </div>
+                    <div className="summary-separator"></div>
+                    <div className="summary-item">
+                      <span className="summary-label">Completados</span>
+                      <span className="summary-value">{highlights.proyectosCompletados}</span>
+                    </div>
+                    <div className="summary-separator"></div>
+                    <div className="summary-item">
+                      <span className="summary-label">Ahorrado</span>
+                      <span className="summary-value">{formatPrice(highlights.totalAhorrado)}</span>
+                    </div>
+                    <div className="summary-separator"></div>
+                    <div className="summary-item">
+                      <span className="summary-label">Progreso Promedio</span>
+                      <span className="summary-value">{highlights.porcentajePromedio.toFixed(1)}%</span>
+                    </div>
+                  </div>
+                )
+              })()}
 
               {projects.length === 0 ? (
                 <div className="empty-state">
@@ -644,70 +763,44 @@ function Proyectos() {
                   <p className="empty-subtext">Agrega tu primer proyecto de ahorro (máximo 9 meses)</p>
                 </div>
               ) : (
-                <div className="projects-grid">
+                <div className="proyectos-list">
                   {projects.map((project) => {
                     const statusColor = getStatusColor(project.estado)
                     return (
-                      <div 
-                        key={project.id} 
-                        className="project-item" 
+                      <button
+                        key={project.id}
+                        className="proyecto-row"
                         onClick={() => handleOpenDetailModal(project)}
-                        style={{ '--project-color': statusColor } as React.CSSProperties}
+                        type="button"
+                        aria-label={`Ver detalles de ${project.nombre}`}
                       >
-                        <div className="project-item-header">
-                          <div className="project-icon" style={{ backgroundColor: statusColor }}>
-                            <FolderSpecialIcon />
-                          </div>
-                          <div className="project-info">
-                            <h3 className="project-name">{project.nombre}</h3>
-                            <p className="project-status" style={{ color: statusColor }}>
+                        <div className="proyecto-row-content">
+                          <div className="proyecto-row-main">
+                            <span className="proyecto-row-title">{project.nombre}</span>
+                            <span className="proyecto-row-subtitle" style={{ color: statusColor }}>
                               {getStatusText(project.estado)}
-                            </p>
+                            </span>
+                          </div>
+                          <div className="proyecto-row-secondary">
+                            <div className="proyecto-row-progress">
+                              <div className="proyecto-row-progress-bar">
+                                <div 
+                                  className="proyecto-row-progress-fill" 
+                                  style={{ 
+                                    width: `${Math.min(project.porcentajeProgreso, 100)}%`,
+                                    backgroundColor: statusColor
+                                  }}
+                                />
+                              </div>
+                              <span className="proyecto-row-progress-text">{project.porcentajeProgreso.toFixed(1)}%</span>
+                            </div>
+                            <span className="proyecto-row-amount">{formatPrice(project.montoActual)} / {formatPrice(project.montoObjetivo)}</span>
+                            <span className="proyecto-row-restante">Restante: {formatPrice(project.restante)}</span>
+                            <span className="proyecto-row-duration">{project.duracionMeses} mes{project.duracionMeses !== 1 ? 'es' : ''}</span>
                           </div>
                         </div>
-                        <div className="project-item-body">
-                          <div className="project-progress">
-                            <div className="project-progress-bar">
-                              <div 
-                                className="project-progress-fill" 
-                                style={{ 
-                                  width: `${Math.min(project.porcentajeProgreso, 100)}%`,
-                                  backgroundColor: statusColor
-                                }}
-                              />
-                            </div>
-                            <span className="project-progress-text">{project.porcentajeProgreso.toFixed(1)}%</span>
-                          </div>
-                          <div className="project-amounts">
-                            <div className="project-amount-row">
-                              <span className="project-amount-label">Meta Mensual:</span>
-                              <span className="project-amount-value" style={{ color: 'rgba(0, 199, 190, 0.9)', fontWeight: 600 }}>
-                                {formatPrice(project.montoObjetivo / project.duracionMeses)}
-                              </span>
-                            </div>
-                            <div className="project-amount-row">
-                              <span className="project-amount-label">Objetivo:</span>
-                              <span className="project-amount-value">{formatPrice(project.montoObjetivo)}</span>
-                            </div>
-                            <div className="project-amount-row">
-                              <span className="project-amount-label">Actual:</span>
-                              <span className="project-amount-value">{formatPrice(project.montoActual)}</span>
-                            </div>
-                            <div className="project-amount-row">
-                              <span className="project-amount-label">Restante:</span>
-                              <span className="project-amount-value">{formatPrice(project.restante)}</span>
-                            </div>
-                          </div>
-                          <div className="project-dates">
-                            <p className="project-date">
-                              <span className="project-date-label">Duración:</span> {project.duracionMeses} mes{project.duracionMeses !== 1 ? 'es' : ''}
-                            </p>
-                            <p className="project-date">
-                              <span className="project-date-label">Fin:</span> {formatDate(project.fechaFin)}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                        <ChevronRightIcon className="proyecto-row-chevron" aria-hidden="true" />
+                      </button>
                     )
                   })}
                 </div>

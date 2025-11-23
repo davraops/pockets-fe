@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import CardMembershipIcon from '@mui/icons-material/CardMembership'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
 import './AppPage.css'
 import './Subscripciones.css'
@@ -67,6 +69,8 @@ function Subscripciones() {
   const [cards, setCards] = useState<Card[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
   const [formData, setFormData] = useState({
     nombre: '',
     precio: '',
@@ -152,6 +156,23 @@ function Subscripciones() {
 
     loadSubscriptions()
   }, [])
+
+  // Cerrar menú al hacer clic fuera - HIG: Clear Feedback
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false)
+      }
+    }
+
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMenuOpen])
 
   const handleOpenModal = () => {
     if (cards.length === 0) {
@@ -427,6 +448,21 @@ function Subscripciones() {
     }).format(price)
   }
 
+  // Calcular highlights - HIG: Relevant Information
+  const calculateHighlights = () => {
+    const totalSubscripciones = subscriptions.length
+    const totalMensual = subscriptions.reduce((total, sub) => total + sub.precio, 0)
+    const subscripcionesFamiliares = subscriptions.filter(sub => sub.esFamiliar).length
+    const subscripcionesIndividuales = subscriptions.filter(sub => !sub.esFamiliar).length
+    
+    return {
+      totalSubscripciones,
+      totalMensual,
+      subscripcionesFamiliares,
+      subscripcionesIndividuales
+    }
+  }
+
   const formatCardNumber = (digits: string) => {
     return `•••• •••• •••• ${digits}`
   }
@@ -511,17 +547,87 @@ function Subscripciones() {
             </div>
           ) : (
             <>
-              <div className="subscripciones-header">
-                <button className="add-subscription-button" onClick={handleOpenModal}>
-                  <AddIcon />
-                  <span>Agregar Subscripción</span>
+              {/* Toolbar - HIG: Clear Navigation */}
+              <div className="subscripciones-toolbar">
+                <button
+                  className="subscripciones-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="subscripciones-toolbar-icon" />
                 </button>
-                {api.isTestUser() && (
-                  <button className="debug-button" onClick={() => setIsDebugModalOpen(true)} title="Debug: Opciones de desarrollo">
-                    🐛 Debug
+                <div className="subscripciones-toolbar-menu-container" ref={menuRef}>
+                  <button
+                    className="subscripciones-toolbar-button"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    aria-label="Opciones"
+                    aria-expanded={isMenuOpen}
+                    type="button"
+                  >
+                    <MoreVertIcon className="subscripciones-toolbar-icon" />
                   </button>
-                )}
+                  {isMenuOpen && (
+                    <div className="subscripciones-menu">
+                      <button
+                        className="subscripciones-menu-item"
+                        onClick={() => {
+                          handleOpenModal()
+                          setIsMenuOpen(false)
+                        }}
+                        type="button"
+                      >
+                        <AddIcon className="subscripciones-menu-icon" />
+                        Agregar Subscripción
+                      </button>
+                      {api.isTestUser() && (
+                        <button
+                          className="subscripciones-menu-item"
+                          onClick={() => {
+                            setIsDebugModalOpen(true)
+                            setIsMenuOpen(false)
+                          }}
+                          type="button"
+                        >
+                          <span className="subscripciones-menu-icon">🐛</span>
+                          Debug
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
+
+              {/* Page Title - HIG: Clear Orientation */}
+              <h1 className="subscripciones-page-title">Subscripciones</h1>
+
+              {/* Highlights - HIG: Relevant Information */}
+              {subscriptions.length > 0 && (() => {
+                const highlights = calculateHighlights()
+                return (
+                  <div className="subscripciones-summary-block">
+                    <div className="summary-item">
+                      <span className="summary-label">Total</span>
+                      <span className="summary-value">{highlights.totalSubscripciones}</span>
+                    </div>
+                    <div className="summary-separator"></div>
+                    <div className="summary-item">
+                      <span className="summary-label">Total Mensual</span>
+                      <span className="summary-value">{formatPrice(highlights.totalMensual)}</span>
+                    </div>
+                    <div className="summary-separator"></div>
+                    <div className="summary-item">
+                      <span className="summary-label">Familiares</span>
+                      <span className="summary-value">{highlights.subscripcionesFamiliares}</span>
+                    </div>
+                    <div className="summary-separator"></div>
+                    <div className="summary-item">
+                      <span className="summary-label">Individuales</span>
+                      <span className="summary-value">{highlights.subscripcionesIndividuales}</span>
+                    </div>
+                  </div>
+                )
+              })()}
 
               {subscriptions.length === 0 ? (
                 <div className="empty-state">
@@ -530,44 +636,37 @@ function Subscripciones() {
                   <p className="empty-subtext">Agrega tu primera subscripción</p>
                 </div>
               ) : (
-                <div className="subscriptions-grid">
+                <div className="subscripciones-list">
                   {subscriptions.map((subscription) => {
                     return (
-                      <div 
-                        key={subscription.id} 
-                        className="subscription-item" 
+                      <button
+                        key={subscription.id}
+                        className="subscripcion-row"
                         onClick={() => handleOpenDetailModal(subscription)}
-                        style={{ '--subscription-color': '#AF52DE' } as React.CSSProperties}
+                        type="button"
+                        aria-label={`Ver detalles de ${subscription.nombre}`}
                       >
-                        <div className="subscription-item-header">
-                          <div className="subscription-icon" style={{ backgroundColor: '#AF52DE' }}>
-                            <CardMembershipIcon />
+                        <div className="subscripcion-row-content">
+                          <div className="subscripcion-row-main">
+                            <span className="subscripcion-row-title">{subscription.nombre}</span>
+                            <span className="subscripcion-row-subtitle">
+                              {subscription.nombreTarjeta} • {formatCardNumber(subscription.ultimos4Digitos)}
+                            </span>
                           </div>
-                          <div className="subscription-info">
-                            <h3 className="subscription-name">{subscription.nombre}</h3>
-                            <p className="subscription-card">{subscription.nombreTarjeta} - {formatCardNumber(subscription.ultimos4Digitos)}</p>
+                          <div className="subscripcion-row-secondary">
+                            <span className="subscripcion-row-price">{formatPrice(subscription.precio)}</span>
+                            <span className="subscripcion-row-date">Corte: {formatDate(subscription.fechaCorte)}</span>
+                            {subscription.esFamiliar && (
+                              <span className="subscripcion-row-family">👨‍👩‍👧‍👦 Familiar</span>
+                            )}
                           </div>
                         </div>
-                        <div className="subscription-item-body">
-                          <p className="subscription-price">{formatPrice(subscription.precio)}</p>
-                          <p className="subscription-cut-date">Próximo corte: {formatDate(subscription.fechaCorte)}</p>
-                          {subscription.esFamiliar && (
-                            <span className="subscription-family-badge">👨‍👩‍👧‍👦 Familiar</span>
-                          )}
-                        </div>
-                      </div>
+                        <ChevronRightIcon className="subscripcion-row-chevron" aria-hidden="true" />
+                      </button>
                     )
                   })}
                 </div>
               )}
-
-              {/* Botón de volver */}
-              <div className="back-button-container">
-                <button className="back-button" onClick={() => navigate('/finanzas')}>
-                  <ArrowBackIcon />
-                  <span>Volver a Finanzas</span>
-                </button>
-              </div>
             </>
           )}
         </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import CreditCardIcon from '@mui/icons-material/CreditCard'
@@ -8,6 +8,8 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
 import './AppPage.css'
 import './Deudas.css'
@@ -58,6 +60,8 @@ function Deudas() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
   const [formData, setFormData] = useState({
     concepto: '',
     referencia: '',
@@ -147,6 +151,24 @@ function Deudas() {
   useEffect(() => {
     reloadDebts()
   }, [sortOrder])
+
+  // Cerrar menú al hacer clic fuera - HIG: Clear Feedback
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (isMenuOpen && menuRef.current && !menuRef.current.contains(target)) {
+        setIsMenuOpen(false)
+      }
+    }
+
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMenuOpen])
 
   // Función para alternar el orden de clasificación
   const toggleSortOrder = () => {
@@ -441,6 +463,31 @@ function Deudas() {
     return ((valor - adeudado) / valor) * 100
   }
 
+  // Calcular total adeudado en COP
+  const calculateTotalOwed = (): number => {
+    return debts.reduce((total, debt) => {
+      // Por ahora asumimos que todas las deudas están en COP
+      // En el futuro podríamos agregar conversión de monedas
+      return total + debt.adeudado
+    }, 0)
+  }
+
+  // Calcular número de deudas activas (no pagadas al 95% o más)
+  const calculateActiveDebts = (): number => {
+    return debts.filter(debt => {
+      const paidPercentage = calculatePaidPercentage(debt.valor, debt.adeudado)
+      return paidPercentage < 95
+    }).length
+  }
+
+  // Calcular promedio de tasa de interés
+  const calculateAverageInterestRate = (): number => {
+    if (debts.length === 0) return 0
+    const totalRate = debts.reduce((sum, debt) => sum + debt.tasaInteres, 0)
+    return totalRate / debts.length
+  }
+
+
   // Función de debug para crear deudas de prueba
   const handleCreateDemoDebts = async () => {
     const testDebts = [
@@ -603,36 +650,115 @@ function Deudas() {
             </div>
           ) : (
             <>
-              <div className="deudas-header">
-                <button className="add-debt-button" onClick={handleOpenModal}>
-                  <AddIcon />
-                  <span>Agregar Deuda</span>
+              {/* Toolbar - HIG: Navigation */}
+              <div className="deudas-toolbar">
+                <button
+                  className="deudas-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="deudas-toolbar-icon" />
                 </button>
-                <div className="deudas-header-actions">
-                  <button 
-                    className="sort-button" 
-                    onClick={toggleSortOrder}
-                    title={sortOrder === 'desc' ? 'Ordenar por tasa ascendente' : 'Ordenar por tasa descendente'}
+                <div className="deudas-toolbar-menu-container" ref={menuRef}>
+                  <button
+                    className="deudas-toolbar-button"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    aria-label="Opciones"
+                    aria-expanded={isMenuOpen}
+                    type="button"
                   >
-                    {sortOrder === 'desc' ? (
-                      <>
-                        <ArrowDownwardIcon />
-                        <span>Tasa ↓</span>
-                      </>
-                    ) : (
-                      <>
-                        <ArrowUpwardIcon />
-                        <span>Tasa ↑</span>
-                      </>
-                    )}
+                    <MoreVertIcon className="deudas-toolbar-icon" />
                   </button>
-                  {api.isTestUser() && (
-                    <button className="debug-button" onClick={() => setIsDebugModalOpen(true)} title="Debug: Opciones de desarrollo">
-                      🐛 Debug
-                    </button>
+                  {isMenuOpen && (
+                    <div className="deudas-menu">
+                      <button
+                        className="deudas-menu-item"
+                        onClick={() => {
+                          setIsMenuOpen(false)
+                          handleOpenModal()
+                        }}
+                        type="button"
+                      >
+                        <AddIcon className="deudas-menu-icon" />
+                        <span>Agregar Deuda</span>
+                      </button>
+                      <button
+                        className="deudas-menu-item"
+                        onClick={() => {
+                          setIsMenuOpen(false)
+                          toggleSortOrder()
+                        }}
+                        type="button"
+                      >
+                        {sortOrder === 'desc' ? (
+                          <>
+                            <ArrowDownwardIcon className="deudas-menu-icon" />
+                            <span>Tasa ↓</span>
+                          </>
+                        ) : (
+                          <>
+                            <ArrowUpwardIcon className="deudas-menu-icon" />
+                            <span>Tasa ↑</span>
+                          </>
+                        )}
+                      </button>
+                      {api.isTestUser() && (
+                        <button
+                          className="deudas-menu-item"
+                          onClick={() => {
+                            setIsMenuOpen(false)
+                            setIsDebugModalOpen(true)
+                          }}
+                          type="button"
+                        >
+                          <span>🐛 Debug</span>
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
+
+              {/* Encabezado de Sección - HIG: Clear Navigation */}
+              <h1 className="deudas-page-title">Deudas</h1>
+
+              {/* Resumen de deudas - HIG: Relevant Information Highlights */}
+              {debts.length > 0 && (
+                <div className="debts-summary-block">
+                  <div className="summary-item">
+                    <span className="summary-label">Total Adeudado</span>
+                    <span className="summary-value">{formatBalance(calculateTotalOwed())}</span>
+                  </div>
+                  <div className="summary-separator"></div>
+                  <div className="summary-item">
+                    <span className="summary-label">Deudas Activas</span>
+                    <span className="summary-value">{calculateActiveDebts()}</span>
+                  </div>
+                  <div className="summary-separator"></div>
+                  <div className="summary-item">
+                    <span className="summary-label">Tasa Promedio</span>
+                    <span className="summary-value">{calculateAverageInterestRate().toFixed(2)}%</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Consejo de Pago - HIG: Clear Feedback */}
+              {debts.length > 0 && (
+                <div className="debts-advice-banner">
+                  <div className="debts-advice-icon">
+                    <AccountBalanceIcon />
+                  </div>
+                  <div className="debts-advice-content">
+                    <p className="debts-advice-text">
+                      <strong>Estrategia de pago:</strong> Siempre paga más del mínimo mensual y realiza abonos directos a capital para reducir la cantidad de pagos, nunca solo el monto mínimo. Además, nunca te endeudes por cosas que no vayan a generar más valor que la deuda misma.
+                    </p>
+                    <p className="debts-advice-text" style={{ marginTop: '0.75rem' }}>
+                      <strong>Antes de tomar cualquier crédito:</strong> Si vas a sacar un crédito, es mejor hacerlo con un banco. Siempre ten más de un banco a la mano y ponlos a competir para obtener la tasa de interés más baja. Evita las financieras, suelen tener condiciones menos favorables.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {debts.length === 0 ? (
                 <div className="empty-state">
@@ -641,86 +767,61 @@ function Deudas() {
                   <p className="empty-subtext">Agrega tu primera deuda</p>
                 </div>
               ) : (
-                <div className="debts-grid">
+                <div className="debts-list">
                   {debts.map((debt) => {
                     // Verificar si la deuda está asociada a una tarjeta de crédito y está pagada
                     const isCreditCardDebt = isDebtAssociatedWithCreditCard(debt.concepto)
-                    const isPaidOff = isCreditCardDebt && (debt.adeudado === 0 || Math.abs(debt.adeudado) < 0.01)
-                    const debtColor = isPaidOff ? '#34C759' : getDebtColor(debt.concepto) // Verde si está pagada
                     const paidPercentage = calculatePaidPercentage(debt.valor, debt.adeudado)
+                    // Cualquier deuda con más del 95% pagada se muestra en verde
+                    const isPaidOff = paidPercentage >= 95 || (isCreditCardDebt && (debt.adeudado === 0 || Math.abs(debt.adeudado) < 0.01))
+                    const debtColor = isPaidOff ? '#34C759' : getDebtColor(debt.concepto) // Verde si está casi pagada
                     return (
-                      <div 
+                      <button
                         key={debt.id} 
-                        className={`debt-card ${isPaidOff ? 'debt-paid-off' : ''}`}
+                        className={`debt-row ${isPaidOff ? 'debt-paid-off' : ''}`}
                         onClick={() => handleOpenDetailModal(debt)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            handleOpenDetailModal(debt)
+                          }
+                        }}
+                        aria-label={`Ver detalles de deuda ${debt.concepto}. Adeudado: ${formatBalance(debt.adeudado, debt.divisa)}. ${paidPercentage.toFixed(1)}% pagado`}
+                        type="button"
                         style={{ '--debt-color': debtColor } as React.CSSProperties}
                       >
-                        <div className="debt-card-content">
-                          <div className="debt-card-left">
-                            <div className="debt-icon" style={{ backgroundColor: debtColor }}>
-                              {isCreditCardDebt ? <CreditCardIcon /> : <AccountBalanceIcon />}
-                            </div>
-                            <div className="debt-info">
-                              <h3 className="debt-concepto">{debt.concepto}</h3>
-                              <div className="debt-meta">
-                                {debt.referencia && (
-                                  <span className="debt-reference">{debt.referencia}</span>
-                                )}
-                                {debt.referencia && <span className="debt-meta-separator">•</span>}
-                                <span className="debt-currency">{debt.divisa}</span>
-                                {debt.tasaInteres > 0 && (
-                                  <>
-                                    <span className="debt-meta-separator">•</span>
-                                    <span className="debt-rate">{debt.tasaInteres}% interés</span>
-                                  </>
-                                )}
-                                <span className="debt-meta-separator">•</span>
-                                <span className="debt-date">Corte: {formatDate(debt.fechaCorte)}</span>
-                              </div>
-                            </div>
+                        <div className="debt-row-content">
+                          <div className="debt-row-main">
+                            <h3 className="debt-row-title">{debt.concepto}</h3>
+                            <span className="debt-row-amount">{formatBalance(debt.adeudado, debt.divisa)}</span>
                           </div>
-                          <div className="debt-card-right">
-                            <div className="debt-main-amount">
-                              <span className="debt-main-label">Adeudado</span>
-                              <span className="debt-main-value">{formatBalance(debt.adeudado, debt.divisa)}</span>
+                          <div className="debt-row-secondary">
+                            {debt.referencia && (
+                              <span className="debt-row-reference">{debt.referencia}</span>
+                            )}
+                            {debt.tasaInteres > 0 && (
+                              <span className="debt-row-rate">{debt.tasaInteres}% interés</span>
+                            )}
+                          </div>
+                          <div className="debt-row-progress-container">
+                            <div className="debt-row-progress-bar">
+                              <div 
+                                className="debt-row-progress-fill" 
+                                style={{ 
+                                  width: `${Math.min(paidPercentage, 100)}%`,
+                                  backgroundColor: debtColor
+                                }}
+                              ></div>
                             </div>
-                            <div className="debt-secondary-info">
-                              <div className="debt-secondary-item">
-                                <span className="debt-secondary-label">Total</span>
-                                <span className="debt-secondary-value">{formatBalance(debt.valor, debt.divisa)}</span>
-                              </div>
-                              <div className="debt-secondary-item">
-                                <span className="debt-secondary-label">Pago Mín.</span>
-                                <span className="debt-secondary-value">{formatBalance(debt.pagoMinimo, debt.divisa)}</span>
-                              </div>
-                            </div>
+                            <span className="debt-row-progress-text">{paidPercentage.toFixed(1)}% pagado</span>
                           </div>
                         </div>
-                        <div className="debt-progress-container">
-                          <div className="debt-progress-bar">
-                            <div 
-                              className="debt-progress-fill" 
-                              style={{ 
-                                width: `${Math.min(paidPercentage, 100)}%`,
-                                backgroundColor: debtColor
-                              }}
-                            ></div>
-                          </div>
-                          <span className="debt-progress-text">{paidPercentage.toFixed(1)}% pagado</span>
-                        </div>
-                      </div>
+                        <ChevronRightIcon className="debt-row-chevron" />
+                      </button>
                     )
                   })}
                 </div>
               )}
-
-              {/* Botón de volver */}
-              <div className="back-button-container">
-                <button className="back-button" onClick={() => navigate('/finanzas')}>
-                  <ArrowBackIcon />
-                  <span>Volver a Finanzas</span>
-                </button>
-              </div>
             </>
           )}
         </div>
@@ -734,7 +835,7 @@ function Deudas() {
               <h2 className="modal-title">Nueva Deuda</h2>
               <button className="modal-close" onClick={handleCloseModal}>×</button>
             </div>
-            <div style={{ padding: '0.75rem 1rem', marginBottom: '1rem', backgroundColor: 'rgba(255, 193, 7, 0.1)', border: '1px solid rgba(255, 193, 7, 0.3)', borderRadius: '8px', fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.9)' }}>
+            <div className="debt-modal-note">
               <strong>💡 Nota:</strong> Para registrar deudas de tarjetas de crédito, hazlo desde la sección <strong>Tarjetas Crédito</strong> en Finanzas.
             </div>
             <form className="modal-form" onSubmit={handleSubmit}>

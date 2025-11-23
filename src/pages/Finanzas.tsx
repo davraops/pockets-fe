@@ -13,6 +13,7 @@ import FolderSpecialIcon from '@mui/icons-material/FolderSpecial'
 import PersonAddIcon from '@mui/icons-material/PersonAdd'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import AddIcon from '@mui/icons-material/Add'
 import { api } from '../services/api'
 import type { SvgIconProps } from '@mui/material'
 
@@ -259,6 +260,17 @@ function Finanzas() {
 
             {/* Encabezado de Sección - HIG: Clear Navigation */}
             <h1 className="finanzas-page-title">Finanzas</h1>
+
+            {/* Botón Principal - Agregar Transacción - HIG: Prominent Action */}
+            <button
+              className="finanzas-add-transaction-button"
+              onClick={() => navigate('/finanzas/transacciones', { state: { openModal: true } })}
+              aria-label="Agregar Transacción"
+              type="button"
+            >
+              <AddIcon className="finanzas-add-transaction-icon" />
+              <span className="finanzas-add-transaction-text">Agregar Transacción</span>
+            </button>
 
             {/* Resumen Principal - HIG: Visual Hierarchy */}
             <section className="finanzas-summary" aria-label="Resumen financiero">

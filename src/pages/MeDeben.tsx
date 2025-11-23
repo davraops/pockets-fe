@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import PersonIcon from '@mui/icons-material/Person'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
 import './AppPage.css'
 import './MeDeben.css'
@@ -27,6 +29,7 @@ interface Debtor {
   concepto: string
   valor: number
   totalPagado: number
+  fechaCreacion: string
 }
 
 function MeDeben() {
@@ -39,6 +42,8 @@ function MeDeben() {
   const [debtors, setDebtors] = useState<Debtor[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
   const [formData, setFormData] = useState({
     nombreDeudor: '',
     concepto: '',
@@ -59,7 +64,8 @@ function MeDeben() {
       nombreDeudor: apiDebtor.debtor_name,
       concepto: apiDebtor.concept,
       valor: apiDebtor.value,
-      totalPagado: apiDebtor.total_paid
+      totalPagado: apiDebtor.total_paid,
+      fechaCreacion: apiDebtor.created_at
     }
   }
 
@@ -71,9 +77,11 @@ function MeDeben() {
       const response = await api.getDebtors()
       if (response.debtors && Array.isArray(response.debtors)) {
         const mappedDebtors = response.debtors.map(mapDebtorFromAPI)
-        // Ordenar por fecha de creación (más recientes primero)
+        // Ordenar por monto pendiente (de mayor a menor)
         mappedDebtors.sort((a: Debtor, b: Debtor) => {
-          return 0 // La API ya ordena por created_at descendente
+          const pendingA = calculatePending(a.valor, a.totalPagado)
+          const pendingB = calculatePending(b.valor, b.totalPagado)
+          return pendingB - pendingA // Mayor pendiente primero
         })
         setDebtors(mappedDebtors)
       } else {
@@ -105,6 +113,23 @@ function MeDeben() {
       window.removeEventListener('debtorsUpdated', handleDebtorsUpdated)
     }
   }, [])
+
+  // Cerrar menú al hacer clic fuera - HIG: Clear Feedback
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false)
+      }
+    }
+
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMenuOpen])
 
   const handleOpenModal = () => {
     setIsModalOpen(true)
@@ -324,6 +349,55 @@ function MeDeben() {
     return Math.max(0, valor - totalPagado)
   }
 
+  // Calcular tiempo que llevan debiendo - HIG: Relevant Information
+  const calculateTimeOwing = (fechaCreacion: string): string => {
+    const now = new Date()
+    const created = new Date(fechaCreacion)
+    const diffMs = now.getTime() - created.getTime()
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+    
+    if (diffDays < 1) {
+      return 'Hoy'
+    } else if (diffDays === 1) {
+      return 'Hace 1 día'
+    } else if (diffDays < 30) {
+      return `Hace ${diffDays} días`
+    } else if (diffDays < 60) {
+      const months = Math.floor(diffDays / 30)
+      return `Hace ${months} mes${months !== 1 ? 'es' : ''}`
+    } else {
+      const months = Math.floor(diffDays / 30)
+      if (months < 12) {
+        return `Hace ${months} mes${months !== 1 ? 'es' : ''}`
+      } else {
+        const years = Math.floor(months / 12)
+        const remainingMonths = months % 12
+        if (remainingMonths === 0) {
+          return `Hace ${years} año${years !== 1 ? 's' : ''}`
+        } else {
+          return `Hace ${years} año${years !== 1 ? 's' : ''} y ${remainingMonths} mes${remainingMonths !== 1 ? 'es' : ''}`
+        }
+      }
+    }
+  }
+
+  // Calcular highlights - HIG: Relevant Information
+  const calculateHighlights = () => {
+    const totalDeudores = debtors.length
+    const totalPendiente = debtors.reduce((total, debtor) => total + calculatePending(debtor.valor, debtor.totalPagado), 0)
+    const totalPagado = debtors.reduce((total, debtor) => total + debtor.totalPagado, 0)
+    const deudoresCompletos = debtors.filter(debtor => calculatePending(debtor.valor, debtor.totalPagado) === 0).length
+    const deudoresPendientes = debtors.filter(debtor => calculatePending(debtor.valor, debtor.totalPagado) > 0).length
+    
+    return {
+      totalDeudores,
+      totalPendiente,
+      totalPagado,
+      deudoresCompletos,
+      deudoresPendientes
+    }
+  }
+
   // Función de debug para crear deudores de prueba
   const handleCreateDemoDebtors = async () => {
     const testDebtors = [
@@ -430,17 +504,92 @@ function MeDeben() {
             </div>
           ) : (
             <>
-              <div className="me-deben-header">
-                <button className="add-debtor-button" onClick={handleOpenModal}>
-                  <AddIcon />
-                  <span>Agregar Deudor</span>
+              {/* Toolbar - HIG: Clear Navigation */}
+              <div className="me-deben-toolbar">
+                <button
+                  className="me-deben-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="me-deben-toolbar-icon" />
                 </button>
-                {api.isTestUser() && (
-                  <button className="debug-button" onClick={() => setIsDebugModalOpen(true)} title="Debug: Opciones de desarrollo">
-                    🐛 Debug
+                <div className="me-deben-toolbar-menu-container" ref={menuRef}>
+                  <button
+                    className="me-deben-toolbar-button"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    aria-label="Opciones"
+                    aria-expanded={isMenuOpen}
+                    type="button"
+                  >
+                    <MoreVertIcon className="me-deben-toolbar-icon" />
                   </button>
-                )}
+                  {isMenuOpen && (
+                    <div className="me-deben-menu">
+                      <button
+                        className="me-deben-menu-item"
+                        onClick={() => {
+                          handleOpenModal()
+                          setIsMenuOpen(false)
+                        }}
+                        type="button"
+                      >
+                        <AddIcon className="me-deben-menu-icon" />
+                        Agregar Deudor
+                      </button>
+                      {api.isTestUser() && (
+                        <button
+                          className="me-deben-menu-item"
+                          onClick={() => {
+                            setIsDebugModalOpen(true)
+                            setIsMenuOpen(false)
+                          }}
+                          type="button"
+                        >
+                          <span className="me-deben-menu-icon">🐛</span>
+                          Debug
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
+
+              {/* Page Title - HIG: Clear Orientation */}
+              <h1 className="me-deben-page-title">Me Deben</h1>
+
+              {/* Highlights - HIG: Relevant Information */}
+              {debtors.length > 0 && (() => {
+                const highlights = calculateHighlights()
+                return (
+                  <div className="me-deben-summary-block">
+                    <div className="summary-item">
+                      <span className="summary-label">Total Deudores</span>
+                      <span className="summary-value">{highlights.totalDeudores}</span>
+                    </div>
+                    <div className="summary-separator"></div>
+                    <div className="summary-item">
+                      <span className="summary-label">Pendiente</span>
+                      <span className="summary-value">{formatBalance(highlights.totalPendiente)}</span>
+                    </div>
+                    <div className="summary-separator"></div>
+                    <div className="summary-item">
+                      <span className="summary-label">Pagado</span>
+                      <span className="summary-value">{formatBalance(highlights.totalPagado)}</span>
+                    </div>
+                    <div className="summary-separator"></div>
+                    <div className="summary-item">
+                      <span className="summary-label">Pendientes</span>
+                      <span className="summary-value">{highlights.deudoresPendientes}</span>
+                    </div>
+                    <div className="summary-separator"></div>
+                    <div className="summary-item">
+                      <span className="summary-label">Completos</span>
+                      <span className="summary-value">{highlights.deudoresCompletos}</span>
+                    </div>
+                  </div>
+                )
+              })()}
 
               {debtors.length === 0 ? (
                 <div className="empty-state">
@@ -449,60 +598,50 @@ function MeDeben() {
                   <p className="empty-subtext">Agrega tu primer deudor</p>
                 </div>
               ) : (
-                <div className="debtors-grid">
+                <div className="me-deben-list">
                   {debtors.map((debtor) => {
                     const debtorColor = getDebtorColor(debtor.nombreDeudor)
                     const paidPercentage = calculatePaidPercentage(debtor.valor, debtor.totalPagado)
                     const pending = calculatePending(debtor.valor, debtor.totalPagado)
                     const isFullyPaid = pending === 0
+                    const timeOwing = calculateTimeOwing(debtor.fechaCreacion)
                     
                     return (
-                      <div 
-                        key={debtor.id} 
-                        className={`debtor-card ${isFullyPaid ? 'debtor-paid-off' : ''}`}
+                      <button
+                        key={debtor.id}
+                        className={`deudor-row ${isFullyPaid ? 'deudor-paid-off' : ''}`}
                         onClick={() => handleOpenDetailModal(debtor)}
-                        style={{ '--debtor-color': debtorColor } as React.CSSProperties}
+                        type="button"
+                        aria-label={`Ver detalles de ${debtor.nombreDeudor}`}
                       >
-                        <div className="debtor-card-content">
-                          <div className="debtor-card-left">
-                            <div className="debtor-icon" style={{ backgroundColor: debtorColor }}>
-                              <PersonIcon />
-                            </div>
-                            <div className="debtor-info">
-                              <h3 className="debtor-name">{debtor.nombreDeudor}</h3>
-                              <p className="debtor-concept">{debtor.concepto}</p>
-                            </div>
+                        <div className="deudor-row-content">
+                          <div className="deudor-row-main">
+                            <span className="deudor-row-title">{debtor.nombreDeudor}</span>
+                            <span className="deudor-row-subtitle">
+                              {debtor.concepto} • {timeOwing}
+                            </span>
                           </div>
-                          <div className="debtor-card-right">
-                            <div className="debtor-main-amount">
-                              <span className="debtor-main-label">Pendiente</span>
-                              <span className="debtor-main-value">{formatBalance(pending)}</span>
-                            </div>
-                            <div className="debtor-secondary-info">
-                              <div className="debtor-secondary-item">
-                                <span className="debtor-secondary-label">Total</span>
-                                <span className="debtor-secondary-value">{formatBalance(debtor.valor)}</span>
-                              </div>
-                              <div className="debtor-secondary-item">
-                                <span className="debtor-secondary-label">Pagado</span>
-                                <span className="debtor-secondary-value">{formatBalance(debtor.totalPagado)}</span>
+                          <div className="deudor-row-secondary">
+                            <span className="deudor-row-total">{formatBalance(debtor.valor)}</span>
+                            <div className="deudor-row-bottom">
+                              <span className="deudor-row-pending">Pendiente: {formatBalance(pending)}</span>
+                              <div className="deudor-row-progress">
+                                <div className="deudor-row-progress-bar">
+                                  <div 
+                                    className="deudor-row-progress-fill" 
+                                    style={{ 
+                                      width: `${Math.min(paidPercentage, 100)}%`,
+                                      backgroundColor: isFullyPaid ? '#34C759' : debtorColor
+                                    }}
+                                  />
+                                </div>
+                                <span className="deudor-row-progress-text">{paidPercentage.toFixed(1)}%</span>
                               </div>
                             </div>
                           </div>
                         </div>
-                        <div className="debtor-progress-container">
-                          <div className="debtor-progress-bar">
-                            <div 
-                              className="debtor-progress-fill" 
-                              style={{ 
-                                width: `${Math.min(paidPercentage, 100)}%`,
-                                backgroundColor: debtorColor
-                              }}
-                            ></div>
-                          </div>
-                          <span className="debtor-progress-text">{paidPercentage.toFixed(1)}% pagado</span>
-                        </div>
-                      </div>
+                        <ChevronRightIcon className="deudor-row-chevron" aria-hidden="true" />
+                      </button>
                     )
                   })}
                 </div>

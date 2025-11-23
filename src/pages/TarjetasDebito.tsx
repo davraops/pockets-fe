@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import PaymentIcon from '@mui/icons-material/Payment'
@@ -6,6 +6,8 @@ import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CardMembershipIcon from '@mui/icons-material/CardMembership'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
 import './AppPage.css'
 import './TarjetasDebito.css'
@@ -60,6 +62,8 @@ function TarjetasDebito() {
   const [subscriptions, setSubscriptions] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
   const [formData, setFormData] = useState({
     nombre: '',
     cuentaId: '',
@@ -163,6 +167,23 @@ function TarjetasDebito() {
       window.removeEventListener('subscriptionsUpdated', handleSubscriptionsUpdate)
     }
   }, [])
+
+  // Cerrar menú al hacer clic fuera - HIG: Clear Feedback
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false)
+      }
+    }
+
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMenuOpen])
 
   const handleOpenModal = () => {
     if (bankAccounts.length === 0) {
@@ -768,6 +789,21 @@ function TarjetasDebito() {
     return subscriptions.filter(sub => sub.card_id === cardId).length
   }
 
+  // Calcular highlights - HIG: Relevant Information
+  const calculateHighlights = () => {
+    const totalTarjetas = cards.length
+    const tarjetasFisicas = cards.filter(card => !card.esVirtual).length
+    const tarjetasVirtuales = cards.filter(card => card.esVirtual).length
+    const tarjetasConSubscripciones = cards.filter(card => getSubscriptionCountForCard(card.id) > 0).length
+    
+    return {
+      totalTarjetas,
+      tarjetasFisicas,
+      tarjetasVirtuales,
+      tarjetasConSubscripciones
+    }
+  }
+
   // Función de debug para crear tarjetas de prueba
   const handleDebugCreateCards = async () => {
     if (bankAccounts.length === 0) {
@@ -850,17 +886,87 @@ function TarjetasDebito() {
             </div>
           ) : (
             <>
-              <div className="tarjetas-header">
-                <button className="add-card-button" onClick={handleOpenModal}>
-                  <AddIcon />
-                  <span>Agregar Tarjeta</span>
+              {/* Toolbar - HIG: Clear Navigation */}
+              <div className="tarjetas-debito-toolbar">
+                <button
+                  className="tarjetas-debito-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="tarjetas-debito-toolbar-icon" />
                 </button>
-                {api.isTestUser() && (
-                  <button className="debug-button" onClick={() => setIsDebugModalOpen(true)} title="Debug: Opciones de desarrollo">
-                    🐛 Debug
+                <div className="tarjetas-debito-toolbar-menu-container" ref={menuRef}>
+                  <button
+                    className="tarjetas-debito-toolbar-button"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    aria-label="Opciones"
+                    aria-expanded={isMenuOpen}
+                    type="button"
+                  >
+                    <MoreVertIcon className="tarjetas-debito-toolbar-icon" />
                   </button>
-                )}
+                  {isMenuOpen && (
+                    <div className="tarjetas-debito-menu">
+                      <button
+                        className="tarjetas-debito-menu-item"
+                        onClick={() => {
+                          handleOpenModal()
+                          setIsMenuOpen(false)
+                        }}
+                        type="button"
+                      >
+                        <AddIcon className="tarjetas-debito-menu-icon" />
+                        Agregar Tarjeta
+                      </button>
+                      {api.isTestUser() && (
+                        <button
+                          className="tarjetas-debito-menu-item"
+                          onClick={() => {
+                            setIsDebugModalOpen(true)
+                            setIsMenuOpen(false)
+                          }}
+                          type="button"
+                        >
+                          <span className="tarjetas-debito-menu-icon">🐛</span>
+                          Debug
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
+
+              {/* Page Title - HIG: Clear Orientation */}
+              <h1 className="tarjetas-debito-page-title">Tarjetas de Débito</h1>
+
+              {/* Highlights - HIG: Relevant Information */}
+              {cards.length > 0 && (() => {
+                const highlights = calculateHighlights()
+                return (
+                  <div className="tarjetas-debito-summary-block">
+                    <div className="summary-item">
+                      <span className="summary-label">Total</span>
+                      <span className="summary-value">{highlights.totalTarjetas}</span>
+                    </div>
+                    <div className="summary-separator"></div>
+                    <div className="summary-item">
+                      <span className="summary-label">Físicas</span>
+                      <span className="summary-value">{highlights.tarjetasFisicas}</span>
+                    </div>
+                    <div className="summary-separator"></div>
+                    <div className="summary-item">
+                      <span className="summary-label">Virtuales</span>
+                      <span className="summary-value">{highlights.tarjetasVirtuales}</span>
+                    </div>
+                    <div className="summary-separator"></div>
+                    <div className="summary-item">
+                      <span className="summary-label">Con Subscripciones</span>
+                      <span className="summary-value">{highlights.tarjetasConSubscripciones}</span>
+                    </div>
+                  </div>
+                )
+              })()}
 
               {cards.length === 0 ? (
                 <div className="empty-state">
@@ -869,43 +975,38 @@ function TarjetasDebito() {
                   <p className="empty-subtext">Agrega tu primera tarjeta de débito</p>
                 </div>
               ) : (
-                <div className="cards-grid">
+                <div className="tarjetas-debito-list">
                   {cards.map((card) => {
                     const bancoColor = getBancoColor(card.banco)
+                    const subscriptionCount = getSubscriptionCountForCard(card.id)
                     return (
-                      <div 
-                        key={card.id} 
-                        className="card-item" 
+                      <button
+                        key={card.id}
+                        className="tarjeta-debito-row"
                         onClick={() => handleOpenDetailModal(card)}
-                        style={{ '--banco-color': bancoColor } as React.CSSProperties}
+                        type="button"
+                        aria-label={`Ver detalles de ${card.nombre}`}
                       >
-                        <div className="card-item-header">
-                          <div className="card-icon" style={{ backgroundColor: bancoColor }}>
-                            <PaymentIcon />
+                        <div className="tarjeta-debito-row-content">
+                          <div className="tarjeta-debito-row-main">
+                            <span className="tarjeta-debito-row-title">{card.nombre}</span>
+                            <span className="tarjeta-debito-row-subtitle">
+                              {card.nombreCuenta} • {card.banco}
+                            </span>
                           </div>
-                          <div className="card-info">
-                            <h3 className="card-name">{card.nombre}</h3>
-                            <p className="card-bank">{card.nombreCuenta} - {card.banco}</p>
-                          </div>
-                        </div>
-                        <div className="card-item-body">
-                          <div className="card-left-info">
-                            <p className="card-number">{formatCardNumber(card.ultimos4Digitos)}</p>
-                            <div className="card-type-badge">
-                              <span className={`card-type-text ${card.esVirtual ? 'virtual' : 'fisica'}`}>
-                                {card.esVirtual ? 'Virtual' : 'Física'}
+                          <div className="tarjeta-debito-row-secondary">
+                            <span className="tarjeta-debito-row-number">{formatCardNumber(card.ultimos4Digitos)}</span>
+                            <span className="tarjeta-debito-row-type">{card.esVirtual ? 'Virtual' : 'Física'}</span>
+                            {subscriptionCount > 0 && (
+                              <span className="tarjeta-debito-row-subscriptions">
+                                {subscriptionCount} subscripción{subscriptionCount !== 1 ? 'es' : ''}
                               </span>
-                            </div>
-                            {getSubscriptionCountForCard(card.id) > 0 && (
-                              <div className="card-subscriptions-badge">
-                                <CardMembershipIcon className="subscriptions-badge-icon" />
-                                <span className="subscriptions-badge-text">{getSubscriptionCountForCard(card.id)} subscripción{getSubscriptionCountForCard(card.id) !== 1 ? 'es' : ''}</span>
-                              </div>
                             )}
+                            <span className="tarjeta-debito-row-expiration">Vence {formatDate(card.fechaVencimiento)}</span>
                           </div>
-                          <p className="card-expiration">Vence: {formatDate(card.fechaVencimiento)}</p>
                         </div>
-                      </div>
+                        <ChevronRightIcon className="tarjeta-debito-row-chevron" aria-hidden="true" />
+                      </button>
                     )
                   })}
                 </div>

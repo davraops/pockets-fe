@@ -437,6 +437,10 @@
   animation: fadeIn 0.2s ease;
 }
 
+[data-theme="light"] .modal-overlay {
+  background: rgba(0, 0, 0, 0.4);
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -451,15 +455,25 @@
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border-radius: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(10, 132, 255, 0.3);
   box-shadow: 
     0 20px 60px 0 rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(10, 132, 255, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   width: 100%;
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
   animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="light"] .modal-content {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(10, 132, 255, 0.25);
+  box-shadow: 
+    0 20px 60px 0 rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(10, 132, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 @keyframes slideUp {
@@ -478,18 +492,38 @@
   justify-content: space-between;
   align-items: center;
   padding: 2rem 2rem 1rem 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(10, 132, 255, 0.2);
   position: relative;
   z-index: 2;
+  background: linear-gradient(135deg, rgba(10, 132, 255, 0.05) 0%, rgba(0, 199, 190, 0.05) 100%);
+  border-radius: 32px 32px 0 0;
+}
+
+[data-theme="light"] .modal-header {
+  border-bottom-color: rgba(10, 132, 255, 0.15);
+  background: linear-gradient(135deg, rgba(10, 132, 255, 0.03) 0%, rgba(0, 199, 190, 0.03) 100%);
 }
 
 .modal-title {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
   margin: 0;
   letter-spacing: -0.02em;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  background: linear-gradient(135deg, rgba(10, 132, 255, 0.9) 0%, rgba(0, 199, 190, 0.9) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme="light"] .modal-title {
+  background: linear-gradient(135deg, #0051D5 0%, #007A8C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  /* Fallback si el gradiente no funciona */
+  color: #0051D5;
 }
 
 .modal-close {
@@ -497,8 +531,8 @@
   height: 32px;
   border-radius: 8px;
   border: none;
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 59, 48, 0.2);
+  color: rgba(255, 59, 48, 0.9);
   font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
@@ -506,11 +540,24 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  border: 1px solid rgba(255, 59, 48, 0.3);
+}
+
+[data-theme="light"] .modal-close {
+  background: rgba(255, 59, 48, 0.1);
+  color: rgba(255, 59, 48, 0.8);
+  border-color: rgba(255, 59, 48, 0.2);
 }
 
 .modal-close:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 59, 48, 0.3);
+  border-color: rgba(255, 59, 48, 0.5);
   transform: scale(1.1);
+}
+
+[data-theme="light"] .modal-close:hover {
+  background: rgba(255, 59, 48, 0.15);
+  border-color: rgba(255, 59, 48, 0.4);
 }
 
 .modal-form {
@@ -523,12 +570,16 @@
 
 .form-group label {
   display: block;
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.8);
   margin-bottom: 0.5rem;
   letter-spacing: -0.01em;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+[data-theme="light"] .form-group label {
+  color: rgba(0, 0, 0, 0.8);
 }
 
 .form-group input,
@@ -541,22 +592,40 @@
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
   transition: all 0.2s ease;
   box-sizing: border-box;
 }
 
+[data-theme="light"] .form-group input,
+[data-theme="light"] .form-group select {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  color: rgba(0, 0, 0, 0.9);
+}
+
 .form-group input::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="light"] .form-group input::placeholder {
+  color: rgba(0, 0, 0, 0.6);
 }
 
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
-  border-color: rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+  border-color: rgba(10, 132, 255, 0.6);
+  background: rgba(10, 132, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.2);
+}
+
+[data-theme="light"] .form-group input:focus,
+[data-theme="light"] .form-group select:focus {
+  border-color: rgba(10, 132, 255, 0.6);
+  background: rgba(10, 132, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.15);
 }
 
 .form-group input.input-error,
@@ -578,7 +647,7 @@
 
 .error-message {
   display: block;
-  font-size: 1rem;
+  font-size: 1.125rem;
   color: rgba(255, 59, 48, 0.9);
   margin-top: 0.375rem;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
@@ -593,9 +662,18 @@
   padding-right: 2.5rem;
 }
 
+[data-theme="light"] .form-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23000000' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+}
+
 .form-select option {
   background: #2c2c2e;
   color: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="light"] .form-select option {
+  background: #ffffff;
+  color: rgba(0, 0, 0, 0.9);
 }
 
 .modal-actions {
@@ -606,12 +684,16 @@
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+[data-theme="light"] .modal-actions {
+  border-top-color: rgba(0, 0, 0, 0.1);
+}
+
 .modal-button {
   flex: 1;
   padding: 0.875rem 1.5rem;
   border-radius: 12px;
   border: none;
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-weight: 500;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
   cursor: pointer;
@@ -624,21 +706,46 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
+[data-theme="light"] .modal-button.cancel {
+  background: rgba(0, 0, 0, 0.06);
+  color: rgba(0, 0, 0, 0.8);
+}
+
 .modal-button.cancel:hover {
   background: rgba(255, 255, 255, 0.15);
   transform: translateY(-1px);
 }
 
+[data-theme="light"] .modal-button.cancel:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
 .modal-button.submit {
-  background: rgba(52, 199, 89, 0.3);
+  background: linear-gradient(135deg, rgba(52, 199, 89, 0.4) 0%, rgba(0, 199, 190, 0.4) 100%);
   color: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(52, 199, 89, 0.5);
+  border: 1px solid rgba(52, 199, 89, 0.6);
+  box-shadow: 0 4px 12px 0 rgba(52, 199, 89, 0.2);
+}
+
+[data-theme="light"] .modal-button.submit {
+  background: linear-gradient(135deg, rgba(52, 199, 89, 0.25) 0%, rgba(0, 199, 190, 0.25) 100%);
+  color: rgba(0, 0, 0, 0.95);
+  border-color: rgba(52, 199, 89, 0.6);
+  box-shadow: 0 4px 12px 0 rgba(52, 199, 89, 0.2);
+  font-weight: 600;
 }
 
 .modal-button.submit:hover {
-  background: rgba(52, 199, 255, 0.4);
-  border-color: rgba(52, 199, 89, 0.7);
+  background: linear-gradient(135deg, rgba(52, 199, 89, 0.5) 0%, rgba(0, 199, 190, 0.5) 100%);
+  border-color: rgba(52, 199, 89, 0.8);
+  box-shadow: 0 6px 16px 0 rgba(52, 199, 89, 0.3);
   transform: translateY(-1px);
+}
+
+[data-theme="light"] .modal-button.submit:hover {
+  background: linear-gradient(135deg, rgba(52, 199, 89, 0.3) 0%, rgba(0, 199, 190, 0.3) 100%);
+  border-color: rgba(52, 199, 89, 0.7);
+  box-shadow: 0 6px 16px 0 rgba(52, 199, 89, 0.25);
 }
 
 .modal-button:active {
@@ -671,9 +778,10 @@
   min-height: 72px; /* HIG: Adequate touch target */
   background: transparent;
   border: none;
+  border-left: 3px solid rgba(10, 132, 255, 0.5);
   border-bottom: 1px solid var(--border-glass-light);
   cursor: pointer;
-  transition: background-color var(--transition-fast);
+  transition: all var(--transition-fast);
   text-align: left;
   width: 100%;
   font-family: var(--font-family);
@@ -686,6 +794,8 @@
 
 .account-row:hover:not(:disabled) {
   background: var(--bg-glass-light);
+  border-left-color: rgba(10, 132, 255, 0.8);
+  box-shadow: 0 4px 16px 0 rgba(10, 132, 255, 0.2), var(--shadow-sm);
 }
 
 .account-row:active:not(:disabled) {
@@ -1397,10 +1507,14 @@
 }
 
 .form-hint {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.4);
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.5);
   margin: 0.5rem 0 0 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+[data-theme="light"] .form-hint {
+  color: rgba(0, 0, 0, 0.6);
 }
 
 @media (max-width: 768px) {
@@ -1461,6 +1575,32 @@
     font-size: 1.25rem !important;
     width: 1.25rem !important;
     height: 1.25rem !important;
+  }
+
+  /* Modal font sizes for mobile */
+  .modal-title {
+    font-size: 1.5rem;
+  }
+
+  .form-group label {
+    font-size: 1.125rem;
+  }
+
+  .form-group input,
+  .form-group select {
+    font-size: 1.125rem;
+  }
+
+  .modal-button {
+    font-size: 1.125rem;
+  }
+
+  .error-message {
+    font-size: 1.125rem;
+  }
+
+  .form-hint {
+    font-size: 1.125rem;
   }
 
   .cuentas-page-title {
