@@ -6,6 +6,8 @@ import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import PaymentIcon from '@mui/icons-material/Payment'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { api } from '../services/api'
 import './AppPage.css'
 import './Cuentas.css'
@@ -50,6 +52,7 @@ function Cuentas() {
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null)
   const [accounts, setAccounts] = useState<BankAccount[]>([])
   const [cards, setCards] = useState<any[]>([])
@@ -510,6 +513,24 @@ function Cuentas() {
     return cards.filter(card => card.bank_account_id === accountId).length
   }
 
+  // Cerrar menú al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (isMenuOpen && !target.closest('.cuentas-toolbar-menu-container')) {
+        setIsMenuOpen(false)
+      }
+    }
+
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMenuOpen])
+
   // Función de debug para crear 10 cuentas de prueba
   const handleDebugCreateAccounts = async () => {
     const testAccounts = [
@@ -588,6 +609,59 @@ function Cuentas() {
             </div>
           ) : (
             <>
+              {/* Toolbar - HIG: Navigation */}
+              <div className="cuentas-toolbar">
+                <button
+                  className="cuentas-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="cuentas-toolbar-icon" />
+                </button>
+                <div className="cuentas-toolbar-menu-container">
+                  <button
+                    className="cuentas-toolbar-button"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    aria-label="Opciones"
+                    aria-expanded={isMenuOpen}
+                    type="button"
+                  >
+                    <MoreVertIcon className="cuentas-toolbar-icon" />
+                  </button>
+                  {isMenuOpen && (
+                    <div className="cuentas-menu">
+                      <button
+                        className="cuentas-menu-item"
+                        onClick={() => {
+                          setIsMenuOpen(false)
+                          handleOpenModal()
+                        }}
+                        type="button"
+                      >
+                        <AddIcon className="cuentas-menu-icon" />
+                        <span>Agregar Cuenta</span>
+                      </button>
+                      {api.isTestUser() && (
+                        <button
+                          className="cuentas-menu-item"
+                          onClick={() => {
+                            setIsMenuOpen(false)
+                            setIsDebugModalOpen(true)
+                          }}
+                          type="button"
+                        >
+                          <span>🐛 Debug</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Encabezado de Sección - HIG: Clear Navigation */}
+              <h1 className="cuentas-page-title">Cuentas</h1>
+
               {/* Tasas de cambio y Total */}
               <div className="exchange-rates-block">
                 <div className="exchange-rate-item">
@@ -606,17 +680,6 @@ function Cuentas() {
                 </div>
               </div>
 
-              <div className="cuentas-header">
-                <button className="add-account-button" onClick={handleOpenModal}>
-                  <AddIcon />
-                  <span>Agregar Cuenta</span>
-                </button>
-                {api.isTestUser() && (
-                  <button className="debug-button" onClick={() => setIsDebugModalOpen(true)} title="Debug: Opciones de desarrollo">
-                    🐛 Debug
-                  </button>
-                )}
-              </div>
 
               {accounts.length === 0 ? (
                 <div className="empty-state">
@@ -625,58 +688,52 @@ function Cuentas() {
                   <p className="empty-subtext">Agrega tu primera cuenta bancaria</p>
                 </div>
               ) : (
-                <div className="accounts-grid">
-                  {accounts.map((account) => {
-                    const bancoColor = getBancoColor(account.banco)
-                    return (
-                      <div 
-                        key={account.id} 
-                        className="account-card" 
-                        onClick={() => handleOpenDetailModal(account)}
-                        style={{ '--banco-color': bancoColor } as React.CSSProperties}
-                      >
-                        <div className="account-card-header">
-                          <div className="account-icon" style={{ backgroundColor: bancoColor }}>
-                            <AccountBalanceWalletIcon />
+                <div className="accounts-list">
+                  <div className="accounts-group">
+                    {[...accounts].sort((a, b) => b.balanceCOP - a.balanceCOP).map((account) => {
+                      const bancoColor = getBancoColor(account.banco)
+                      return (
+                        <button
+                          key={account.id}
+                          className="account-row"
+                          onClick={() => handleOpenDetailModal(account)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              handleOpenDetailModal(account)
+                            }
+                          }}
+                          aria-label={`Ver detalles de cuenta ${account.nombre} del banco ${account.banco}. Balance: ${formatBalance(account.balanceInicial, account.currency)}`}
+                          type="button"
+                        >
+                          <div className="account-row-content">
+                            <div className="account-row-main">
+                              <span className="account-row-title">{account.nombre}</span>
+                              <span className="account-row-balance">{formatBalance(account.balanceInicial, account.currency)}</span>
+                            </div>
+                            <div className="account-row-secondary">
+                              <span className="account-row-bank">{account.banco}</span>
+                              {getCardCountForAccount(account.id) > 0 && (
+                                <span className="account-row-cards">
+                                  {getCardCountForAccount(account.id)} tarjeta{getCardCountForAccount(account.id) !== 1 ? 's' : ''}
+                                </span>
+                              )}
+                              {account.currency !== 'COP' && (
+                                <span className="account-row-equivalent">
+                                  ≈ {formatBalance(account.balanceCOP)} COP
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          <div className="account-info">
-                            <h3 className="account-name">{account.nombre}</h3>
-                            <p className="account-bank">{account.banco}</p>
-                          </div>
-                        </div>
-                        <div className="account-card-body">
-                          <div className="account-left-info">
-                            <p className="account-number">{formatAccountNumber(account.numeroCuenta)}</p>
-                            {getCardCountForAccount(account.id) > 0 && (
-                              <div className="account-cards-badge">
-                                <PaymentIcon className="cards-badge-icon" />
-                                <span className="cards-badge-text">{getCardCountForAccount(account.id)} tarjeta{getCardCountForAccount(account.id) !== 1 ? 's' : ''}</span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="account-balance-wrapper">
-                            <p className="account-balance">{formatBalance(account.balanceInicial, account.currency)}</p>
-                            <span className="account-currency">{account.currency}</span>
-                            {account.currency !== 'COP' && (
-                              <span className="account-equivalent-cop">
-                                ≈ {formatBalance(account.balanceCOP)} COP
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
+                          <ChevronRightIcon className="account-row-chevron" aria-hidden="true" />
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
               )}
 
               {/* Botón de volver */}
-              <div className="back-button-container">
-                <button className="back-button" onClick={() => navigate('/finanzas')}>
-                  <ArrowBackIcon />
-                  <span>Volver a Finanzas</span>
-                </button>
-              </div>
             </>
           )}
         </div>

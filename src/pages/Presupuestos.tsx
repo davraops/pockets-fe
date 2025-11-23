@@ -7,6 +7,8 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import RestoreIcon from '@mui/icons-material/Restore'
 import ArchiveIcon from '@mui/icons-material/Archive'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { api } from '../services/api'
 import './AppPage.css'
 import './Presupuestos.css'
@@ -46,6 +48,7 @@ function Presupuestos() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isDeletedBudgetsModalOpen, setIsDeletedBudgetsModalOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null)
   const [budgets, setBudgets] = useState<Budget[]>([])
   const [deletedBudgets, setDeletedBudgets] = useState<Budget[]>([])
@@ -490,6 +493,24 @@ function Presupuestos() {
     }, 0)
   }
 
+  // Cerrar menú al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (isMenuOpen && !target.closest('.presupuestos-toolbar-menu-container')) {
+        setIsMenuOpen(false)
+      }
+    }
+
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMenuOpen])
+
   // Cargar presupuestos eliminados
   const loadDeletedBudgets = async () => {
     setIsLoadingDeleted(true)
@@ -629,6 +650,59 @@ function Presupuestos() {
             </div>
           ) : (
             <>
+              {/* Toolbar - HIG: Navigation */}
+              <div className="presupuestos-toolbar">
+                <button
+                  className="presupuestos-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="presupuestos-toolbar-icon" />
+                </button>
+                <div className="presupuestos-toolbar-menu-container">
+                  <button
+                    className="presupuestos-toolbar-button"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    aria-label="Opciones"
+                    aria-expanded={isMenuOpen}
+                    type="button"
+                  >
+                    <MoreVertIcon className="presupuestos-toolbar-icon" />
+                  </button>
+                  {isMenuOpen && (
+                    <div className="presupuestos-menu">
+                      <button
+                        className="presupuestos-menu-item"
+                        onClick={() => {
+                          setIsMenuOpen(false)
+                          handleOpenModal()
+                        }}
+                        type="button"
+                      >
+                        <AddIcon className="presupuestos-menu-icon" />
+                        <span>Agregar Presupuesto</span>
+                      </button>
+                      {api.isTestUser() && (
+                        <button
+                          className="presupuestos-menu-item"
+                          onClick={() => {
+                            setIsMenuOpen(false)
+                            setIsDebugModalOpen(true)
+                          }}
+                          type="button"
+                        >
+                          <span>🐛 Debug</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Encabezado de Sección - HIG: Clear Navigation */}
+              <h1 className="presupuestos-page-title">Presupuestos</h1>
+
               {/* Resumen de presupuestos */}
               <div className="budgets-summary-block">
                 <div className="summary-item">
@@ -647,18 +721,6 @@ function Presupuestos() {
                 </div>
               </div>
 
-              <div className="presupuestos-header">
-                <button className="add-budget-button" onClick={handleOpenModal}>
-                  <AddIcon />
-                  <span>Agregar Presupuesto</span>
-                </button>
-                {api.isTestUser() && (
-                  <button className="debug-button" onClick={() => setIsDebugModalOpen(true)} title="Debug: Opciones de desarrollo">
-                    🐛 Debug
-                  </button>
-                )}
-              </div>
-
               {budgets.length === 0 ? (
                 <>
                   <div className="empty-state">
@@ -675,66 +737,65 @@ function Presupuestos() {
                 </>
               ) : (
                 <>
-                  <div className="budgets-grid">
-                    {budgets.map((budget) => {
-                      const budgetColor = getBudgetColor(budget.porcentajeUsado, budget.sobrePresupuesto, budget.id)
-                      const progressColor = getProgressColor(budget.porcentajeUsado, budget.sobrePresupuesto)
-                      return (
-                        <div 
-                          key={budget.id} 
-                          className="budget-card" 
-                          onClick={() => handleOpenDetailModal(budget)}
-                          style={{ '--budget-color': budgetColor } as React.CSSProperties}
-                        >
-                          <div className="budget-card-header">
-                            <div className="budget-icon" style={{ backgroundColor: budgetColor }}>
-                              <CalculateIcon />
-                            </div>
-                            <div className="budget-info">
-                              <h3 className="budget-name">{budget.nombre}</h3>
-                              <p className="budget-status">
-                                {budget.sobrePresupuesto ? 'Sobre presupuesto' : `${budget.porcentajeUsado.toFixed(1)}% usado`}
-                              </p>
-                              <p className="budget-periodicity">
-                                {getPeriodicityLabel(budget.periodicidad)}
-                                {budget.periodicidad !== 'mensual' && (
-                                  <span className="budget-monthly-equivalent">
-                                    {' '}• {formatBalance(calculateMonthlyAmount(budget.montoMaximo, budget.periodicidad))}/mes
-                                  </span>
-                                )}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="budget-card-body">
-                          <div className="budget-progress-bar">
-                            <div 
-                              className="budget-progress-fill" 
-                              style={{ 
-                                width: `${Math.min(budget.porcentajeUsado, 100)}%`,
-                                backgroundColor: progressColor
-                              }}
-                            ></div>
-                          </div>
-                            <div className="budget-amounts">
-                              <div className="budget-amount-item">
-                                <span className="budget-amount-label">
-                                  {isBudgetAssociatedWithProject(budget.id) ? 'Ahorrado' : 'Gastado'}
+                  <div className="budgets-list">
+                    <div className="budgets-group">
+                      {[...budgets].sort((a, b) => {
+                        // Ordenar por porcentaje usado (mayor a menor) y luego por nombre
+                        if (a.sobrePresupuesto !== b.sobrePresupuesto) {
+                          return a.sobrePresupuesto ? -1 : 1
+                        }
+                        if (Math.abs(a.porcentajeUsado - b.porcentajeUsado) > 0.1) {
+                          return b.porcentajeUsado - a.porcentajeUsado
+                        }
+                        return a.nombre.localeCompare(b.nombre)
+                      }).map((budget) => {
+                        const budgetColor = getBudgetColor(budget.porcentajeUsado, budget.sobrePresupuesto, budget.id)
+                        const progressColor = getProgressColor(budget.porcentajeUsado, budget.sobrePresupuesto)
+                        return (
+                          <button
+                            key={budget.id}
+                            className="budget-row"
+                            onClick={() => handleOpenDetailModal(budget)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault()
+                                handleOpenDetailModal(budget)
+                              }
+                            }}
+                            aria-label={`Ver detalles de presupuesto ${budget.nombre}. ${budget.sobrePresupuesto ? 'Sobre presupuesto' : `${budget.porcentajeUsado.toFixed(1)}% usado`}. Máximo: ${formatBalance(budget.montoMaximo)}`}
+                            type="button"
+                            style={{ '--budget-color': budgetColor, '--progress-color': progressColor } as React.CSSProperties}
+                          >
+                            <div className="budget-row-content">
+                              <div className="budget-row-main">
+                                <span className="budget-row-title">{budget.nombre}</span>
+                                <span className="budget-row-percentage">
+                                  {budget.sobrePresupuesto ? (
+                                    <span className="budget-over">Sobre presupuesto</span>
+                                  ) : (
+                                    `${budget.porcentajeUsado.toFixed(1)}%`
+                                  )}
                                 </span>
-                                <span className="budget-amount-value spent">{formatBalance(budget.totalGastado)}</span>
                               </div>
-                              <div className="budget-amount-item">
-                                <span className="budget-amount-label">Restante</span>
-                                <span className="budget-amount-value remaining">{formatBalance(budget.restante)}</span>
+                              <div className="budget-row-secondary">
+                                <span className="budget-row-periodicity">{getPeriodicityLabel(budget.periodicidad)}</span>
+                                <span className="budget-row-amount">{formatBalance(budget.totalGastado)} / {formatBalance(budget.montoMaximo)}</span>
+                              </div>
+                              <div className="budget-row-progress">
+                                <div 
+                                  className="budget-row-progress-fill" 
+                                  style={{ 
+                                    width: `${Math.min(budget.porcentajeUsado, 100)}%`,
+                                    backgroundColor: progressColor
+                                  }}
+                                ></div>
                               </div>
                             </div>
-                            <div className="budget-max">
-                              <span className="budget-max-label">Máximo ({getPeriodicityLabel(budget.periodicidad)})</span>
-                              <span className="budget-max-value">{formatBalance(budget.montoMaximo)}</span>
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    })}
+                            <ChevronRightIcon className="budget-row-chevron" aria-hidden="true" />
+                          </button>
+                        )
+                      })}
+                    </div>
                   </div>
                   <div className="deleted-budgets-button-container">
                     <button className="view-deleted-button" onClick={handleOpenDeletedBudgetsModal}>
@@ -746,12 +807,6 @@ function Presupuestos() {
               )}
 
               {/* Botón de volver */}
-              <div className="back-button-container">
-                <button className="back-button" onClick={() => navigate('/finanzas')}>
-                  <ArrowBackIcon />
-                  <span>Volver a Finanzas</span>
-                </button>
-              </div>
             </>
           )}
         </div>
