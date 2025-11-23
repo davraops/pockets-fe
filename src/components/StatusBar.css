@@ -8,12 +8,13 @@
   justify-content: space-between;
   align-items: center;
   padding: 0 1.5rem;
-  background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-glass-light);
+  backdrop-filter: var(--backdrop-blur-light);
+  -webkit-backdrop-filter: var(--backdrop-blur-light);
+  border-bottom: 1px solid var(--border-glass-light);
   z-index: 1000;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family: var(--font-family);
+  transition: background-color var(--transition-base), border-color var(--transition-base);
 }
 
 .status-bar-left,
@@ -33,27 +34,29 @@
 .status-bar-right {
   justify-content: flex-end;
   flex-shrink: 0;
+  gap: var(--spacing-sm);
+  align-items: center;
 }
 
 .status-bar-separator {
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 1rem;
+  color: var(--text-tertiary);
+  font-size: var(--font-size-base);
   flex-shrink: 0;
 }
 
 .status-bar-date {
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text-primary);
   letter-spacing: -0.01em;
   text-transform: capitalize;
   flex-shrink: 0;
 }
 
 .status-bar-title {
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--text-primary);
   letter-spacing: -0.01em;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -62,9 +65,9 @@
 }
 
 .status-bar-time {
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--text-primary);
   letter-spacing: -0.01em;
   flex-shrink: 0;
 }

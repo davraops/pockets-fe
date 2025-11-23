@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
+import ThemeToggle from './ThemeToggle'
 import './StatusBar.css'
 
 const routeTitles: Record<string, string> = {
@@ -90,6 +91,7 @@ function StatusBar() {
         )}
       </div>
       <div className="status-bar-right">
+        <ThemeToggle />
         <span className="status-bar-time">{formatTime(time)}</span>
       </div>
     </div>

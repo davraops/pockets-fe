@@ -1,168 +1,149 @@
+/* App Container - HIG: Depth & Clarity */
 .app-container {
   width: 100vw;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
-  padding-top: calc(2rem + 44px);
-  padding-bottom: calc(2rem + 60px);
+  padding: var(--spacing-lg);
+  padding-top: calc(var(--spacing-lg) + 44px);
+  padding-bottom: calc(var(--spacing-lg) + 60px);
   box-sizing: border-box;
   position: relative;
-  background: #2c2c2e;
+  background: var(--bg-body);
+  transition: background-color var(--transition-base);
 }
 
-
+/* Subtle background gradient - HIG: Depth */
 .app-container::before {
   content: '';
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #3a3a3c 0%, #2c2c2e 25%, #48484a 50%, #2c2c2e 75%, #3a3a3c 100%);
-  background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
+  background: linear-gradient(180deg, var(--bg-body-gradient-start) 0%, var(--bg-body) 50%, var(--bg-body-gradient-end) 100%);
   z-index: -1;
+  transition: background var(--transition-base);
 }
 
-/* iPad-like layout for desktop */
-@media (min-width: 769px) {
-  .app-container {
-    background: #2c2c2e;
-  }
-
-  .glass-menu {
-    max-width: 800px;
-    width: fit-content;
-  }
-
-  .apps-grid {
-    grid-template-columns: repeat(6, 1fr);
-    gap: 2rem;
-    max-width: 700px;
-    margin: 0 auto;
-  }
-
-  .app-icon {
-    width: 140px;
-  }
-
-  .app-icon-wrapper {
-    width: calc(80px + 0.75rem);
-    height: calc(80px + 0.75rem);
-  }
-
-  .app-icon-bg {
-    border-radius: 22px;
-  }
-
-  .app-material-icon {
-    font-size: 2.75rem !important;
-    width: 2.75rem !important;
-    height: 2.75rem !important;
-  }
-
-  .app-name {
-    font-size: 0.8rem;
-    max-width: 140px;
-    letter-spacing: -0.01em;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    hyphens: auto;
-  }
+/* Home Title - HIG: Typography Hierarchy */
+.home-title {
+  font-size: 2rem; /* 32px - más grande para mejor legibilidad */
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xl) 0;
+  text-align: center;
+  letter-spacing: var(--letter-spacing-tight);
+  font-family: var(--font-family);
+  line-height: 1.3;
 }
 
-@keyframes gradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
+/* Glass Menu - HIG: Depth, Clarity, Consistency */
 .glass-menu {
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border-radius: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
-    0 20px 60px 0 rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  padding: 3rem 2.5rem;
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--border-glass);
+  box-shadow: var(--shadow-xl);
+  padding: var(--spacing-xl) var(--spacing-xl);
   max-width: 90vw;
   width: fit-content;
   height: fit-content;
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
+  transition: all var(--transition-base);
 }
 
+/* Scrollbar - HIG: Consistency */
 .glass-menu::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 .glass-menu::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-glass-light);
   border-radius: 10px;
 }
 
 .glass-menu::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--border-glass);
   border-radius: 10px;
+  transition: background var(--transition-fast);
 }
 
 .glass-menu::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--border-glass-hover);
 }
 
+/* Apps Grid - HIG: Layout & Spacing */
 .apps-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
+  gap: var(--spacing-lg);
   justify-items: center;
   align-items: start;
 }
 
+/* App Icon Button - HIG: Touch Target (min 44x44px), Feedback, Accessibility */
 .app-icon {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.6rem;
+  gap: var(--spacing-sm);
   cursor: pointer;
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
+  border: none;
+  padding: 0;
+  transition: all var(--transition-base);
   width: 140px;
+  min-height: 120px; /* Ensure adequate touch target */
+  position: relative;
+  font-family: var(--font-family);
 }
 
-.app-icon:hover {
-  transform: translateY(-6px);
+.app-icon:hover:not(:disabled) {
+  transform: translateY(-4px);
 }
 
+.app-icon:active:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.app-icon:focus-visible {
+  outline: 2px solid var(--accent-primary-border);
+  outline-offset: 4px;
+  border-radius: var(--radius-md);
+}
+
+.app-icon:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* App Icon Wrapper - HIG: Visual Hierarchy */
 .app-icon-wrapper {
-  width: calc(70px + 0.75rem);
-  height: calc(70px + 0.75rem);
+  width: 80px;
+  height: 80px;
+  min-width: 80px;
+  min-height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
 }
 
+/* App Icon Background - HIG: Depth, Feedback */
 .app-icon-bg {
   width: 100%;
   height: 100%;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.3),
-    0 1px 0 rgba(255, 255, 255, 0.1) inset;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
   position: relative;
   overflow: hidden;
 }
@@ -176,21 +157,45 @@
   bottom: 0;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0) 100%);
   pointer-events: none;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
+  transition: opacity var(--transition-fast);
 }
 
-.app-icon:hover .app-icon-bg {
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    0 2px 0 rgba(255, 255, 255, 0.15) inset;
-  transform: scale(1.08);
+/* Light mode icon background gradient - enhanced visibility */
+[data-theme="light"] .app-icon-bg::before {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0) 100%);
 }
 
-.app-icon:active .app-icon-bg {
-  transform: scale(0.92);
-  transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+/* Light mode logout button - no gradient overlay needed */
+[data-theme="light"] .app-icon-logout .app-icon-bg::before {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0) 100%);
 }
 
+.app-icon:hover:not(:disabled) .app-icon-bg {
+  box-shadow: var(--shadow-md);
+  transform: scale(1.05);
+}
+
+/* Light mode hover - enhanced shadow for better depth */
+[data-theme="light"] .app-icon:hover:not(:disabled) .app-icon-bg {
+  box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.app-icon:active:not(:disabled) .app-icon-bg {
+  transform: scale(0.95);
+  transition: transform var(--transition-fast);
+}
+
+.app-icon:focus-visible .app-icon-bg {
+  box-shadow: var(--shadow-md);
+}
+
+/* Light mode focus - better visibility */
+[data-theme="light"] .app-icon:focus-visible {
+  outline-color: rgba(88, 86, 214, 0.6);
+}
+
+/* App Material Icon - HIG: Visual Clarity */
 .app-material-icon {
   font-size: 2.5rem !important;
   width: 2.5rem !important;
@@ -198,37 +203,114 @@
   z-index: 1;
   color: white;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  transition: transform var(--transition-fast);
 }
 
+/* Light mode icon adjustments */
+[data-theme="light"] .app-material-icon {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.app-icon:hover:not(:disabled) .app-material-icon {
+  transform: scale(1.05);
+}
+
+/* App Name - HIG: Typography */
 .app-name {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.9);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  font-weight: 500;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-size: var(--font-size-lg);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
+  font-family: var(--font-family);
   text-align: center;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
+  line-height: 1.5;
+  letter-spacing: var(--letter-spacing-tight);
   max-width: 140px;
   word-wrap: break-word;
   overflow-wrap: break-word;
   hyphens: auto;
+  margin-top: var(--spacing-xs);
 }
 
-/* Responsive adjustments */
+/* Light mode text - ensure visibility */
+[data-theme="light"] .app-name {
+  color: rgba(0, 0, 0, 0.95) !important;
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Logout Icon Special Styling - HIG: Visual Hierarchy */
+.app-icon-logout .app-icon-bg {
+  background-color: var(--accent-danger-border) !important;
+}
+
+/* Light mode logout button - better contrast */
+[data-theme="light"] .app-icon-logout .app-icon-bg {
+  background-color: rgba(255, 59, 48, 0.8) !important;
+  box-shadow: 0 4px 16px 0 rgba(255, 59, 48, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="light"] .app-icon-logout:hover:not(:disabled) .app-icon-bg {
+  background-color: rgba(255, 59, 48, 0.9) !important;
+  box-shadow: 0 6px 20px 0 rgba(255, 59, 48, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* iPad-like layout for desktop - HIG: Adaptability */
+@media (min-width: 769px) {
+  .glass-menu {
+    max-width: 800px;
+    width: fit-content;
+  }
+
+  .apps-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: var(--spacing-xl);
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .app-icon {
+    width: 140px;
+  }
+
+  .app-icon-wrapper {
+    width: 88px;
+    height: 88px;
+    min-width: 88px;
+    min-height: 88px;
+  }
+
+  .app-icon-bg {
+    border-radius: var(--radius-xl);
+  }
+
+  .app-material-icon {
+    font-size: 2.75rem !important;
+    width: 2.75rem !important;
+    height: 2.75rem !important;
+  }
+
+  .app-name {
+    font-size: var(--font-size-sm);
+    max-width: 140px;
+  }
+}
+
+/* Responsive adjustments - HIG: Adaptability */
 @media (max-width: 768px) {
   .apps-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 1.2rem;
+    gap: var(--spacing-md);
   }
 
   .app-icon {
     width: 120px;
+    min-height: 110px;
   }
 
   .app-icon-wrapper {
-    width: calc(60px + 0.75rem);
-    height: calc(60px + 0.75rem);
+    width: 72px;
+    height: 72px;
+    min-width: 72px;
+    min-height: 72px;
   }
 
   .app-material-icon {
@@ -238,23 +320,31 @@
   }
 
   .glass-menu {
-    padding: 1.5rem;
+    padding: var(--spacing-lg);
+  }
+
+  .home-title {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-lg);
   }
 }
 
 @media (max-width: 480px) {
   .apps-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
+    gap: var(--spacing-sm);
   }
 
   .app-icon {
     width: 110px;
+    min-height: 100px;
   }
 
   .app-icon-wrapper {
-    width: calc(55px + 0.75rem);
-    height: calc(55px + 0.75rem);
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    min-height: 64px;
   }
 
   .app-material-icon {
@@ -264,6 +354,27 @@
   }
 
   .app-name {
-    font-size: 1rem;
+    font-size: var(--font-size-sm);
+  }
+
+  .glass-menu {
+    padding: var(--spacing-md);
+  }
+}
+
+/* Reduced Motion - HIG: Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .app-icon,
+  .app-icon-bg,
+  .app-material-icon {
+    transition: none;
+  }
+
+  .app-icon:hover:not(:disabled) {
+    transform: none;
+  }
+
+  .app-icon:hover:not(:disabled) .app-icon-bg {
+    transform: none;
   }
 }

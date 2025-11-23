@@ -30,28 +30,53 @@ function Home() {
     }
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent, app: App) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      handleAppClick(app)
+    }
+  }
+
   return (
     <div className="app-container">
       <div className="glass-menu">
-        <div className="apps-grid">
+        <h1 className="home-title" aria-label="Aplicaciones disponibles">
+          Aplicaciones
+        </h1>
+        <div className="apps-grid" role="grid" aria-label="Grid de aplicaciones">
           {apps.map((app) => {
             const IconComponent = app.Icon
+            const isLogout = app.id === 'logout'
             return (
-              <div 
-                key={app.id} 
-                className="app-icon" 
+              <button
+                key={app.id}
+                className={`app-icon ${isLogout ? 'app-icon-logout' : ''}`}
                 style={{ '--app-color': app.color } as React.CSSProperties}
                 onClick={() => handleAppClick(app)}
+                onKeyDown={(e) => handleKeyDown(e, app)}
+                aria-label={`${app.name}${isLogout ? '. Cerrar sesión' : ''}`}
+                aria-describedby={app.name ? `app-name-${app.id}` : undefined}
+                type="button"
               >
                 <div className="app-icon-wrapper">
                   <div className="app-icon-bg" style={{ backgroundColor: app.color }}>
                     {app.hasIcon && IconComponent && (
-                      <IconComponent className="app-material-icon" />
+                      <IconComponent 
+                        className="app-material-icon" 
+                        aria-hidden="true"
+                      />
                     )}
                   </div>
                 </div>
-                {app.name && <span className="app-name">{app.name}</span>}
-              </div>
+                {app.name && (
+                  <span 
+                    className="app-name" 
+                    id={`app-name-${app.id}`}
+                  >
+                    {app.name}
+                  </span>
+                )}
+              </button>
             )
           })}
         </div>

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
+import { ThemeProvider } from './contexts/ThemeContext'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import AppPage from './pages/AppPage'
@@ -173,9 +174,11 @@ function App() {
   // Las tasas de cambio ahora se obtienen desde la API en el componente Cuentas
 
   return (
-    <BrowserRouter>
-      <AppContent />
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
 

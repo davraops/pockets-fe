@@ -12,6 +12,7 @@ import CardMembershipIcon from '@mui/icons-material/CardMembership'
 import FolderSpecialIcon from '@mui/icons-material/FolderSpecial'
 import PersonAddIcon from '@mui/icons-material/PersonAdd'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
 import type { SvgIconProps } from '@mui/material'
 
@@ -102,7 +103,12 @@ function Finanzas() {
     porcentajePresupuestos: 0,
     totalPresupuestado: 0,
     totalIngresos: 0,
-    totalEgresos: 0
+    totalEgresos: 0,
+    tarjetasFisicas: 0,
+    tarjetasVirtuales: 0,
+    numeroProyectos: 0,
+    porcentajeCompletacionProyectos: 0,
+    totalMeDeben: 0
   })
 
   useEffect(() => {
@@ -110,13 +116,16 @@ function Finanzas() {
       setIsLoading(true)
       try {
         // Cargar todos los datos en paralelo
-        const [accountsRes, debtsRes, creditCardsRes, subscriptionsRes, transactionsRes, budgetsRes] = await Promise.all([
+        const [accountsRes, debtsRes, creditCardsRes, subscriptionsRes, transactionsRes, budgetsRes, cardsRes, projectsRes, debtorsRes] = await Promise.all([
           api.getBankAccounts(),
           api.getDebts(),
           api.getCreditCards(),
           api.getSubscriptions(),
           api.getTransactions({}),
-          api.getBudgets()
+          api.getBudgets(),
+          api.getCards(),
+          api.getProjects(),
+          api.getDebtors()
         ])
 
         // Calcular total en cuentas COP
@@ -164,6 +173,26 @@ function Finanzas() {
           ? (totalUsado / totalPresupuestado) * 100 
           : 0
 
+        // Calcular tarjetas físicas y virtuales
+        const tarjetasFisicas = cardsRes.cards?.filter((card: any) => !card.is_virtual).length || 0
+        const tarjetasVirtuales = cardsRes.cards?.filter((card: any) => card.is_virtual).length || 0
+
+        // Calcular proyectos y porcentaje de completación promedio
+        const numeroProyectos = projectsRes.projects?.length || 0
+        let porcentajeCompletacionProyectos = 0
+        if (projectsRes.projects && Array.isArray(projectsRes.projects) && projectsRes.projects.length > 0) {
+          const totalPorcentaje = projectsRes.projects.reduce((sum: number, project: any) => {
+            return sum + (project.progress_percentage || 0)
+          }, 0)
+          porcentajeCompletacionProyectos = totalPorcentaje / projectsRes.projects.length
+        }
+
+        // Calcular total que me deben
+        const totalMeDeben = debtorsRes.debtors?.reduce((sum: number, debtor: any) => {
+          const pendiente = (debtor.value || 0) - (debtor.total_paid || 0)
+          return sum + Math.max(0, pendiente) // Solo sumar si hay pendiente positivo
+        }, 0) || 0
+
         setStats({
           totalCuentasCOP,
           totalDeudas,
@@ -174,7 +203,12 @@ function Finanzas() {
           porcentajePresupuestos,
           totalPresupuestado,
           totalIngresos,
-          totalEgresos
+          totalEgresos,
+          tarjetasFisicas,
+          tarjetasVirtuales,
+          numeroProyectos,
+          porcentajeCompletacionProyectos,
+          totalMeDeben
         })
       } catch (err) {
         console.error('Error al cargar estadísticas:', err)
@@ -211,133 +245,228 @@ function Finanzas() {
           </div>
         ) : (
           <>
-            {/* Minicards de estadísticas */}
-            <div className="stats-grid">
-              {/* Finanzas Básicas */}
-              <div className="stat-card" onClick={() => navigate('/finanzas/cuentas')}>
-                <div className="stat-icon" style={{ backgroundColor: '#34C759' }}>
-                  <AccountBalanceWalletIcon />
-                </div>
-                <div className="stat-content">
-                  <span className="stat-label">Total en Cuentas (COP)</span>
-                  <span className="stat-value">{formatPrice(stats.totalCuentasCOP)}</span>
-                </div>
-              </div>
-
-              <div className="stat-card" onClick={() => navigate('/finanzas/transacciones')}>
-                <div className="stat-icon" style={{ backgroundColor: '#34C759' }}>
-                  <SwapHorizIcon />
-                </div>
-                <div className="stat-content">
-                  <span className="stat-label">Total Ingresos</span>
-                  <span className="stat-value">{formatPrice(stats.totalIngresos)}</span>
-                </div>
-              </div>
-
-              <div className="stat-card" onClick={() => navigate('/finanzas/transacciones')}>
-                <div className="stat-icon" style={{ backgroundColor: '#FF3B30' }}>
-                  <SwapHorizIcon />
-                </div>
-                <div className="stat-content">
-                  <span className="stat-label">Total Egresos</span>
-                  <span className="stat-value">{formatPrice(stats.totalEgresos)}</span>
-                </div>
-              </div>
-
-              {/* Presupuestos */}
-              <div className="stat-card" onClick={() => navigate('/finanzas/presupuestos')}>
-                <div className="stat-icon" style={{ backgroundColor: '#007AFF' }}>
-                  <CalculateIcon />
-                </div>
-                <div className="stat-content">
-                  <span className="stat-label">Total Presupuestado</span>
-                  <span className="stat-value">{formatPrice(stats.totalPresupuestado)}</span>
-                </div>
-              </div>
-
-              <div className="stat-card" onClick={() => navigate('/finanzas/presupuestos')}>
-                <div className="stat-icon" style={{ backgroundColor: '#007AFF' }}>
-                  <CalculateIcon />
-                </div>
-                <div className="stat-content">
-                  <span className="stat-label">Porcentaje Presupuestos</span>
-                  <span className="stat-value">{formatPercentage(stats.porcentajePresupuestos)}</span>
-                </div>
-              </div>
-
-              {/* Deudas y Crédito */}
-              <div className="stat-card" onClick={() => navigate('/finanzas/deudas')}>
-                <div className="stat-icon" style={{ backgroundColor: '#FF3B30' }}>
-                  <CreditCardIcon />
-                </div>
-                <div className="stat-content">
-                  <span className="stat-label">Total en Deudas</span>
-                  <span className="stat-value">{formatPrice(stats.totalDeudas)}</span>
-                </div>
-              </div>
-
-              <div className="stat-card" onClick={() => navigate('/finanzas/tarjetas-credito')}>
-                <div className="stat-icon" style={{ backgroundColor: '#FF2D55' }}>
-                  <CreditCardIcon />
-                </div>
-                <div className="stat-content">
-                  <span className="stat-label">Total Cupo de Crédito</span>
-                  <span className="stat-value">{formatPrice(stats.totalCupoCredito)}</span>
-                </div>
-              </div>
-
-              <div className="stat-card" onClick={() => navigate('/finanzas/tarjetas-credito')}>
-                <div className="stat-icon" style={{ backgroundColor: '#FF2D55' }}>
-                  <CreditCardIcon />
-                </div>
-                <div className="stat-content">
-                  <span className="stat-label">Total Crédito Disponible</span>
-                  <span className="stat-value">{formatPrice(stats.totalCreditoDisponible)}</span>
-                </div>
-              </div>
-
-              {/* Actividad */}
-              <div className="stat-card" onClick={() => navigate('/finanzas/subscripciones')}>
-                <div className="stat-icon" style={{ backgroundColor: '#AF52DE' }}>
-                  <CardMembershipIcon />
-                </div>
-                <div className="stat-content">
-                  <span className="stat-label">Número de Subscripciones</span>
-                  <span className="stat-value">{stats.numeroSubscripciones}</span>
-                </div>
-              </div>
-
-              <div className="stat-card" onClick={() => navigate('/finanzas/transacciones')}>
-                <div className="stat-icon" style={{ backgroundColor: '#FF9500' }}>
-                  <SwapHorizIcon />
-                </div>
-                <div className="stat-content">
-                  <span className="stat-label">Total de Transacciones</span>
-                  <span className="stat-value">{stats.totalTransacciones}</span>
-                </div>
-              </div>
+            {/* Toolbar - HIG: Navigation */}
+            <div className="finanzas-toolbar">
+              <button
+                className="finanzas-toolbar-button"
+                onClick={() => navigate('/')}
+                aria-label="Volver al inicio"
+                type="button"
+              >
+                <ArrowBackIcon className="finanzas-toolbar-icon" />
+              </button>
             </div>
 
-            {/* Grid de iconos de navegación */}
-            <div className="apps-grid">
-              {financeItems.map((item) => {
-                const IconComponent = item.Icon
-                return (
-                  <div 
-                    key={item.id} 
-                    className="app-icon" 
-                    style={{ '--app-color': item.color } as React.CSSProperties}
-                    onClick={() => item.path && navigate(item.path)}
-                  >
-                    <div className="app-icon-wrapper">
-                      <div className="app-icon-bg" style={{ backgroundColor: item.color }}>
-                        <IconComponent className="app-material-icon" />
-                      </div>
-                    </div>
-                    <span className="app-name">{item.title}</span>
+            {/* Encabezado de Sección - HIG: Clear Navigation */}
+            <h1 className="finanzas-page-title">Finanzas</h1>
+
+            {/* Resumen Principal - HIG: Visual Hierarchy */}
+            <section className="finanzas-summary" aria-label="Resumen financiero">
+              <div className="summary-cards">
+                <div className="summary-card summary-card-primary">
+                  <div className="summary-icon" style={{ backgroundColor: '#34C759' }} aria-hidden="true">
+                    <AccountBalanceWalletIcon />
                   </div>
-                )
-              })}
+                  <div className="summary-content">
+                    <span className="summary-label">Balance Disponible</span>
+                    <span className="summary-value">{formatPrice(stats.totalCuentasCOP)}</span>
+                  </div>
+                </div>
+
+                <div className="summary-card summary-card-secondary">
+                  <div className="summary-row">
+                    <div className="summary-item">
+                      <span className="summary-label-small">Ingresos</span>
+                      <span className="summary-value-small summary-positive">{formatPrice(stats.totalIngresos)}</span>
+                    </div>
+                    <div className="summary-item">
+                      <span className="summary-label-small">Egresos</span>
+                      <span className="summary-value-small summary-negative">{formatPrice(stats.totalEgresos)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Lista de Opciones estilo iOS Settings - HIG: Clear Navigation */}
+            <div className="settings-list">
+              {/* Sección: Cuentas y Presupuestos */}
+              <div className="settings-section">
+                <div className="settings-section-header">Cuentas y Presupuestos</div>
+                <div className="settings-group">
+                  <button
+                    className="settings-row"
+                    onClick={() => navigate('/finanzas/cuentas')}
+                    aria-label={`Ir a Cuentas. Balance: ${formatPrice(stats.totalCuentasCOP)}`}
+                    type="button"
+                  >
+                    <div className="settings-row-icon" style={{ backgroundColor: '#34C759' }} aria-hidden="true">
+                      <AccountBalanceWalletIcon />
+                    </div>
+                    <div className="settings-row-content">
+                      <span className="settings-row-title">Cuentas</span>
+                      <span className="settings-row-subtitle">{formatPrice(stats.totalCuentasCOP)}</span>
+                    </div>
+                    <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+                  </button>
+
+                  <button
+                    className="settings-row"
+                    onClick={() => navigate('/finanzas/presupuestos')}
+                    aria-label={`Ir a Presupuestos. Uso: ${formatPercentage(stats.porcentajePresupuestos)}`}
+                    type="button"
+                  >
+                    <div className="settings-row-icon" style={{ backgroundColor: '#007AFF' }} aria-hidden="true">
+                      <CalculateIcon />
+                    </div>
+                    <div className="settings-row-content">
+                      <span className="settings-row-title">Presupuestos</span>
+                      <span className="settings-row-subtitle">{formatPercentage(stats.porcentajePresupuestos)} usado</span>
+                    </div>
+                    <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Sección: Transacciones */}
+              <div className="settings-section">
+                <div className="settings-section-header">Transacciones</div>
+                <div className="settings-group">
+                  <button
+                    className="settings-row"
+                    onClick={() => navigate('/finanzas/transacciones')}
+                    aria-label={`Ir a Transacciones. Total: ${stats.totalTransacciones}`}
+                    type="button"
+                  >
+                    <div className="settings-row-icon" style={{ backgroundColor: '#FF9500' }} aria-hidden="true">
+                      <SwapHorizIcon />
+                    </div>
+                    <div className="settings-row-content">
+                      <span className="settings-row-title">Transacciones</span>
+                      <span className="settings-row-subtitle">{stats.totalTransacciones} registros</span>
+                    </div>
+                    <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Sección: Crédito y Deudas */}
+              <div className="settings-section">
+                <div className="settings-section-header">Crédito y Deudas</div>
+                <div className="settings-group">
+                  <button
+                    className="settings-row"
+                    onClick={() => navigate('/finanzas/deudas')}
+                    aria-label={`Ir a Deudas. Total: ${formatPrice(stats.totalDeudas)}`}
+                    type="button"
+                  >
+                    <div className="settings-row-icon" style={{ backgroundColor: '#FF3B30' }} aria-hidden="true">
+                      <CreditCardIcon />
+                    </div>
+                    <div className="settings-row-content">
+                      <span className="settings-row-title">Deudas</span>
+                      <span className="settings-row-subtitle">{formatPrice(stats.totalDeudas)}</span>
+                    </div>
+                    <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+                  </button>
+
+                  <button
+                    className="settings-row"
+                    onClick={() => navigate('/finanzas/tarjetas-credito')}
+                    aria-label={`Ir a Tarjetas de Crédito. Disponible: ${formatPrice(stats.totalCreditoDisponible)}`}
+                    type="button"
+                  >
+                    <div className="settings-row-icon" style={{ backgroundColor: '#FF2D55' }} aria-hidden="true">
+                      <CreditCardIcon />
+                    </div>
+                    <div className="settings-row-content">
+                      <span className="settings-row-title">Tarjetas de Crédito</span>
+                      <span className="settings-row-subtitle">{formatPrice(stats.totalCreditoDisponible)} disponible</span>
+                    </div>
+                    <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Sección: Tarjetas y Subscripciones */}
+              <div className="settings-section">
+                <div className="settings-section-header">Tarjetas y Subscripciones</div>
+                <div className="settings-group">
+                  <button
+                    className="settings-row"
+                    onClick={() => navigate('/finanzas/tarjetas-debito')}
+                    aria-label={`Ir a Tarjetas de Débito. ${stats.tarjetasFisicas} físicas, ${stats.tarjetasVirtuales} virtuales`}
+                    type="button"
+                  >
+                    <div className="settings-row-icon" style={{ backgroundColor: '#5856D6' }} aria-hidden="true">
+                      <PaymentIcon />
+                    </div>
+                    <div className="settings-row-content">
+                      <span className="settings-row-title">Tarjetas de Débito</span>
+                      <span className="settings-row-subtitle">
+                        {stats.tarjetasFisicas} física{stats.tarjetasFisicas !== 1 ? 's' : ''}, {stats.tarjetasVirtuales} virtual{stats.tarjetasVirtuales !== 1 ? 'es' : ''}
+                      </span>
+                    </div>
+                    <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+                  </button>
+
+                  <button
+                    className="settings-row"
+                    onClick={() => navigate('/finanzas/subscripciones')}
+                    aria-label={`Ir a Subscripciones. Total: ${stats.numeroSubscripciones}`}
+                    type="button"
+                  >
+                    <div className="settings-row-icon" style={{ backgroundColor: '#AF52DE' }} aria-hidden="true">
+                      <CardMembershipIcon />
+                    </div>
+                    <div className="settings-row-content">
+                      <span className="settings-row-title">Subscripciones</span>
+                      <span className="settings-row-subtitle">{stats.numeroSubscripciones} activas</span>
+                    </div>
+                    <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Sección: Actividad */}
+              <div className="settings-section">
+                <div className="settings-section-header">Actividad</div>
+                <div className="settings-group">
+                  <button
+                    className="settings-row"
+                    onClick={() => navigate('/finanzas/proyectos')}
+                    aria-label={`Ir a Proyectos. ${stats.numeroProyectos} proyectos, ${formatPercentage(stats.porcentajeCompletacionProyectos)} completado`}
+                    type="button"
+                  >
+                    <div className="settings-row-icon" style={{ backgroundColor: '#00C7BE' }} aria-hidden="true">
+                      <FolderSpecialIcon />
+                    </div>
+                    <div className="settings-row-content">
+                      <span className="settings-row-title">Proyectos</span>
+                      <span className="settings-row-subtitle">
+                        {stats.numeroProyectos} proyecto{stats.numeroProyectos !== 1 ? 's' : ''}, {formatPercentage(stats.porcentajeCompletacionProyectos)} completado
+                      </span>
+                    </div>
+                    <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+                  </button>
+
+                  <button
+                    className="settings-row"
+                    onClick={() => navigate('/finanzas/me-deben')}
+                    aria-label={`Ir a Me Deben. Total pendiente: ${formatPrice(stats.totalMeDeben)}`}
+                    type="button"
+                  >
+                    <div className="settings-row-icon" style={{ backgroundColor: '#5AC8FA' }} aria-hidden="true">
+                      <PersonAddIcon />
+                    </div>
+                    <div className="settings-row-content">
+                      <span className="settings-row-title">Me Deben</span>
+                      <span className="settings-row-subtitle">{formatPrice(stats.totalMeDeben)} pendiente</span>
+                    </div>
+                    <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Botón de volver */}

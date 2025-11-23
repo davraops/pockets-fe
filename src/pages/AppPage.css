@@ -1,46 +1,37 @@
+/* App Page Container - HIG: Depth & Clarity */
 .app-page-container {
   width: 100vw;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #2c2c2e;
+  background: var(--bg-body);
   position: relative;
   overflow-x: hidden;
   overflow-y: auto;
   margin-top: 0;
   margin-bottom: 30px;
+  transition: background-color var(--transition-base);
 }
 
+/* Subtle background gradient - HIG: Depth */
 .app-page-container::before {
   content: '';
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #3a3a3c 0%, #2c2c2e 25%, #48484a 50%, #2c2c2e 75%, #3a3a3c 100%);
-  background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
+  background: linear-gradient(180deg, var(--bg-body-gradient-start) 0%, var(--bg-body) 50%, var(--bg-body-gradient-end) 100%);
   z-index: -1;
+  transition: background var(--transition-base);
 }
 
-@keyframes gradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
+/* App Page Content - HIG: Layout */
 .app-page-content {
   flex: 1;
-  padding: 1rem 2rem 2rem 2rem;
-  padding-top: calc(0.5rem + 44px);
-  padding-bottom: 2rem;
+  padding: var(--spacing-md) var(--spacing-xl) var(--spacing-xl) var(--spacing-xl);
+  padding-top: calc(var(--spacing-xs) + 44px);
+  padding-bottom: var(--spacing-xl);
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
@@ -50,25 +41,26 @@
   box-sizing: border-box;
 }
 
+/* Glass Content - HIG: Depth, Clarity */
 .glass-content {
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border-radius: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
-    0 20px 60px 0 rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  padding: 3rem;
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--border-glass);
+  box-shadow: var(--shadow-xl);
+  padding: var(--spacing-xl);
   max-width: 600px;
   text-align: center;
 }
 
+/* App Page Subtitle - HIG: Typography */
 .app-page-subtitle {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
   margin: 0;
   line-height: 1.6;
+  font-family: var(--font-family);
 }
 
 /* Responsive adjustments */
@@ -135,39 +127,47 @@
   width: 100%;
 }
 
+/* Back Button - HIG: Touch Target, Feedback, Accessibility */
 .back-button {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 1rem;
-  font-weight: 500;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  min-height: 44px; /* HIG minimum touch target */
+  background: var(--bg-glass-light);
+  backdrop-filter: var(--backdrop-blur-light);
+  -webkit-backdrop-filter: var(--backdrop-blur-light);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  font-family: var(--font-family);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 
-    0 4px 12px 0 rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
 }
 
-.back-button:hover {
-  background: rgba(0, 0, 0, 0.3);
-  border-color: rgba(255, 255, 255, 0.15);
+.back-button:hover:not(:disabled) {
+  background: var(--bg-glass);
+  border-color: var(--border-glass-hover);
   transform: translateY(-2px);
-  box-shadow: 
-    0 6px 16px 0 rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  box-shadow: var(--shadow-md);
 }
 
-.back-button:active {
+.back-button:active:not(:disabled) {
   transform: translateY(0);
-  transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform var(--transition-fast);
+}
+
+.back-button:focus-visible {
+  outline: 2px solid var(--accent-primary-border);
+  outline-offset: 2px;
+}
+
+.back-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .back-button svg {
