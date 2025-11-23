@@ -51,6 +51,7 @@ interface BankAccount {
   id: string
   nombre: string
   currency: string
+  balance: number
 }
 
 interface Budget {
@@ -767,7 +768,8 @@ function Transacciones() {
           accountsList.push({ 
             id: acc.id, 
             nombre: acc.account_name,
-            currency: acc.currency || 'COP'
+            currency: acc.currency || 'COP',
+            balance: parseFloat(acc.balance?.original?.amount || acc.balance?.amount || 0)
           })
         })
       }
@@ -2448,7 +2450,7 @@ function Transacciones() {
                         .filter((account) => account.currency === formData.moneda)
                         .map((account) => (
                           <option key={account.id} value={account.id}>
-                            {account.nombre} ({account.currency})
+                            {account.nombre} ({account.currency}) - {formatBalance(account.balance, account.currency)}
                           </option>
                         ))}
                     </select>

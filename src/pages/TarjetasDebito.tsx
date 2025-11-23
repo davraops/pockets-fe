@@ -46,6 +46,8 @@ interface BankAccount {
   id: string
   nombre: string
   banco: string
+  currency: string
+  balance: number
 }
 
 function TarjetasDebito() {
@@ -101,7 +103,9 @@ function TarjetasDebito() {
           const mappedAccounts: BankAccount[] = response.accounts.map((acc: any) => ({
             id: acc.id,
             nombre: acc.account_name,
-            banco: acc.bank
+            banco: acc.bank,
+            currency: acc.currency || 'COP',
+            balance: parseFloat(acc.balance?.original?.amount || acc.balance?.amount || 0)
           }))
           setBankAccounts(mappedAccounts)
         }
@@ -208,6 +212,16 @@ function TarjetasDebito() {
       ultimos4Digitos: '',
       fechaVencimiento: ''
     })
+  }
+
+  const formatBalance = (balance: number, currency: string = 'COP') => {
+    const locale = currency === 'EUR' ? 'es-ES' : currency === 'USD' ? 'en-US' : 'es-CO'
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(balance)
   }
 
   const handleOpenDetailModal = (card: Card) => {
@@ -1062,7 +1076,7 @@ function TarjetasDebito() {
                   <option value="">Selecciona una cuenta</option>
                   {bankAccounts.map((account) => (
                     <option key={account.id} value={account.id}>
-                      {account.nombre} - {account.banco}
+                      {account.nombre} - {account.banco} - {formatBalance(account.balance, account.currency)}
                     </option>
                   ))}
                 </select>
@@ -1231,7 +1245,7 @@ function TarjetasDebito() {
                     <option value="">Selecciona una cuenta</option>
                     {bankAccounts.map((account) => (
                       <option key={account.id} value={account.id}>
-                        {account.nombre} - {account.banco}
+                        {account.nombre} - {account.banco} - {formatBalance(account.balance, account.currency)}
                       </option>
                     ))}
                   </select>
