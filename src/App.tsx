@@ -15,6 +15,10 @@ import Subscripciones from './pages/Subscripciones'
 import TarjetasCredito from './pages/TarjetasCredito'
 import Proyectos from './pages/Proyectos'
 import MeDeben from './pages/MeDeben'
+import CriptoWallet from './pages/CriptoWallet'
+import CriptoTransacciones from './pages/CriptoTransacciones'
+import Inflacion from './pages/Inflacion'
+import CDTs from './pages/CDTs'
 import StatusBar from './components/StatusBar'
 import ProtectedRoute from './components/ProtectedRoute'
 import Footer from './components/Footer'
@@ -120,6 +124,38 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <MeDeben />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finanzas/cripto-wallet"
+          element={
+            <ProtectedRoute>
+              <CriptoWallet />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finanzas/cripto-transacciones"
+          element={
+            <ProtectedRoute>
+              <CriptoTransacciones />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finanzas/inflacion"
+          element={
+            <ProtectedRoute>
+              <Inflacion />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finanzas/cdts"
+          element={
+            <ProtectedRoute>
+              <CDTs />
             </ProtectedRoute>
           }
         />

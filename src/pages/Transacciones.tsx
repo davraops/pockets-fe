@@ -175,6 +175,7 @@ function Transacciones() {
               id: acc.id,
               nombre: acc.account_name,
               currency: acc.currency || 'COP',
+              balance: parseFloat(acc.balance?.original?.amount || acc.balance?.amount || acc.balance?.cop?.amount || '0'),
             })
           })
         }

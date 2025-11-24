@@ -678,6 +678,162 @@ class PocketsAPI {
       method: 'DELETE',
     })
   }
+
+  // Wallets (Crypto Wallets)
+  async createWallet(data: {
+    wallet_name: string
+    crypto_name: string
+    address: string
+  }) {
+    return this.request('/wallets', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getWallets(walletId: string | null = null) {
+    const endpoint = walletId ? `/wallets?id=${walletId}` : '/wallets'
+    return this.request(endpoint)
+  }
+
+  async updateWallet(
+    walletId: string,
+    updates: {
+      wallet_name?: string
+      crypto_name?: string
+      address?: string
+    }
+  ) {
+    return this.request(`/wallets/${walletId}`, {
+      method: 'PUT',
+      body: updates,
+    })
+  }
+
+  async deleteWallet(walletId: string) {
+    return this.request(`/wallets/${walletId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllWallets() {
+    return this.request('/wallets', {
+      method: 'DELETE',
+    })
+  }
+
+  // Cryptocurrencies
+  async createCryptocurrency(data: {
+    crypto_name: string
+    purchase_value: number
+    purchase_date: string
+    wallet_id: string
+    units_purchased: number
+    purchase_cost: number
+    currency: string
+  }) {
+    return this.request('/cryptocurrencies', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getCryptocurrencies(cryptoId: string | null = null) {
+    const endpoint = cryptoId ? `/cryptocurrencies?id=${cryptoId}` : '/cryptocurrencies'
+    return this.request(endpoint)
+  }
+
+  async updateCryptocurrency(
+    cryptoId: string,
+    updates: {
+      crypto_name?: string
+      purchase_value?: number
+      purchase_date?: string
+      wallet_id?: string
+      units_purchased?: number
+      purchase_cost?: number
+      currency?: string
+    }
+  ) {
+    return this.request(`/cryptocurrencies/${cryptoId}`, {
+      method: 'PUT',
+      body: updates,
+    })
+  }
+
+  async deleteCryptocurrency(cryptoId: string) {
+    return this.request(`/cryptocurrencies/${cryptoId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllCryptocurrencies() {
+    return this.request('/cryptocurrencies', {
+      method: 'DELETE',
+    })
+  }
+
+  // Crypto Exchange Rates
+  async syncCryptoExchangeRates() {
+    return this.request('/crypto-exchange-rates/sync', {
+      method: 'GET',
+    })
+  }
+
+  async getCryptoExchangeRates() {
+    return this.request('/crypto-exchange-rates', {
+      method: 'GET',
+    })
+  }
+
+  // CDTs
+  async createCDT(data: {
+    name: string
+    value: number
+    rate: number
+    withdrawal_date: string
+    duration?: number | null
+    issuer?: string | null
+  }) {
+    return this.request('/cdts', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getCDTs(cdtId: string | null = null) {
+    const endpoint = cdtId ? `/cdts?id=${cdtId}` : '/cdts'
+    return this.request(endpoint)
+  }
+
+  async updateCDT(
+    cdtId: string,
+    updates: {
+      name?: string
+      value?: number
+      rate?: number
+      withdrawal_date?: string
+      duration?: number | null
+      issuer?: string | null
+    }
+  ) {
+    return this.request(`/cdts/${cdtId}`, {
+      method: 'PUT',
+      body: updates,
+    })
+  }
+
+  async deleteCDT(cdtId: string) {
+    return this.request(`/cdts/${cdtId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllCDTs() {
+    return this.request('/cdts', {
+      method: 'DELETE',
+    })
+  }
 }
 
 export const api = new PocketsAPI(API_BASE_URL)

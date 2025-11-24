@@ -2746,6 +2746,814 @@ const deleteAllSubscriptions = async () => {
 
 ---
 
+### Cryptocurrencies (Criptomonedas)
+
+#### POST /cryptocurrencies
+Crear una nueva criptomoneda.
+
+**URL:** `POST ${API_URL}/cryptocurrencies`
+
+**Request Body:**
+```json
+{
+  "crypto_name": "Bitcoin",
+  "purchase_value": 45000.50,
+  "purchase_date": "2024-01-15",
+  "wallet_id": "123e4567-e89b-12d3-a456-426614174000",
+  "units_purchased": 0.5,
+  "purchase_cost": 22500.25,
+  "currency": "USD"
+}
+```
+
+**Ejemplo JavaScript:**
+```javascript
+const createCryptocurrency = async (cryptoData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/cryptocurrencies`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(cryptoData),
+  });
+  return response.json();
+};
+
+// Uso
+const newCrypto = await createCryptocurrency({
+  crypto_name: "Bitcoin",
+  purchase_value: 45000.50,
+  purchase_date: "2024-01-15",
+  wallet_id: "123e4567-e89b-12d3-a456-426614174000",
+  units_purchased: 0.5,
+  purchase_cost: 22500.25,
+  currency: "USD"
+});
+```
+
+**Campos Requeridos:**
+- `crypto_name` - Nombre de la criptomoneda (string, no vacío)
+- `purchase_value` - Precio unitario al momento de compra (número positivo, hasta 8 decimales)
+- `purchase_date` - Fecha de compra en formato YYYY-MM-DD
+- `wallet_id` - ID del wallet (UUID válido)
+- `units_purchased` - Cantidad de unidades compradas (número positivo, hasta 8 decimales)
+- `purchase_cost` - Costo total de la compra (número positivo)
+- `currency` - Moneda de la compra (3 letras mayúsculas, ej: USD, EUR, COP)
+
+**Response (201):**
+```json
+{
+  "message": "Cryptocurrency created successfully",
+  "cryptocurrency": {
+    "id": "uuid-here",
+    "crypto_name": "Bitcoin",
+    "purchase_value": 45000.50,
+    "purchase_date": "2024-01-15",
+    "wallet_id": "123e4567-e89b-12d3-a456-426614174000",
+    "units_purchased": 0.5,
+    "purchase_cost": 22500.25,
+    "currency": "USD",
+    "created_at": "2024-01-15T00:00:00.000Z",
+    "updated_at": "2024-01-15T00:00:00.000Z"
+  }
+}
+```
+
+---
+
+#### GET /cryptocurrencies
+Obtener criptomonedas.
+
+**URL:** `GET ${API_URL}/cryptocurrencies?id={uuid}` (opcional)
+
+**Ejemplo JavaScript:**
+```javascript
+const getCryptocurrencies = async (cryptoId = null) => {
+  const token = localStorage.getItem('authToken');
+  const url = cryptoId 
+    ? `${API_URL}/cryptocurrencies?id=${cryptoId}`
+    : `${API_URL}/cryptocurrencies`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todas las criptomonedas
+const allCryptos = await getCryptocurrencies();
+
+// Obtener criptomoneda específica
+const crypto = await getCryptocurrencies('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "cryptocurrencies": [
+    {
+      "id": "uuid-here",
+      "crypto_name": "Bitcoin",
+      "purchase_value": 45000.50,
+      "purchase_date": "2024-01-15",
+      "wallet_id": "123e4567-e89b-12d3-a456-426614174000",
+      "units_purchased": 0.5,
+      "purchase_cost": 22500.25,
+      "currency": "USD",
+      "created_at": "2024-01-15T00:00:00.000Z",
+      "updated_at": "2024-01-15T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+**Nota:** Los resultados están ordenados por `purchase_date` (descendente) y luego por `created_at` (descendente).
+
+---
+
+#### PUT /cryptocurrencies/{id}
+Actualizar una criptomoneda específica.
+
+**URL:** `PUT ${API_URL}/cryptocurrencies/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const updateCryptocurrency = async (cryptoId, updates) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/cryptocurrencies/${cryptoId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(updates),
+  });
+  return response.json();
+};
+
+// Uso - actualizar solo el purchase_value
+await updateCryptocurrency('uuid-here', {
+  purchase_value: 46000.00
+});
+
+// Uso - actualizar múltiples campos
+await updateCryptocurrency('uuid-here', {
+  crypto_name: "Ethereum",
+  purchase_value: 3000.00,
+  units_purchased: 1.5,
+  purchase_cost: 4500.00
+});
+```
+
+**Request Body (todos los campos son opcionales, pero al menos uno es requerido):**
+```json
+{
+  "crypto_name": "Ethereum",
+  "purchase_value": 3000.00,
+  "purchase_date": "2024-01-20",
+  "wallet_id": "nuevo-wallet-uuid",
+  "units_purchased": 1.5,
+  "purchase_cost": 4500.00,
+  "currency": "USD"
+}
+```
+
+---
+
+#### DELETE /cryptocurrencies/{id}
+Eliminar una criptomoneda específica.
+
+**URL:** `DELETE ${API_URL}/cryptocurrencies/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteCryptocurrency = async (cryptoId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/cryptocurrencies/${cryptoId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+```
+
+**Response (200):**
+```json
+{
+  "message": "Cryptocurrency deleted successfully",
+  "deleted_cryptocurrency": {
+    "id": "uuid-here",
+    "crypto_name": "Bitcoin",
+    "purchase_cost": 22500.25,
+    "currency": "USD"
+  }
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+#### DELETE /cryptocurrencies
+Eliminar todas las criptomonedas.
+
+**URL:** `DELETE ${API_URL}/cryptocurrencies`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllCryptocurrencies = async () => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/cryptocurrencies`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+```
+
+**Response (200):**
+```json
+{
+  "message": "Successfully deleted 3 cryptocurrency(ies)",
+  "deleted_count": 3,
+  "deleted_cryptocurrencies": [
+    {
+      "id": "uuid-here",
+      "crypto_name": "Bitcoin",
+      "purchase_cost": 22500.25,
+      "currency": "USD"
+    }
+  ]
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+### CDTs (Certificados de Depósito a Término)
+
+#### POST /cdts
+Crear un nuevo CDT.
+
+**URL:** `POST ${API_URL}/cdts`
+
+**Request Body:**
+```json
+{
+  "name": "CDT Banco Popular",
+  "value": 10000000,
+  "rate": 8.5,
+  "withdrawal_date": "2025-12-31",
+  "duration": 365,
+  "issuer": "Banco Popular"
+}
+```
+
+**Ejemplo JavaScript:**
+```javascript
+const createCDT = async (cdtData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/cdts`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(cdtData),
+  });
+  return response.json();
+};
+
+// Uso
+const newCDT = await createCDT({
+  name: "CDT Banco Popular",
+  value: 10000000,
+  rate: 8.5,
+  withdrawal_date: "2025-12-31",
+  duration: 365,
+  issuer: "Banco Popular"
+});
+```
+
+**Campos Requeridos:**
+- `name` - Nombre del CDT (string, no vacío)
+- `value` - Valor del CDT (número positivo)
+- `rate` - Tasa de interés (número no negativo, puede ser decimal)
+- `withdrawal_date` - Fecha de retiro en formato YYYY-MM-DD
+
+**Campos Opcionales:**
+- `duration` - Duración del CDT en días (número entero positivo, ej: 30, 90, 180, 365)
+- `issuer` - Entidad emisora del CDT (string, ej: "Banco Popular", "TRI", "Banco de Bogotá")
+
+**Response (201):**
+```json
+{
+  "message": "CDT created successfully",
+  "cdt": {
+    "id": "uuid-here",
+    "name": "CDT Banco Popular",
+    "value": 10000000,
+    "rate": 8.5,
+    "withdrawal_date": "2025-12-31",
+    "duration": 365,
+    "issuer": "Banco Popular",
+    "created_at": "2024-01-15T00:00:00.000Z",
+    "updated_at": "2024-01-15T00:00:00.000Z"
+  }
+}
+```
+
+---
+
+#### GET /cdts
+Obtener CDTs.
+
+**URL:** `GET ${API_URL}/cdts?id={uuid}` (opcional)
+
+**Ejemplo JavaScript:**
+```javascript
+const getCDTs = async (cdtId = null) => {
+  const token = localStorage.getItem('authToken');
+  const url = cdtId 
+    ? `${API_URL}/cdts?id=${cdtId}`
+    : `${API_URL}/cdts`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todos los CDTs
+const allCDTs = await getCDTs();
+
+// Obtener CDT específico
+const cdt = await getCDTs('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "cdts": [
+    {
+      "id": "uuid-here",
+      "name": "CDT Banco Popular",
+      "value": 10000000,
+      "rate": 8.5,
+      "withdrawal_date": "2025-12-31",
+      "duration": 365,
+      "issuer": "Banco Popular",
+      "created_at": "2024-01-15T00:00:00.000Z",
+      "updated_at": "2024-01-15T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+**Nota:** Los resultados están ordenados por `withdrawal_date` (ascendente) y luego por `created_at` (descendente).
+
+---
+
+#### PUT /cdts/{id}
+Actualizar un CDT específico.
+
+**URL:** `PUT ${API_URL}/cdts/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const updateCDT = async (cdtId, updates) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/cdts/${cdtId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(updates),
+  });
+  return response.json();
+};
+
+// Uso - actualizar solo el valor
+await updateCDT('uuid-here', {
+  value: 12000000
+});
+
+// Uso - actualizar múltiples campos
+await updateCDT('uuid-here', {
+  name: "CDT Actualizado",
+  value: 12000000,
+  rate: 9.0,
+  withdrawal_date: "2026-01-31",
+  duration: 180,
+  issuer: "TRI"
+});
+```
+
+**Request Body (todos los campos son opcionales, pero al menos uno es requerido):**
+```json
+{
+  "name": "CDT Actualizado",
+  "value": 12000000,
+  "rate": 9.0,
+  "withdrawal_date": "2026-01-31",
+  "duration": 180,
+  "issuer": "TRI"
+}
+```
+
+---
+
+#### DELETE /cdts/{id}
+Eliminar un CDT específico.
+
+**URL:** `DELETE ${API_URL}/cdts/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteCDT = async (cdtId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/cdts/${cdtId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+```
+
+**Response (200):**
+```json
+{
+  "message": "CDT deleted successfully",
+  "deleted_cdt": {
+    "id": "uuid-here",
+    "name": "CDT Banco Popular",
+    "value": 10000000
+  }
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+#### DELETE /cdts
+Eliminar todos los CDTs.
+
+**URL:** `DELETE ${API_URL}/cdts`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllCDTs = async () => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/cdts`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+```
+
+**Response (200):**
+```json
+{
+  "message": "Successfully deleted 3 CDT(s)",
+  "deleted_count": 3,
+  "deleted_cdts": [
+    {
+      "id": "uuid-here",
+      "name": "CDT Banco Popular",
+      "value": 10000000
+    }
+  ]
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+### Crypto Exchange Rates (Tasas de Cambio de Criptomonedas)
+
+#### GET /crypto-exchange-rates/sync
+Sincronizar tasas de cambio de criptomonedas desde CoinAPI. Este endpoint obtiene los precios actuales y calcula las tendencias diarias y mensuales para BTC, ETH y QRL, guardándolos en la base de datos.
+
+**URL:** `GET ${API_URL}/crypto-exchange-rates/sync`
+
+**Ejemplo JavaScript:**
+```javascript
+const syncCryptoExchangeRates = async () => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/crypto-exchange-rates/sync`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Uso
+const result = await syncCryptoExchangeRates();
+```
+
+**Response (200):**
+```json
+{
+  "message": "Successfully synced 3 cryptocurrency exchange rate(s)",
+  "crypto_exchange_rates": [
+    {
+      "id": "uuid-here",
+      "crypto_name": "BTC",
+      "value_in_usdt": 87528.92667621,
+      "daily_trend": 0.7945,
+      "monthly_trend": -21.1575,
+      "date": "2025-11-24T05:00:00.000Z",
+      "created_at": "2025-11-24T16:10:57.430Z",
+      "updated_at": "2025-11-24T16:46:46.712Z"
+    },
+    {
+      "id": "uuid-here-2",
+      "crypto_name": "ETH",
+      "value_in_usdt": 2865.87069161,
+      "daily_trend": 2.2713,
+      "monthly_trend": -27.1728,
+      "date": "2025-11-24T05:00:00.000Z",
+      "created_at": "2025-11-24T16:46:47.180Z",
+      "updated_at": "2025-11-24T16:46:47.180Z"
+    },
+    {
+      "id": "uuid-here-3",
+      "crypto_name": "QRL",
+      "value_in_usdt": 1.7721,
+      "daily_trend": 3.5226,
+      "monthly_trend": 0,
+      "date": "2025-11-24T05:00:00.000Z",
+      "created_at": "2025-11-24T16:46:49.150Z",
+      "updated_at": "2025-11-24T16:46:49.150Z"
+    }
+  ]
+}
+```
+
+**Notas:**
+- Este endpoint sincroniza automáticamente BTC, ETH y QRL desde CoinAPI
+- Las tasas se actualizan diariamente (UPSERT por `crypto_name` y `date`)
+- Las tendencias se calculan comparando el precio actual con:
+  - **daily_trend**: Precio de hace 1 día
+  - **monthly_trend**: Precio de hace 1 mes
+- Si alguna criptomoneda falla al sincronizarse, se incluirá en el array `errors` (si existe) pero las demás se guardarán correctamente
+
+**Error Responses:**
+- `500`: Error al sincronizar las tasas de cambio (API no disponible o error de base de datos)
+- `401`: No autenticado
+
+---
+
+### Wallets (Billeteras de Criptomonedas)
+
+#### POST /wallets
+Crear una nueva wallet.
+
+**URL:** `POST ${API_URL}/wallets`
+
+**Request Body:**
+```json
+{
+  "wallet_name": "My Bitcoin Wallet",
+  "crypto_name": "Bitcoin",
+  "address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+}
+```
+
+**Ejemplo JavaScript:**
+```javascript
+const createWallet = async (walletData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/wallets`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(walletData),
+  });
+  return response.json();
+};
+
+// Uso
+const newWallet = await createWallet({
+  wallet_name: "My Bitcoin Wallet",
+  crypto_name: "Bitcoin",
+  address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+});
+```
+
+**Campos Requeridos:**
+- `wallet_name` - Nombre de la wallet (string, no vacío)
+- `crypto_name` - Nombre de la criptomoneda asociada (string, no vacío)
+- `address` - Dirección de la wallet (string, no vacío)
+
+**Response (201):**
+```json
+{
+  "message": "Wallet created successfully",
+  "wallet": {
+    "id": "uuid-here",
+    "wallet_name": "My Bitcoin Wallet",
+    "crypto_name": "Bitcoin",
+    "address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+    "created_at": "2024-01-15T00:00:00.000Z",
+    "updated_at": "2024-01-15T00:00:00.000Z"
+  }
+}
+```
+
+---
+
+#### GET /wallets
+Obtener wallets.
+
+**URL:** `GET ${API_URL}/wallets?id={uuid}` (opcional)
+
+**Ejemplo JavaScript:**
+```javascript
+const getWallets = async (walletId = null) => {
+  const token = localStorage.getItem('authToken');
+  const url = walletId 
+    ? `${API_URL}/wallets?id=${walletId}`
+    : `${API_URL}/wallets`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todas las wallets
+const allWallets = await getWallets();
+
+// Obtener wallet específica
+const wallet = await getWallets('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "wallets": [
+    {
+      "id": "uuid-here",
+      "wallet_name": "My Bitcoin Wallet",
+      "crypto_name": "Bitcoin",
+      "address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+      "created_at": "2024-01-15T00:00:00.000Z",
+      "updated_at": "2024-01-15T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+**Nota:** Los resultados están ordenados por `wallet_name` (ascendente) y luego por `created_at` (descendente).
+
+---
+
+#### PUT /wallets/{id}
+Actualizar una wallet específica.
+
+**URL:** `PUT ${API_URL}/wallets/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const updateWallet = async (walletId, updates) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/wallets/${walletId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(updates),
+  });
+  return response.json();
+};
+
+// Uso - actualizar solo el nombre
+await updateWallet('uuid-here', {
+  wallet_name: "Updated Wallet Name"
+});
+
+// Uso - actualizar múltiples campos
+await updateWallet('uuid-here', {
+  wallet_name: "My Ethereum Wallet",
+  crypto_name: "Ethereum",
+  address: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+});
+```
+
+**Request Body (todos los campos son opcionales, pero al menos uno es requerido):**
+```json
+{
+  "wallet_name": "My Ethereum Wallet",
+  "crypto_name": "Ethereum",
+  "address": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+}
+```
+
+---
+
+#### DELETE /wallets/{id}
+Eliminar una wallet específica.
+
+**URL:** `DELETE ${API_URL}/wallets/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteWallet = async (walletId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/wallets/${walletId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+```
+
+**Response (200):**
+```json
+{
+  "message": "Wallet deleted successfully",
+  "deleted_wallet": {
+    "id": "uuid-here",
+    "wallet_name": "My Bitcoin Wallet",
+    "crypto_name": "Bitcoin"
+  }
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+#### DELETE /wallets
+Eliminar todas las wallets.
+
+**URL:** `DELETE ${API_URL}/wallets`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllWallets = async () => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/wallets`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+```
+
+**Response (200):**
+```json
+{
+  "message": "Successfully deleted 3 wallet(s)",
+  "deleted_count": 3,
+  "deleted_wallets": [
+    {
+      "id": "uuid-here",
+      "wallet_name": "My Bitcoin Wallet",
+      "crypto_name": "Bitcoin"
+    }
+  ]
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
 ### Authentication
 
 #### POST /auth/register
@@ -3205,6 +4013,44 @@ class PocketsAPI {
       ? `/exchange-rates?${params.toString()}`
       : '/exchange-rates';
     return this.request(endpoint);
+  }
+
+  // CDTs
+  async createCDT(data) {
+    return this.request('/cdts', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  async getCDTs(cdtId = null) {
+    const endpoint = cdtId ? `/cdts?id=${cdtId}` : '/cdts';
+    return this.request(endpoint);
+  }
+
+  async updateCDT(cdtId, updates) {
+    return this.request(`/cdts/${cdtId}`, {
+      method: 'PUT',
+      body: updates,
+    });
+  }
+
+  async deleteCDT(cdtId) {
+    return this.request(`/cdts/${cdtId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async deleteAllCDTs() {
+    return this.request('/cdts', {
+      method: 'DELETE',
+    });
+  }
+
+  async syncCryptoExchangeRates() {
+    return this.request('/crypto-exchange-rates/sync', {
+      method: 'GET',
+    });
   }
 
   // Debts

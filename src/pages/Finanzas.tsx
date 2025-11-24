@@ -11,6 +11,8 @@ import PaymentIcon from '@mui/icons-material/Payment'
 import CardMembershipIcon from '@mui/icons-material/CardMembership'
 import FolderSpecialIcon from '@mui/icons-material/FolderSpecial'
 import PersonAddIcon from '@mui/icons-material/PersonAdd'
+import CurrencyBitcoinIcon from '@mui/icons-material/CurrencyBitcoin'
+import TrendingDownIcon from '@mui/icons-material/TrendingDown'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import AddIcon from '@mui/icons-material/Add'
@@ -88,6 +90,20 @@ const financeItems: FinanceItem[] = [
     Icon: PersonAddIcon,
     color: '#5AC8FA',
     path: '/finanzas/me-deben',
+  },
+  {
+    id: '10',
+    title: 'Cripto Wallet',
+    Icon: CurrencyBitcoinIcon,
+    color: '#F7931A',
+    path: '/finanzas/cripto-wallet',
+  },
+  {
+    id: '11',
+    title: 'Mi Cripto',
+    Icon: CurrencyBitcoinIcon,
+    color: '#FF9500',
+    path: '/finanzas/cripto-transacciones',
   },
 ]
 
@@ -556,6 +572,104 @@ function Finanzas() {
                       <span className="settings-row-subtitle">
                         {formatPrice(stats.totalMeDeben)} pendiente
                       </span>
+                    </div>
+                    <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Sección: Criptomonedas */}
+              <div className="settings-section">
+                <div className="settings-section-header">Criptomonedas</div>
+                <div className="settings-group">
+                  <button
+                    className="settings-row"
+                    onClick={() => navigate('/finanzas/cripto-wallet')}
+                    aria-label="Ir a Cripto Wallet"
+                    type="button"
+                  >
+                    <div
+                      className="settings-row-icon"
+                      style={{ backgroundColor: '#F7931A' }}
+                      aria-hidden="true"
+                    >
+                      <CurrencyBitcoinIcon />
+                    </div>
+                    <div className="settings-row-content">
+                      <span className="settings-row-title">Cripto Wallet</span>
+                      <span className="settings-row-subtitle">Gestiona tus wallets</span>
+                    </div>
+                    <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+                  </button>
+
+                  <button
+                    className="settings-row"
+                    onClick={() => navigate('/finanzas/cripto-transacciones')}
+                    aria-label="Ir a Mi Cripto"
+                    type="button"
+                  >
+                    <div
+                      className="settings-row-icon"
+                      style={{ backgroundColor: '#FF9500' }}
+                      aria-hidden="true"
+                    >
+                      <CurrencyBitcoinIcon />
+                    </div>
+                    <div className="settings-row-content">
+                      <span className="settings-row-title">Mi Cripto</span>
+                      <span className="settings-row-subtitle">Registra compras y ventas de criptomonedas</span>
+                    </div>
+                    <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Sección: Inversiones */}
+              <div className="settings-section">
+                <div className="settings-section-header">Inversiones</div>
+                <div className="settings-group">
+                  <button
+                    className="settings-row"
+                    onClick={() => navigate('/finanzas/cdts')}
+                    aria-label="Ir a CDTs"
+                    type="button"
+                  >
+                    <div
+                      className="settings-row-icon"
+                      style={{ backgroundColor: '#34C759' }}
+                      aria-hidden="true"
+                    >
+                      <AccountBalanceWalletIcon />
+                    </div>
+                    <div className="settings-row-content">
+                      <span className="settings-row-title">CDTs</span>
+                      <span className="settings-row-subtitle">Certificados de Depósito a Término</span>
+                    </div>
+                    <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Sección: Análisis */}
+              <div className="settings-section">
+                <div className="settings-section-header">Análisis</div>
+                <div className="settings-group">
+                  <button
+                    className="settings-row"
+                    onClick={() => navigate('/finanzas/inflacion')}
+                    aria-label="Ir a Inflación"
+                    type="button"
+                  >
+                    <div
+                      className="settings-row-icon"
+                      style={{ backgroundColor: '#FF3B30' }}
+                      aria-hidden="true"
+                    >
+                      <TrendingDownIcon />
+                    </div>
+                    <div className="settings-row-content">
+                      <span className="settings-row-title">Inflación</span>
+                      <span className="settings-row-subtitle">Calculadora de devaluación y predictor</span>
                     </div>
                     <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
                   </button>
