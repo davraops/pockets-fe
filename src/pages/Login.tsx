@@ -12,12 +12,12 @@ function Login() {
   const location = useLocation()
   const [formData, setFormData] = useState({
     username: '',
-    password: ''
+    password: '',
   })
   const [formErrors, setFormErrors] = useState({
     username: '',
     password: '',
-    general: ''
+    general: '',
   })
   const [isLoading, setIsLoading] = useState(false)
   const [focusedField, setFocusedField] = useState<string | null>(null)
@@ -35,14 +35,14 @@ function Login() {
     const { name, value } = e.target
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     })
     // Limpiar errores cuando el usuario empiece a escribir
     if (formErrors[name as keyof typeof formErrors]) {
       setFormErrors({
         ...formErrors,
         [name]: '',
-        general: ''
+        general: '',
       })
     }
   }
@@ -59,7 +59,7 @@ function Login() {
     const errors = {
       username: '',
       password: '',
-      general: ''
+      general: '',
     }
     let isValid = true
 
@@ -79,7 +79,7 @@ function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validateForm()) {
       return
     }
@@ -89,7 +89,7 @@ function Login() {
 
     try {
       const result = await api.login(formData.username.trim(), formData.password)
-      
+
       if (result.token) {
         // El token ya se guarda automáticamente en el servicio API
         // Redirigir al home o a la página de origen
@@ -99,13 +99,13 @@ function Login() {
         setFormErrors({
           username: '',
           password: '',
-          general: 'Error al iniciar sesión. Por favor, intenta de nuevo.'
+          general: 'Error al iniciar sesión. Por favor, intenta de nuevo.',
         })
       }
     } catch (err: any) {
       console.error('Error al iniciar sesión:', err)
       let errorMessage = 'Error al iniciar sesión. Por favor, verifica tus credenciales.'
-      
+
       // Traducir mensajes de error comunes
       if (err.data?.error) {
         const error = err.data.error.toLowerCase()
@@ -120,7 +120,11 @@ function Login() {
         }
       } else if (err.data?.message) {
         const message = err.data.message.toLowerCase()
-        if (message.includes('invalid') || message.includes('incorrect') || message.includes('wrong')) {
+        if (
+          message.includes('invalid') ||
+          message.includes('incorrect') ||
+          message.includes('wrong')
+        ) {
           errorMessage = 'Usuario o contraseña incorrectos'
         } else if (message.includes('not found') || message.includes('no existe')) {
           errorMessage = 'Usuario no encontrado'
@@ -130,11 +134,11 @@ function Login() {
           errorMessage = err.data.message
         }
       }
-      
+
       setFormErrors({
         username: '',
         password: '',
-        general: errorMessage
+        general: errorMessage,
       })
     } finally {
       setIsLoading(false)
@@ -166,7 +170,9 @@ function Login() {
             <label htmlFor="username" className="form-label">
               Usuario
             </label>
-            <div className={`input-wrapper ${focusedField === 'username' ? 'input-focused' : ''} ${formErrors.username ? 'input-error-wrapper' : ''}`}>
+            <div
+              className={`input-wrapper ${focusedField === 'username' ? 'input-focused' : ''} ${formErrors.username ? 'input-error-wrapper' : ''}`}
+            >
               <input
                 type="text"
                 id="username"
@@ -182,13 +188,13 @@ function Login() {
                 autoComplete="username"
                 aria-invalid={!!formErrors.username}
                 aria-describedby={formErrors.username ? 'username-error' : undefined}
-                onInvalid={(e) => {
+                onInvalid={e => {
                   e.preventDefault()
                   const target = e.target as HTMLInputElement
                   if (target.validity.valueMissing) {
                     setFormErrors(prev => ({
                       ...prev,
-                      username: 'El usuario es requerido'
+                      username: 'El usuario es requerido',
                     }))
                   }
                 }}
@@ -205,7 +211,9 @@ function Login() {
             <label htmlFor="password" className="form-label">
               Contraseña
             </label>
-            <div className={`input-wrapper password-input-wrapper ${focusedField === 'password' ? 'input-focused' : ''} ${formErrors.password ? 'input-error-wrapper' : ''}`}>
+            <div
+              className={`input-wrapper password-input-wrapper ${focusedField === 'password' ? 'input-focused' : ''} ${formErrors.password ? 'input-error-wrapper' : ''}`}
+            >
               <input
                 type={showPassword ? 'text' : 'password'}
                 id="password"
@@ -221,13 +229,13 @@ function Login() {
                 autoComplete="current-password"
                 aria-invalid={!!formErrors.password}
                 aria-describedby={formErrors.password ? 'password-error' : undefined}
-                onInvalid={(e) => {
+                onInvalid={e => {
                   e.preventDefault()
                   const target = e.target as HTMLInputElement
                   if (target.validity.valueMissing) {
                     setFormErrors(prev => ({
                       ...prev,
-                      password: 'La contraseña es requerida'
+                      password: 'La contraseña es requerida',
                     }))
                   }
                 }}
@@ -254,12 +262,7 @@ function Login() {
             )}
           </div>
 
-          <button 
-            type="submit" 
-            className="login-button"
-            disabled={isLoading}
-            aria-busy={isLoading}
-          >
+          <button type="submit" className="login-button" disabled={isLoading} aria-busy={isLoading}>
             {isLoading ? (
               <>
                 <span className="button-spinner" aria-hidden="true"></span>
@@ -276,4 +279,3 @@ function Login() {
 }
 
 export default Login
-

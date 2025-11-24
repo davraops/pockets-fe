@@ -11,6 +11,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
+import { useNotification } from '../contexts/NotificationContext'
 import './AppPage.css'
 import './Deudas.css'
 
@@ -50,13 +51,14 @@ interface Debt {
 
 function Deudas() {
   const navigate = useNavigate()
+  const { showError, showSuccess, showWarning } = useNotification()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null)
   const [debts, setDebts] = useState<Debt[]>([])
-  const [creditCards, setCreditCards] = useState<Array<{ id: string, nombre: string }>>([])
+  const [creditCards, setCreditCards] = useState<Array<{ id: string; nombre: string }>>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
@@ -73,13 +75,13 @@ function Deudas() {
     interesEnMora: '',
     pagoMinimo: '',
     tieneSeguro: false,
-    valorSeguro: ''
+    valorSeguro: '',
   })
   const [formErrors, setFormErrors] = useState({
     concepto: '',
     valor: '',
     adeudado: '',
-    fechaCorte: ''
+    fechaCorte: '',
   })
 
   // Mapear deuda de API a formato interno
@@ -96,7 +98,7 @@ function Deudas() {
       interesEnMora: apiDebt.overdue_interest,
       pagoMinimo: apiDebt.minimum_payment,
       tieneSeguro: apiDebt.has_insurance,
-      valorSeguro: apiDebt.insurance_value
+      valorSeguro: apiDebt.insurance_value,
     }
   }
 
@@ -112,7 +114,7 @@ function Deudas() {
     try {
       // Cargar tarjetas de crédito para verificar asociaciones
       const creditCardsResponse = await api.getCreditCards()
-      const creditCardsList: Array<{ id: string, nombre: string }> = []
+      const creditCardsList: Array<{ id: string; nombre: string }> = []
       if (creditCardsResponse.credit_cards && Array.isArray(creditCardsResponse.credit_cards)) {
         creditCardsResponse.credit_cards.forEach((card: any) => {
           creditCardsList.push({ id: card.id, nombre: card.name })
@@ -172,7 +174,7 @@ function Deudas() {
 
   // Función para alternar el orden de clasificación
   const toggleSortOrder = () => {
-    setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')
+    setSortOrder(prev => (prev === 'desc' ? 'asc' : 'desc'))
   }
 
   const handleOpenModal = () => {
@@ -192,13 +194,13 @@ function Deudas() {
       interesEnMora: '',
       pagoMinimo: '',
       tieneSeguro: false,
-      valorSeguro: ''
+      valorSeguro: '',
     })
     setFormErrors({
       concepto: '',
       valor: '',
       adeudado: '',
-      fechaCorte: ''
+      fechaCorte: '',
     })
   }
 
@@ -217,7 +219,7 @@ function Deudas() {
       interesEnMora: debt.interesEnMora.toString(),
       pagoMinimo: debt.pagoMinimo.toString(),
       tieneSeguro: debt.tieneSeguro,
-      valorSeguro: debt.valorSeguro.toString()
+      valorSeguro: debt.valorSeguro.toString(),
     })
   }
 
@@ -236,25 +238,27 @@ function Deudas() {
       interesEnMora: '',
       pagoMinimo: '',
       tieneSeguro: false,
-      valorSeguro: ''
+      valorSeguro: '',
     })
     setFormErrors({
       concepto: '',
       valor: '',
       adeudado: '',
-      fechaCorte: ''
+      fechaCorte: '',
     })
   }
 
   const handleEditClick = () => {
     if (!selectedDebt) return
-    
+
     // Prevenir edición de deudas asociadas a tarjetas de crédito
     if (isDebtAssociatedWithCreditCard(selectedDebt.concepto)) {
-      alert('Frontend says: Esta deuda está asociada a una tarjeta de crédito y no puede ser editada. Para modificarla, edita la tarjeta de crédito asociada.')
+      showWarning(
+        'Esta deuda está asociada a una tarjeta de crédito y no puede ser editada. Para modificarla, edita la tarjeta de crédito asociada.'
+      )
       return
     }
-    
+
     setIsEditMode(true)
   }
 
@@ -263,7 +267,7 @@ function Deudas() {
       concepto: '',
       valor: '',
       adeudado: '',
-      fechaCorte: ''
+      fechaCorte: '',
     }
     let isValid = true
 
@@ -304,7 +308,7 @@ function Deudas() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     const isValid = await validateForm()
     if (!isValid) {
       return
@@ -324,9 +328,9 @@ function Deudas() {
           overdue_interest: parseFloat(formData.interesEnMora) || 0,
           minimum_payment: parseFloat(formData.pagoMinimo) || 0,
           has_insurance: formData.tieneSeguro,
-          insurance_value: parseFloat(formData.valorSeguro) || 0
+          insurance_value: parseFloat(formData.valorSeguro) || 0,
         })
-        
+
         // Recargar deudas después de actualizar
         const response = await api.getDebts()
         if (response.debts && Array.isArray(response.debts)) {
@@ -349,7 +353,7 @@ function Deudas() {
           overdue_interest: parseFloat(formData.interesEnMora) || 0,
           minimum_payment: parseFloat(formData.pagoMinimo) || 0,
           has_insurance: formData.tieneSeguro,
-          insurance_value: parseFloat(formData.valorSeguro) || 0
+          insurance_value: parseFloat(formData.valorSeguro) || 0,
         })
 
         // Recargar deudas después de crear
@@ -365,25 +369,25 @@ function Deudas() {
     } catch (err: any) {
       console.error('Error al guardar deuda:', err)
       const errorMessage = err.data?.error
-        ? `Backend says: ${err.data.error}`
-        : 'Frontend says: Error al guardar la deuda. Por favor, intenta de nuevo.'
-      alert(errorMessage)
+        ? err.data.error
+        : 'Error al guardar la deuda. Por favor, intenta de nuevo.'
+      showError(errorMessage)
     }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const target = e.target
     const value = target.type === 'checkbox' ? (target as HTMLInputElement).checked : target.value
-    
+
     setFormData({
       ...formData,
-      [target.name]: value
+      [target.name]: value,
     })
     // Limpiar errores cuando el usuario empiece a escribir
     if (formErrors[target.name as keyof typeof formErrors]) {
       setFormErrors({
         ...formErrors,
-        [target.name]: ''
+        [target.name]: '',
       })
     }
   }
@@ -393,11 +397,15 @@ function Deudas() {
 
     // Verificar si la deuda está asociada a una tarjeta de crédito
     if (isDebtAssociatedWithCreditCard(selectedDebt.concepto)) {
-      alert('Frontend says: Esta deuda está asociada a una tarjeta de crédito. Para eliminarla, primero debes eliminar la tarjeta de crédito asociada.')
+      showWarning(
+        'Esta deuda está asociada a una tarjeta de crédito. Para eliminarla, primero debes eliminar la tarjeta de crédito asociada.'
+      )
       return
     }
 
-    if (window.confirm(`¿Estás seguro de que quieres eliminar la deuda "${selectedDebt.concepto}"?`)) {
+    if (
+      window.confirm(`¿Estás seguro de que quieres eliminar la deuda "${selectedDebt.concepto}"?`)
+    ) {
       try {
         await api.deleteDebt(selectedDebt.id)
         const response = await api.getDebts()
@@ -408,9 +416,10 @@ function Deudas() {
         // Disparar evento para actualizar tarjetas de crédito
         window.dispatchEvent(new Event('debtsUpdated'))
         handleCloseDetailModal()
+        showSuccess('Deuda eliminada exitosamente')
       } catch (err: any) {
         console.error('Error al eliminar deuda:', err)
-        alert('Frontend says: Error al eliminar la deuda. Por favor, intenta de nuevo.')
+        showError('Error al eliminar la deuda. Por favor, intenta de nuevo.')
       }
     }
   }
@@ -420,7 +429,7 @@ function Deudas() {
       style: 'currency',
       currency: currency,
       minimumFractionDigits: 1,
-      maximumFractionDigits: 1
+      maximumFractionDigits: 1,
     }).format(balance)
   }
 
@@ -429,7 +438,7 @@ function Deudas() {
     return date.toLocaleDateString('es-CO', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     })
   }
 
@@ -447,7 +456,7 @@ function Deudas() {
       '#E74C3C', // Rojo tomate oscuro
       '#C0392B', // Rojo granate
       '#A93226', // Rojo rojizo oscuro
-      '#922B21'  // Rojo sangre oscuro
+      '#922B21', // Rojo sangre oscuro
     ]
     let hash = 0
     for (let i = 0; i < concepto.length; i++) {
@@ -487,7 +496,6 @@ function Deudas() {
     return totalRate / debts.length
   }
 
-
   // Función de debug para crear deudas de prueba
   const handleCreateDemoDebts = async () => {
     const testDebts = [
@@ -502,7 +510,7 @@ function Deudas() {
         overdue_interest: 5.0,
         minimum_payment: 150000,
         has_insurance: true,
-        insurance_value: 50000
+        insurance_value: 50000,
       },
       {
         value: 3000000,
@@ -515,7 +523,7 @@ function Deudas() {
         overdue_interest: 6.0,
         minimum_payment: 90000,
         has_insurance: false,
-        insurance_value: 0
+        insurance_value: 0,
       },
       {
         value: 2000000,
@@ -528,7 +536,7 @@ function Deudas() {
         overdue_interest: 4.5,
         minimum_payment: 200000,
         has_insurance: false,
-        insurance_value: 0
+        insurance_value: 0,
       },
       {
         value: 10000,
@@ -541,7 +549,7 @@ function Deudas() {
         overdue_interest: 5.5,
         minimum_payment: 500,
         has_insurance: true,
-        insurance_value: 50
+        insurance_value: 50,
       },
       {
         value: 8000000,
@@ -554,7 +562,7 @@ function Deudas() {
         overdue_interest: 3.0,
         minimum_payment: 400000,
         has_insurance: true,
-        insurance_value: 120000
+        insurance_value: 120000,
       },
       {
         value: 1500000,
@@ -567,7 +575,7 @@ function Deudas() {
         overdue_interest: 4.8,
         minimum_payment: 75000,
         has_insurance: false,
-        insurance_value: 0
+        insurance_value: 0,
       },
       {
         value: 4000000,
@@ -580,7 +588,7 @@ function Deudas() {
         overdue_interest: 5.5,
         minimum_payment: 125000,
         has_insurance: true,
-        insurance_value: 40000
+        insurance_value: 40000,
       },
       {
         value: 6000,
@@ -593,8 +601,8 @@ function Deudas() {
         overdue_interest: 4.2,
         minimum_payment: 300,
         has_insurance: false,
-        insurance_value: 0
-      }
+        insurance_value: 0,
+      },
     ]
 
     try {
@@ -604,10 +612,10 @@ function Deudas() {
       }
       await reloadDebts()
       setIsDebugModalOpen(false)
-      alert('8 deudas de prueba creadas exitosamente')
+      showSuccess('8 deudas de prueba creadas exitosamente')
     } catch (err: any) {
       console.error('Error al crear deudas de prueba:', err)
-      alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
+      showError(err.data?.error || 'Error desconocido')
     } finally {
       setIsLoading(false)
     }
@@ -615,16 +623,20 @@ function Deudas() {
 
   // Función para eliminar todas las deudas
   const handleDeleteAllDebts = async () => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar TODAS las deudas? Esta acción es IRREVERSIBLE.')) {
+    if (
+      window.confirm(
+        '¿Estás seguro de que quieres eliminar TODAS las deudas? Esta acción es IRREVERSIBLE.'
+      )
+    ) {
       try {
         setIsLoading(true)
         await api.deleteAllDebts()
         await reloadDebts()
         setIsDebugModalOpen(false)
-        alert('Todas las deudas han sido eliminadas exitosamente')
+        showSuccess('Todas las deudas han sido eliminadas exitosamente')
       } catch (err: any) {
         console.error('Error al eliminar todas las deudas:', err)
-        alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
+        showError(err.data?.error || 'Error desconocido')
       } finally {
         setIsLoading(false)
       }
@@ -645,7 +657,9 @@ function Deudas() {
           ) : error ? (
             <div className="loader-container">
               <div className="loader">
-                <p className="loader-text" style={{ color: 'rgba(255, 59, 48, 0.9)' }}>{error}</p>
+                <p className="loader-text" style={{ color: 'rgba(255, 59, 48, 0.9)' }}>
+                  {error}
+                </p>
               </div>
             </div>
           ) : (
@@ -738,7 +752,9 @@ function Deudas() {
                   <div className="summary-separator"></div>
                   <div className="summary-item">
                     <span className="summary-label">Tasa Promedio</span>
-                    <span className="summary-value">{calculateAverageInterestRate().toFixed(2)}%</span>
+                    <span className="summary-value">
+                      {calculateAverageInterestRate().toFixed(2)}%
+                    </span>
                   </div>
                 </div>
               )}
@@ -751,10 +767,16 @@ function Deudas() {
                   </div>
                   <div className="debts-advice-content">
                     <p className="debts-advice-text">
-                      <strong>Estrategia de pago:</strong> Siempre paga más del mínimo mensual y realiza abonos directos a capital para reducir la cantidad de pagos, nunca solo el monto mínimo. Además, nunca te endeudes por cosas que no vayan a generar más valor que la deuda misma.
+                      <strong>Estrategia de pago:</strong> Siempre paga más del mínimo mensual y
+                      realiza abonos directos a capital para reducir la cantidad de pagos, nunca
+                      solo el monto mínimo. Además, nunca te endeudes por cosas que no vayan a
+                      generar más valor que la deuda misma.
                     </p>
                     <p className="debts-advice-text" style={{ marginTop: '0.75rem' }}>
-                      <strong>Antes de tomar cualquier crédito:</strong> Si vas a sacar un crédito, es mejor hacerlo con un banco. Siempre ten más de un banco a la mano y ponlos a competir para obtener la tasa de interés más baja. Evita las financieras, suelen tener condiciones menos favorables.
+                      <strong>Antes de tomar cualquier crédito:</strong> Si vas a sacar un crédito,
+                      es mejor hacerlo con un banco. Siempre ten más de un banco a la mano y ponlos
+                      a competir para obtener la tasa de interés más baja. Evita las financieras,
+                      suelen tener condiciones menos favorables.
                     </p>
                   </div>
                 </div>
@@ -768,19 +790,21 @@ function Deudas() {
                 </div>
               ) : (
                 <div className="debts-list">
-                  {debts.map((debt) => {
+                  {debts.map(debt => {
                     // Verificar si la deuda está asociada a una tarjeta de crédito y está pagada
                     const isCreditCardDebt = isDebtAssociatedWithCreditCard(debt.concepto)
                     const paidPercentage = calculatePaidPercentage(debt.valor, debt.adeudado)
                     // Cualquier deuda con más del 95% pagada se muestra en verde
-                    const isPaidOff = paidPercentage >= 95 || (isCreditCardDebt && (debt.adeudado === 0 || Math.abs(debt.adeudado) < 0.01))
+                    const isPaidOff =
+                      paidPercentage >= 95 ||
+                      (isCreditCardDebt && (debt.adeudado === 0 || Math.abs(debt.adeudado) < 0.01))
                     const debtColor = isPaidOff ? '#34C759' : getDebtColor(debt.concepto) // Verde si está casi pagada
                     return (
                       <button
-                        key={debt.id} 
+                        key={debt.id}
                         className={`debt-row ${isPaidOff ? 'debt-paid-off' : ''}`}
                         onClick={() => handleOpenDetailModal(debt)}
-                        onKeyDown={(e) => {
+                        onKeyDown={e => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault()
                             handleOpenDetailModal(debt)
@@ -793,7 +817,9 @@ function Deudas() {
                         <div className="debt-row-content">
                           <div className="debt-row-main">
                             <h3 className="debt-row-title">{debt.concepto}</h3>
-                            <span className="debt-row-amount">{formatBalance(debt.adeudado, debt.divisa)}</span>
+                            <span className="debt-row-amount">
+                              {formatBalance(debt.adeudado, debt.divisa)}
+                            </span>
                           </div>
                           <div className="debt-row-secondary">
                             {debt.referencia && (
@@ -805,15 +831,17 @@ function Deudas() {
                           </div>
                           <div className="debt-row-progress-container">
                             <div className="debt-row-progress-bar">
-                              <div 
-                                className="debt-row-progress-fill" 
-                                style={{ 
+                              <div
+                                className="debt-row-progress-fill"
+                                style={{
                                   width: `${Math.min(paidPercentage, 100)}%`,
-                                  backgroundColor: debtColor
+                                  backgroundColor: debtColor,
                                 }}
                               ></div>
                             </div>
-                            <span className="debt-row-progress-text">{paidPercentage.toFixed(1)}% pagado</span>
+                            <span className="debt-row-progress-text">
+                              {paidPercentage.toFixed(1)}% pagado
+                            </span>
                           </div>
                         </div>
                         <ChevronRightIcon className="debt-row-chevron" />
@@ -830,13 +858,16 @@ function Deudas() {
       {/* Modal para agregar deuda */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={handleCloseModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">Nueva Deuda</h2>
-              <button className="modal-close" onClick={handleCloseModal}>×</button>
+              <button className="modal-close" onClick={handleCloseModal}>
+                ×
+              </button>
             </div>
             <div className="debt-modal-note">
-              <strong>💡 Nota:</strong> Para registrar deudas de tarjetas de crédito, hazlo desde la sección <strong>Tarjetas Crédito</strong> en Finanzas.
+              <strong>💡 Nota:</strong> Para registrar deudas de tarjetas de crédito, hazlo desde la
+              sección <strong>Tarjetas Crédito</strong> en Finanzas.
             </div>
             <form className="modal-form" onSubmit={handleSubmit}>
               <div className="form-group">
@@ -857,14 +888,14 @@ function Deudas() {
               </div>
               <div className="form-group">
                 <label htmlFor="referencia">Referencia</label>
-                  <input
-                    type="text"
-                    id="referencia"
-                    name="referencia"
-                    value={formData.referencia}
-                    onChange={handleChange}
-                    placeholder="Ej: REF-1234"
-                  />
+                <input
+                  type="text"
+                  id="referencia"
+                  name="referencia"
+                  value={formData.referencia}
+                  onChange={handleChange}
+                  placeholder="Ej: REF-1234"
+                />
               </div>
               <div className="form-group">
                 <label htmlFor="divisa">Divisa *</label>
@@ -895,9 +926,7 @@ function Deudas() {
                   placeholder="0"
                   className={formErrors.valor ? 'input-error' : ''}
                 />
-                {formErrors.valor && (
-                  <span className="error-message">{formErrors.valor}</span>
-                )}
+                {formErrors.valor && <span className="error-message">{formErrors.valor}</span>}
               </div>
               <div className="form-group">
                 <label htmlFor="adeudado">Monto Adeudado *</label>
@@ -1014,31 +1043,37 @@ function Deudas() {
       {/* Modal de detalles */}
       {isDetailModalOpen && selectedDebt && (
         <div className="modal-overlay" onClick={handleCloseDetailModal}>
-          <div 
-            className="modal-content detail-modal" 
-            onClick={(e) => e.stopPropagation()}
-            style={{ '--debt-color': (() => {
-              const isCreditCardDebt = isDebtAssociatedWithCreditCard(selectedDebt.concepto)
-              const isPaidOff = isCreditCardDebt && (selectedDebt.adeudado === 0 || Math.abs(selectedDebt.adeudado) < 0.01)
-              return isPaidOff ? '#34C759' : getDebtColor(selectedDebt.concepto)
-            })() } as React.CSSProperties}
+          <div
+            className="modal-content detail-modal"
+            onClick={e => e.stopPropagation()}
+            style={
+              {
+                '--debt-color': (() => {
+                  const isCreditCardDebt = isDebtAssociatedWithCreditCard(selectedDebt.concepto)
+                  const isPaidOff =
+                    isCreditCardDebt &&
+                    (selectedDebt.adeudado === 0 || Math.abs(selectedDebt.adeudado) < 0.01)
+                  return isPaidOff ? '#34C759' : getDebtColor(selectedDebt.concepto)
+                })(),
+              } as React.CSSProperties
+            }
           >
             <div className="modal-header">
               <h2 className="modal-title">Detalles de la Deuda</h2>
-              <button className="modal-close" onClick={handleCloseDetailModal}>×</button>
+              <button
+                className="modal-close"
+                onClick={handleCloseDetailModal}
+                aria-label="Cerrar modal"
+                type="button"
+              >
+                ×
+              </button>
             </div>
-            
+
             {!isEditMode ? (
               <>
                 <div className="detail-content">
                   <div className="detail-section">
-                    <div className="detail-icon-large" style={{ backgroundColor: (() => {
-                      const isCreditCardDebt = isDebtAssociatedWithCreditCard(selectedDebt.concepto)
-                      const isPaidOff = isCreditCardDebt && (selectedDebt.adeudado === 0 || Math.abs(selectedDebt.adeudado) < 0.01)
-                      return isPaidOff ? '#34C759' : getDebtColor(selectedDebt.concepto)
-                    })() }}>
-                      {isDebtAssociatedWithCreditCard(selectedDebt.concepto) ? <CreditCardIcon /> : <AccountBalanceIcon />}
-                    </div>
                     <div className="detail-info">
                       <h3 className="detail-name">{selectedDebt.concepto}</h3>
                       {selectedDebt.referencia && (
@@ -1050,34 +1085,53 @@ function Deudas() {
 
                   <div className="debt-detail-progress">
                     <div className="debt-detail-progress-bar">
-                      <div 
-                        className="debt-detail-progress-fill" 
-                        style={{ 
+                      <div
+                        className="debt-detail-progress-fill"
+                        style={{
                           width: `${Math.min(calculatePaidPercentage(selectedDebt.valor, selectedDebt.adeudado), 100)}%`,
                           backgroundColor: (() => {
-                            const isCreditCardDebt = isDebtAssociatedWithCreditCard(selectedDebt.concepto)
-                            const isPaidOff = isCreditCardDebt && (selectedDebt.adeudado === 0 || Math.abs(selectedDebt.adeudado) < 0.01)
+                            const isCreditCardDebt = isDebtAssociatedWithCreditCard(
+                              selectedDebt.concepto
+                            )
+                            const isPaidOff =
+                              isCreditCardDebt &&
+                              (selectedDebt.adeudado === 0 ||
+                                Math.abs(selectedDebt.adeudado) < 0.01)
                             return isPaidOff ? '#34C759' : getDebtColor(selectedDebt.concepto)
-                          })()
+                          })(),
                         }}
                       ></div>
                     </div>
-                    <span className="debt-detail-progress-text">{calculatePaidPercentage(selectedDebt.valor, selectedDebt.adeudado).toFixed(1)}% pagado</span>
+                    <span className="debt-detail-progress-text">
+                      {calculatePaidPercentage(selectedDebt.valor, selectedDebt.adeudado).toFixed(
+                        1
+                      )}
+                      % pagado
+                    </span>
                   </div>
 
                   <div className="detail-row">
                     <span className="detail-label">Valor Total:</span>
-                    <span className="detail-value">{formatBalance(selectedDebt.valor, selectedDebt.divisa)}</span>
+                    <span className="detail-value">
+                      {formatBalance(selectedDebt.valor, selectedDebt.divisa)}
+                    </span>
                   </div>
-                  
+
                   <div className="detail-row">
                     <span className="detail-label">Monto Adeudado:</span>
-                    <span className="detail-value spent">{formatBalance(selectedDebt.adeudado, selectedDebt.divisa)}</span>
+                    <span className="detail-value spent">
+                      {formatBalance(selectedDebt.adeudado, selectedDebt.divisa)}
+                    </span>
                   </div>
 
                   <div className="detail-row">
                     <span className="detail-label">Pagado:</span>
-                    <span className="detail-value remaining">{formatBalance(selectedDebt.valor - selectedDebt.adeudado, selectedDebt.divisa)}</span>
+                    <span className="detail-value remaining">
+                      {formatBalance(
+                        selectedDebt.valor - selectedDebt.adeudado,
+                        selectedDebt.divisa
+                      )}
+                    </span>
                   </div>
 
                   <div className="detail-row">
@@ -1087,7 +1141,9 @@ function Deudas() {
 
                   <div className="detail-row">
                     <span className="detail-label">Pago Mínimo:</span>
-                    <span className="detail-value">{formatBalance(selectedDebt.pagoMinimo, selectedDebt.divisa)}</span>
+                    <span className="detail-value">
+                      {formatBalance(selectedDebt.pagoMinimo, selectedDebt.divisa)}
+                    </span>
                   </div>
 
                   {selectedDebt.tasaInteres > 0 && (
@@ -1107,7 +1163,9 @@ function Deudas() {
                   {selectedDebt.tieneSeguro && (
                     <div className="detail-row">
                       <span className="detail-label">Valor del Seguro:</span>
-                      <span className="detail-value">{formatBalance(selectedDebt.valorSeguro, selectedDebt.divisa)}</span>
+                      <span className="detail-value">
+                        {formatBalance(selectedDebt.valorSeguro, selectedDebt.divisa)}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -1115,19 +1173,38 @@ function Deudas() {
                 <div className="detail-actions">
                   {!isDebtAssociatedWithCreditCard(selectedDebt.concepto) && (
                     <>
-                      <button className="detail-button edit" onClick={handleEditClick}>
-                        <EditIcon />
+                      <button
+                        className="detail-button edit"
+                        onClick={handleEditClick}
+                        type="button"
+                        aria-label="Editar deuda"
+                      >
+                        <EditIcon aria-hidden="true" />
                         <span>Editar Deuda</span>
                       </button>
-                      <button className="detail-button delete" onClick={handleDeleteClick}>
-                        <DeleteIcon />
+                      <button
+                        className="detail-button delete"
+                        onClick={handleDeleteClick}
+                        type="button"
+                        aria-label="Eliminar deuda"
+                      >
+                        <DeleteIcon aria-hidden="true" />
                         <span>Eliminar Deuda</span>
                       </button>
                     </>
                   )}
                   {isDebtAssociatedWithCreditCard(selectedDebt.concepto) && (
-                    <div style={{ padding: '0.5rem', fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.6)', textAlign: 'center', width: '100%' }}>
-                      Esta deuda está asociada a una tarjeta de crédito y no puede ser editada ni eliminada. Para modificarla, edita o elimina la tarjeta de crédito asociada.
+                    <div
+                      style={{
+                        padding: '0.5rem',
+                        fontSize: '0.875rem',
+                        color: 'rgba(255, 255, 255, 0.6)',
+                        textAlign: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      Esta deuda está asociada a una tarjeta de crédito y no puede ser editada ni
+                      eliminada. Para modificarla, edita o elimina la tarjeta de crédito asociada.
                     </div>
                   )}
                 </div>
@@ -1190,9 +1267,7 @@ function Deudas() {
                     placeholder="0"
                     className={formErrors.valor ? 'input-error' : ''}
                   />
-                  {formErrors.valor && (
-                    <span className="error-message">{formErrors.valor}</span>
-                  )}
+                  {formErrors.valor && <span className="error-message">{formErrors.valor}</span>}
                 </div>
                 <div className="form-group">
                   <label htmlFor="edit-adeudado">Monto Adeudado *</label>
@@ -1294,7 +1369,11 @@ function Deudas() {
                   </div>
                 )}
                 <div className="modal-actions">
-                  <button type="button" className="modal-button cancel" onClick={() => setIsEditMode(false)}>
+                  <button
+                    type="button"
+                    className="modal-button cancel"
+                    onClick={() => setIsEditMode(false)}
+                  >
                     Cancelar
                   </button>
                   <button type="submit" className="modal-button submit">
@@ -1310,10 +1389,12 @@ function Deudas() {
       {/* Modal de Debug */}
       {isDebugModalOpen && (
         <div className="modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">Debug - Deudas</h2>
-              <button className="modal-close" onClick={() => setIsDebugModalOpen(false)}>×</button>
+              <button className="modal-close" onClick={() => setIsDebugModalOpen(false)}>
+                ×
+              </button>
             </div>
             <div className="debug-modal-content">
               <div className="debug-options">
@@ -1325,7 +1406,9 @@ function Deudas() {
                   <span className="debug-option-icon">📦</span>
                   <div className="debug-option-info">
                     <h3 className="debug-option-title">Crear Deudas Demo</h3>
-                    <p className="debug-option-description">Crea 8 deudas de ejemplo para pruebas</p>
+                    <p className="debug-option-description">
+                      Crea 8 deudas de ejemplo para pruebas
+                    </p>
                   </div>
                 </button>
                 <button
@@ -1336,7 +1419,9 @@ function Deudas() {
                   <span className="debug-option-icon">🗑️</span>
                   <div className="debug-option-info">
                     <h3 className="debug-option-title">Eliminar Todas las Deudas</h3>
-                    <p className="debug-option-description">⚠️ PELIGROSO: Elimina todas las deudas (IRREVERSIBLE)</p>
+                    <p className="debug-option-description">
+                      ⚠️ PELIGROSO: Elimina todas las deudas (IRREVERSIBLE)
+                    </p>
                   </div>
                 </button>
               </div>
@@ -1358,4 +1443,3 @@ function Deudas() {
 }
 
 export default Deudas
-

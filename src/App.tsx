@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { ThemeProvider } from './contexts/ThemeContext'
+import { NotificationProvider } from './contexts/NotificationContext'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import AppPage from './pages/AppPage'
@@ -17,6 +18,7 @@ import MeDeben from './pages/MeDeben'
 import StatusBar from './components/StatusBar'
 import ProtectedRoute from './components/ProtectedRoute'
 import Footer from './components/Footer'
+import { NotificationContainer } from './components/NotificationContainer'
 
 function AppContent() {
   const location = useLocation()
@@ -30,140 +32,108 @@ function AppContent() {
   return (
     <>
       <StatusBar />
+      <NotificationContainer />
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route 
-          path="/" 
+        <Route
+          path="/"
           element={
             <ProtectedRoute>
               <Home />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/finanzas" 
+        <Route
+          path="/finanzas"
           element={
             <ProtectedRoute>
               <Finanzas />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/finanzas/cuentas" 
+        <Route
+          path="/finanzas/cuentas"
           element={
             <ProtectedRoute>
               <Cuentas />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/finanzas/presupuestos" 
+        <Route
+          path="/finanzas/presupuestos"
           element={
             <ProtectedRoute>
               <Presupuestos />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/finanzas/transacciones" 
+        <Route
+          path="/finanzas/transacciones"
           element={
             <ProtectedRoute>
               <Transacciones />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/finanzas/deudas" 
+        <Route
+          path="/finanzas/deudas"
           element={
             <ProtectedRoute>
               <Deudas />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/finanzas/tarjetas-debito" 
+        <Route
+          path="/finanzas/tarjetas-debito"
           element={
             <ProtectedRoute>
               <TarjetasDebito />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/finanzas/subscripciones" 
+        <Route
+          path="/finanzas/subscripciones"
           element={
             <ProtectedRoute>
               <Subscripciones />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/finanzas/tarjetas-credito" 
+        <Route
+          path="/finanzas/tarjetas-credito"
           element={
             <ProtectedRoute>
               <TarjetasCredito />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/finanzas/proyectos" 
+        <Route
+          path="/finanzas/proyectos"
           element={
             <ProtectedRoute>
               <Proyectos />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/finanzas/me-deben" 
+        <Route
+          path="/finanzas/me-deben"
           element={
             <ProtectedRoute>
               <MeDeben />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/blank-2" 
-          element={<AppPage title="" />} 
-        />
-        <Route 
-          path="/blank-3" 
-          element={<AppPage title="" />} 
-        />
-        <Route 
-          path="/blank-4" 
-          element={<AppPage title="" />} 
-        />
-        <Route 
-          path="/blank-5" 
-          element={<AppPage title="" />} 
-        />
-        <Route 
-          path="/blank-6" 
-          element={<AppPage title="" />} 
-        />
-        <Route 
-          path="/blank-7" 
-          element={<AppPage title="" />} 
-        />
-        <Route 
-          path="/blank-8" 
-          element={<AppPage title="" />} 
-        />
-        <Route 
-          path="/blank-9" 
-          element={<AppPage title="" />} 
-        />
-        <Route 
-          path="/blank-10" 
-          element={<AppPage title="" />} 
-        />
-        <Route 
-          path="/blank-11" 
-          element={<AppPage title="" />} 
-        />
-        <Route 
-          path="/blank-12" 
-          element={<AppPage title="" />} 
-        />
+        <Route path="/blank-2" element={<AppPage title="" />} />
+        <Route path="/blank-3" element={<AppPage title="" />} />
+        <Route path="/blank-4" element={<AppPage title="" />} />
+        <Route path="/blank-5" element={<AppPage title="" />} />
+        <Route path="/blank-6" element={<AppPage title="" />} />
+        <Route path="/blank-7" element={<AppPage title="" />} />
+        <Route path="/blank-8" element={<AppPage title="" />} />
+        <Route path="/blank-9" element={<AppPage title="" />} />
+        <Route path="/blank-10" element={<AppPage title="" />} />
+        <Route path="/blank-11" element={<AppPage title="" />} />
+        <Route path="/blank-12" element={<AppPage title="" />} />
       </Routes>
       {!isLogin && <Footer />}
     </>
@@ -175,9 +145,11 @@ function App() {
 
   return (
     <ThemeProvider>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
+      <NotificationProvider>
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </NotificationProvider>
     </ThemeProvider>
   )
 }

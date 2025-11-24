@@ -64,7 +64,7 @@ function TarjetasCredito() {
     cuotaManejo: '',
     fechaCorte: '',
     cupoUsado: '',
-    beneficios: ''
+    beneficios: '',
   })
   const [formErrors, setFormErrors] = useState({
     nombre: '',
@@ -74,7 +74,7 @@ function TarjetasCredito() {
     cuotaManejo: '',
     fechaCorte: '',
     cupoUsado: '',
-    beneficios: ''
+    beneficios: '',
   })
 
   // Mapear tarjeta de API a formato interno
@@ -89,7 +89,7 @@ function TarjetasCredito() {
       fechaCorte: apiCard.cut_date || undefined,
       cupoUsado: apiCard.used_credit || 0,
       cupoDisponible: apiCard.available_credit || apiCard.credit_limit - (apiCard.used_credit || 0),
-      beneficios: apiCard.benefits || []
+      beneficios: apiCard.benefits || [],
     }
   }
 
@@ -100,7 +100,7 @@ function TarjetasCredito() {
       setError(null)
       try {
         const cardsResponse = await api.getCreditCards()
-        
+
         if (cardsResponse.credit_cards && Array.isArray(cardsResponse.credit_cards)) {
           const mappedCards = cardsResponse.credit_cards.map(card => mapCardFromAPI(card))
           setCards(mappedCards)
@@ -109,7 +109,9 @@ function TarjetasCredito() {
         }
       } catch (err: any) {
         console.error('Error al cargar tarjetas de crédito:', err)
-        setError('Frontend says: Error al cargar las tarjetas de crédito. Por favor, intenta de nuevo.')
+        setError(
+          'Frontend says: Error al cargar las tarjetas de crédito. Por favor, intenta de nuevo.'
+        )
         setCards([])
       } finally {
         setIsLoading(false)
@@ -151,7 +153,7 @@ function TarjetasCredito() {
       cuotaManejo: '',
       fechaCorte: '',
       cupoUsado: '',
-      beneficios: ''
+      beneficios: '',
     })
     setFormErrors({
       nombre: '',
@@ -161,7 +163,7 @@ function TarjetasCredito() {
       cuotaManejo: '',
       fechaCorte: '',
       cupoUsado: '',
-      beneficios: ''
+      beneficios: '',
     })
   }
 
@@ -177,7 +179,7 @@ function TarjetasCredito() {
       cuotaManejo: card.cuotaManejo.toString(),
       fechaCorte: extractDayFromCutDate(card.fechaCorte),
       cupoUsado: (card.cupoUsado || 0).toString(),
-      beneficios: card.beneficios.join(', ')
+      beneficios: card.beneficios.join(', '),
     })
   }
 
@@ -193,7 +195,7 @@ function TarjetasCredito() {
       cuotaManejo: '',
       fechaCorte: '',
       cupoUsado: '',
-      beneficios: ''
+      beneficios: '',
     })
     setFormErrors({
       nombre: '',
@@ -203,7 +205,7 @@ function TarjetasCredito() {
       cuotaManejo: '',
       fechaCorte: '',
       cupoUsado: '',
-      beneficios: ''
+      beneficios: '',
     })
   }
 
@@ -219,8 +221,8 @@ function TarjetasCredito() {
     try {
       const debtsResponse = await api.getDebts()
       if (debtsResponse.debts && Array.isArray(debtsResponse.debts)) {
-        const debtToDelete = debtsResponse.debts.find((d: any) => 
-          (d.concept || d.concepto) === selectedCard.nombre
+        const debtToDelete = debtsResponse.debts.find(
+          (d: any) => (d.concept || d.concepto) === selectedCard.nombre
         )
         if (debtToDelete) {
           associatedDebt = debtToDelete
@@ -233,7 +235,11 @@ function TarjetasCredito() {
       // Continuar con la eliminación de la tarjeta aunque falle la deuda
     }
 
-    if (window.confirm(`¿Estás seguro de que quieres eliminar la tarjeta "${selectedCard.nombre}"?${associatedDebt ? ' La deuda asociada también será eliminada.' : ''}`)) {
+    if (
+      window.confirm(
+        `¿Estás seguro de que quieres eliminar la tarjeta "${selectedCard.nombre}"?${associatedDebt ? ' La deuda asociada también será eliminada.' : ''}`
+      )
+    ) {
       try {
         await api.deleteCreditCard(selectedCard.id)
         // Recargar tarjetas después de eliminar
@@ -259,7 +265,7 @@ function TarjetasCredito() {
       cuotaManejo: '',
       fechaCorte: '',
       cupoUsado: '',
-      beneficios: ''
+      beneficios: '',
     }
     let isValid = true
 
@@ -326,9 +332,10 @@ function TarjetasCredito() {
     // Validar nombre único - primero verificar contra el estado local
     const nombreNormalizado = formData.nombre.toLowerCase().trim()
     if (nombreNormalizado) {
-      const nombreExistsLocal = cards.some(card => 
-        card.nombre.toLowerCase() === nombreNormalizado &&
-        (!isEditMode || card.id !== selectedCard?.id)
+      const nombreExistsLocal = cards.some(
+        card =>
+          card.nombre.toLowerCase() === nombreNormalizado &&
+          (!isEditMode || card.id !== selectedCard?.id)
       )
       if (nombreExistsLocal) {
         errors.nombre = 'Este nombre ya está en uso'
@@ -341,9 +348,10 @@ function TarjetasCredito() {
       try {
         const allCards = await api.getCreditCards()
         if (allCards.credit_cards && Array.isArray(allCards.credit_cards)) {
-          const nombreExists = allCards.credit_cards.some(card => 
-            card.name.toLowerCase() === nombreNormalizado &&
-            (!isEditMode || card.id !== selectedCard?.id)
+          const nombreExists = allCards.credit_cards.some(
+            card =>
+              card.name.toLowerCase() === nombreNormalizado &&
+              (!isEditMode || card.id !== selectedCard?.id)
           )
           if (nombreExists) {
             errors.nombre = 'Este nombre ya está en uso'
@@ -361,14 +369,19 @@ function TarjetasCredito() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     const isValid = await validateForm()
     if (!isValid) {
       return
     }
 
     // Validación adicional antes de enviar
-    if (!formData.nombre.trim() || !formData.banco.trim() || !formData.cupo.trim() || !formData.tasaMensual.trim()) {
+    if (
+      !formData.nombre.trim() ||
+      !formData.banco.trim() ||
+      !formData.cupo.trim() ||
+      !formData.tasaMensual.trim()
+    ) {
       alert('Frontend says: Por favor completa todos los campos requeridos')
       return
     }
@@ -406,14 +419,17 @@ function TarjetasCredito() {
     try {
       // Procesar beneficios: convertir string separado por comas a array
       const beneficiosArray = formData.beneficios.trim()
-        ? formData.beneficios.split(',').map(b => b.trim()).filter(b => b.length > 0)
+        ? formData.beneficios
+            .split(',')
+            .map(b => b.trim())
+            .filter(b => b.length > 0)
         : []
 
       const cardData: any = {
         name: formData.nombre.trim(),
         bank: formData.banco.trim(),
         credit_limit: cupoNum,
-        monthly_rate: tasaNum
+        monthly_rate: tasaNum,
       }
 
       // Solo agregar campos opcionales si tienen valor
@@ -447,7 +463,7 @@ function TarjetasCredito() {
       if (isEditMode && selectedCard) {
         // Editar tarjeta existente
         await api.updateCreditCard(selectedCard.id, cardData)
-        
+
         // Recargar tarjetas después de actualizar
         const response = await api.getCreditCards()
         if (response.credit_cards && Array.isArray(response.credit_cards)) {
@@ -458,7 +474,7 @@ function TarjetasCredito() {
       } else {
         // Agregar nueva tarjeta
         await api.createCreditCard(cardData)
-        
+
         // Crear deuda asociada automáticamente
         try {
           const debtData: any = {
@@ -466,7 +482,7 @@ function TarjetasCredito() {
             currency: 'COP',
             concept: formData.nombre.trim(),
             owed: cupoUsadoNum > 0 ? cupoUsadoNum : 0,
-            interest_rate: tasaNum
+            interest_rate: tasaNum,
           }
 
           // Agregar fecha de corte si existe
@@ -513,26 +529,29 @@ function TarjetasCredito() {
       }
     } catch (err: any) {
       console.error('Error al guardar tarjeta:', err)
-      const errorMessage = err.data?.error || err.message
-        ? `Backend says: ${err.data?.error || err.message}`
-        : 'Frontend says: Error al guardar la tarjeta. Por favor, intenta de nuevo.'
+      const errorMessage =
+        err.data?.error || err.message
+          ? `Backend says: ${err.data?.error || err.message}`
+          : 'Frontend says: Error al guardar la tarjeta. Por favor, intenta de nuevo.'
       alert(errorMessage)
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target
-    
+
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     })
-    
+
     // Limpiar errores cuando el usuario empiece a escribir
     if (formErrors[name as keyof typeof formErrors]) {
       setFormErrors({
         ...formErrors,
-        [name]: ''
+        [name]: '',
       })
     }
   }
@@ -542,7 +561,7 @@ function TarjetasCredito() {
       style: 'currency',
       currency: 'COP',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(price)
   }
 
@@ -601,9 +620,8 @@ function TarjetasCredito() {
   // Calcular el total de cupo disponible
   const calculateTotalAvailableCredit = (): number => {
     return cards.reduce((total, card) => {
-      const cupoDisponible = card.cupoDisponible !== undefined 
-        ? card.cupoDisponible 
-        : card.cupo - (card.cupoUsado || 0)
+      const cupoDisponible =
+        card.cupoDisponible !== undefined ? card.cupoDisponible : card.cupo - (card.cupoUsado || 0)
       return total + cupoDisponible
     }, 0)
   }
@@ -611,22 +629,67 @@ function TarjetasCredito() {
   // Función de debug para crear tarjetas de prueba
   const handleDebugCreateCards = async () => {
     const testCards = [
-      { name: 'Visa Gold', bank: 'Bancolombia', credit_limit: 5000000, monthly_rate: 2.5, management_fee: 25000, cut_date: '2024-02-15', used_credit: 1500000, benefits: ['Millas', 'Cashback 2%', 'Seguro de viaje'] },
-      { name: 'Mastercard Platinum', bank: 'Davivienda', credit_limit: 8000000, monthly_rate: 2.0, management_fee: 35000, cut_date: '2024-02-20', used_credit: 3200000, benefits: ['Millas', 'Lounge acceso', 'Seguro de viaje'] },
-      { name: 'American Express', bank: 'Banco de Bogota', credit_limit: 10000000, monthly_rate: 1.8, management_fee: 50000, cut_date: '2024-02-25', used_credit: 0, benefits: ['Millas', 'Cashback 3%', 'Lounge acceso', 'Concierge'] },
-      { name: 'Visa Clásica', bank: 'BBVA', credit_limit: 3000000, monthly_rate: 2.8, management_fee: 15000, cut_date: '2024-02-10', used_credit: 2400000, benefits: ['Cashback 1%'] },
-      { name: 'Mastercard Black', bank: 'Santander', credit_limit: 15000000, monthly_rate: 1.5, management_fee: 60000, cut_date: '2024-02-28', used_credit: 7500000, benefits: ['Millas', 'Cashback 5%', 'Lounge acceso', 'Concierge', 'Seguro de viaje'] }
+      {
+        name: 'Visa Gold',
+        bank: 'Bancolombia',
+        credit_limit: 5000000,
+        monthly_rate: 2.5,
+        management_fee: 25000,
+        cut_date: '2024-02-15',
+        used_credit: 1500000,
+        benefits: ['Millas', 'Cashback 2%', 'Seguro de viaje'],
+      },
+      {
+        name: 'Mastercard Platinum',
+        bank: 'Davivienda',
+        credit_limit: 8000000,
+        monthly_rate: 2.0,
+        management_fee: 35000,
+        cut_date: '2024-02-20',
+        used_credit: 3200000,
+        benefits: ['Millas', 'Lounge acceso', 'Seguro de viaje'],
+      },
+      {
+        name: 'American Express',
+        bank: 'Banco de Bogota',
+        credit_limit: 10000000,
+        monthly_rate: 1.8,
+        management_fee: 50000,
+        cut_date: '2024-02-25',
+        used_credit: 0,
+        benefits: ['Millas', 'Cashback 3%', 'Lounge acceso', 'Concierge'],
+      },
+      {
+        name: 'Visa Clásica',
+        bank: 'BBVA',
+        credit_limit: 3000000,
+        monthly_rate: 2.8,
+        management_fee: 15000,
+        cut_date: '2024-02-10',
+        used_credit: 2400000,
+        benefits: ['Cashback 1%'],
+      },
+      {
+        name: 'Mastercard Black',
+        bank: 'Santander',
+        credit_limit: 15000000,
+        monthly_rate: 1.5,
+        management_fee: 60000,
+        cut_date: '2024-02-28',
+        used_credit: 7500000,
+        benefits: ['Millas', 'Cashback 5%', 'Lounge acceso', 'Concierge', 'Seguro de viaje'],
+      },
     ]
 
     try {
       setIsLoading(true)
       let createdDebts = 0
       let failedDebts = 0
-      
+
       for (const card of testCards) {
         // Crear la tarjeta
         await api.createCreditCard(card)
-        
+
         // Crear la deuda asociada automáticamente
         try {
           const debtData: any = {
@@ -634,7 +697,7 @@ function TarjetasCredito() {
             currency: 'COP',
             concept: card.name,
             owed: card.used_credit || 0,
-            interest_rate: card.monthly_rate
+            interest_rate: card.monthly_rate,
           }
 
           // Agregar fecha de corte si existe
@@ -664,18 +727,19 @@ function TarjetasCredito() {
           // No bloqueamos la creación de la tarjeta si falla la deuda
         }
       }
-      
+
       // Recargar tarjetas después de crear todas
       const response = await api.getCreditCards()
       if (response.credit_cards && Array.isArray(response.credit_cards)) {
         const mappedCards = response.credit_cards.map(card => mapCardFromAPI(card))
         setCards(mappedCards)
       }
-      
+
       setIsDebugModalOpen(false)
       const message = `${testCards.length} tarjetas de crédito de prueba creadas exitosamente`
       const debtMessage = createdDebts > 0 ? `\n${createdDebts} deudas asociadas creadas.` : ''
-      const errorMessage = failedDebts > 0 ? `\n⚠️ ${failedDebts} deudas no pudieron crearse (revisa la consola).` : ''
+      const errorMessage =
+        failedDebts > 0 ? `\n⚠️ ${failedDebts} deudas no pudieron crearse (revisa la consola).` : ''
       alert(message + debtMessage + errorMessage)
     } catch (err: any) {
       console.error('Error al crear tarjetas de prueba:', err)
@@ -689,17 +753,18 @@ function TarjetasCredito() {
   const handleDebugLogs = async () => {
     try {
       console.log('=== DEBUG: Información de Tarjetas y Deudas ===')
-      
+
       // Cargar deudas
       const debtsResponse = await api.getDebts()
       console.log('📊 Respuesta completa de deudas:', debtsResponse)
-      
-      const debtsList: Array<{ concepto: string, adeudado: number }> = []
+
+      const debtsList: Array<{ concepto: string; adeudado: number }> = []
       if (debtsResponse.debts && Array.isArray(debtsResponse.debts)) {
         console.log(`📋 Total de deudas: ${debtsResponse.debts.length}`)
         debtsResponse.debts.forEach((debt: any, index: number) => {
           const concepto = debt.concept || debt.concepto
-          const adeudado = debt.owed !== undefined ? debt.owed : (debt.adeudado !== undefined ? debt.adeudado : 0)
+          const adeudado =
+            debt.owed !== undefined ? debt.owed : debt.adeudado !== undefined ? debt.adeudado : 0
           debtsList.push({ concepto, adeudado })
           console.log(`  ${index + 1}. Deuda ID: ${debt.id}`)
           console.log(`     Concepto: "${concepto}"`)
@@ -710,25 +775,25 @@ function TarjetasCredito() {
           console.log(`     Adeudado (raw): ${debt.adeudado}`)
         })
       }
-      
+
       // Cargar tarjetas
       const cardsResponse = await api.getCreditCards()
       console.log('💳 Respuesta completa de tarjetas:', cardsResponse)
-      
+
       if (cardsResponse.credit_cards && Array.isArray(cardsResponse.credit_cards)) {
         console.log(`🔄 Total de tarjetas: ${cardsResponse.credit_cards.length}`)
         cardsResponse.credit_cards.forEach((card: any, index: number) => {
           console.log(`\n  ${index + 1}. Tarjeta ID: ${card.id}`)
           console.log(`     Nombre: "${card.name}"`)
           console.log(`     Nombre normalizado: "${card.name.trim().toLowerCase()}"`)
-          
+
           // Buscar deuda asociada
           const cardNameNormalized = card.name.trim().toLowerCase()
           const associatedDebt = debtsList.find(d => {
             const debtConceptNormalized = d.concepto.trim().toLowerCase()
             return debtConceptNormalized === cardNameNormalized
           })
-          
+
           if (associatedDebt) {
             console.log(`     ✅ Deuda encontrada:`)
             console.log(`        Concepto: "${associatedDebt.concepto}"`)
@@ -738,17 +803,17 @@ function TarjetasCredito() {
           }
         })
       }
-      
+
       // Mostrar resumen en alert
       let alertMessage = '=== DEBUG: Información de Tarjetas y Deudas ===\n\n'
       alertMessage += `📊 Total de deudas: ${debtsList.length}\n`
       alertMessage += `💳 Total de tarjetas: ${cardsResponse.credit_cards?.length || 0}\n\n`
-      
+
       alertMessage += '📋 DEUDAS:\n'
       debtsList.forEach((d, i) => {
         alertMessage += `${i + 1}. "${d.concepto}" - Adeudado: ${d.adeudado}\n`
       })
-      
+
       alertMessage += '\n💳 TARJETAS:\n'
       if (cardsResponse.credit_cards && Array.isArray(cardsResponse.credit_cards)) {
         cardsResponse.credit_cards.forEach((card: any, i: number) => {
@@ -760,9 +825,9 @@ function TarjetasCredito() {
           alertMessage += `${i + 1}. "${card.name}" - Deuda: ${associatedDebt ? `"${associatedDebt.concepto}" (${associatedDebt.adeudado})` : 'NO ENCONTRADA'}\n`
         })
       }
-      
+
       alertMessage += '\n\nRevisa la consola (F12) para más detalles.'
-      
+
       alert(alertMessage)
       console.log('=== FIN DEBUG ===')
     } catch (err: any) {
@@ -773,7 +838,11 @@ function TarjetasCredito() {
 
   // Función de debug para borrar todas las tarjetas
   const handleDeleteAllCards = async () => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar TODAS las tarjetas de crédito? Esta acción es IRREVERSIBLE.')) {
+    if (
+      window.confirm(
+        '¿Estás seguro de que quieres eliminar TODAS las tarjetas de crédito? Esta acción es IRREVERSIBLE.'
+      )
+    ) {
       try {
         setIsLoading(true)
         await api.deleteAllCreditCards()
@@ -846,63 +915,63 @@ function TarjetasCredito() {
     'Wise EUR',
     'Payoneer USD',
     'Payoneer EUR',
-    'Paypal'
+    'Paypal',
   ]
 
   // Colores para cada banco (mismo que en Cuentas y Tarjetas Débito)
   const bancoColors: Record<string, string> = {
-    'Bancolombia': '#E2001A',
-    'Davivienda': '#FF6B00',
+    Bancolombia: '#E2001A',
+    Davivienda: '#FF6B00',
     'Banco de Bogota': '#0033A0',
     'GNB Sudameris': '#00A859',
-    'Citibank': '#0066CC',
+    Citibank: '#0066CC',
     'Banco Agrario': '#00A859',
     'Banco de Occidente': '#FF6B00',
-    'BBVA': '#004481',
+    BBVA: '#004481',
     'BTG Pactual': '#000000',
     'Mundo Mujer': '#E91E63',
     'Banco Caja Social': '#0066CC',
-    'ITAU': '#FF6B00',
-    'Falabella': '#FF6B00',
-    'Santander': '#EC0000',
-    'Bancamia': '#00A859',
+    ITAU: '#FF6B00',
+    Falabella: '#FF6B00',
+    Santander: '#EC0000',
+    Bancamia: '#00A859',
     'JP Morgan Chase': '#0066CC',
     'Mi Banco': '#0066CC',
-    'W': '#000000',
+    W: '#000000',
     'Banco Popular': '#0066CC',
-    'Finandina': '#0066CC',
-    'Coopcentral': '#0066CC',
-    'Union': '#0066CC',
-    'Serfinanza': '#0066CC',
-    'Scotiabank': '#E2001A',
-    'Colpatria': '#0066CC',
-    'Bancoomeva': '#0066CC',
-    'Pichincha': '#0066CC',
+    Finandina: '#0066CC',
+    Coopcentral: '#0066CC',
+    Union: '#0066CC',
+    Serfinanza: '#0066CC',
+    Scotiabank: '#E2001A',
+    Colpatria: '#0066CC',
+    Bancoomeva: '#0066CC',
+    Pichincha: '#0066CC',
     'Av Villas': '#0066CC',
-    'Nequi': '#00A859',
-    'Daviplata': '#0066CC',
-    'Movii': '#0066CC',
-    'Nu': '#8B5CF6',
-    'TPaga': '#0066CC',
+    Nequi: '#00A859',
+    Daviplata: '#0066CC',
+    Movii: '#0066CC',
+    Nu: '#8B5CF6',
+    TPaga: '#0066CC',
     'Tuya Pay': '#0066CC',
     'Dale!': '#FF6B00',
-    'Rappi': '#00A859',
-    'Leal': '#0066CC',
-    'Bold': '#000000',
-    'Littio': '#0066CC',
-    'Uala': '#0066CC',
+    Rappi: '#00A859',
+    Leal: '#0066CC',
+    Bold: '#000000',
+    Littio: '#0066CC',
+    Uala: '#0066CC',
     'Lulo Bank': '#0066CC',
-    'Coink': '#0066CC',
+    Coink: '#0066CC',
     'Iris Neofinanciera': '#0066CC',
-    'Mercadopago': '#009EE3',
-    'PayU': '#00A859',
-    'Deel': '#0066CC',
+    Mercadopago: '#009EE3',
+    PayU: '#00A859',
+    Deel: '#0066CC',
     'Dolar App': '#00A859',
     'Wise USD': '#00B9FF',
     'Wise EUR': '#00B9FF',
     'Payoneer USD': '#FF6900',
     'Payoneer EUR': '#FF6900',
-    'Paypal': '#003087'
+    Paypal: '#003087',
   }
 
   const getBancoColor = (banco: string): string => {
@@ -912,7 +981,7 @@ function TarjetasCredito() {
   // Función para recopilar todos los beneficios de todas las tarjetas
   const handleShowAllBenefits = () => {
     const benefitsMap = new Map<string, string[]>()
-    
+
     cards.forEach(card => {
       card.beneficios.forEach(benefit => {
         if (!benefitsMap.has(benefit)) {
@@ -921,12 +990,12 @@ function TarjetasCredito() {
         benefitsMap.get(benefit)!.push(card.nombre)
       })
     })
-    
+
     const allBenefitsList = Array.from(benefitsMap.entries()).map(([benefit, cards]) => ({
       benefit,
-      cards
+      cards,
     }))
-    
+
     setAllBenefits(allBenefitsList)
     setIsBenefitsModalOpen(true)
   }
@@ -945,7 +1014,9 @@ function TarjetasCredito() {
           ) : error ? (
             <div className="loader-container">
               <div className="loader">
-                <p className="loader-text" style={{ color: 'rgba(255, 59, 48, 0.9)' }}>{error}</p>
+                <p className="loader-text" style={{ color: 'rgba(255, 59, 48, 0.9)' }}>
+                  {error}
+                </p>
               </div>
             </div>
           ) : (
@@ -1020,12 +1091,16 @@ function TarjetasCredito() {
                 <div className="credit-summary-block">
                   <div className="summary-item">
                     <span className="summary-label">Cupo Total</span>
-                    <span className="summary-value">{formatPrice(calculateTotalCreditLimit())}</span>
+                    <span className="summary-value">
+                      {formatPrice(calculateTotalCreditLimit())}
+                    </span>
                   </div>
                   <div className="summary-separator"></div>
                   <div className="summary-item">
                     <span className="summary-label">Disponible</span>
-                    <span className="summary-value available">{formatPrice(calculateTotalAvailableCredit())}</span>
+                    <span className="summary-value available">
+                      {formatPrice(calculateTotalAvailableCredit())}
+                    </span>
                   </div>
                 </div>
               )}
@@ -1037,7 +1112,11 @@ function TarjetasCredito() {
                 </div>
                 <div className="credit-warning-content">
                   <p className="credit-warning-text">
-                    <strong>Uso responsable:</strong> Las tarjetas de crédito operan con tasas de interés altas. Úsalas preferiblemente a una sola cuota o en compras sin intereses. Recuerda que este es dinero prestado, úsalo con prudencia y principalmente en emergencias. Aprovecha los beneficios y programas de recompensas de tus tarjetas.
+                    <strong>Uso responsable:</strong> Las tarjetas de crédito operan con tasas de
+                    interés altas. Úsalas preferiblemente a una sola cuota o en compras sin
+                    intereses. Recuerda que este es dinero prestado, úsalo con prudencia y
+                    principalmente en emergencias. Aprovecha los beneficios y programas de
+                    recompensas de tus tarjetas.
                   </p>
                 </div>
               </div>
@@ -1050,20 +1129,22 @@ function TarjetasCredito() {
                 </div>
               ) : (
                 <div className="cards-list">
-                  {cards.map((card) => {
+                  {cards.map(card => {
                     const cardColor = '#FF2D55'
-                    const usagePercentage = card.cupoUsado !== undefined && card.cupo > 0 
-                      ? (card.cupoUsado / card.cupo) * 100 
-                      : 0
-                    const cupoDisponible = card.cupoDisponible !== undefined 
-                      ? card.cupoDisponible 
-                      : card.cupo - (card.cupoUsado || 0)
+                    const usagePercentage =
+                      card.cupoUsado !== undefined && card.cupo > 0
+                        ? (card.cupoUsado / card.cupo) * 100
+                        : 0
+                    const cupoDisponible =
+                      card.cupoDisponible !== undefined
+                        ? card.cupoDisponible
+                        : card.cupo - (card.cupoUsado || 0)
                     return (
                       <button
-                        key={card.id} 
+                        key={card.id}
                         className="card-row"
                         onClick={() => handleOpenDetailModal(card)}
-                        onKeyDown={(e) => {
+                        onKeyDown={e => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault()
                             handleOpenDetailModal(card)
@@ -1076,31 +1157,38 @@ function TarjetasCredito() {
                         <div className="card-row-content">
                           <div className="card-row-main">
                             <h3 className="card-row-title">{card.nombre}</h3>
-                            <span className="card-row-available">{formatPrice(cupoDisponible)} disponible</span>
+                            <span className="card-row-available">
+                              {formatPrice(cupoDisponible)} disponible
+                            </span>
                           </div>
                           <div className="card-row-secondary">
                             <span className="card-row-bank">{card.banco}</span>
                             {card.cupoUsado !== undefined && card.cupoUsado > 0 && (
                               <>
                                 <span className="card-row-separator">•</span>
-                                <span className="card-row-usage">{usagePercentage.toFixed(1)}% usado</span>
+                                <span className="card-row-usage">
+                                  {usagePercentage.toFixed(1)}% usado
+                                </span>
                               </>
                             )}
                             {card.beneficios.length > 0 && (
                               <>
                                 <span className="card-row-separator">•</span>
-                                <span className="card-row-benefits">{card.beneficios.length} beneficio{card.beneficios.length !== 1 ? 's' : ''}</span>
+                                <span className="card-row-benefits">
+                                  {card.beneficios.length} beneficio
+                                  {card.beneficios.length !== 1 ? 's' : ''}
+                                </span>
                               </>
                             )}
                           </div>
                           {card.cupoUsado !== undefined && card.cupoUsado > 0 && (
                             <div className="card-row-progress-container">
                               <div className="card-row-progress-bar">
-                                <div 
-                                  className="card-row-progress-fill" 
-                                  style={{ 
+                                <div
+                                  className="card-row-progress-fill"
+                                  style={{
                                     width: `${Math.min(usagePercentage, 100)}%`,
-                                    backgroundColor: cardColor
+                                    backgroundColor: cardColor,
                                   }}
                                 ></div>
                               </div>
@@ -1121,10 +1209,12 @@ function TarjetasCredito() {
       {/* Modal para agregar tarjeta */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={handleCloseModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">Nueva Tarjeta de Crédito</h2>
-              <button className="modal-close" onClick={handleCloseModal}>×</button>
+              <button className="modal-close" onClick={handleCloseModal}>
+                ×
+              </button>
             </div>
             <div className="credit-card-warning">
               <div className="warning-header">
@@ -1132,14 +1222,34 @@ function TarjetasCredito() {
                 <h3 className="warning-title">Usame con cuidado, págame rápido, soy veneno puro</h3>
               </div>
               <div className="warning-tips">
-                <p className="warning-subtitle">Consejos para usar tu tarjeta de crédito sabiamente:</p>
+                <p className="warning-subtitle">
+                  Consejos para usar tu tarjeta de crédito sabiamente:
+                </p>
                 <ul className="tips-list">
-                  <li className="tip-item">💳 <strong>Paga el total cada mes:</strong> Evita los intereses pagando el saldo completo antes de la fecha de corte</li>
-                  <li className="tip-item">📅 <strong>Nunca uses más del 30% del cupo:</strong> Mantén tu utilización baja para mejorar tu score crediticio</li>
-                  <li className="tip-item">⏰ <strong>Paga a tiempo siempre:</strong> Los pagos tardíos generan intereses y afectan tu historial</li>
-                  <li className="tip-item">🎯 <strong>Úsala solo para emergencias o compras planificadas:</strong> No es dinero extra, es dinero prestado</li>
-                  <li className="tip-item">📊 <strong>Revisa tus estados de cuenta:</strong> Detecta cargos no autorizados y controla tus gastos</li>
-                  <li className="tip-item">🚫 <strong>No saques efectivo:</strong> Los avances de efectivo tienen intereses altísimos desde el día 1</li>
+                  <li className="tip-item">
+                    💳 <strong>Paga el total cada mes:</strong> Evita los intereses pagando el saldo
+                    completo antes de la fecha de corte
+                  </li>
+                  <li className="tip-item">
+                    📅 <strong>Nunca uses más del 30% del cupo:</strong> Mantén tu utilización baja
+                    para mejorar tu score crediticio
+                  </li>
+                  <li className="tip-item">
+                    ⏰ <strong>Paga a tiempo siempre:</strong> Los pagos tardíos generan intereses y
+                    afectan tu historial
+                  </li>
+                  <li className="tip-item">
+                    🎯 <strong>Úsala solo para emergencias o compras planificadas:</strong> No es
+                    dinero extra, es dinero prestado
+                  </li>
+                  <li className="tip-item">
+                    📊 <strong>Revisa tus estados de cuenta:</strong> Detecta cargos no autorizados
+                    y controla tus gastos
+                  </li>
+                  <li className="tip-item">
+                    🚫 <strong>No saques efectivo:</strong> Los avances de efectivo tienen intereses
+                    altísimos desde el día 1
+                  </li>
                 </ul>
               </div>
             </div>
@@ -1156,9 +1266,7 @@ function TarjetasCredito() {
                   placeholder="Ej: Visa Gold"
                   className={formErrors.nombre ? 'input-error' : ''}
                 />
-                {formErrors.nombre && (
-                  <span className="error-message">{formErrors.nombre}</span>
-                )}
+                {formErrors.nombre && <span className="error-message">{formErrors.nombre}</span>}
               </div>
               <div className="form-group">
                 <label htmlFor="banco">Banco Emisor</label>
@@ -1171,15 +1279,13 @@ function TarjetasCredito() {
                   className={formErrors.banco ? 'input-error form-select' : 'form-select'}
                 >
                   <option value="">Selecciona un banco</option>
-                  {bancos.map((banco) => (
+                  {bancos.map(banco => (
                     <option key={banco} value={banco}>
                       {banco}
                     </option>
                   ))}
                 </select>
-                {formErrors.banco && (
-                  <span className="error-message">{formErrors.banco}</span>
-                )}
+                {formErrors.banco && <span className="error-message">{formErrors.banco}</span>}
               </div>
               <div className="form-group">
                 <label htmlFor="cupo">Cupo de Crédito (COP)</label>
@@ -1195,9 +1301,7 @@ function TarjetasCredito() {
                   placeholder="0.00"
                   className={formErrors.cupo ? 'input-error' : ''}
                 />
-                {formErrors.cupo && (
-                  <span className="error-message">{formErrors.cupo}</span>
-                )}
+                {formErrors.cupo && <span className="error-message">{formErrors.cupo}</span>}
               </div>
               <div className="form-group">
                 <label htmlFor="cupoUsado">Cupo Usado (COP) - Opcional</label>
@@ -1268,7 +1372,10 @@ function TarjetasCredito() {
                 {formErrors.fechaCorte && (
                   <span className="error-message">{formErrors.fechaCorte}</span>
                 )}
-                <p className="form-hint">El día del mes en que se cierra tu período de facturación (ej: 15 = día 15 de cada mes)</p>
+                <p className="form-hint">
+                  El día del mes en que se cierra tu período de facturación (ej: 15 = día 15 de cada
+                  mes)
+                </p>
               </div>
               <div className="form-group">
                 <label htmlFor="beneficios">Beneficios - Opcional (separados por comas)</label>
@@ -1301,39 +1408,43 @@ function TarjetasCredito() {
       {/* Modal de detalles */}
       {isDetailModalOpen && selectedCard && (
         <div className="modal-overlay" onClick={handleCloseDetailModal}>
-          <div 
-            className="modal-content detail-modal" 
-            onClick={(e) => e.stopPropagation()}
+          <div
+            className="modal-content detail-modal"
+            onClick={e => e.stopPropagation()}
             style={{ '--banco-color': getBancoColor(selectedCard.banco) } as React.CSSProperties}
           >
             <div className="modal-header">
               <h2 className="modal-title">Detalles de la Tarjeta</h2>
-              <button className="modal-close" onClick={handleCloseDetailModal}>×</button>
+              <button
+                className="modal-close"
+                onClick={handleCloseDetailModal}
+                aria-label="Cerrar modal"
+                type="button"
+              >
+                ×
+              </button>
             </div>
-            
+
             {!isEditMode ? (
               <>
                 <div className="detail-content">
                   <div className="detail-section">
-                    <div className="detail-icon-large" style={{ backgroundColor: getBancoColor(selectedCard.banco) }}>
-                      <CreditCardIcon />
-                    </div>
                     <div className="detail-info">
                       <h3 className="detail-name">{selectedCard.nombre}</h3>
                       <p className="detail-bank">{selectedCard.banco}</p>
                     </div>
                   </div>
-                  
+
                   <div className="detail-row">
                     <span className="detail-label">Banco:</span>
                     <span className="detail-value">{selectedCard.banco}</span>
                   </div>
-                  
+
                   <div className="detail-row">
                     <span className="detail-label">Cupo de Crédito:</span>
                     <span className="detail-value">{formatPrice(selectedCard.cupo)}</span>
                   </div>
-                  
+
                   {selectedCard.cupoUsado !== undefined && selectedCard.cupoUsado > 0 && (
                     <>
                       <div className="detail-row">
@@ -1342,16 +1453,21 @@ function TarjetasCredito() {
                       </div>
                       <div className="detail-row">
                         <span className="detail-label">Cupo Disponible:</span>
-                        <span className="detail-value">{formatPrice(selectedCard.cupoDisponible || selectedCard.cupo - selectedCard.cupoUsado)}</span>
+                        <span className="detail-value">
+                          {formatPrice(
+                            selectedCard.cupoDisponible ||
+                              selectedCard.cupo - selectedCard.cupoUsado
+                          )}
+                        </span>
                       </div>
                       <div className="detail-row detail-progress-row">
                         <span className="detail-label">Utilización:</span>
                         <div className="detail-progress-container">
                           <div className="detail-progress-bar">
-                            <div 
-                              className="detail-progress-fill" 
-                              style={{ 
-                                width: `${Math.min((selectedCard.cupoUsado / selectedCard.cupo) * 100, 100)}%` 
+                            <div
+                              className="detail-progress-fill"
+                              style={{
+                                width: `${Math.min((selectedCard.cupoUsado / selectedCard.cupo) * 100, 100)}%`,
                               }}
                             ></div>
                           </div>
@@ -1362,32 +1478,36 @@ function TarjetasCredito() {
                       </div>
                     </>
                   )}
-                  
+
                   <div className="detail-row">
                     <span className="detail-label">Tasa Mensual:</span>
-                    <span className="detail-value">{formatPercentage(selectedCard.tasaMensual)}</span>
+                    <span className="detail-value">
+                      {formatPercentage(selectedCard.tasaMensual)}
+                    </span>
                   </div>
-                  
+
                   {selectedCard.cuotaManejo > 0 && (
                     <div className="detail-row">
                       <span className="detail-label">Cuota de Manejo:</span>
                       <span className="detail-value">{formatPrice(selectedCard.cuotaManejo)}</span>
                     </div>
                   )}
-                  
+
                   {selectedCard.fechaCorte && (
                     <div className="detail-row">
                       <span className="detail-label">Día de Corte:</span>
                       <span className="detail-value">{formatCutDate(selectedCard.fechaCorte)}</span>
                     </div>
                   )}
-                  
+
                   {selectedCard.beneficios.length > 0 && (
                     <div className="detail-row">
                       <span className="detail-label">Beneficios:</span>
                       <div className="detail-benefits">
                         {selectedCard.beneficios.map((benefit, index) => (
-                          <span key={index} className="benefit-tag">{benefit}</span>
+                          <span key={index} className="benefit-tag">
+                            {benefit}
+                          </span>
                         ))}
                       </div>
                     </div>
@@ -1395,12 +1515,22 @@ function TarjetasCredito() {
                 </div>
 
                 <div className="detail-actions">
-                  <button className="detail-button edit" onClick={handleEditClick}>
-                    <EditIcon />
+                  <button
+                    className="detail-button edit"
+                    onClick={handleEditClick}
+                    type="button"
+                    aria-label="Editar tarjeta"
+                  >
+                    <EditIcon aria-hidden="true" />
                     <span>Editar Tarjeta</span>
                   </button>
-                  <button className="detail-button delete" onClick={handleDeleteClick}>
-                    <DeleteIcon />
+                  <button
+                    className="detail-button delete"
+                    onClick={handleDeleteClick}
+                    type="button"
+                    aria-label="Eliminar tarjeta"
+                  >
+                    <DeleteIcon aria-hidden="true" />
                     <span>Eliminar Tarjeta</span>
                   </button>
                 </div>
@@ -1419,9 +1549,7 @@ function TarjetasCredito() {
                     placeholder="Ej: Visa Gold"
                     className={formErrors.nombre ? 'input-error' : ''}
                   />
-                  {formErrors.nombre && (
-                    <span className="error-message">{formErrors.nombre}</span>
-                  )}
+                  {formErrors.nombre && <span className="error-message">{formErrors.nombre}</span>}
                 </div>
                 <div className="form-group">
                   <label htmlFor="edit-banco">Banco Emisor</label>
@@ -1435,7 +1563,7 @@ function TarjetasCredito() {
                     disabled
                   >
                     <option value="">Selecciona un banco</option>
-                    {bancos.map((banco) => (
+                    {bancos.map(banco => (
                       <option key={banco} value={banco}>
                         {banco}
                       </option>
@@ -1457,9 +1585,7 @@ function TarjetasCredito() {
                     placeholder="0.00"
                     className={formErrors.cupo ? 'input-error' : ''}
                   />
-                  {formErrors.cupo && (
-                    <span className="error-message">{formErrors.cupo}</span>
-                  )}
+                  {formErrors.cupo && <span className="error-message">{formErrors.cupo}</span>}
                 </div>
                 <div className="form-group">
                   <label htmlFor="edit-cupoUsado">Cupo Usado (COP) - Opcional</label>
@@ -1530,10 +1656,15 @@ function TarjetasCredito() {
                   {formErrors.fechaCorte && (
                     <span className="error-message">{formErrors.fechaCorte}</span>
                   )}
-                  <p className="form-hint">El día del mes en que se cierra tu período de facturación (ej: 15 = día 15 de cada mes)</p>
+                  <p className="form-hint">
+                    El día del mes en que se cierra tu período de facturación (ej: 15 = día 15 de
+                    cada mes)
+                  </p>
                 </div>
                 <div className="form-group">
-                  <label htmlFor="edit-beneficios">Beneficios - Opcional (separados por comas)</label>
+                  <label htmlFor="edit-beneficios">
+                    Beneficios - Opcional (separados por comas)
+                  </label>
                   <textarea
                     id="edit-beneficios"
                     name="beneficios"
@@ -1548,7 +1679,11 @@ function TarjetasCredito() {
                   )}
                 </div>
                 <div className="modal-actions">
-                  <button type="button" className="modal-button cancel" onClick={() => setIsEditMode(false)}>
+                  <button
+                    type="button"
+                    className="modal-button cancel"
+                    onClick={() => setIsEditMode(false)}
+                  >
                     Cancelar
                   </button>
                   <button type="submit" className="modal-button submit">
@@ -1564,10 +1699,12 @@ function TarjetasCredito() {
       {/* Modal de Debug */}
       {isDebugModalOpen && (
         <div className="modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">Debug - Tarjetas de Crédito</h2>
-              <button className="modal-close" onClick={() => setIsDebugModalOpen(false)}>×</button>
+              <button className="modal-close" onClick={() => setIsDebugModalOpen(false)}>
+                ×
+              </button>
             </div>
             <div className="debug-modal-content">
               <div className="debug-options">
@@ -1579,7 +1716,9 @@ function TarjetasCredito() {
                   <span className="debug-option-icon">📦</span>
                   <div className="debug-option-info">
                     <h3 className="debug-option-title">Crear Tarjetas Demo</h3>
-                    <p className="debug-option-description">Crea 5 tarjetas de crédito de ejemplo para pruebas</p>
+                    <p className="debug-option-description">
+                      Crea 5 tarjetas de crédito de ejemplo para pruebas
+                    </p>
                   </div>
                 </button>
                 <button
@@ -1590,7 +1729,9 @@ function TarjetasCredito() {
                   <span className="debug-option-icon">🔍</span>
                   <div className="debug-option-info">
                     <h3 className="debug-option-title">Mostrar Logs de Debug</h3>
-                    <p className="debug-option-description">Muestra información detallada de tarjetas y deudas en consola y alert</p>
+                    <p className="debug-option-description">
+                      Muestra información detallada de tarjetas y deudas en consola y alert
+                    </p>
                   </div>
                 </button>
                 <button
@@ -1601,7 +1742,9 @@ function TarjetasCredito() {
                   <span className="debug-option-icon">🗑️</span>
                   <div className="debug-option-info">
                     <h3 className="debug-option-title">Eliminar Todas las Tarjetas</h3>
-                    <p className="debug-option-description">⚠️ PELIGROSO: Elimina todas las tarjetas de crédito (IRREVERSIBLE)</p>
+                    <p className="debug-option-description">
+                      ⚠️ PELIGROSO: Elimina todas las tarjetas de crédito (IRREVERSIBLE)
+                    </p>
                   </div>
                 </button>
               </div>
@@ -1622,14 +1765,18 @@ function TarjetasCredito() {
       {/* Modal de Todos los Beneficios */}
       {isBenefitsModalOpen && (
         <div className="modal-overlay" onClick={() => setIsBenefitsModalOpen(false)}>
-          <div className="modal-content benefits-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content benefits-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">Todos los Beneficios Activos</h2>
-              <button className="modal-close" onClick={() => setIsBenefitsModalOpen(false)}>×</button>
+              <button className="modal-close" onClick={() => setIsBenefitsModalOpen(false)}>
+                ×
+              </button>
             </div>
             <div className="benefits-modal-content">
               {allBenefits.length === 0 ? (
-                <p className="no-benefits-message">No hay beneficios registrados en tus tarjetas.</p>
+                <p className="no-benefits-message">
+                  No hay beneficios registrados en tus tarjetas.
+                </p>
               ) : (
                 <ul className="benefits-list-modal">
                   {allBenefits.map((item, index) => (
@@ -1661,4 +1808,3 @@ function TarjetasCredito() {
 }
 
 export default TarjetasCredito
-

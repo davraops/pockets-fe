@@ -8,6 +8,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
+import { useNotification } from '../contexts/NotificationContext'
 import './AppPage.css'
 import './MeDeben.css'
 
@@ -34,6 +35,7 @@ interface Debtor {
 
 function MeDeben() {
   const navigate = useNavigate()
+  const { showError, showSuccess } = useNotification()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
@@ -48,13 +50,13 @@ function MeDeben() {
     nombreDeudor: '',
     concepto: '',
     valor: '',
-    totalPagado: ''
+    totalPagado: '',
   })
   const [formErrors, setFormErrors] = useState({
     nombreDeudor: '',
     concepto: '',
     valor: '',
-    totalPagado: ''
+    totalPagado: '',
   })
 
   // Mapear deudor de API a formato interno
@@ -65,7 +67,7 @@ function MeDeben() {
       concepto: apiDebtor.concept,
       valor: apiDebtor.value,
       totalPagado: apiDebtor.total_paid,
-      fechaCreacion: apiDebtor.created_at
+      fechaCreacion: apiDebtor.created_at,
     }
   }
 
@@ -141,13 +143,13 @@ function MeDeben() {
       nombreDeudor: '',
       concepto: '',
       valor: '',
-      totalPagado: ''
+      totalPagado: '',
     })
     setFormErrors({
       nombreDeudor: '',
       concepto: '',
       valor: '',
-      totalPagado: ''
+      totalPagado: '',
     })
   }
 
@@ -159,7 +161,7 @@ function MeDeben() {
       nombreDeudor: debtor.nombreDeudor,
       concepto: debtor.concepto,
       valor: debtor.valor.toString(),
-      totalPagado: debtor.totalPagado.toString()
+      totalPagado: debtor.totalPagado.toString(),
     })
   }
 
@@ -171,13 +173,13 @@ function MeDeben() {
       nombreDeudor: '',
       concepto: '',
       valor: '',
-      totalPagado: ''
+      totalPagado: '',
     })
     setFormErrors({
       nombreDeudor: '',
       concepto: '',
       valor: '',
-      totalPagado: ''
+      totalPagado: '',
     })
   }
 
@@ -191,7 +193,7 @@ function MeDeben() {
       nombreDeudor: '',
       concepto: '',
       valor: '',
-      totalPagado: ''
+      totalPagado: '',
     }
     let isValid = true
 
@@ -234,7 +236,7 @@ function MeDeben() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     const isValid = await validateForm()
     if (!isValid) {
       return
@@ -246,10 +248,10 @@ function MeDeben() {
         await api.updateDebtor(selectedDebtor.id, {
           debtor_name: formData.nombreDeudor.trim(),
           concept: formData.concepto.trim(),
-          value: parseFloat(formData.valor)
+          value: parseFloat(formData.valor),
           // total_paid no se actualiza desde aquí, solo desde transacciones
         })
-        
+
         await reloadDebtors()
         handleCloseDetailModal()
       } else {
@@ -258,34 +260,35 @@ function MeDeben() {
           debtor_name: formData.nombreDeudor.trim(),
           concept: formData.concepto.trim(),
           value: parseFloat(formData.valor),
-          total_paid: parseFloat(formData.totalPagado || '0')
+          total_paid: parseFloat(formData.totalPagado || '0'),
         })
 
         await reloadDebtors()
         handleCloseModal()
+        showSuccess('Deudor creado exitosamente')
       }
     } catch (err: any) {
       console.error('Error al guardar deudor:', err)
       const errorMessage = err.data?.error
-        ? `Backend says: ${err.data.error}`
-        : 'Frontend says: Error al guardar el deudor. Por favor, intenta de nuevo.'
-      alert(errorMessage)
+        ? err.data.error
+        : 'Error al guardar el deudor. Por favor, intenta de nuevo.'
+      showError(errorMessage)
     }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const target = e.target
     const value = target.value
-    
+
     setFormData({
       ...formData,
-      [target.name]: value
+      [target.name]: value,
     })
     // Limpiar errores cuando el usuario empiece a escribir
     if (formErrors[target.name as keyof typeof formErrors]) {
       setFormErrors({
         ...formErrors,
-        [target.name]: ''
+        [target.name]: '',
       })
     }
   }
@@ -293,14 +296,19 @@ function MeDeben() {
   const handleDeleteClick = async () => {
     if (!selectedDebtor) return
 
-    if (window.confirm(`¿Estás seguro de que quieres eliminar el deudor "${selectedDebtor.nombreDeudor}"?`)) {
+    if (
+      window.confirm(
+        `¿Estás seguro de que quieres eliminar el deudor "${selectedDebtor.nombreDeudor}"?`
+      )
+    ) {
       try {
         await api.deleteDebtor(selectedDebtor.id)
         await reloadDebtors()
         handleCloseDetailModal()
+        showSuccess('Deudor eliminado exitosamente')
       } catch (err: any) {
         console.error('Error al eliminar deudor:', err)
-        alert('Frontend says: Error al eliminar el deudor. Por favor, intenta de nuevo.')
+        showError('Error al eliminar el deudor. Por favor, intenta de nuevo.')
       }
     }
   }
@@ -310,7 +318,7 @@ function MeDeben() {
       style: 'currency',
       currency: 'COP',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(balance)
   }
 
@@ -328,7 +336,7 @@ function MeDeben() {
       '#007AFF', // Azul estándar
       '#5856D6', // Púrpura azulado
       '#AF52DE', // Púrpura
-      '#FF2D55'  // Rosa
+      '#FF2D55', // Rosa
     ]
     let hash = 0
     for (let i = 0; i < nombre.length; i++) {
@@ -355,7 +363,7 @@ function MeDeben() {
     const created = new Date(fechaCreacion)
     const diffMs = now.getTime() - created.getTime()
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-    
+
     if (diffDays < 1) {
       return 'Hoy'
     } else if (diffDays === 1) {
@@ -384,17 +392,24 @@ function MeDeben() {
   // Calcular highlights - HIG: Relevant Information
   const calculateHighlights = () => {
     const totalDeudores = debtors.length
-    const totalPendiente = debtors.reduce((total, debtor) => total + calculatePending(debtor.valor, debtor.totalPagado), 0)
+    const totalPendiente = debtors.reduce(
+      (total, debtor) => total + calculatePending(debtor.valor, debtor.totalPagado),
+      0
+    )
     const totalPagado = debtors.reduce((total, debtor) => total + debtor.totalPagado, 0)
-    const deudoresCompletos = debtors.filter(debtor => calculatePending(debtor.valor, debtor.totalPagado) === 0).length
-    const deudoresPendientes = debtors.filter(debtor => calculatePending(debtor.valor, debtor.totalPagado) > 0).length
-    
+    const deudoresCompletos = debtors.filter(
+      debtor => calculatePending(debtor.valor, debtor.totalPagado) === 0
+    ).length
+    const deudoresPendientes = debtors.filter(
+      debtor => calculatePending(debtor.valor, debtor.totalPagado) > 0
+    ).length
+
     return {
       totalDeudores,
       totalPendiente,
       totalPagado,
       deudoresCompletos,
-      deudoresPendientes
+      deudoresPendientes,
     }
   }
 
@@ -405,50 +420,50 @@ function MeDeben() {
         debtor_name: 'Juan Pérez',
         concept: 'Préstamo personal para emergencia médica',
         value: 500000,
-        total_paid: 150000
+        total_paid: 150000,
       },
       {
         debtor_name: 'María García',
         concept: 'Dinero prestado para compra de electrodomésticos',
         value: 1200000,
-        total_paid: 400000
+        total_paid: 400000,
       },
       {
         debtor_name: 'Carlos Rodríguez',
         concept: 'Préstamo para reparación de vehículo',
         value: 800000,
-        total_paid: 0
+        total_paid: 0,
       },
       {
         debtor_name: 'Ana Martínez',
         concept: 'Dinero prestado para pago de matrícula universitaria',
         value: 2500000,
-        total_paid: 1800000
+        total_paid: 1800000,
       },
       {
         debtor_name: 'Luis Fernández',
         concept: 'Préstamo para compra de materiales de construcción',
         value: 3000000,
-        total_paid: 3000000
+        total_paid: 3000000,
       },
       {
         debtor_name: 'Sofía López',
         concept: 'Dinero prestado para viaje de vacaciones',
         value: 1500000,
-        total_paid: 750000
+        total_paid: 750000,
       },
       {
         debtor_name: 'Diego Torres',
         concept: 'Préstamo para pago de servicios públicos',
         value: 600000,
-        total_paid: 300000
+        total_paid: 300000,
       },
       {
         debtor_name: 'Laura Sánchez',
         concept: 'Dinero prestado para compra de ropa y accesorios',
         value: 900000,
-        total_paid: 900000
-      }
+        total_paid: 900000,
+      },
     ]
 
     try {
@@ -458,10 +473,10 @@ function MeDeben() {
       }
       await reloadDebtors()
       setIsDebugModalOpen(false)
-      alert('8 deudores de prueba creados exitosamente')
+      showSuccess('8 deudores de prueba creados exitosamente')
     } catch (err: any) {
       console.error('Error al crear deudores de prueba:', err)
-      alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
+      showError(err.data?.error || 'Error desconocido')
     } finally {
       setIsLoading(false)
     }
@@ -469,16 +484,20 @@ function MeDeben() {
 
   // Función para eliminar todos los deudores
   const handleDeleteAllDebtors = async () => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar TODOS los deudores? Esta acción es IRREVERSIBLE.')) {
+    if (
+      window.confirm(
+        '¿Estás seguro de que quieres eliminar TODOS los deudores? Esta acción es IRREVERSIBLE.'
+      )
+    ) {
       try {
         setIsLoading(true)
         await api.deleteAllDebtors()
         await reloadDebtors()
         setIsDebugModalOpen(false)
-        alert('Todos los deudores han sido eliminados exitosamente')
+        showSuccess('Todos los deudores han sido eliminados exitosamente')
       } catch (err: any) {
         console.error('Error al eliminar todos los deudores:', err)
-        alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
+        showError(err.data?.error || 'Error desconocido')
       } finally {
         setIsLoading(false)
       }
@@ -499,7 +518,9 @@ function MeDeben() {
           ) : error ? (
             <div className="loader-container">
               <div className="loader">
-                <p className="loader-text" style={{ color: 'rgba(255, 59, 48, 0.9)' }}>{error}</p>
+                <p className="loader-text" style={{ color: 'rgba(255, 59, 48, 0.9)' }}>
+                  {error}
+                </p>
               </div>
             </div>
           ) : (
@@ -559,37 +580,42 @@ function MeDeben() {
               <h1 className="me-deben-page-title">Me Deben</h1>
 
               {/* Highlights - HIG: Relevant Information */}
-              {debtors.length > 0 && (() => {
-                const highlights = calculateHighlights()
-                return (
-                  <div className="me-deben-summary-block">
-                    <div className="summary-item">
-                      <span className="summary-label">Total Deudores</span>
-                      <span className="summary-value">{highlights.totalDeudores}</span>
+              {debtors.length > 0 &&
+                (() => {
+                  const highlights = calculateHighlights()
+                  return (
+                    <div className="me-deben-summary-block">
+                      <div className="summary-item">
+                        <span className="summary-label">Total Deudores</span>
+                        <span className="summary-value">{highlights.totalDeudores}</span>
+                      </div>
+                      <div className="summary-separator"></div>
+                      <div className="summary-item">
+                        <span className="summary-label">Pendiente</span>
+                        <span className="summary-value">
+                          {formatBalance(highlights.totalPendiente)}
+                        </span>
+                      </div>
+                      <div className="summary-separator"></div>
+                      <div className="summary-item">
+                        <span className="summary-label">Pagado</span>
+                        <span className="summary-value">
+                          {formatBalance(highlights.totalPagado)}
+                        </span>
+                      </div>
+                      <div className="summary-separator"></div>
+                      <div className="summary-item">
+                        <span className="summary-label">Pendientes</span>
+                        <span className="summary-value">{highlights.deudoresPendientes}</span>
+                      </div>
+                      <div className="summary-separator"></div>
+                      <div className="summary-item">
+                        <span className="summary-label">Completos</span>
+                        <span className="summary-value">{highlights.deudoresCompletos}</span>
+                      </div>
                     </div>
-                    <div className="summary-separator"></div>
-                    <div className="summary-item">
-                      <span className="summary-label">Pendiente</span>
-                      <span className="summary-value">{formatBalance(highlights.totalPendiente)}</span>
-                    </div>
-                    <div className="summary-separator"></div>
-                    <div className="summary-item">
-                      <span className="summary-label">Pagado</span>
-                      <span className="summary-value">{formatBalance(highlights.totalPagado)}</span>
-                    </div>
-                    <div className="summary-separator"></div>
-                    <div className="summary-item">
-                      <span className="summary-label">Pendientes</span>
-                      <span className="summary-value">{highlights.deudoresPendientes}</span>
-                    </div>
-                    <div className="summary-separator"></div>
-                    <div className="summary-item">
-                      <span className="summary-label">Completos</span>
-                      <span className="summary-value">{highlights.deudoresCompletos}</span>
-                    </div>
-                  </div>
-                )
-              })()}
+                  )
+                })()}
 
               {debtors.length === 0 ? (
                 <div className="empty-state">
@@ -599,13 +625,13 @@ function MeDeben() {
                 </div>
               ) : (
                 <div className="me-deben-list">
-                  {debtors.map((debtor) => {
+                  {debtors.map(debtor => {
                     const debtorColor = getDebtorColor(debtor.nombreDeudor)
                     const paidPercentage = calculatePaidPercentage(debtor.valor, debtor.totalPagado)
                     const pending = calculatePending(debtor.valor, debtor.totalPagado)
                     const isFullyPaid = pending === 0
                     const timeOwing = calculateTimeOwing(debtor.fechaCreacion)
-                    
+
                     return (
                       <button
                         key={debtor.id}
@@ -624,18 +650,22 @@ function MeDeben() {
                           <div className="deudor-row-secondary">
                             <span className="deudor-row-total">{formatBalance(debtor.valor)}</span>
                             <div className="deudor-row-bottom">
-                              <span className="deudor-row-pending">Pendiente: {formatBalance(pending)}</span>
+                              <span className="deudor-row-pending">
+                                Pendiente: {formatBalance(pending)}
+                              </span>
                               <div className="deudor-row-progress">
                                 <div className="deudor-row-progress-bar">
-                                  <div 
-                                    className="deudor-row-progress-fill" 
-                                    style={{ 
+                                  <div
+                                    className="deudor-row-progress-fill"
+                                    style={{
                                       width: `${Math.min(paidPercentage, 100)}%`,
-                                      backgroundColor: isFullyPaid ? '#34C759' : debtorColor
+                                      backgroundColor: isFullyPaid ? '#34C759' : debtorColor,
                                     }}
                                   />
                                 </div>
-                                <span className="deudor-row-progress-text">{paidPercentage.toFixed(1)}%</span>
+                                <span className="deudor-row-progress-text">
+                                  {paidPercentage.toFixed(1)}%
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -662,10 +692,12 @@ function MeDeben() {
       {/* Modal para agregar deudor */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={handleCloseModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">Nuevo Deudor</h2>
-              <button className="modal-close" onClick={handleCloseModal}>×</button>
+              <button className="modal-close" onClick={handleCloseModal}>
+                ×
+              </button>
             </div>
             <form className="modal-form" onSubmit={handleSubmit}>
               <div className="form-group">
@@ -714,9 +746,7 @@ function MeDeben() {
                   placeholder="0"
                   className={formErrors.valor ? 'input-error' : ''}
                 />
-                {formErrors.valor && (
-                  <span className="error-message">{formErrors.valor}</span>
-                )}
+                {formErrors.valor && <span className="error-message">{formErrors.valor}</span>}
               </div>
               <div className="form-group">
                 <label htmlFor="totalPagado">Total Pagado (COP)</label>
@@ -751,23 +781,31 @@ function MeDeben() {
       {/* Modal de detalles */}
       {isDetailModalOpen && selectedDebtor && (
         <div className="modal-overlay" onClick={handleCloseDetailModal}>
-          <div 
-            className="modal-content detail-modal" 
-            onClick={(e) => e.stopPropagation()}
-            style={{ '--debtor-color': getDebtorColor(selectedDebtor.nombreDeudor) } as React.CSSProperties}
+          <div
+            className="modal-content detail-modal"
+            onClick={e => e.stopPropagation()}
+            style={
+              {
+                '--debtor-color': getDebtorColor(selectedDebtor.nombreDeudor),
+              } as React.CSSProperties
+            }
           >
             <div className="modal-header">
               <h2 className="modal-title">Detalles del Deudor</h2>
-              <button className="modal-close" onClick={handleCloseDetailModal}>×</button>
+              <button
+                className="modal-close"
+                onClick={handleCloseDetailModal}
+                aria-label="Cerrar modal"
+                type="button"
+              >
+                ×
+              </button>
             </div>
-            
+
             {!isEditMode ? (
               <>
                 <div className="detail-content">
                   <div className="detail-section">
-                    <div className="detail-icon-large" style={{ backgroundColor: getDebtorColor(selectedDebtor.nombreDeudor) }}>
-                      <PersonIcon />
-                    </div>
                     <div className="detail-info">
                       <h3 className="detail-name">{selectedDebtor.nombreDeudor}</h3>
                       <p className="detail-bank">{selectedDebtor.concepto}</p>
@@ -776,40 +814,62 @@ function MeDeben() {
 
                   <div className="debtor-detail-progress">
                     <div className="debtor-detail-progress-bar">
-                      <div 
-                        className="debtor-detail-progress-fill" 
-                        style={{ 
+                      <div
+                        className="debtor-detail-progress-fill"
+                        style={{
                           width: `${Math.min(calculatePaidPercentage(selectedDebtor.valor, selectedDebtor.totalPagado), 100)}%`,
-                          backgroundColor: getDebtorColor(selectedDebtor.nombreDeudor)
+                          backgroundColor: getDebtorColor(selectedDebtor.nombreDeudor),
                         }}
                       ></div>
                     </div>
-                    <span className="debtor-detail-progress-text">{calculatePaidPercentage(selectedDebtor.valor, selectedDebtor.totalPagado).toFixed(1)}% pagado</span>
+                    <span className="debtor-detail-progress-text">
+                      {calculatePaidPercentage(
+                        selectedDebtor.valor,
+                        selectedDebtor.totalPagado
+                      ).toFixed(1)}
+                      % pagado
+                    </span>
                   </div>
 
                   <div className="detail-row">
                     <span className="detail-label">Valor Total:</span>
                     <span className="detail-value">{formatBalance(selectedDebtor.valor)}</span>
                   </div>
-                  
+
                   <div className="detail-row">
                     <span className="detail-label">Total Pagado:</span>
-                    <span className="detail-value remaining">{formatBalance(selectedDebtor.totalPagado)}</span>
+                    <span className="detail-value remaining">
+                      {formatBalance(selectedDebtor.totalPagado)}
+                    </span>
                   </div>
 
                   <div className="detail-row">
                     <span className="detail-label">Pendiente:</span>
-                    <span className="detail-value spent">{formatBalance(calculatePending(selectedDebtor.valor, selectedDebtor.totalPagado))}</span>
+                    <span className="detail-value spent">
+                      {formatBalance(
+                        calculatePending(selectedDebtor.valor, selectedDebtor.totalPagado)
+                      )}
+                    </span>
                   </div>
                 </div>
 
                 <div className="detail-actions">
-                  <button className="detail-button edit" onClick={handleEditClick}>
-                    <EditIcon />
+                  <button
+                    className="detail-button edit"
+                    onClick={handleEditClick}
+                    type="button"
+                    aria-label="Editar deudor"
+                  >
+                    <EditIcon aria-hidden="true" />
                     <span>Editar Deudor</span>
                   </button>
-                  <button className="detail-button delete" onClick={handleDeleteClick}>
-                    <DeleteIcon />
+                  <button
+                    className="detail-button delete"
+                    onClick={handleDeleteClick}
+                    type="button"
+                    aria-label="Eliminar deudor"
+                  >
+                    <DeleteIcon aria-hidden="true" />
                     <span>Eliminar Deudor</span>
                   </button>
                 </div>
@@ -862,15 +922,28 @@ function MeDeben() {
                     placeholder="0"
                     className={formErrors.valor ? 'input-error' : ''}
                   />
-                  {formErrors.valor && (
-                    <span className="error-message">{formErrors.valor}</span>
-                  )}
+                  {formErrors.valor && <span className="error-message">{formErrors.valor}</span>}
                 </div>
-                <div style={{ padding: '0.75rem 1rem', marginBottom: '1rem', backgroundColor: 'rgba(0, 122, 255, 0.1)', border: '1px solid rgba(0, 122, 255, 0.3)', borderRadius: '8px', fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.9)' }}>
-                  <strong>💡 Nota:</strong> El total pagado solo se puede actualizar desde el registro de transacciones.
+                <div
+                  style={{
+                    padding: '0.75rem 1rem',
+                    marginBottom: '1rem',
+                    backgroundColor: 'rgba(0, 122, 255, 0.1)',
+                    border: '1px solid rgba(0, 122, 255, 0.3)',
+                    borderRadius: '8px',
+                    fontSize: '0.875rem',
+                    color: 'rgba(255, 255, 255, 0.9)',
+                  }}
+                >
+                  <strong>💡 Nota:</strong> El total pagado solo se puede actualizar desde el
+                  registro de transacciones.
                 </div>
                 <div className="modal-actions">
-                  <button type="button" className="modal-button cancel" onClick={() => setIsEditMode(false)}>
+                  <button
+                    type="button"
+                    className="modal-button cancel"
+                    onClick={() => setIsEditMode(false)}
+                  >
                     Cancelar
                   </button>
                   <button type="submit" className="modal-button submit">
@@ -886,10 +959,12 @@ function MeDeben() {
       {/* Modal de Debug */}
       {isDebugModalOpen && (
         <div className="modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">Debug - Me Deben</h2>
-              <button className="modal-close" onClick={() => setIsDebugModalOpen(false)}>×</button>
+              <button className="modal-close" onClick={() => setIsDebugModalOpen(false)}>
+                ×
+              </button>
             </div>
             <div className="debug-modal-content">
               <div className="debug-options">
@@ -901,7 +976,9 @@ function MeDeben() {
                   <span className="debug-option-icon">📦</span>
                   <div className="debug-option-info">
                     <h3 className="debug-option-title">Crear Deudores Demo</h3>
-                    <p className="debug-option-description">Crea 8 deudores de ejemplo para pruebas</p>
+                    <p className="debug-option-description">
+                      Crea 8 deudores de ejemplo para pruebas
+                    </p>
                   </div>
                 </button>
                 <button
@@ -912,7 +989,9 @@ function MeDeben() {
                   <span className="debug-option-icon">🗑️</span>
                   <div className="debug-option-info">
                     <h3 className="debug-option-title">Eliminar Todos los Deudores</h3>
-                    <p className="debug-option-description">⚠️ PELIGROSO: Elimina todos los deudores (IRREVERSIBLE)</p>
+                    <p className="debug-option-description">
+                      ⚠️ PELIGROSO: Elimina todos los deudores (IRREVERSIBLE)
+                    </p>
                   </div>
                 </button>
               </div>
@@ -934,4 +1013,3 @@ function MeDeben() {
 }
 
 export default MeDeben
-

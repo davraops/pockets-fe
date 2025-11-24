@@ -1,7 +1,9 @@
 // API Client for Pockets Backend
 // Por defecto usa la URL de producción (AWS)
 // Para desarrollo local, configurar VITE_API_URL en el archivo .env
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'https://x1bom9m0bd.execute-api.us-east-1.amazonaws.com/dev'
+const API_BASE_URL =
+  (import.meta as any).env?.VITE_API_URL ||
+  'https://x1bom9m0bd.execute-api.us-east-1.amazonaws.com/dev'
 
 class PocketsAPI {
   private baseURL: string
@@ -36,7 +38,7 @@ class PocketsAPI {
 
   /**
    * Método base para realizar requests a la API.
-   * 
+   *
    * 🔒 Aislamiento de Datos por Usuario:
    * - Todos los endpoints filtran automáticamente los datos por el usuario autenticado usando el token JWT.
    * - No es necesario pasar `user_id` en los requests; el sistema lo obtiene automáticamente del token.
@@ -46,13 +48,13 @@ class PocketsAPI {
   private async request(endpoint: string, options: any = {}) {
     const url = `${this.baseURL}${endpoint}`
     const token = this.getToken()
-    
+
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
         // Incluir token JWT en todos los endpoints excepto /auth/register y /auth/login
         // El backend usa este token para filtrar automáticamente los datos por usuario
-        ...(token && !endpoint.startsWith('/auth/') && { 'Authorization': `Bearer ${token}` }),
+        ...(token && !endpoint.startsWith('/auth/') && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
       ...options,
@@ -78,11 +80,15 @@ class PocketsAPI {
       }
 
       return data
-    } catch (error: any) {
-      if (error.response) {
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
         throw error
       }
-      throw { response: null, data: { error: 'Error de conexión', details: { message: error.message } } }
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+      throw {
+        response: null,
+        data: { error: 'Error de conexión', details: { message: errorMessage } },
+      }
     }
   }
 
@@ -92,7 +98,7 @@ class PocketsAPI {
       method: 'POST',
       body: { username, password },
     })
-    
+
     // Guardar token automáticamente después del login
     if (result.token) {
       localStorage.setItem('authToken', result.token)
@@ -100,7 +106,7 @@ class PocketsAPI {
         localStorage.setItem('tokenExpiresAt', result.expires_at)
       }
     }
-    
+
     return result
   }
 
@@ -188,13 +194,16 @@ class PocketsAPI {
     return this.request(endpoint)
   }
 
-  async updateBankAccount(accountId: string, updates: {
-    account_name?: string
-    bank?: string
-    currency?: string
-    account_id?: string
-    balance?: number
-  }) {
+  async updateBankAccount(
+    accountId: string,
+    updates: {
+      account_name?: string
+      bank?: string
+      currency?: string
+      account_id?: string
+      balance?: number
+    }
+  ) {
     return this.request(`/bank-accounts/${accountId}`, {
       method: 'PUT',
       body: updates,
@@ -219,9 +228,7 @@ class PocketsAPI {
     if (filters.origin) params.append('origin', filters.origin)
     if (filters.target) params.append('target', filters.target)
 
-    const endpoint = params.toString()
-      ? `/exchange-rates?${params.toString()}`
-      : '/exchange-rates'
+    const endpoint = params.toString() ? `/exchange-rates?${params.toString()}` : '/exchange-rates'
 
     return this.request(endpoint)
   }
@@ -248,20 +255,21 @@ class PocketsAPI {
     const params = new URLSearchParams()
     if (budgetId) params.append('id', budgetId)
     if (includeDeleted) params.append('include_deleted', 'true')
-    
-    const endpoint = params.toString()
-      ? `/budgets?${params.toString()}`
-      : '/budgets'
-    
+
+    const endpoint = params.toString() ? `/budgets?${params.toString()}` : '/budgets'
+
     return this.request(endpoint)
   }
 
-  async updateBudget(budgetId: string, updates: {
-    name?: string
-    max_amount?: number
-    total_spent?: number
-    periodicity?: 'mensual' | 'bimestral' | 'trimestral' | 'semestral' | 'anual'
-  }) {
+  async updateBudget(
+    budgetId: string,
+    updates: {
+      name?: string
+      max_amount?: number
+      total_spent?: number
+      periodicity?: 'mensual' | 'bimestral' | 'trimestral' | 'semestral' | 'anual'
+    }
+  ) {
     return this.request(`/budgets/${budgetId}`, {
       method: 'PUT',
       body: updates,
@@ -330,15 +338,17 @@ class PocketsAPI {
     })
   }
 
-  async getTransactions(filters: {
-    id?: string
-    bank_account_id?: string
-    budget_id?: string
-    type?: 'ingreso' | 'egreso' | 'ahorro'
-    category?: string
-    start_date?: string
-    end_date?: string
-  } = {}) {
+  async getTransactions(
+    filters: {
+      id?: string
+      bank_account_id?: string
+      budget_id?: string
+      type?: 'ingreso' | 'egreso' | 'ahorro'
+      category?: string
+      start_date?: string
+      end_date?: string
+    } = {}
+  ) {
     const params = new URLSearchParams()
     if (filters.id) params.append('id', filters.id)
     if (filters.bank_account_id) params.append('bank_account_id', filters.bank_account_id)
@@ -348,9 +358,7 @@ class PocketsAPI {
     if (filters.start_date) params.append('start_date', filters.start_date)
     if (filters.end_date) params.append('end_date', filters.end_date)
 
-    const endpoint = params.toString()
-      ? `/transactions?${params.toString()}`
-      : '/transactions'
+    const endpoint = params.toString() ? `/transactions?${params.toString()}` : '/transactions'
 
     return this.request(endpoint)
   }
@@ -392,19 +400,22 @@ class PocketsAPI {
     return this.request(endpoint)
   }
 
-  async updateDebt(debtId: string, updates: {
-    value?: number
-    currency?: string
-    concept?: string
-    owed?: number
-    reference?: string
-    cut_date?: string
-    interest_rate?: number
-    overdue_interest?: number
-    minimum_payment?: number
-    has_insurance?: boolean
-    insurance_value?: number
-  }) {
+  async updateDebt(
+    debtId: string,
+    updates: {
+      value?: number
+      currency?: string
+      concept?: string
+      owed?: number
+      reference?: string
+      cut_date?: string
+      interest_rate?: number
+      overdue_interest?: number
+      minimum_payment?: number
+      has_insurance?: boolean
+      insurance_value?: number
+    }
+  ) {
     return this.request(`/debts/${debtId}`, {
       method: 'PUT',
       body: updates,
@@ -442,13 +453,16 @@ class PocketsAPI {
     return this.request(endpoint)
   }
 
-  async updateCard(cardId: string, updates: {
-    card_name?: string
-    bank_account_id?: string
-    last_4_digits?: string
-    expiration_date?: string
-    is_virtual?: boolean
-  }) {
+  async updateCard(
+    cardId: string,
+    updates: {
+      card_name?: string
+      bank_account_id?: string
+      last_4_digits?: string
+      expiration_date?: string
+      is_virtual?: boolean
+    }
+  ) {
     return this.request(`/cards/${cardId}`, {
       method: 'PUT',
       body: updates,
@@ -486,13 +500,16 @@ class PocketsAPI {
     return this.request(endpoint)
   }
 
-  async updateSubscription(subscriptionId: string, updates: {
-    name?: string
-    price?: number
-    cut_date?: string
-    card_id?: string
-    is_family?: boolean
-  }) {
+  async updateSubscription(
+    subscriptionId: string,
+    updates: {
+      name?: string
+      price?: number
+      cut_date?: string
+      card_id?: string
+      is_family?: boolean
+    }
+  ) {
     return this.request(`/subscriptions/${subscriptionId}`, {
       method: 'PUT',
       body: updates,
@@ -533,16 +550,19 @@ class PocketsAPI {
     return this.request(endpoint)
   }
 
-  async updateCreditCard(creditCardId: string, updates: {
-    name?: string
-    bank?: string
-    credit_limit?: number
-    monthly_rate?: number
-    management_fee?: number
-    cut_date?: string
-    used_credit?: number
-    benefits?: string[]
-  }) {
+  async updateCreditCard(
+    creditCardId: string,
+    updates: {
+      name?: string
+      bank?: string
+      credit_limit?: number
+      monthly_rate?: number
+      management_fee?: number
+      cut_date?: string
+      used_credit?: number
+      benefits?: string[]
+    }
+  ) {
     return this.request(`/credit-cards/${creditCardId}`, {
       method: 'PUT',
       body: updates,
@@ -583,16 +603,19 @@ class PocketsAPI {
     return this.request(endpoint)
   }
 
-  async updateProject(projectId: string, updates: {
-    name?: string
-    target_amount?: number
-    current_amount?: number
-    start_date?: string
-    end_date?: string
-    duration_months?: number
-    status?: 'active' | 'completed' | 'cancelled'
-    budget_id?: string | null
-  }) {
+  async updateProject(
+    projectId: string,
+    updates: {
+      name?: string
+      target_amount?: number
+      current_amount?: number
+      start_date?: string
+      end_date?: string
+      duration_months?: number
+      status?: 'active' | 'completed' | 'cancelled'
+      budget_id?: string | null
+    }
+  ) {
     return this.request(`/projects/${projectId}`, {
       method: 'PUT',
       body: updates,
@@ -629,12 +652,15 @@ class PocketsAPI {
     return this.request(endpoint)
   }
 
-  async updateDebtor(debtorId: string, updates: {
-    debtor_name?: string
-    concept?: string
-    value?: number
-    total_paid?: number
-  }) {
+  async updateDebtor(
+    debtorId: string,
+    updates: {
+      debtor_name?: string
+      concept?: string
+      value?: number
+      total_paid?: number
+    }
+  ) {
     return this.request(`/debtors/${debtorId}`, {
       method: 'PUT',
       body: updates,
@@ -655,4 +681,3 @@ class PocketsAPI {
 }
 
 export const api = new PocketsAPI(API_BASE_URL)
-

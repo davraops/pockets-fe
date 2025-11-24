@@ -11,9 +11,7 @@ function AppPage(_props: AppPageProps) {
     <div className="app-page-container">
       <div className="app-page-content">
         <div className="glass-content">
-          <p className="app-page-subtitle">
-            Blank
-          </p>
+          <p className="app-page-subtitle">Blank</p>
         </div>
       </div>
     </div>
@@ -21,4 +19,3 @@ function AppPage(_props: AppPageProps) {
 }
 
 export default AppPage
-

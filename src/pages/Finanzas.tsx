@@ -31,64 +31,64 @@ const financeItems: FinanceItem[] = [
     title: 'Cuentas',
     Icon: AccountBalanceWalletIcon,
     color: '#34C759',
-    path: '/finanzas/cuentas'
+    path: '/finanzas/cuentas',
   },
   {
     id: '2',
     title: 'Presupuestos',
     Icon: CalculateIcon,
     color: '#007AFF',
-    path: '/finanzas/presupuestos'
+    path: '/finanzas/presupuestos',
   },
   {
     id: '3',
     title: 'Transacciones',
     Icon: SwapHorizIcon,
     color: '#FF9500',
-    path: '/finanzas/transacciones'
+    path: '/finanzas/transacciones',
   },
   {
     id: '4',
     title: 'Deudas',
     Icon: CreditCardIcon,
     color: '#FF3B30',
-    path: '/finanzas/deudas'
+    path: '/finanzas/deudas',
   },
   {
     id: '5',
     title: 'Tarjetas Débito',
     Icon: PaymentIcon,
     color: '#5856D6',
-    path: '/finanzas/tarjetas-debito'
+    path: '/finanzas/tarjetas-debito',
   },
   {
     id: '6',
     title: 'Subscripciones',
     Icon: CardMembershipIcon,
     color: '#AF52DE',
-    path: '/finanzas/subscripciones'
+    path: '/finanzas/subscripciones',
   },
   {
     id: '7',
     title: 'Tarjetas Crédito',
     Icon: CreditCardIcon,
     color: '#FF2D55',
-    path: '/finanzas/tarjetas-credito'
+    path: '/finanzas/tarjetas-credito',
   },
   {
     id: '8',
     title: 'Proyectos',
     Icon: FolderSpecialIcon,
     color: '#00C7BE',
-    path: '/finanzas/proyectos'
+    path: '/finanzas/proyectos',
   },
   {
     id: '9',
     title: 'Me Deben',
     Icon: PersonAddIcon,
     color: '#5AC8FA',
-    path: '/finanzas/me-deben'
-  }
+    path: '/finanzas/me-deben',
+  },
 ]
 
 function Finanzas() {
@@ -109,7 +109,7 @@ function Finanzas() {
     tarjetasVirtuales: 0,
     numeroProyectos: 0,
     porcentajeCompletacionProyectos: 0,
-    totalMeDeben: 0
+    totalMeDeben: 0,
   })
 
   useEffect(() => {
@@ -117,7 +117,17 @@ function Finanzas() {
       setIsLoading(true)
       try {
         // Cargar todos los datos en paralelo
-        const [accountsRes, debtsRes, creditCardsRes, subscriptionsRes, transactionsRes, budgetsRes, cardsRes, projectsRes, debtorsRes] = await Promise.all([
+        const [
+          accountsRes,
+          debtsRes,
+          creditCardsRes,
+          subscriptionsRes,
+          transactionsRes,
+          budgetsRes,
+          cardsRes,
+          projectsRes,
+          debtorsRes,
+        ] = await Promise.all([
           api.getBankAccounts(),
           api.getDebts(),
           api.getCreditCards(),
@@ -126,27 +136,31 @@ function Finanzas() {
           api.getBudgets(),
           api.getCards(),
           api.getProjects(),
-          api.getDebtors()
+          api.getDebtors(),
         ])
 
         // Calcular total en cuentas COP
-        const totalCuentasCOP = accountsRes.accounts?.reduce((sum: number, acc: any) => {
-          return sum + (acc.balance?.cop?.amount || 0)
-        }, 0) || 0
+        const totalCuentasCOP =
+          accountsRes.accounts?.reduce((sum: number, acc: any) => {
+            return sum + (acc.balance?.cop?.amount || 0)
+          }, 0) || 0
 
         // Calcular total de deudas
-        const totalDeudas = debtsRes.debts?.reduce((sum: number, debt: any) => {
-          return sum + (debt.owed || 0)
-        }, 0) || 0
+        const totalDeudas =
+          debtsRes.debts?.reduce((sum: number, debt: any) => {
+            return sum + (debt.owed || 0)
+          }, 0) || 0
 
         // Calcular total cupo de crédito y disponible
-        const totalCupoCredito = creditCardsRes.credit_cards?.reduce((sum: number, card: any) => {
-          return sum + (card.credit_limit || 0)
-        }, 0) || 0
+        const totalCupoCredito =
+          creditCardsRes.credit_cards?.reduce((sum: number, card: any) => {
+            return sum + (card.credit_limit || 0)
+          }, 0) || 0
 
-        const totalCreditoDisponible = creditCardsRes.credit_cards?.reduce((sum: number, card: any) => {
-          return sum + (card.available_credit || 0)
-        }, 0) || 0
+        const totalCreditoDisponible =
+          creditCardsRes.credit_cards?.reduce((sum: number, card: any) => {
+            return sum + (card.available_credit || 0)
+          }, 0) || 0
 
         // Contar subscripciones
         const numeroSubscripciones = subscriptionsRes.subscriptions?.length || 0
@@ -155,11 +169,15 @@ function Finanzas() {
         const totalTransacciones = transactionsRes.transactions?.length || 0
 
         // Calcular totales de ingresos y egresos
-        const totalIngresos = transactionsRes.transactions?.filter((tx: any) => tx.type === 'ingreso')
-          .reduce((sum: number, tx: any) => sum + (tx.amount || 0), 0) || 0
+        const totalIngresos =
+          transactionsRes.transactions
+            ?.filter((tx: any) => tx.type === 'ingreso')
+            .reduce((sum: number, tx: any) => sum + (tx.amount || 0), 0) || 0
 
-        const totalEgresos = transactionsRes.transactions?.filter((tx: any) => tx.type === 'egreso')
-          .reduce((sum: number, tx: any) => sum + (tx.amount || 0), 0) || 0
+        const totalEgresos =
+          transactionsRes.transactions
+            ?.filter((tx: any) => tx.type === 'egreso')
+            .reduce((sum: number, tx: any) => sum + (tx.amount || 0), 0) || 0
 
         // Calcular porcentaje de presupuestos y total presupuestado
         let totalPresupuestado = 0
@@ -170,9 +188,8 @@ function Finanzas() {
             totalUsado += budget.used_amount || 0
           })
         }
-        const porcentajePresupuestos = totalPresupuestado > 0 
-          ? (totalUsado / totalPresupuestado) * 100 
-          : 0
+        const porcentajePresupuestos =
+          totalPresupuestado > 0 ? (totalUsado / totalPresupuestado) * 100 : 0
 
         // Calcular tarjetas físicas y virtuales
         const tarjetasFisicas = cardsRes.cards?.filter((card: any) => !card.is_virtual).length || 0
@@ -181,7 +198,11 @@ function Finanzas() {
         // Calcular proyectos y porcentaje de completación promedio
         const numeroProyectos = projectsRes.projects?.length || 0
         let porcentajeCompletacionProyectos = 0
-        if (projectsRes.projects && Array.isArray(projectsRes.projects) && projectsRes.projects.length > 0) {
+        if (
+          projectsRes.projects &&
+          Array.isArray(projectsRes.projects) &&
+          projectsRes.projects.length > 0
+        ) {
           const totalPorcentaje = projectsRes.projects.reduce((sum: number, project: any) => {
             return sum + (project.progress_percentage || 0)
           }, 0)
@@ -189,10 +210,11 @@ function Finanzas() {
         }
 
         // Calcular total que me deben
-        const totalMeDeben = debtorsRes.debtors?.reduce((sum: number, debtor: any) => {
-          const pendiente = (debtor.value || 0) - (debtor.total_paid || 0)
-          return sum + Math.max(0, pendiente) // Solo sumar si hay pendiente positivo
-        }, 0) || 0
+        const totalMeDeben =
+          debtorsRes.debtors?.reduce((sum: number, debtor: any) => {
+            const pendiente = (debtor.value || 0) - (debtor.total_paid || 0)
+            return sum + Math.max(0, pendiente) // Solo sumar si hay pendiente positivo
+          }, 0) || 0
 
         setStats({
           totalCuentasCOP,
@@ -209,7 +231,7 @@ function Finanzas() {
           tarjetasVirtuales,
           numeroProyectos,
           porcentajeCompletacionProyectos,
-          totalMeDeben
+          totalMeDeben,
         })
       } catch (err) {
         console.error('Error al cargar estadísticas:', err)
@@ -226,7 +248,7 @@ function Finanzas() {
       style: 'currency',
       currency: 'COP',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(amount)
   }
 
@@ -276,7 +298,11 @@ function Finanzas() {
             <section className="finanzas-summary" aria-label="Resumen financiero">
               <div className="summary-cards">
                 <div className="summary-card summary-card-primary">
-                  <div className="summary-icon" style={{ backgroundColor: '#34C759' }} aria-hidden="true">
+                  <div
+                    className="summary-icon"
+                    style={{ backgroundColor: '#34C759' }}
+                    aria-hidden="true"
+                  >
                     <AccountBalanceWalletIcon />
                   </div>
                   <div className="summary-content">
@@ -289,11 +315,15 @@ function Finanzas() {
                   <div className="summary-row">
                     <div className="summary-item">
                       <span className="summary-label-small">Ingresos</span>
-                      <span className="summary-value-small summary-positive">{formatPrice(stats.totalIngresos)}</span>
+                      <span className="summary-value-small summary-positive">
+                        {formatPrice(stats.totalIngresos)}
+                      </span>
                     </div>
                     <div className="summary-item">
                       <span className="summary-label-small">Egresos</span>
-                      <span className="summary-value-small summary-negative">{formatPrice(stats.totalEgresos)}</span>
+                      <span className="summary-value-small summary-negative">
+                        {formatPrice(stats.totalEgresos)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -312,12 +342,18 @@ function Finanzas() {
                     aria-label={`Ir a Cuentas. Balance: ${formatPrice(stats.totalCuentasCOP)}`}
                     type="button"
                   >
-                    <div className="settings-row-icon" style={{ backgroundColor: '#34C759' }} aria-hidden="true">
+                    <div
+                      className="settings-row-icon"
+                      style={{ backgroundColor: '#34C759' }}
+                      aria-hidden="true"
+                    >
                       <AccountBalanceWalletIcon />
                     </div>
                     <div className="settings-row-content">
                       <span className="settings-row-title">Cuentas</span>
-                      <span className="settings-row-subtitle">{formatPrice(stats.totalCuentasCOP)}</span>
+                      <span className="settings-row-subtitle">
+                        {formatPrice(stats.totalCuentasCOP)}
+                      </span>
                     </div>
                     <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
                   </button>
@@ -328,12 +364,18 @@ function Finanzas() {
                     aria-label={`Ir a Presupuestos. Uso: ${formatPercentage(stats.porcentajePresupuestos)}`}
                     type="button"
                   >
-                    <div className="settings-row-icon" style={{ backgroundColor: '#007AFF' }} aria-hidden="true">
+                    <div
+                      className="settings-row-icon"
+                      style={{ backgroundColor: '#007AFF' }}
+                      aria-hidden="true"
+                    >
                       <CalculateIcon />
                     </div>
                     <div className="settings-row-content">
                       <span className="settings-row-title">Presupuestos</span>
-                      <span className="settings-row-subtitle">{formatPercentage(stats.porcentajePresupuestos)} usado</span>
+                      <span className="settings-row-subtitle">
+                        {formatPercentage(stats.porcentajePresupuestos)} usado
+                      </span>
                     </div>
                     <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
                   </button>
@@ -350,12 +392,18 @@ function Finanzas() {
                     aria-label={`Ir a Transacciones. Total: ${stats.totalTransacciones}`}
                     type="button"
                   >
-                    <div className="settings-row-icon" style={{ backgroundColor: '#FF9500' }} aria-hidden="true">
+                    <div
+                      className="settings-row-icon"
+                      style={{ backgroundColor: '#FF9500' }}
+                      aria-hidden="true"
+                    >
                       <SwapHorizIcon />
                     </div>
                     <div className="settings-row-content">
                       <span className="settings-row-title">Transacciones</span>
-                      <span className="settings-row-subtitle">{stats.totalTransacciones} registros</span>
+                      <span className="settings-row-subtitle">
+                        {stats.totalTransacciones} registros
+                      </span>
                     </div>
                     <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
                   </button>
@@ -372,12 +420,18 @@ function Finanzas() {
                     aria-label={`Ir a Deudas. Total: ${formatPrice(stats.totalDeudas)}`}
                     type="button"
                   >
-                    <div className="settings-row-icon" style={{ backgroundColor: '#FF3B30' }} aria-hidden="true">
+                    <div
+                      className="settings-row-icon"
+                      style={{ backgroundColor: '#FF3B30' }}
+                      aria-hidden="true"
+                    >
                       <CreditCardIcon />
                     </div>
                     <div className="settings-row-content">
                       <span className="settings-row-title">Deudas</span>
-                      <span className="settings-row-subtitle">{formatPrice(stats.totalDeudas)}</span>
+                      <span className="settings-row-subtitle">
+                        {formatPrice(stats.totalDeudas)}
+                      </span>
                     </div>
                     <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
                   </button>
@@ -388,12 +442,18 @@ function Finanzas() {
                     aria-label={`Ir a Tarjetas de Crédito. Disponible: ${formatPrice(stats.totalCreditoDisponible)}`}
                     type="button"
                   >
-                    <div className="settings-row-icon" style={{ backgroundColor: '#FF2D55' }} aria-hidden="true">
+                    <div
+                      className="settings-row-icon"
+                      style={{ backgroundColor: '#FF2D55' }}
+                      aria-hidden="true"
+                    >
                       <CreditCardIcon />
                     </div>
                     <div className="settings-row-content">
                       <span className="settings-row-title">Tarjetas de Crédito</span>
-                      <span className="settings-row-subtitle">{formatPrice(stats.totalCreditoDisponible)} disponible</span>
+                      <span className="settings-row-subtitle">
+                        {formatPrice(stats.totalCreditoDisponible)} disponible
+                      </span>
                     </div>
                     <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
                   </button>
@@ -410,13 +470,18 @@ function Finanzas() {
                     aria-label={`Ir a Tarjetas de Débito. ${stats.tarjetasFisicas} físicas, ${stats.tarjetasVirtuales} virtuales`}
                     type="button"
                   >
-                    <div className="settings-row-icon" style={{ backgroundColor: '#5856D6' }} aria-hidden="true">
+                    <div
+                      className="settings-row-icon"
+                      style={{ backgroundColor: '#5856D6' }}
+                      aria-hidden="true"
+                    >
                       <PaymentIcon />
                     </div>
                     <div className="settings-row-content">
                       <span className="settings-row-title">Tarjetas de Débito</span>
                       <span className="settings-row-subtitle">
-                        {stats.tarjetasFisicas} física{stats.tarjetasFisicas !== 1 ? 's' : ''}, {stats.tarjetasVirtuales} virtual{stats.tarjetasVirtuales !== 1 ? 'es' : ''}
+                        {stats.tarjetasFisicas} física{stats.tarjetasFisicas !== 1 ? 's' : ''},{' '}
+                        {stats.tarjetasVirtuales} virtual{stats.tarjetasVirtuales !== 1 ? 'es' : ''}
                       </span>
                     </div>
                     <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
@@ -428,12 +493,18 @@ function Finanzas() {
                     aria-label={`Ir a Subscripciones. Total: ${stats.numeroSubscripciones}`}
                     type="button"
                   >
-                    <div className="settings-row-icon" style={{ backgroundColor: '#AF52DE' }} aria-hidden="true">
+                    <div
+                      className="settings-row-icon"
+                      style={{ backgroundColor: '#AF52DE' }}
+                      aria-hidden="true"
+                    >
                       <CardMembershipIcon />
                     </div>
                     <div className="settings-row-content">
                       <span className="settings-row-title">Subscripciones</span>
-                      <span className="settings-row-subtitle">{stats.numeroSubscripciones} activas</span>
+                      <span className="settings-row-subtitle">
+                        {stats.numeroSubscripciones} activas
+                      </span>
                     </div>
                     <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
                   </button>
@@ -450,13 +521,18 @@ function Finanzas() {
                     aria-label={`Ir a Proyectos. ${stats.numeroProyectos} proyectos, ${formatPercentage(stats.porcentajeCompletacionProyectos)} completado`}
                     type="button"
                   >
-                    <div className="settings-row-icon" style={{ backgroundColor: '#00C7BE' }} aria-hidden="true">
+                    <div
+                      className="settings-row-icon"
+                      style={{ backgroundColor: '#00C7BE' }}
+                      aria-hidden="true"
+                    >
                       <FolderSpecialIcon />
                     </div>
                     <div className="settings-row-content">
                       <span className="settings-row-title">Proyectos</span>
                       <span className="settings-row-subtitle">
-                        {stats.numeroProyectos} proyecto{stats.numeroProyectos !== 1 ? 's' : ''}, {formatPercentage(stats.porcentajeCompletacionProyectos)} completado
+                        {stats.numeroProyectos} proyecto{stats.numeroProyectos !== 1 ? 's' : ''},{' '}
+                        {formatPercentage(stats.porcentajeCompletacionProyectos)} completado
                       </span>
                     </div>
                     <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
@@ -468,12 +544,18 @@ function Finanzas() {
                     aria-label={`Ir a Me Deben. Total pendiente: ${formatPrice(stats.totalMeDeben)}`}
                     type="button"
                   >
-                    <div className="settings-row-icon" style={{ backgroundColor: '#5AC8FA' }} aria-hidden="true">
+                    <div
+                      className="settings-row-icon"
+                      style={{ backgroundColor: '#5AC8FA' }}
+                      aria-hidden="true"
+                    >
                       <PersonAddIcon />
                     </div>
                     <div className="settings-row-content">
                       <span className="settings-row-title">Me Deben</span>
-                      <span className="settings-row-subtitle">{formatPrice(stats.totalMeDeben)} pendiente</span>
+                      <span className="settings-row-subtitle">
+                        {formatPrice(stats.totalMeDeben)} pendiente
+                      </span>
                     </div>
                     <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
                   </button>
@@ -496,4 +578,3 @@ function Finanzas() {
 }
 
 export default Finanzas
-

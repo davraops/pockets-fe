@@ -57,7 +57,7 @@ function StatusBar() {
     return date.toLocaleTimeString('es-ES', {
       hour: '2-digit',
       minute: '2-digit',
-      hour12: false
+      hour12: false,
     })
   }
 
@@ -65,7 +65,7 @@ function StatusBar() {
     return date.toLocaleDateString('es-ES', {
       weekday: 'short',
       day: 'numeric',
-      month: 'short'
+      month: 'short',
     })
   }
 
@@ -99,4 +99,3 @@ function StatusBar() {
 }
 
 export default StatusBar
-

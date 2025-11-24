@@ -59,11 +59,11 @@ function Presupuestos() {
   const [formData, setFormData] = useState({
     nombre: '',
     montoMaximo: '',
-    periodicidad: 'mensual' as 'mensual' | 'bimestral' | 'trimestral' | 'semestral' | 'anual'
+    periodicidad: 'mensual' as 'mensual' | 'bimestral' | 'trimestral' | 'semestral' | 'anual',
   })
   const [formErrors, setFormErrors] = useState({
     nombre: '',
-    montoMaximo: ''
+    montoMaximo: '',
   })
 
   // Mapear presupuesto de API a formato interno
@@ -72,7 +72,7 @@ function Presupuestos() {
     const months = getMonthsFromPeriodicity(periodicidad)
     // El API almacena el valor mensual, pero mostramos el total del período
     const montoTotalPeriodo = apiBudget.max_amount * months
-    
+
     return {
       id: apiBudget.id,
       nombre: apiBudget.name,
@@ -81,7 +81,7 @@ function Presupuestos() {
       restante: apiBudget.remaining,
       sobrePresupuesto: apiBudget.is_over_budget,
       porcentajeUsado: apiBudget.percentage_used,
-      periodicidad: periodicidad
+      periodicidad: periodicidad,
     }
   }
 
@@ -169,11 +169,11 @@ function Presupuestos() {
     setFormData({
       nombre: '',
       montoMaximo: '',
-      periodicidad: 'mensual'
+      periodicidad: 'mensual',
     })
     setFormErrors({
       nombre: '',
-      montoMaximo: ''
+      montoMaximo: '',
     })
   }
 
@@ -184,7 +184,7 @@ function Presupuestos() {
     setFormData({
       nombre: budget.nombre,
       montoMaximo: budget.montoMaximo.toString(),
-      periodicidad: budget.periodicidad
+      periodicidad: budget.periodicidad,
     })
   }
 
@@ -196,11 +196,11 @@ function Presupuestos() {
     setFormData({
       nombre: '',
       montoMaximo: '',
-      periodicidad: 'mensual'
+      periodicidad: 'mensual',
     })
     setFormErrors({
       nombre: '',
-      montoMaximo: ''
+      montoMaximo: '',
     })
   }
 
@@ -214,8 +214,12 @@ function Presupuestos() {
 
   const handleSoftDelete = async () => {
     if (!selectedBudget) return
-    
-    if (window.confirm('¿Estás seguro de que quieres eliminar este presupuesto? (Soft Delete - Se puede restaurar)')) {
+
+    if (
+      window.confirm(
+        '¿Estás seguro de que quieres eliminar este presupuesto? (Soft Delete - Se puede restaurar)'
+      )
+    ) {
       try {
         await api.deleteBudget(selectedBudget.id)
         await reloadBudgets()
@@ -231,17 +235,18 @@ function Presupuestos() {
 
   const handleHardDelete = async () => {
     if (!selectedBudget) return
-    
-    const confirmMessage = `⚠️ ADVERTENCIA CRÍTICA ⚠️\n\n` +
+
+    const confirmMessage =
+      `⚠️ ADVERTENCIA CRÍTICA ⚠️\n\n` +
       `Estás a punto de realizar un HARD DELETE. Esta acción es IRREVERSIBLE y eliminará:\n` +
       `- El presupuesto "${selectedBudget.nombre}"\n` +
       `- TODAS las transacciones asociadas a este presupuesto\n` +
       `- Los balances de las cuentas se actualizarán automáticamente\n\n` +
       `¿Estás ABSOLUTAMENTE seguro de que quieres continuar?\n\n` +
       `Escribe "ELIMINAR" para confirmar:`
-    
+
     const userInput = window.prompt(confirmMessage)
-    
+
     if (userInput === 'ELIMINAR') {
       try {
         setIsLoading(true)
@@ -250,7 +255,9 @@ function Presupuestos() {
         setIsDeleteModalOpen(false)
         handleCloseDetailModal()
         const deletedCount = response.deleted_transactions_count || 0
-        alert(`Presupuesto eliminado permanentemente.\n${deletedCount} transacción(es) asociada(s) también fueron eliminadas.`)
+        alert(
+          `Presupuesto eliminado permanentemente.\n${deletedCount} transacción(es) asociada(s) también fueron eliminadas.`
+        )
       } catch (err: any) {
         console.error('Error al eliminar presupuesto:', err)
         alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
@@ -265,7 +272,7 @@ function Presupuestos() {
   const validateForm = async (): Promise<boolean> => {
     const errors = {
       nombre: '',
-      montoMaximo: ''
+      montoMaximo: '',
     }
     let isValid = true
 
@@ -273,9 +280,10 @@ function Presupuestos() {
     try {
       const allBudgets = await api.getBudgets()
       if (allBudgets.budgets && Array.isArray(allBudgets.budgets)) {
-        const nombreExists = allBudgets.budgets.some((b: any) => 
-          b.name.toLowerCase() === formData.nombre.toLowerCase().trim() &&
-          (!isEditMode || b.id !== selectedBudget?.id)
+        const nombreExists = allBudgets.budgets.some(
+          (b: any) =>
+            b.name.toLowerCase() === formData.nombre.toLowerCase().trim() &&
+            (!isEditMode || b.id !== selectedBudget?.id)
         )
         if (nombreExists) {
           errors.nombre = 'Este nombre ya está en uso'
@@ -285,9 +293,10 @@ function Presupuestos() {
     } catch (err) {
       console.error('Error al validar:', err)
       // Continuar con la validación local como fallback
-      const nombreExists = budgets.some(b => 
-        b.nombre.toLowerCase() === formData.nombre.toLowerCase().trim() &&
-        (!isEditMode || b.id !== selectedBudget?.id)
+      const nombreExists = budgets.some(
+        b =>
+          b.nombre.toLowerCase() === formData.nombre.toLowerCase().trim() &&
+          (!isEditMode || b.id !== selectedBudget?.id)
       )
       if (nombreExists) {
         errors.nombre = 'Este nombre ya está en uso'
@@ -308,7 +317,7 @@ function Presupuestos() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     const isValid = await validateForm()
     if (!isValid) {
       return
@@ -325,9 +334,9 @@ function Presupuestos() {
         await api.updateBudget(selectedBudget.id, {
           name: formData.nombre.trim(),
           max_amount: montoMensual,
-          periodicity: formData.periodicidad
+          periodicity: formData.periodicidad,
         })
-        
+
         // Recargar presupuestos después de actualizar
         const response = await api.getBudgets()
         if (response.budgets && Array.isArray(response.budgets)) {
@@ -340,7 +349,7 @@ function Presupuestos() {
         await api.createBudget({
           name: formData.nombre.trim(),
           max_amount: montoMensual,
-          periodicity: formData.periodicidad
+          periodicity: formData.periodicidad,
         })
 
         // Recargar presupuestos después de crear
@@ -353,8 +362,8 @@ function Presupuestos() {
       }
     } catch (err: any) {
       console.error('Error al guardar presupuesto:', err)
-      const errorMessage = err.data?.error 
-        ? `Backend says: ${err.data.error}` 
+      const errorMessage = err.data?.error
+        ? `Backend says: ${err.data.error}`
         : 'Frontend says: Error al guardar el presupuesto. Por favor, intenta de nuevo.'
       alert(errorMessage)
     }
@@ -363,13 +372,13 @@ function Presupuestos() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     })
     // Limpiar errores cuando el usuario empiece a escribir
     if (formErrors[e.target.name as keyof typeof formErrors]) {
       setFormErrors({
         ...formErrors,
-        [e.target.name]: ''
+        [e.target.name]: '',
       })
     }
   }
@@ -377,11 +386,11 @@ function Presupuestos() {
   // Función para obtener el número de meses según la periodicidad
   const getMonthsFromPeriodicity = (periodicidad: string): number => {
     const monthsMap: Record<string, number> = {
-      'mensual': 1,
-      'bimestral': 2,
-      'trimestral': 3,
-      'semestral': 6,
-      'anual': 12
+      mensual: 1,
+      bimestral: 2,
+      trimestral: 3,
+      semestral: 6,
+      anual: 12,
     }
     return monthsMap[periodicidad] || 1
   }
@@ -395,11 +404,11 @@ function Presupuestos() {
   // Función para obtener el label de periodicidad
   const getPeriodicityLabel = (periodicidad: string): string => {
     const labels: Record<string, string> = {
-      'mensual': 'Mensual',
-      'bimestral': 'Bimestral',
-      'trimestral': 'Trimestral',
-      'semestral': 'Semestral',
-      'anual': 'Anual'
+      mensual: 'Mensual',
+      bimestral: 'Bimestral',
+      trimestral: 'Trimestral',
+      semestral: 'Semestral',
+      anual: 'Anual',
     }
     return labels[periodicidad] || 'Mensual'
   }
@@ -409,7 +418,7 @@ function Presupuestos() {
       style: 'currency',
       currency: 'COP',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(balance)
   }
 
@@ -446,7 +455,7 @@ function Presupuestos() {
     '#FF6B9D', // Rosa salmón
     '#C7CE00', // Lima
     '#FF9500', // Naranja
-    '#00E676'  // Verde neón
+    '#00E676', // Verde neón
   ]
 
   // Función para obtener un color único basado en el ID del presupuesto
@@ -564,7 +573,7 @@ function Presupuestos() {
       { name: 'Servicios', max_amount: 400000 },
       { name: 'Ropa', max_amount: 250000 },
       { name: 'Salud', max_amount: 150000 },
-      { name: 'Educación', max_amount: 600000 }
+      { name: 'Educación', max_amount: 600000 },
     ]
 
     try {
@@ -585,13 +594,19 @@ function Presupuestos() {
 
   // Función para eliminar todos los presupuestos (soft delete)
   const handleDeleteAllBudgets = async () => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar TODOS los presupuestos? (Soft Delete - Se pueden restaurar)')) {
+    if (
+      window.confirm(
+        '¿Estás seguro de que quieres eliminar TODOS los presupuestos? (Soft Delete - Se pueden restaurar)'
+      )
+    ) {
       try {
         setIsLoading(true)
         await api.deleteAllBudgets()
         await reloadBudgets()
         setIsDebugModalOpen(false)
-        alert('Todos los presupuestos han sido eliminados (soft delete). Puedes restaurarlos más tarde.')
+        alert(
+          'Todos los presupuestos han sido eliminados (soft delete). Puedes restaurarlos más tarde.'
+        )
       } catch (err: any) {
         console.error('Error al eliminar todos los presupuestos:', err)
         alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
@@ -603,23 +618,26 @@ function Presupuestos() {
 
   // Función para hard delete de todos los presupuestos
   const handleHardDeleteAllBudgets = async () => {
-    const confirmMessage = `⚠️ ADVERTENCIA CRÍTICA ⚠️\n\n` +
+    const confirmMessage =
+      `⚠️ ADVERTENCIA CRÍTICA ⚠️\n\n` +
       `Estás a punto de realizar un HARD DELETE de TODOS los presupuestos. Esta acción es IRREVERSIBLE y eliminará:\n` +
       `- TODOS los presupuestos\n` +
       `- TODAS las transacciones asociadas a presupuestos\n` +
       `- Los balances de las cuentas se actualizarán automáticamente\n\n` +
       `¿Estás ABSOLUTAMENTE seguro de que quieres continuar?\n\n` +
       `Escribe "ELIMINAR TODO" para confirmar:`
-    
+
     const userInput = window.prompt(confirmMessage)
-    
+
     if (userInput === 'ELIMINAR TODO') {
       try {
         setIsLoading(true)
         await api.hardDeleteAllBudgets()
         await reloadBudgets()
         setIsDebugModalOpen(false)
-        alert('Todos los presupuestos y sus transacciones asociadas han sido eliminados permanentemente.')
+        alert(
+          'Todos los presupuestos y sus transacciones asociadas han sido eliminados permanentemente.'
+        )
       } catch (err: any) {
         console.error('Error al eliminar todos los presupuestos:', err)
         alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
@@ -645,7 +663,9 @@ function Presupuestos() {
           ) : error ? (
             <div className="loader-container">
               <div className="loader">
-                <p className="loader-text" style={{ color: 'rgba(255, 59, 48, 0.9)' }}>{error}</p>
+                <p className="loader-text" style={{ color: 'rgba(255, 59, 48, 0.9)' }}>
+                  {error}
+                </p>
               </div>
             </div>
           ) : (
@@ -717,7 +737,9 @@ function Presupuestos() {
                 <div className="summary-separator"></div>
                 <div className="summary-item">
                   <span className="summary-label">Disponible</span>
-                  <span className="summary-value available">{formatBalance(calculateTotalBudgets() - calculateTotalSpent())}</span>
+                  <span className="summary-value available">
+                    {formatBalance(calculateTotalBudgets() - calculateTotalSpent())}
+                  </span>
                 </div>
               </div>
 
@@ -739,62 +761,81 @@ function Presupuestos() {
                 <>
                   <div className="budgets-list">
                     <div className="budgets-group">
-                      {[...budgets].sort((a, b) => {
-                        // Ordenar por porcentaje usado (mayor a menor) y luego por nombre
-                        if (a.sobrePresupuesto !== b.sobrePresupuesto) {
-                          return a.sobrePresupuesto ? -1 : 1
-                        }
-                        if (Math.abs(a.porcentajeUsado - b.porcentajeUsado) > 0.1) {
-                          return b.porcentajeUsado - a.porcentajeUsado
-                        }
-                        return a.nombre.localeCompare(b.nombre)
-                      }).map((budget) => {
-                        const budgetColor = getBudgetColor(budget.porcentajeUsado, budget.sobrePresupuesto, budget.id)
-                        const progressColor = getProgressColor(budget.porcentajeUsado, budget.sobrePresupuesto)
-                        return (
-                          <button
-                            key={budget.id}
-                            className="budget-row"
-                            onClick={() => handleOpenDetailModal(budget)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault()
-                                handleOpenDetailModal(budget)
+                      {[...budgets]
+                        .sort((a, b) => {
+                          // Ordenar por porcentaje usado (mayor a menor) y luego por nombre
+                          if (a.sobrePresupuesto !== b.sobrePresupuesto) {
+                            return a.sobrePresupuesto ? -1 : 1
+                          }
+                          if (Math.abs(a.porcentajeUsado - b.porcentajeUsado) > 0.1) {
+                            return b.porcentajeUsado - a.porcentajeUsado
+                          }
+                          return a.nombre.localeCompare(b.nombre)
+                        })
+                        .map(budget => {
+                          const budgetColor = getBudgetColor(
+                            budget.porcentajeUsado,
+                            budget.sobrePresupuesto,
+                            budget.id
+                          )
+                          const progressColor = getProgressColor(
+                            budget.porcentajeUsado,
+                            budget.sobrePresupuesto
+                          )
+                          return (
+                            <button
+                              key={budget.id}
+                              className="budget-row"
+                              onClick={() => handleOpenDetailModal(budget)}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault()
+                                  handleOpenDetailModal(budget)
+                                }
+                              }}
+                              aria-label={`Ver detalles de presupuesto ${budget.nombre}. ${budget.sobrePresupuesto ? 'Sobre presupuesto' : `${budget.porcentajeUsado.toFixed(1)}% usado`}. Máximo: ${formatBalance(budget.montoMaximo)}`}
+                              type="button"
+                              style={
+                                {
+                                  '--budget-color': budgetColor,
+                                  '--progress-color': progressColor,
+                                } as React.CSSProperties
                               }
-                            }}
-                            aria-label={`Ver detalles de presupuesto ${budget.nombre}. ${budget.sobrePresupuesto ? 'Sobre presupuesto' : `${budget.porcentajeUsado.toFixed(1)}% usado`}. Máximo: ${formatBalance(budget.montoMaximo)}`}
-                            type="button"
-                            style={{ '--budget-color': budgetColor, '--progress-color': progressColor } as React.CSSProperties}
-                          >
-                            <div className="budget-row-content">
-                              <div className="budget-row-main">
-                                <span className="budget-row-title">{budget.nombre}</span>
-                                <span className="budget-row-percentage">
-                                  {budget.sobrePresupuesto ? (
-                                    <span className="budget-over">Sobre presupuesto</span>
-                                  ) : (
-                                    `${budget.porcentajeUsado.toFixed(1)}%`
-                                  )}
-                                </span>
+                            >
+                              <div className="budget-row-content">
+                                <div className="budget-row-main">
+                                  <span className="budget-row-title">{budget.nombre}</span>
+                                  <span className="budget-row-percentage">
+                                    {budget.sobrePresupuesto ? (
+                                      <span className="budget-over">Sobre presupuesto</span>
+                                    ) : (
+                                      `${budget.porcentajeUsado.toFixed(1)}%`
+                                    )}
+                                  </span>
+                                </div>
+                                <div className="budget-row-secondary">
+                                  <span className="budget-row-periodicity">
+                                    {getPeriodicityLabel(budget.periodicidad)}
+                                  </span>
+                                  <span className="budget-row-amount">
+                                    {formatBalance(budget.totalGastado)} /{' '}
+                                    {formatBalance(budget.montoMaximo)}
+                                  </span>
+                                </div>
+                                <div className="budget-row-progress">
+                                  <div
+                                    className="budget-row-progress-fill"
+                                    style={{
+                                      width: `${Math.min(budget.porcentajeUsado, 100)}%`,
+                                      backgroundColor: progressColor,
+                                    }}
+                                  ></div>
+                                </div>
                               </div>
-                              <div className="budget-row-secondary">
-                                <span className="budget-row-periodicity">{getPeriodicityLabel(budget.periodicidad)}</span>
-                                <span className="budget-row-amount">{formatBalance(budget.totalGastado)} / {formatBalance(budget.montoMaximo)}</span>
-                              </div>
-                              <div className="budget-row-progress">
-                                <div 
-                                  className="budget-row-progress-fill" 
-                                  style={{ 
-                                    width: `${Math.min(budget.porcentajeUsado, 100)}%`,
-                                    backgroundColor: progressColor
-                                  }}
-                                ></div>
-                              </div>
-                            </div>
-                            <ChevronRightIcon className="budget-row-chevron" aria-hidden="true" />
-                          </button>
-                        )
-                      })}
+                              <ChevronRightIcon className="budget-row-chevron" aria-hidden="true" />
+                            </button>
+                          )
+                        })}
                     </div>
                   </div>
                   <div className="deleted-budgets-button-container">
@@ -815,10 +856,12 @@ function Presupuestos() {
       {/* Modal para agregar presupuesto */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={handleCloseModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">Nuevo Presupuesto</h2>
-              <button className="modal-close" onClick={handleCloseModal}>×</button>
+              <button className="modal-close" onClick={handleCloseModal}>
+                ×
+              </button>
             </div>
             <form className="modal-form" onSubmit={handleSubmit}>
               <div className="form-group">
@@ -833,9 +876,7 @@ function Presupuestos() {
                   placeholder="Ej: Compras Mensuales"
                   className={formErrors.nombre ? 'input-error' : ''}
                 />
-                {formErrors.nombre && (
-                  <span className="error-message">{formErrors.nombre}</span>
-                )}
+                {formErrors.nombre && <span className="error-message">{formErrors.nombre}</span>}
               </div>
               <div className="form-group">
                 <label htmlFor="periodicidad">Periodicidad</label>
@@ -854,7 +895,8 @@ function Presupuestos() {
                   <option value="anual">Anual (12 meses)</option>
                 </select>
                 <p className="form-hint">
-                  El monto se dividirá entre los meses del período. Ejemplo: Bimestral de 1,000,000 = 500,000/mes
+                  El monto se dividirá entre los meses del período. Ejemplo: Bimestral de 1,000,000
+                  = 500,000/mes
                 </p>
               </div>
               <div className="form-group">
@@ -871,11 +913,22 @@ function Presupuestos() {
                   placeholder="0"
                   className={formErrors.montoMaximo ? 'input-error' : ''}
                 />
-                {formData.montoMaximo && !formErrors.montoMaximo && formData.periodicidad !== 'mensual' && (
-                  <p className="form-hint monthly-preview">
-                    Equivale a <strong>{formatBalance(calculateMonthlyAmount(parseFloat(formData.montoMaximo) || 0, formData.periodicidad))}</strong> por mes
-                  </p>
-                )}
+                {formData.montoMaximo &&
+                  !formErrors.montoMaximo &&
+                  formData.periodicidad !== 'mensual' && (
+                    <p className="form-hint monthly-preview">
+                      Equivale a{' '}
+                      <strong>
+                        {formatBalance(
+                          calculateMonthlyAmount(
+                            parseFloat(formData.montoMaximo) || 0,
+                            formData.periodicidad
+                          )
+                        )}
+                      </strong>{' '}
+                      por mes
+                    </p>
+                  )}
                 {formErrors.montoMaximo && (
                   <span className="error-message">{formErrors.montoMaximo}</span>
                 )}
@@ -896,33 +949,55 @@ function Presupuestos() {
       {/* Modal de detalles */}
       {isDetailModalOpen && selectedBudget && (
         <div className="modal-overlay" onClick={handleCloseDetailModal}>
-          <div 
-            className="modal-content detail-modal" 
-            onClick={(e) => e.stopPropagation()}
-            style={{ '--budget-color': getBudgetColor(selectedBudget.porcentajeUsado, selectedBudget.sobrePresupuesto, selectedBudget.id) } as React.CSSProperties}
+          <div
+            className="modal-content detail-modal"
+            onClick={e => e.stopPropagation()}
+            style={
+              {
+                '--budget-color': getBudgetColor(
+                  selectedBudget.porcentajeUsado,
+                  selectedBudget.sobrePresupuesto,
+                  selectedBudget.id
+                ),
+              } as React.CSSProperties
+            }
           >
             <div className="modal-header">
               <h2 className="modal-title">Detalles del Presupuesto</h2>
-              <button className="modal-close" onClick={handleCloseDetailModal}>×</button>
+              <button
+                className="modal-close"
+                onClick={handleCloseDetailModal}
+                aria-label="Cerrar modal"
+                type="button"
+              >
+                ×
+              </button>
             </div>
-            
+
             {!isEditMode ? (
               <>
                 <div className="detail-content">
                   <div className="detail-section">
-                    <div className="detail-icon-large" style={{ backgroundColor: getBudgetColor(selectedBudget.porcentajeUsado, selectedBudget.sobrePresupuesto, selectedBudget.id) }}>
-                      <CalculateIcon />
-                    </div>
                     <div className="detail-info">
                       <h3 className="detail-name">{selectedBudget.nombre}</h3>
                       <p className="detail-bank">
-                        {selectedBudget.sobrePresupuesto ? 'Sobre presupuesto' : `${selectedBudget.porcentajeUsado.toFixed(1)}% usado`}
+                        {selectedBudget.sobrePresupuesto
+                          ? 'Sobre presupuesto'
+                          : `${selectedBudget.porcentajeUsado.toFixed(1)}% usado`}
                       </p>
                       <p className="detail-periodicity">
                         {getPeriodicityLabel(selectedBudget.periodicidad)}
                         {selectedBudget.periodicidad !== 'mensual' && (
                           <span className="detail-monthly-equivalent">
-                            {' '}• {formatBalance(calculateMonthlyAmount(selectedBudget.montoMaximo, selectedBudget.periodicidad))}/mes
+                            {' '}
+                            •{' '}
+                            {formatBalance(
+                              calculateMonthlyAmount(
+                                selectedBudget.montoMaximo,
+                                selectedBudget.periodicidad
+                              )
+                            )}
+                            /mes
                           </span>
                         )}
                       </p>
@@ -931,51 +1006,85 @@ function Presupuestos() {
 
                   <div className="budget-detail-progress">
                     <div className="budget-detail-progress-bar">
-                      <div 
-                        className="budget-detail-progress-fill" 
-                        style={{ 
+                      <div
+                        className="budget-detail-progress-fill"
+                        style={{
                           width: `${Math.min(selectedBudget.porcentajeUsado, 100)}%`,
-                          backgroundColor: getProgressColor(selectedBudget.porcentajeUsado, selectedBudget.sobrePresupuesto)
+                          backgroundColor: getProgressColor(
+                            selectedBudget.porcentajeUsado,
+                            selectedBudget.sobrePresupuesto
+                          ),
                         }}
                       ></div>
                     </div>
-                    <span className="budget-detail-progress-text">{selectedBudget.porcentajeUsado.toFixed(1)}%</span>
+                    <span className="budget-detail-progress-text">
+                      {selectedBudget.porcentajeUsado.toFixed(1)}%
+                    </span>
                   </div>
-                  
+
                   <div className="detail-row">
                     <span className="detail-label">Periodicidad:</span>
-                    <span className="detail-value">{getPeriodicityLabel(selectedBudget.periodicidad)}</span>
+                    <span className="detail-value">
+                      {getPeriodicityLabel(selectedBudget.periodicidad)}
+                    </span>
                   </div>
                   <div className="detail-row">
-                    <span className="detail-label">Monto Máximo ({getPeriodicityLabel(selectedBudget.periodicidad)}):</span>
-                    <span className="detail-value">{formatBalance(selectedBudget.montoMaximo)}</span>
+                    <span className="detail-label">
+                      Monto Máximo ({getPeriodicityLabel(selectedBudget.periodicidad)}):
+                    </span>
+                    <span className="detail-value">
+                      {formatBalance(selectedBudget.montoMaximo)}
+                    </span>
                   </div>
                   {selectedBudget.periodicidad !== 'mensual' && (
                     <div className="detail-row">
                       <span className="detail-label">Equivalente Mensual:</span>
-                      <span className="detail-value monthly-equivalent">{formatBalance(calculateMonthlyAmount(selectedBudget.montoMaximo, selectedBudget.periodicidad))}</span>
+                      <span className="detail-value monthly-equivalent">
+                        {formatBalance(
+                          calculateMonthlyAmount(
+                            selectedBudget.montoMaximo,
+                            selectedBudget.periodicidad
+                          )
+                        )}
+                      </span>
                     </div>
                   )}
                   <div className="detail-row">
                     <span className="detail-label">
-                      {selectedBudget && isBudgetAssociatedWithProject(selectedBudget.id) ? 'Total Ahorrado:' : 'Total Gastado:'}
+                      {selectedBudget && isBudgetAssociatedWithProject(selectedBudget.id)
+                        ? 'Total Ahorrado:'
+                        : 'Total Gastado:'}
                     </span>
-                    <span className="detail-value spent">{formatBalance(selectedBudget.totalGastado)}</span>
+                    <span className="detail-value spent">
+                      {formatBalance(selectedBudget.totalGastado)}
+                    </span>
                   </div>
 
                   <div className="detail-row">
                     <span className="detail-label">Restante:</span>
-                    <span className="detail-value remaining">{formatBalance(selectedBudget.restante)}</span>
+                    <span className="detail-value remaining">
+                      {formatBalance(selectedBudget.restante)}
+                    </span>
                   </div>
                 </div>
 
                 <div className="detail-actions">
-                  <button className="detail-button edit" onClick={handleEditClick}>
-                    <EditIcon />
+                  <button
+                    className="detail-button edit"
+                    onClick={handleEditClick}
+                    type="button"
+                    aria-label="Editar presupuesto"
+                  >
+                    <EditIcon aria-hidden="true" />
                     <span>Editar Presupuesto</span>
                   </button>
-                  <button className="detail-button delete" onClick={handleDeleteClick}>
-                    <DeleteIcon />
+                  <button
+                    className="detail-button delete"
+                    onClick={handleDeleteClick}
+                    type="button"
+                    aria-label="Eliminar presupuesto"
+                  >
+                    <DeleteIcon aria-hidden="true" />
                     <span>Eliminar Presupuesto</span>
                   </button>
                 </div>
@@ -994,9 +1103,7 @@ function Presupuestos() {
                     placeholder="Ej: Compras Mensuales"
                     className={formErrors.nombre ? 'input-error' : ''}
                   />
-                  {formErrors.nombre && (
-                    <span className="error-message">{formErrors.nombre}</span>
-                  )}
+                  {formErrors.nombre && <span className="error-message">{formErrors.nombre}</span>}
                 </div>
                 <div className="form-group">
                   <label htmlFor="edit-periodicidad">Periodicidad</label>
@@ -1015,7 +1122,8 @@ function Presupuestos() {
                     <option value="anual">Anual (12 meses)</option>
                   </select>
                   <p className="form-hint">
-                    El monto se dividirá entre los meses del período. Ejemplo: Bimestral de 1,000,000 = 500,000/mes
+                    El monto se dividirá entre los meses del período. Ejemplo: Bimestral de
+                    1,000,000 = 500,000/mes
                   </p>
                 </div>
                 <div className="form-group">
@@ -1032,17 +1140,32 @@ function Presupuestos() {
                     placeholder="0"
                     className={formErrors.montoMaximo ? 'input-error' : ''}
                   />
-                  {formData.montoMaximo && !formErrors.montoMaximo && formData.periodicidad !== 'mensual' && (
-                    <p className="form-hint monthly-preview">
-                      Equivale a <strong>{formatBalance(calculateMonthlyAmount(parseFloat(formData.montoMaximo) || 0, formData.periodicidad))}</strong> por mes
-                    </p>
-                  )}
+                  {formData.montoMaximo &&
+                    !formErrors.montoMaximo &&
+                    formData.periodicidad !== 'mensual' && (
+                      <p className="form-hint monthly-preview">
+                        Equivale a{' '}
+                        <strong>
+                          {formatBalance(
+                            calculateMonthlyAmount(
+                              parseFloat(formData.montoMaximo) || 0,
+                              formData.periodicidad
+                            )
+                          )}
+                        </strong>{' '}
+                        por mes
+                      </p>
+                    )}
                   {formErrors.montoMaximo && (
                     <span className="error-message">{formErrors.montoMaximo}</span>
                   )}
                 </div>
                 <div className="modal-actions">
-                  <button type="button" className="modal-button cancel" onClick={() => setIsEditMode(false)}>
+                  <button
+                    type="button"
+                    className="modal-button cancel"
+                    onClick={() => setIsEditMode(false)}
+                  >
                     Cancelar
                   </button>
                   <button type="submit" className="modal-button submit">
@@ -1058,14 +1181,16 @@ function Presupuestos() {
       {/* Modal de Debug */}
       {isDebugModalOpen && (
         <div className="modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">Debug - Presupuestos</h2>
-              <button className="modal-close" onClick={() => setIsDebugModalOpen(false)}>×</button>
+              <button className="modal-close" onClick={() => setIsDebugModalOpen(false)}>
+                ×
+              </button>
             </div>
             <div className="debug-modal-content">
               <div className="debug-options">
-                <button 
+                <button
                   className="debug-option-button create-demo"
                   onClick={handleCreateDemoBudgets}
                   disabled={isLoading}
@@ -1073,37 +1198,48 @@ function Presupuestos() {
                   <span className="debug-option-icon">📦</span>
                   <div className="debug-option-info">
                     <h3 className="debug-option-title">Crear Presupuestos Demo</h3>
-                    <p className="debug-option-description">Crea 8 presupuestos de ejemplo para pruebas</p>
+                    <p className="debug-option-description">
+                      Crea 8 presupuestos de ejemplo para pruebas
+                    </p>
                   </div>
                 </button>
-                <button 
+                <button
                   className="debug-option-button delete-all"
                   onClick={handleDeleteAllBudgets}
                   disabled={isLoading}
                 >
                   <span className="debug-option-icon">🗑️</span>
                   <div className="debug-option-info">
-                    <h3 className="debug-option-title">Eliminar Todos los Presupuestos (Soft Delete)</h3>
-                    <p className="debug-option-description">Elimina todos los presupuestos (se pueden restaurar)</p>
+                    <h3 className="debug-option-title">
+                      Eliminar Todos los Presupuestos (Soft Delete)
+                    </h3>
+                    <p className="debug-option-description">
+                      Elimina todos los presupuestos (se pueden restaurar)
+                    </p>
                   </div>
                 </button>
-                <button 
+                <button
                   className="debug-option-button delete-all hard-delete"
                   onClick={handleHardDeleteAllBudgets}
                   disabled={isLoading}
                 >
                   <span className="debug-option-icon">⚠️</span>
                   <div className="debug-option-info">
-                    <h3 className="debug-option-title">Hard Delete - Eliminar Todo Permanentemente</h3>
-                    <p className="debug-option-description">⚠️ PELIGROSO: Elimina todos los presupuestos y sus transacciones (IRREVERSIBLE)</p>
+                    <h3 className="debug-option-title">
+                      Hard Delete - Eliminar Todo Permanentemente
+                    </h3>
+                    <p className="debug-option-description">
+                      ⚠️ PELIGROSO: Elimina todos los presupuestos y sus transacciones
+                      (IRREVERSIBLE)
+                    </p>
                   </div>
                 </button>
               </div>
             </div>
             <div className="modal-actions">
-              <button 
-                type="button" 
-                className="modal-button cancel" 
+              <button
+                type="button"
+                className="modal-button cancel"
                 onClick={() => setIsDebugModalOpen(false)}
               >
                 Cerrar
@@ -1116,17 +1252,20 @@ function Presupuestos() {
       {/* Modal de confirmación de eliminación */}
       {isDeleteModalOpen && selectedBudget && (
         <div className="modal-overlay" onClick={() => setIsDeleteModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">Eliminar Presupuesto</h2>
-              <button className="modal-close" onClick={() => setIsDeleteModalOpen(false)}>×</button>
+              <button className="modal-close" onClick={() => setIsDeleteModalOpen(false)}>
+                ×
+              </button>
             </div>
             <div className="delete-modal-content">
               <p className="delete-modal-text">
-                Selecciona el tipo de eliminación para el presupuesto <strong>"{selectedBudget.nombre}"</strong>:
+                Selecciona el tipo de eliminación para el presupuesto{' '}
+                <strong>&quot;{selectedBudget.nombre}&quot;</strong>:
               </p>
               <div className="delete-options">
-                <button 
+                <button
                   className="delete-option-button soft-delete"
                   onClick={handleSoftDelete}
                   disabled={isLoading}
@@ -1135,11 +1274,12 @@ function Presupuestos() {
                   <div className="delete-option-info">
                     <h3 className="delete-option-title">Soft Delete</h3>
                     <p className="delete-option-description">
-                      Marca el presupuesto como eliminado pero mantiene los datos y transacciones. Se puede restaurar más tarde.
+                      Marca el presupuesto como eliminado pero mantiene los datos y transacciones.
+                      Se puede restaurar más tarde.
                     </p>
                   </div>
                 </button>
-                <button 
+                <button
                   className="delete-option-button hard-delete"
                   onClick={handleHardDelete}
                   disabled={isLoading}
@@ -1148,16 +1288,18 @@ function Presupuestos() {
                   <div className="delete-option-info">
                     <h3 className="delete-option-title">Hard Delete</h3>
                     <p className="delete-option-description">
-                      <strong>⚠️ PELIGROSO:</strong> Elimina permanentemente el presupuesto y TODAS sus transacciones asociadas. Esta acción es IRREVERSIBLE y requiere ajuste manual en los balances.
+                      <strong>⚠️ PELIGROSO:</strong> Elimina permanentemente el presupuesto y TODAS
+                      sus transacciones asociadas. Esta acción es IRREVERSIBLE y requiere ajuste
+                      manual en los balances.
                     </p>
                   </div>
                 </button>
               </div>
             </div>
             <div className="modal-actions">
-              <button 
-                type="button" 
-                className="modal-button cancel" 
+              <button
+                type="button"
+                className="modal-button cancel"
                 onClick={() => setIsDeleteModalOpen(false)}
               >
                 Cancelar
@@ -1170,10 +1312,12 @@ function Presupuestos() {
       {/* Modal de presupuestos eliminados */}
       {isDeletedBudgetsModalOpen && (
         <div className="modal-overlay" onClick={() => setIsDeletedBudgetsModalOpen(false)}>
-          <div className="modal-content deleted-budgets-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content deleted-budgets-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">Presupuestos Eliminados</h2>
-              <button className="modal-close" onClick={() => setIsDeletedBudgetsModalOpen(false)}>×</button>
+              <button className="modal-close" onClick={() => setIsDeletedBudgetsModalOpen(false)}>
+                ×
+              </button>
             </div>
             <div className="deleted-budgets-content">
               {isLoadingDeleted ? (
@@ -1191,16 +1335,23 @@ function Presupuestos() {
                 </div>
               ) : (
                 <div className="deleted-budgets-list">
-                  {deletedBudgets.map((budget) => {
-                    const budgetColor = getBudgetColor(budget.porcentajeUsado, budget.sobrePresupuesto, budget.id)
+                  {deletedBudgets.map(budget => {
+                    const budgetColor = getBudgetColor(
+                      budget.porcentajeUsado,
+                      budget.sobrePresupuesto,
+                      budget.id
+                    )
                     return (
-                      <div 
-                        key={budget.id} 
+                      <div
+                        key={budget.id}
                         className="deleted-budget-item"
                         style={{ '--budget-color': budgetColor } as React.CSSProperties}
                       >
                         <div className="deleted-budget-info">
-                          <div className="deleted-budget-icon" style={{ backgroundColor: budgetColor }}>
+                          <div
+                            className="deleted-budget-icon"
+                            style={{ backgroundColor: budgetColor }}
+                          >
                             <CalculateIcon />
                           </div>
                           <div className="deleted-budget-details">
@@ -1211,7 +1362,8 @@ function Presupuestos() {
                               </span>
                               <span className="deleted-budget-separator">•</span>
                               <span className="deleted-budget-metric">
-                                {isBudgetAssociatedWithProject(budget.id) ? 'Ahorrado' : 'Gastado'}: {formatBalance(budget.totalGastado)}
+                                {isBudgetAssociatedWithProject(budget.id) ? 'Ahorrado' : 'Gastado'}:{' '}
+                                {formatBalance(budget.totalGastado)}
                               </span>
                               <span className="deleted-budget-separator">•</span>
                               <span className="deleted-budget-metric">
@@ -1220,7 +1372,7 @@ function Presupuestos() {
                             </div>
                           </div>
                         </div>
-                        <button 
+                        <button
                           className="restore-budget-button"
                           onClick={() => handleRestoreBudget(budget.id)}
                           title="Restaurar presupuesto"
@@ -1235,9 +1387,9 @@ function Presupuestos() {
               )}
             </div>
             <div className="modal-actions">
-              <button 
-                type="button" 
-                className="modal-button cancel" 
+              <button
+                type="button"
+                className="modal-button cancel"
                 onClick={() => setIsDeletedBudgetsModalOpen(false)}
               >
                 Cerrar
@@ -1251,4 +1403,3 @@ function Presupuestos() {
 }
 
 export default Presupuestos
-

@@ -14,7 +14,14 @@ interface App {
 }
 
 const apps: App[] = [
-  { id: '1', name: 'Finanzas', hasIcon: true, Icon: TrendingUpIcon, color: '#34C759', path: '/finanzas' },
+  {
+    id: '1',
+    name: 'Finanzas',
+    hasIcon: true,
+    Icon: TrendingUpIcon,
+    color: '#34C759',
+    path: '/finanzas',
+  },
   { id: 'logout', name: 'Salir', hasIcon: true, Icon: LogoutIcon, color: '#FF3B30', path: '' },
 ]
 
@@ -44,7 +51,7 @@ function Home() {
           Aplicaciones
         </h1>
         <div className="apps-grid" role="grid" aria-label="Grid de aplicaciones">
-          {apps.map((app) => {
+          {apps.map(app => {
             const IconComponent = app.Icon
             const isLogout = app.id === 'logout'
             return (
@@ -53,7 +60,7 @@ function Home() {
                 className={`app-icon ${isLogout ? 'app-icon-logout' : ''}`}
                 style={{ '--app-color': app.color } as React.CSSProperties}
                 onClick={() => handleAppClick(app)}
-                onKeyDown={(e) => handleKeyDown(e, app)}
+                onKeyDown={e => handleKeyDown(e, app)}
                 aria-label={`${app.name}${isLogout ? '. Cerrar sesión' : ''}`}
                 aria-describedby={app.name ? `app-name-${app.id}` : undefined}
                 type="button"
@@ -61,18 +68,12 @@ function Home() {
                 <div className="app-icon-wrapper">
                   <div className="app-icon-bg" style={{ backgroundColor: app.color }}>
                     {app.hasIcon && IconComponent && (
-                      <IconComponent 
-                        className="app-material-icon" 
-                        aria-hidden="true"
-                      />
+                      <IconComponent className="app-material-icon" aria-hidden="true" />
                     )}
                   </div>
                 </div>
                 {app.name && (
-                  <span 
-                    className="app-name" 
-                    id={`app-name-${app.id}`}
-                  >
+                  <span className="app-name" id={`app-name-${app.id}`}>
                     {app.name}
                   </span>
                 )}

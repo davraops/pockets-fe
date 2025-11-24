@@ -14,8 +14,12 @@ function ThemeToggle() {
       aria-pressed={isDarkMode}
       title={isDarkMode ? 'Modo oscuro activo' : 'Modo claro activo'}
     >
-      <div className={`theme-toggle-track ${isDarkMode ? 'theme-toggle-track-dark' : 'theme-toggle-track-light'}`}>
-        <div className={`theme-toggle-thumb ${isDarkMode ? 'theme-toggle-thumb-dark' : 'theme-toggle-thumb-light'}`}>
+      <div
+        className={`theme-toggle-track ${isDarkMode ? 'theme-toggle-track-dark' : 'theme-toggle-track-light'}`}
+      >
+        <div
+          className={`theme-toggle-thumb ${isDarkMode ? 'theme-toggle-thumb-dark' : 'theme-toggle-thumb-light'}`}
+        >
           {isDarkMode ? (
             <DarkModeIcon className="theme-toggle-icon" />
           ) : (
@@ -28,4 +32,3 @@ function ThemeToggle() {
 }
 
 export default ThemeToggle
-

@@ -62,11 +62,11 @@ function Cuentas() {
     nombre: '',
     banco: '',
     numeroCuenta: '',
-    balanceInicial: ''
+    balanceInicial: '',
   })
   const [formErrors, setFormErrors] = useState({
     nombre: '',
-    numeroCuenta: ''
+    numeroCuenta: '',
   })
   const [exchangeRates, setExchangeRates] = useState({ USD: 3750, EUR: 4300 })
 
@@ -79,7 +79,7 @@ function Cuentas() {
       numeroCuenta: apiAccount.account_id,
       balanceInicial: apiAccount.balance.original.amount,
       currency: apiAccount.currency,
-      balanceCOP: apiAccount.balance.cop.amount
+      balanceCOP: apiAccount.balance.cop.amount,
     }
   }
 
@@ -148,14 +148,14 @@ function Cuentas() {
         if (usdResponse.exchange_rates && usdResponse.exchange_rates.length > 0) {
           setExchangeRates(prev => ({
             ...prev,
-            USD: usdResponse.exchange_rates[0].exchange_rate
+            USD: usdResponse.exchange_rates[0].exchange_rate,
           }))
         }
 
         if (eurResponse.exchange_rates && eurResponse.exchange_rates.length > 0) {
           setExchangeRates(prev => ({
             ...prev,
-            EUR: eurResponse.exchange_rates[0].exchange_rate
+            EUR: eurResponse.exchange_rates[0].exchange_rate,
           }))
         }
       } catch (err) {
@@ -177,11 +177,11 @@ function Cuentas() {
       nombre: '',
       banco: '',
       numeroCuenta: '',
-      balanceInicial: ''
+      balanceInicial: '',
     })
     setFormErrors({
       nombre: '',
-      numeroCuenta: ''
+      numeroCuenta: '',
     })
   }
 
@@ -193,7 +193,7 @@ function Cuentas() {
       nombre: account.nombre,
       banco: account.banco,
       numeroCuenta: account.numeroCuenta,
-      balanceInicial: account.balanceInicial.toString()
+      balanceInicial: account.balanceInicial.toString(),
     })
   }
 
@@ -205,11 +205,11 @@ function Cuentas() {
       nombre: '',
       banco: '',
       numeroCuenta: '',
-      balanceInicial: ''
+      balanceInicial: '',
     })
     setFormErrors({
       nombre: '',
-      numeroCuenta: ''
+      numeroCuenta: '',
     })
   }
 
@@ -238,7 +238,7 @@ function Cuentas() {
   const validateForm = async (): Promise<boolean> => {
     const errors = {
       nombre: '',
-      numeroCuenta: ''
+      numeroCuenta: '',
     }
     let isValid = true
 
@@ -246,9 +246,10 @@ function Cuentas() {
     try {
       const allAccounts = await api.getBankAccounts()
       if (allAccounts.accounts && Array.isArray(allAccounts.accounts)) {
-        const nombreExists = allAccounts.accounts.some((acc: any) => 
-          acc.account_name.toLowerCase() === formData.nombre.toLowerCase().trim() &&
-          (!isEditMode || acc.id !== selectedAccount?.id)
+        const nombreExists = allAccounts.accounts.some(
+          (acc: any) =>
+            acc.account_name.toLowerCase() === formData.nombre.toLowerCase().trim() &&
+            (!isEditMode || acc.id !== selectedAccount?.id)
         )
         if (nombreExists) {
           errors.nombre = 'Este nombre ya está en uso'
@@ -256,9 +257,10 @@ function Cuentas() {
         }
 
         // Validar número de cuenta único
-        const numeroExists = allAccounts.accounts.some((acc: any) => 
-          acc.account_id === formData.numeroCuenta.trim() &&
-          (!isEditMode || acc.id !== selectedAccount?.id)
+        const numeroExists = allAccounts.accounts.some(
+          (acc: any) =>
+            acc.account_id === formData.numeroCuenta.trim() &&
+            (!isEditMode || acc.id !== selectedAccount?.id)
         )
         if (numeroExists) {
           errors.numeroCuenta = 'Este número de cuenta ya está en uso'
@@ -268,18 +270,20 @@ function Cuentas() {
     } catch (err) {
       console.error('Error al validar:', err)
       // Continuar con la validación local como fallback
-      const nombreExists = accounts.some(acc => 
-        acc.nombre.toLowerCase() === formData.nombre.toLowerCase().trim() &&
-        (!isEditMode || acc.id !== selectedAccount?.id)
+      const nombreExists = accounts.some(
+        acc =>
+          acc.nombre.toLowerCase() === formData.nombre.toLowerCase().trim() &&
+          (!isEditMode || acc.id !== selectedAccount?.id)
       )
       if (nombreExists) {
         errors.nombre = 'Este nombre ya está en uso'
         isValid = false
       }
 
-      const numeroExists = accounts.some(acc => 
-        acc.numeroCuenta === formData.numeroCuenta.trim() &&
-        (!isEditMode || acc.id !== selectedAccount?.id)
+      const numeroExists = accounts.some(
+        acc =>
+          acc.numeroCuenta === formData.numeroCuenta.trim() &&
+          (!isEditMode || acc.id !== selectedAccount?.id)
       )
       if (numeroExists) {
         errors.numeroCuenta = 'Este número de cuenta ya está en uso'
@@ -293,7 +297,7 @@ function Cuentas() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     const isValid = await validateForm()
     if (!isValid) {
       return
@@ -304,9 +308,9 @@ function Cuentas() {
         // Editar cuenta existente
         await api.updateBankAccount(selectedAccount.id, {
           account_name: formData.nombre.trim(),
-          account_id: formData.numeroCuenta.trim()
+          account_id: formData.numeroCuenta.trim(),
         })
-        
+
         // Recargar cuentas después de actualizar
         const response = await api.getBankAccounts()
         if (response.accounts && Array.isArray(response.accounts)) {
@@ -322,7 +326,7 @@ function Cuentas() {
           bank: formData.banco,
           currency: currency,
           account_id: formData.numeroCuenta.trim(),
-          balance: parseFloat(formData.balanceInicial)
+          balance: parseFloat(formData.balanceInicial),
         })
 
         // Recargar cuentas después de crear
@@ -345,13 +349,13 @@ function Cuentas() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     })
     // Limpiar errores cuando el usuario empiece a escribir
     if (formErrors[e.target.name as keyof typeof formErrors]) {
       setFormErrors({
         ...formErrors,
-        [e.target.name]: ''
+        [e.target.name]: '',
       })
     }
   }
@@ -360,11 +364,11 @@ function Cuentas() {
   const bancoCurrencies: Record<string, string> = {
     'Wise EUR': 'EUR',
     'Payoneer EUR': 'EUR',
-    'Deel': 'USD',
+    Deel: 'USD',
     'Dolar App': 'USD',
     'Wise USD': 'USD',
     'Payoneer USD': 'USD',
-    'Paypal': 'USD'
+    Paypal: 'USD',
   }
 
   const getBancoCurrency = (banco: string): string => {
@@ -377,7 +381,7 @@ function Cuentas() {
       style: 'currency',
       currency: currency,
       minimumFractionDigits: 1,
-      maximumFractionDigits: 1
+      maximumFractionDigits: 1,
     }).format(balance)
   }
 
@@ -433,63 +437,63 @@ function Cuentas() {
     'Wise EUR',
     'Payoneer USD',
     'Payoneer EUR',
-    'Paypal'
+    'Paypal',
   ]
 
   // Colores para cada banco
   const bancoColors: Record<string, string> = {
-    'Bancolombia': '#E2001A',
-    'Davivienda': '#FF6B00',
+    Bancolombia: '#E2001A',
+    Davivienda: '#FF6B00',
     'Banco de Bogota': '#0033A0',
     'GNB Sudameris': '#00A859',
-    'Citibank': '#0066CC',
+    Citibank: '#0066CC',
     'Banco Agrario': '#00A859',
     'Banco de Occidente': '#FF6B00',
-    'BBVA': '#004481',
+    BBVA: '#004481',
     'BTG Pactual': '#000000',
     'Mundo Mujer': '#E91E63',
     'Banco Caja Social': '#0066CC',
-    'ITAU': '#FF6B00',
-    'Falabella': '#FF6B00',
-    'Santander': '#EC0000',
-    'Bancamia': '#00A859',
+    ITAU: '#FF6B00',
+    Falabella: '#FF6B00',
+    Santander: '#EC0000',
+    Bancamia: '#00A859',
     'JP Morgan Chase': '#0066CC',
     'Mi Banco': '#0066CC',
-    'W': '#000000',
+    W: '#000000',
     'Banco Popular': '#0066CC',
-    'Finandina': '#0066CC',
-    'Coopcentral': '#0066CC',
-    'Union': '#0066CC',
-    'Serfinanza': '#0066CC',
-    'Scotiabank': '#E2001A',
-    'Colpatria': '#0066CC',
-    'Bancoomeva': '#0066CC',
-    'Pichincha': '#0066CC',
+    Finandina: '#0066CC',
+    Coopcentral: '#0066CC',
+    Union: '#0066CC',
+    Serfinanza: '#0066CC',
+    Scotiabank: '#E2001A',
+    Colpatria: '#0066CC',
+    Bancoomeva: '#0066CC',
+    Pichincha: '#0066CC',
     'Av Villas': '#0066CC',
-    'Nequi': '#00A859',
-    'Daviplata': '#0066CC',
-    'Movii': '#0066CC',
-    'Nu': '#8B5CF6',
-    'TPaga': '#0066CC',
+    Nequi: '#00A859',
+    Daviplata: '#0066CC',
+    Movii: '#0066CC',
+    Nu: '#8B5CF6',
+    TPaga: '#0066CC',
     'Tuya Pay': '#0066CC',
     'Dale!': '#FF6B00',
-    'Rappi': '#00A859',
-    'Leal': '#0066CC',
-    'Bold': '#000000',
-    'Littio': '#0066CC',
-    'Uala': '#0066CC',
+    Rappi: '#00A859',
+    Leal: '#0066CC',
+    Bold: '#000000',
+    Littio: '#0066CC',
+    Uala: '#0066CC',
     'Lulo Bank': '#0066CC',
-    'Coink': '#0066CC',
+    Coink: '#0066CC',
     'Iris Neofinanciera': '#0066CC',
-    'Mercadopago': '#009EE3',
-    'PayU': '#00A859',
-    'Deel': '#0066CC',
+    Mercadopago: '#009EE3',
+    PayU: '#00A859',
+    Deel: '#0066CC',
     'Dolar App': '#00A859',
     'Wise USD': '#00B9FF',
     'Wise EUR': '#00B9FF',
     'Payoneer USD': '#FF6900',
     'Payoneer EUR': '#FF6900',
-    'Paypal': '#003087'
+    Paypal: '#003087',
   }
 
   const getBancoColor = (banco: string): string => {
@@ -534,16 +538,70 @@ function Cuentas() {
   // Función de debug para crear 10 cuentas de prueba
   const handleDebugCreateAccounts = async () => {
     const testAccounts = [
-      { account_name: 'Cuenta Principal', bank: 'Bancolombia', currency: 'COP', account_id: '1234567890', balance: 5000000 },
-      { account_name: 'Ahorros', bank: 'Davivienda', currency: 'COP', account_id: '9876543210', balance: 2500000 },
-      { account_name: 'Nequi', bank: 'Nequi', currency: 'COP', account_id: '5555555555', balance: 500000 },
-      { account_name: 'Paypal Personal', bank: 'Paypal', currency: 'USD', account_id: 'PP123456789', balance: 1500.5 },
-      { account_name: 'Wise USD', bank: 'Wise USD', currency: 'USD', account_id: 'WISE123456', balance: 2500.75 },
-      { account_name: 'Wise EUR', bank: 'Wise EUR', currency: 'EUR', account_id: 'WISE789012', balance: 1800.25 },
-      { account_name: 'Deel', bank: 'Deel', currency: 'USD', account_id: 'DEEL456789', balance: 3200.0 },
-      { account_name: 'Payoneer USD', bank: 'Payoneer USD', currency: 'USD', account_id: 'PAY123456', balance: 4500.0 },
+      {
+        account_name: 'Cuenta Principal',
+        bank: 'Bancolombia',
+        currency: 'COP',
+        account_id: '1234567890',
+        balance: 5000000,
+      },
+      {
+        account_name: 'Ahorros',
+        bank: 'Davivienda',
+        currency: 'COP',
+        account_id: '9876543210',
+        balance: 2500000,
+      },
+      {
+        account_name: 'Nequi',
+        bank: 'Nequi',
+        currency: 'COP',
+        account_id: '5555555555',
+        balance: 500000,
+      },
+      {
+        account_name: 'Paypal Personal',
+        bank: 'Paypal',
+        currency: 'USD',
+        account_id: 'PP123456789',
+        balance: 1500.5,
+      },
+      {
+        account_name: 'Wise USD',
+        bank: 'Wise USD',
+        currency: 'USD',
+        account_id: 'WISE123456',
+        balance: 2500.75,
+      },
+      {
+        account_name: 'Wise EUR',
+        bank: 'Wise EUR',
+        currency: 'EUR',
+        account_id: 'WISE789012',
+        balance: 1800.25,
+      },
+      {
+        account_name: 'Deel',
+        bank: 'Deel',
+        currency: 'USD',
+        account_id: 'DEEL456789',
+        balance: 3200.0,
+      },
+      {
+        account_name: 'Payoneer USD',
+        bank: 'Payoneer USD',
+        currency: 'USD',
+        account_id: 'PAY123456',
+        balance: 4500.0,
+      },
       { account_name: 'Nu', bank: 'Nu', currency: 'COP', account_id: 'NU987654', balance: 800000 },
-      { account_name: 'Mercadopago', bank: 'Mercadopago', currency: 'COP', account_id: 'MP123456789', balance: 1200000 }
+      {
+        account_name: 'Mercadopago',
+        bank: 'Mercadopago',
+        currency: 'COP',
+        account_id: 'MP123456789',
+        balance: 1200000,
+      },
     ]
 
     try {
@@ -569,7 +627,11 @@ function Cuentas() {
 
   // Función de debug para borrar todas las cuentas
   const handleDeleteAllAccounts = async () => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar TODAS las cuentas? Esta acción es IRREVERSIBLE.')) {
+    if (
+      window.confirm(
+        '¿Estás seguro de que quieres eliminar TODAS las cuentas? Esta acción es IRREVERSIBLE.'
+      )
+    ) {
       try {
         setIsLoading(true)
         await api.deleteAllBankAccounts()
@@ -604,7 +666,9 @@ function Cuentas() {
           ) : error ? (
             <div className="loader-container">
               <div className="loader">
-                <p className="loader-text" style={{ color: 'rgba(255, 59, 48, 0.9)' }}>{error}</p>
+                <p className="loader-text" style={{ color: 'rgba(255, 59, 48, 0.9)' }}>
+                  {error}
+                </p>
               </div>
             </div>
           ) : (
@@ -666,20 +730,25 @@ function Cuentas() {
               <div className="exchange-rates-block">
                 <div className="exchange-rate-item">
                   <span className="exchange-rate-label">USD</span>
-                  <span className="exchange-rate-value">{exchangeRates.USD.toLocaleString('es-CO')} COP</span>
+                  <span className="exchange-rate-value">
+                    {exchangeRates.USD.toLocaleString('es-CO')} COP
+                  </span>
                 </div>
                 <div className="exchange-rate-separator"></div>
                 <div className="exchange-rate-item">
                   <span className="exchange-rate-label">EUR</span>
-                  <span className="exchange-rate-value">{exchangeRates.EUR.toLocaleString('es-CO')} COP</span>
+                  <span className="exchange-rate-value">
+                    {exchangeRates.EUR.toLocaleString('es-CO')} COP
+                  </span>
                 </div>
                 <div className="exchange-rate-separator separator-after-eur"></div>
                 <div className="exchange-rate-item total-cop">
                   <span className="exchange-rate-label">Total</span>
-                  <span className="exchange-rate-value total-value">{formatBalance(calculateTotalCOP(), 'COP')}</span>
+                  <span className="exchange-rate-value total-value">
+                    {formatBalance(calculateTotalCOP(), 'COP')}
+                  </span>
                 </div>
               </div>
-
 
               {accounts.length === 0 ? (
                 <div className="empty-state">
@@ -690,45 +759,50 @@ function Cuentas() {
               ) : (
                 <div className="accounts-list">
                   <div className="accounts-group">
-                    {[...accounts].sort((a, b) => b.balanceCOP - a.balanceCOP).map((account) => {
-                      const bancoColor = getBancoColor(account.banco)
-                      return (
-                        <button
-                          key={account.id}
-                          className="account-row"
-                          onClick={() => handleOpenDetailModal(account)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault()
-                              handleOpenDetailModal(account)
-                            }
-                          }}
-                          aria-label={`Ver detalles de cuenta ${account.nombre} del banco ${account.banco}. Balance: ${formatBalance(account.balanceInicial, account.currency)}`}
-                          type="button"
-                        >
-                          <div className="account-row-content">
-                            <div className="account-row-main">
-                              <span className="account-row-title">{account.nombre}</span>
-                              <span className="account-row-balance">{formatBalance(account.balanceInicial, account.currency)}</span>
-                            </div>
-                            <div className="account-row-secondary">
-                              <span className="account-row-bank">{account.banco}</span>
-                              {getCardCountForAccount(account.id) > 0 && (
-                                <span className="account-row-cards">
-                                  {getCardCountForAccount(account.id)} tarjeta{getCardCountForAccount(account.id) !== 1 ? 's' : ''}
+                    {[...accounts]
+                      .sort((a, b) => b.balanceCOP - a.balanceCOP)
+                      .map(account => {
+                        const bancoColor = getBancoColor(account.banco)
+                        return (
+                          <button
+                            key={account.id}
+                            className="account-row"
+                            onClick={() => handleOpenDetailModal(account)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault()
+                                handleOpenDetailModal(account)
+                              }
+                            }}
+                            aria-label={`Ver detalles de cuenta ${account.nombre} del banco ${account.banco}. Balance: ${formatBalance(account.balanceInicial, account.currency)}`}
+                            type="button"
+                          >
+                            <div className="account-row-content">
+                              <div className="account-row-main">
+                                <span className="account-row-title">{account.nombre}</span>
+                                <span className="account-row-balance">
+                                  {formatBalance(account.balanceInicial, account.currency)}
                                 </span>
-                              )}
-                              {account.currency !== 'COP' && (
-                                <span className="account-row-equivalent">
-                                  ≈ {formatBalance(account.balanceCOP)} COP
-                                </span>
-                              )}
+                              </div>
+                              <div className="account-row-secondary">
+                                <span className="account-row-bank">{account.banco}</span>
+                                {getCardCountForAccount(account.id) > 0 && (
+                                  <span className="account-row-cards">
+                                    {getCardCountForAccount(account.id)} tarjeta
+                                    {getCardCountForAccount(account.id) !== 1 ? 's' : ''}
+                                  </span>
+                                )}
+                                {account.currency !== 'COP' && (
+                                  <span className="account-row-equivalent">
+                                    ≈ {formatBalance(account.balanceCOP)} COP
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                          <ChevronRightIcon className="account-row-chevron" aria-hidden="true" />
-                        </button>
-                      )
-                    })}
+                            <ChevronRightIcon className="account-row-chevron" aria-hidden="true" />
+                          </button>
+                        )
+                      })}
                   </div>
                 </div>
               )}
@@ -742,10 +816,12 @@ function Cuentas() {
       {/* Modal para agregar cuenta */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={handleCloseModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">Nueva Cuenta Bancaria</h2>
-              <button className="modal-close" onClick={handleCloseModal}>×</button>
+              <button className="modal-close" onClick={handleCloseModal}>
+                ×
+              </button>
             </div>
             <form className="modal-form" onSubmit={handleSubmit}>
               <div className="form-group">
@@ -760,9 +836,7 @@ function Cuentas() {
                   placeholder="Ej: Cuenta Principal"
                   className={formErrors.nombre ? 'input-error' : ''}
                 />
-                {formErrors.nombre && (
-                  <span className="error-message">{formErrors.nombre}</span>
-                )}
+                {formErrors.nombre && <span className="error-message">{formErrors.nombre}</span>}
               </div>
               <div className="form-group">
                 <label htmlFor="banco">Banco</label>
@@ -775,7 +849,7 @@ function Cuentas() {
                   className="form-select"
                 >
                   <option value="">Selecciona un banco</option>
-                  {bancos.map((banco) => (
+                  {bancos.map(banco => (
                     <option key={banco} value={banco}>
                       {banco}
                     </option>
@@ -827,50 +901,66 @@ function Cuentas() {
       {/* Modal de detalles */}
       {isDetailModalOpen && selectedAccount && (
         <div className="modal-overlay" onClick={handleCloseDetailModal}>
-          <div 
-            className="modal-content detail-modal" 
-            onClick={(e) => e.stopPropagation()}
+          <div
+            className="modal-content detail-modal"
+            onClick={e => e.stopPropagation()}
             style={{ '--banco-color': getBancoColor(selectedAccount.banco) } as React.CSSProperties}
           >
             <div className="modal-header">
               <h2 className="modal-title">Detalles de la Cuenta</h2>
-              <button className="modal-close" onClick={handleCloseDetailModal}>×</button>
+              <button
+                className="modal-close"
+                onClick={handleCloseDetailModal}
+                aria-label="Cerrar modal"
+                type="button"
+              >
+                ×
+              </button>
             </div>
-            
+
             {!isEditMode ? (
               <>
                 <div className="detail-content">
                   <div className="detail-section">
-                    <div className="detail-icon-large" style={{ backgroundColor: getBancoColor(selectedAccount.banco) }}>
-                      <AccountBalanceWalletIcon />
-                    </div>
                     <div className="detail-info">
                       <h3 className="detail-name">{selectedAccount.nombre}</h3>
                       <p className="detail-bank">{selectedAccount.banco}</p>
                     </div>
                   </div>
-                  
+
                   <div className="detail-row">
                     <span className="detail-label">Número de Cuenta:</span>
                     <span className="detail-value">{selectedAccount.numeroCuenta}</span>
                   </div>
-                  
+
                   <div className="detail-row">
                     <span className="detail-label">Balance:</span>
                     <div className="detail-balance-wrapper">
-                      <span className="detail-balance">{formatBalance(selectedAccount.balanceInicial, selectedAccount.currency)}</span>
+                      <span className="detail-balance">
+                        {formatBalance(selectedAccount.balanceInicial, selectedAccount.currency)}
+                      </span>
                       <span className="detail-currency">{selectedAccount.currency}</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="detail-actions">
-                  <button className="detail-button edit" onClick={handleEditClick}>
-                    <EditIcon />
+                  <button
+                    className="detail-button edit"
+                    onClick={handleEditClick}
+                    type="button"
+                    aria-label="Editar cuenta"
+                  >
+                    <EditIcon aria-hidden="true" />
                     <span>Editar Cuenta</span>
                   </button>
-                  <button className="detail-button delete" onClick={handleDeleteClick}>
-                    <DeleteIcon />
+                  <button
+                    className="detail-button delete"
+                    onClick={handleDeleteClick}
+                    type="button"
+                    aria-label="Eliminar cuenta"
+                  >
+                    <DeleteIcon aria-hidden="true" />
                     <span>Eliminar Cuenta</span>
                   </button>
                 </div>
@@ -889,9 +979,7 @@ function Cuentas() {
                     placeholder="Ej: Cuenta Principal"
                     className={formErrors.nombre ? 'input-error' : ''}
                   />
-                  {formErrors.nombre && (
-                    <span className="error-message">{formErrors.nombre}</span>
-                  )}
+                  {formErrors.nombre && <span className="error-message">{formErrors.nombre}</span>}
                 </div>
                 <div className="form-group">
                   <label htmlFor="edit-banco">Banco</label>
@@ -905,7 +993,7 @@ function Cuentas() {
                     disabled
                   >
                     <option value="">Selecciona un banco</option>
-                    {bancos.map((banco) => (
+                    {bancos.map(banco => (
                       <option key={banco} value={banco}>
                         {banco}
                       </option>
@@ -935,7 +1023,10 @@ function Cuentas() {
                     <input
                       type="text"
                       id="edit-balanceInicial"
-                      value={formatBalance(selectedAccount.balanceInicial, selectedAccount.currency)}
+                      value={formatBalance(
+                        selectedAccount.balanceInicial,
+                        selectedAccount.currency
+                      )}
                       disabled
                       className="disabled-input"
                     />
@@ -944,7 +1035,11 @@ function Cuentas() {
                   <p className="form-hint">El balance no se puede modificar</p>
                 </div>
                 <div className="modal-actions">
-                  <button type="button" className="modal-button cancel" onClick={() => setIsEditMode(false)}>
+                  <button
+                    type="button"
+                    className="modal-button cancel"
+                    onClick={() => setIsEditMode(false)}
+                  >
                     Cancelar
                   </button>
                   <button type="submit" className="modal-button submit">
@@ -960,10 +1055,12 @@ function Cuentas() {
       {/* Modal de Debug */}
       {isDebugModalOpen && (
         <div className="modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">Debug - Cuentas</h2>
-              <button className="modal-close" onClick={() => setIsDebugModalOpen(false)}>×</button>
+              <button className="modal-close" onClick={() => setIsDebugModalOpen(false)}>
+                ×
+              </button>
             </div>
             <div className="debug-modal-content">
               <div className="debug-options">
@@ -975,7 +1072,9 @@ function Cuentas() {
                   <span className="debug-option-icon">📦</span>
                   <div className="debug-option-info">
                     <h3 className="debug-option-title">Crear Cuentas Demo</h3>
-                    <p className="debug-option-description">Crea 10 cuentas de ejemplo para pruebas</p>
+                    <p className="debug-option-description">
+                      Crea 10 cuentas de ejemplo para pruebas
+                    </p>
                   </div>
                 </button>
                 <button
@@ -986,7 +1085,9 @@ function Cuentas() {
                   <span className="debug-option-icon">🗑️</span>
                   <div className="debug-option-info">
                     <h3 className="debug-option-title">Eliminar Todas las Cuentas</h3>
-                    <p className="debug-option-description">⚠️ PELIGROSO: Elimina todas las cuentas (IRREVERSIBLE)</p>
+                    <p className="debug-option-description">
+                      ⚠️ PELIGROSO: Elimina todas las cuentas (IRREVERSIBLE)
+                    </p>
                   </div>
                 </button>
               </div>

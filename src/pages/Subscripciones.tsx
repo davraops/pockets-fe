@@ -76,13 +76,13 @@ function Subscripciones() {
     precio: '',
     fechaCorte: '',
     tarjetaId: '',
-    esFamiliar: false
+    esFamiliar: false,
   })
   const [formErrors, setFormErrors] = useState({
     nombre: '',
     precio: '',
     fechaCorte: '',
-    tarjetaId: ''
+    tarjetaId: '',
   })
 
   // Mapear subscripción de API a formato interno
@@ -90,7 +90,7 @@ function Subscripciones() {
     // Manejar diferentes estructuras de respuesta de la API
     const card = apiSub.card || {}
     const bankAccount = card.bank_account || {}
-    
+
     return {
       id: apiSub.id,
       nombre: apiSub.name,
@@ -101,7 +101,7 @@ function Subscripciones() {
       nombreTarjeta: card.card_name || card.nombre_tarjeta || 'Tarjeta desconocida',
       ultimos4Digitos: card.last_4_digits || '0000',
       banco: bankAccount.bank || card.issuing_bank || 'Banco desconocido',
-      nombreCuenta: bankAccount.account_name || 'Cuenta desconocida'
+      nombreCuenta: bankAccount.account_name || 'Cuenta desconocida',
     }
   }
 
@@ -116,7 +116,7 @@ function Subscripciones() {
             nombre: card.card_name,
             ultimos4Digitos: card.last_4_digits,
             banco: card.bank_account.bank,
-            nombreCuenta: card.bank_account.account_name
+            nombreCuenta: card.bank_account.account_name,
           }))
           setCards(mappedCards)
         }
@@ -136,7 +136,7 @@ function Subscripciones() {
       try {
         const response = await api.getSubscriptions()
         console.log('Respuesta de API getSubscriptions:', response)
-        
+
         if (response.subscriptions && Array.isArray(response.subscriptions)) {
           const mappedSubscriptions = response.subscriptions.map(mapSubscriptionFromAPI)
           setSubscriptions(mappedSubscriptions)
@@ -176,7 +176,9 @@ function Subscripciones() {
 
   const handleOpenModal = () => {
     if (cards.length === 0) {
-      alert('Frontend says: No hay tarjetas de débito disponibles. Por favor, crea al menos una tarjeta primero.')
+      alert(
+        'Frontend says: No hay tarjetas de débito disponibles. Por favor, crea al menos una tarjeta primero.'
+      )
       return
     }
     setIsModalOpen(true)
@@ -189,13 +191,13 @@ function Subscripciones() {
       precio: '',
       fechaCorte: '',
       tarjetaId: '',
-      esFamiliar: false
+      esFamiliar: false,
     })
     setFormErrors({
       nombre: '',
       precio: '',
       fechaCorte: '',
-      tarjetaId: ''
+      tarjetaId: '',
     })
   }
 
@@ -208,7 +210,7 @@ function Subscripciones() {
       precio: subscription.precio.toString(),
       fechaCorte: subscription.fechaCorte,
       tarjetaId: subscription.tarjetaId,
-      esFamiliar: subscription.esFamiliar
+      esFamiliar: subscription.esFamiliar,
     })
   }
 
@@ -221,13 +223,13 @@ function Subscripciones() {
       precio: '',
       fechaCorte: '',
       tarjetaId: '',
-      esFamiliar: false
+      esFamiliar: false,
     })
     setFormErrors({
       nombre: '',
       precio: '',
       fechaCorte: '',
-      tarjetaId: ''
+      tarjetaId: '',
     })
   }
 
@@ -236,7 +238,12 @@ function Subscripciones() {
   }
 
   const handleDeleteClick = async () => {
-    if (selectedSubscription && window.confirm(`¿Estás seguro de que quieres eliminar la subscripción "${selectedSubscription.nombre}"?`)) {
+    if (
+      selectedSubscription &&
+      window.confirm(
+        `¿Estás seguro de que quieres eliminar la subscripción "${selectedSubscription.nombre}"?`
+      )
+    ) {
       try {
         await api.deleteSubscription(selectedSubscription.id)
         // Recargar subscripciones después de eliminar
@@ -260,7 +267,7 @@ function Subscripciones() {
       nombre: '',
       precio: '',
       fechaCorte: '',
-      tarjetaId: ''
+      tarjetaId: '',
     }
     let isValid = true
 
@@ -305,9 +312,10 @@ function Subscripciones() {
     // Validar nombre único - primero verificar contra el estado local
     const nombreNormalizado = formData.nombre.toLowerCase().trim()
     if (nombreNormalizado) {
-      const nombreExistsLocal = subscriptions.some((sub: Subscription) => 
-        sub.nombre.toLowerCase() === nombreNormalizado &&
-        (!isEditMode || sub.id !== selectedSubscription?.id)
+      const nombreExistsLocal = subscriptions.some(
+        (sub: Subscription) =>
+          sub.nombre.toLowerCase() === nombreNormalizado &&
+          (!isEditMode || sub.id !== selectedSubscription?.id)
       )
       if (nombreExistsLocal) {
         errors.nombre = 'Este nombre ya está en uso'
@@ -320,9 +328,10 @@ function Subscripciones() {
       try {
         const allSubscriptions = await api.getSubscriptions()
         if (allSubscriptions.subscriptions && Array.isArray(allSubscriptions.subscriptions)) {
-          const nombreExists = allSubscriptions.subscriptions.some((sub: any) => 
-            sub.name.toLowerCase() === nombreNormalizado &&
-            (!isEditMode || sub.id !== selectedSubscription?.id)
+          const nombreExists = allSubscriptions.subscriptions.some(
+            (sub: any) =>
+              sub.name.toLowerCase() === nombreNormalizado &&
+              (!isEditMode || sub.id !== selectedSubscription?.id)
           )
           if (nombreExists) {
             errors.nombre = 'Este nombre ya está en uso'
@@ -340,14 +349,19 @@ function Subscripciones() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     const isValid = await validateForm()
     if (!isValid) {
       return
     }
 
     // Validación adicional antes de enviar
-    if (!formData.nombre.trim() || !formData.precio.trim() || !formData.fechaCorte || !formData.tarjetaId.trim()) {
+    if (
+      !formData.nombre.trim() ||
+      !formData.precio.trim() ||
+      !formData.fechaCorte ||
+      !formData.tarjetaId.trim()
+    ) {
       alert('Frontend says: Por favor completa todos los campos requeridos')
       return
     }
@@ -364,7 +378,7 @@ function Subscripciones() {
         price: precioNum,
         cut_date: formData.fechaCorte,
         card_id: formData.tarjetaId.trim(),
-        is_family: formData.esFamiliar
+        is_family: formData.esFamiliar,
       }
 
       console.log('Enviando datos de subscripción:', subscriptionData)
@@ -372,7 +386,7 @@ function Subscripciones() {
       if (isEditMode && selectedSubscription) {
         // Editar subscripción existente
         await api.updateSubscription(selectedSubscription.id, subscriptionData)
-        
+
         // Recargar subscripciones después de actualizar
         const response = await api.getSubscriptions()
         if (response.subscriptions && Array.isArray(response.subscriptions)) {
@@ -398,34 +412,35 @@ function Subscripciones() {
       }
     } catch (err: any) {
       console.error('Error al guardar subscripción:', err)
-      const errorMessage = err.data?.error || err.message
-        ? `Backend says: ${err.data?.error || err.message}`
-        : 'Frontend says: Error al guardar la subscripción. Por favor, intenta de nuevo.'
+      const errorMessage =
+        err.data?.error || err.message
+          ? `Backend says: ${err.data?.error || err.message}`
+          : 'Frontend says: Error al guardar la subscripción. Por favor, intenta de nuevo.'
       alert(errorMessage)
     }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
-    
+
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked
       setFormData({
         ...formData,
-        [name]: checked
+        [name]: checked,
       })
     } else {
       setFormData({
         ...formData,
-        [name]: value
+        [name]: value,
       })
     }
-    
+
     // Limpiar errores cuando el usuario empiece a escribir
     if (formErrors[name as keyof typeof formErrors]) {
       setFormErrors({
         ...formErrors,
-        [name]: ''
+        [name]: '',
       })
     }
   }
@@ -435,7 +450,7 @@ function Subscripciones() {
     return date.toLocaleDateString('es-ES', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric'
+      year: 'numeric',
     })
   }
 
@@ -444,7 +459,7 @@ function Subscripciones() {
       style: 'currency',
       currency: 'COP',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(price)
   }
 
@@ -454,12 +469,12 @@ function Subscripciones() {
     const totalMensual = subscriptions.reduce((total, sub) => total + sub.precio, 0)
     const subscripcionesFamiliares = subscriptions.filter(sub => sub.esFamiliar).length
     const subscripcionesIndividuales = subscriptions.filter(sub => !sub.esFamiliar).length
-    
+
     return {
       totalSubscripciones,
       totalMensual,
       subscripcionesFamiliares,
-      subscripcionesIndividuales
+      subscripcionesIndividuales,
     }
   }
 
@@ -475,9 +490,27 @@ function Subscripciones() {
     }
 
     const testSubscriptions = [
-      { name: 'Netflix', price: 15900, cut_date: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], card_id: cards[0].id, is_family: false },
-      { name: 'Spotify Premium', price: 16900, cut_date: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], card_id: cards[0].id, is_family: true },
-      { name: 'Amazon Prime', price: 29900, cut_date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], card_id: cards.length > 1 ? cards[1].id : cards[0].id, is_family: false }
+      {
+        name: 'Netflix',
+        price: 15900,
+        cut_date: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        card_id: cards[0].id,
+        is_family: false,
+      },
+      {
+        name: 'Spotify Premium',
+        price: 16900,
+        cut_date: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        card_id: cards[0].id,
+        is_family: true,
+      },
+      {
+        name: 'Amazon Prime',
+        price: 29900,
+        cut_date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        card_id: cards.length > 1 ? cards[1].id : cards[0].id,
+        is_family: false,
+      },
     ]
 
     try {
@@ -505,7 +538,11 @@ function Subscripciones() {
 
   // Función de debug para borrar todas las subscripciones
   const handleDeleteAllSubscriptions = async () => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar TODAS las subscripciones? Esta acción es IRREVERSIBLE.')) {
+    if (
+      window.confirm(
+        '¿Estás seguro de que quieres eliminar TODAS las subscripciones? Esta acción es IRREVERSIBLE.'
+      )
+    ) {
       try {
         setIsLoading(true)
         await api.deleteAllSubscriptions()
@@ -542,7 +579,9 @@ function Subscripciones() {
           ) : error ? (
             <div className="loader-container">
               <div className="loader">
-                <p className="loader-text" style={{ color: 'rgba(255, 59, 48, 0.9)' }}>{error}</p>
+                <p className="loader-text" style={{ color: 'rgba(255, 59, 48, 0.9)' }}>
+                  {error}
+                </p>
               </div>
             </div>
           ) : (
@@ -602,32 +641,37 @@ function Subscripciones() {
               <h1 className="subscripciones-page-title">Subscripciones</h1>
 
               {/* Highlights - HIG: Relevant Information */}
-              {subscriptions.length > 0 && (() => {
-                const highlights = calculateHighlights()
-                return (
-                  <div className="subscripciones-summary-block">
-                    <div className="summary-item">
-                      <span className="summary-label">Total</span>
-                      <span className="summary-value">{highlights.totalSubscripciones}</span>
+              {subscriptions.length > 0 &&
+                (() => {
+                  const highlights = calculateHighlights()
+                  return (
+                    <div className="subscripciones-summary-block">
+                      <div className="summary-item">
+                        <span className="summary-label">Total</span>
+                        <span className="summary-value">{highlights.totalSubscripciones}</span>
+                      </div>
+                      <div className="summary-separator"></div>
+                      <div className="summary-item">
+                        <span className="summary-label">Total Mensual</span>
+                        <span className="summary-value">
+                          {formatPrice(highlights.totalMensual)}
+                        </span>
+                      </div>
+                      <div className="summary-separator"></div>
+                      <div className="summary-item">
+                        <span className="summary-label">Familiares</span>
+                        <span className="summary-value">{highlights.subscripcionesFamiliares}</span>
+                      </div>
+                      <div className="summary-separator"></div>
+                      <div className="summary-item">
+                        <span className="summary-label">Individuales</span>
+                        <span className="summary-value">
+                          {highlights.subscripcionesIndividuales}
+                        </span>
+                      </div>
                     </div>
-                    <div className="summary-separator"></div>
-                    <div className="summary-item">
-                      <span className="summary-label">Total Mensual</span>
-                      <span className="summary-value">{formatPrice(highlights.totalMensual)}</span>
-                    </div>
-                    <div className="summary-separator"></div>
-                    <div className="summary-item">
-                      <span className="summary-label">Familiares</span>
-                      <span className="summary-value">{highlights.subscripcionesFamiliares}</span>
-                    </div>
-                    <div className="summary-separator"></div>
-                    <div className="summary-item">
-                      <span className="summary-label">Individuales</span>
-                      <span className="summary-value">{highlights.subscripcionesIndividuales}</span>
-                    </div>
-                  </div>
-                )
-              })()}
+                  )
+                })()}
 
               {subscriptions.length === 0 ? (
                 <div className="empty-state">
@@ -637,7 +681,7 @@ function Subscripciones() {
                 </div>
               ) : (
                 <div className="subscripciones-list">
-                  {subscriptions.map((subscription) => {
+                  {subscriptions.map(subscription => {
                     return (
                       <button
                         key={subscription.id}
@@ -650,12 +694,17 @@ function Subscripciones() {
                           <div className="subscripcion-row-main">
                             <span className="subscripcion-row-title">{subscription.nombre}</span>
                             <span className="subscripcion-row-subtitle">
-                              {subscription.nombreTarjeta} • {formatCardNumber(subscription.ultimos4Digitos)}
+                              {subscription.nombreTarjeta} •{' '}
+                              {formatCardNumber(subscription.ultimos4Digitos)}
                             </span>
                           </div>
                           <div className="subscripcion-row-secondary">
-                            <span className="subscripcion-row-price">{formatPrice(subscription.precio)}</span>
-                            <span className="subscripcion-row-date">Corte: {formatDate(subscription.fechaCorte)}</span>
+                            <span className="subscripcion-row-price">
+                              {formatPrice(subscription.precio)}
+                            </span>
+                            <span className="subscripcion-row-date">
+                              Corte: {formatDate(subscription.fechaCorte)}
+                            </span>
                             {subscription.esFamiliar && (
                               <span className="subscripcion-row-family">👨‍👩‍👧‍👦 Familiar</span>
                             )}
@@ -675,10 +724,12 @@ function Subscripciones() {
       {/* Modal para agregar subscripción */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={handleCloseModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">Nueva Subscripción</h2>
-              <button className="modal-close" onClick={handleCloseModal}>×</button>
+              <button className="modal-close" onClick={handleCloseModal}>
+                ×
+              </button>
             </div>
             <form className="modal-form" onSubmit={handleSubmit}>
               <div className="form-group">
@@ -693,9 +744,7 @@ function Subscripciones() {
                   placeholder="Ej: Netflix"
                   className={formErrors.nombre ? 'input-error' : ''}
                 />
-                {formErrors.nombre && (
-                  <span className="error-message">{formErrors.nombre}</span>
-                )}
+                {formErrors.nombre && <span className="error-message">{formErrors.nombre}</span>}
               </div>
               <div className="form-group">
                 <label htmlFor="precio">Precio (COP)</label>
@@ -711,9 +760,7 @@ function Subscripciones() {
                   placeholder="0.00"
                   className={formErrors.precio ? 'input-error' : ''}
                 />
-                {formErrors.precio && (
-                  <span className="error-message">{formErrors.precio}</span>
-                )}
+                {formErrors.precio && <span className="error-message">{formErrors.precio}</span>}
               </div>
               <div className="form-group">
                 <label htmlFor="fechaCorte">Fecha de Corte</label>
@@ -741,7 +788,7 @@ function Subscripciones() {
                   className={formErrors.tarjetaId ? 'input-error form-select' : 'form-select'}
                 >
                   <option value="">Selecciona una tarjeta</option>
-                  {cards.map((card) => (
+                  {cards.map(card => (
                     <option key={card.id} value={card.id}>
                       {card.nombre} - {formatCardNumber(card.ultimos4Digitos)}
                     </option>
@@ -750,7 +797,9 @@ function Subscripciones() {
                 {formErrors.tarjetaId && (
                   <span className="error-message">{formErrors.tarjetaId}</span>
                 )}
-                <p className="form-hint funny-hint">💡 Solo un idiota pagaría una subscripción con una tarjeta de crédito</p>
+                <p className="form-hint funny-hint">
+                  💡 Solo un idiota pagaría una subscripción con una tarjeta de crédito
+                </p>
               </div>
               <div className="form-group">
                 <label className="checkbox-label">
@@ -779,49 +828,58 @@ function Subscripciones() {
       {/* Modal de detalles */}
       {isDetailModalOpen && selectedSubscription && (
         <div className="modal-overlay" onClick={handleCloseDetailModal}>
-          <div 
-            className="modal-content detail-modal" 
-            onClick={(e) => e.stopPropagation()}
+          <div
+            className="modal-content detail-modal"
+            onClick={e => e.stopPropagation()}
             style={{ '--subscription-color': '#AF52DE' } as React.CSSProperties}
           >
             <div className="modal-header">
               <h2 className="modal-title">Detalles de la Subscripción</h2>
-              <button className="modal-close" onClick={handleCloseDetailModal}>×</button>
+              <button
+                className="modal-close"
+                onClick={handleCloseDetailModal}
+                aria-label="Cerrar modal"
+                type="button"
+              >
+                ×
+              </button>
             </div>
-            
+
             {!isEditMode ? (
               <>
                 <div className="detail-content">
                   <div className="detail-section">
-                    <div className="detail-icon-large" style={{ backgroundColor: '#AF52DE' }}>
-                      <CardMembershipIcon />
-                    </div>
                     <div className="detail-info">
                       <h3 className="detail-name">{selectedSubscription.nombre}</h3>
-                      <p className="detail-card">{selectedSubscription.nombreTarjeta} - {formatCardNumber(selectedSubscription.ultimos4Digitos)}</p>
+                      <p className="detail-card">
+                        {selectedSubscription.nombreTarjeta} -{' '}
+                        {formatCardNumber(selectedSubscription.ultimos4Digitos)}
+                      </p>
                     </div>
                   </div>
-                  
+
                   <div className="detail-row">
                     <span className="detail-label">Precio:</span>
                     <span className="detail-value">{formatPrice(selectedSubscription.precio)}</span>
                   </div>
-                  
+
                   <div className="detail-row">
                     <span className="detail-label">Fecha de Corte:</span>
-                    <span className="detail-value">{formatDate(selectedSubscription.fechaCorte)}</span>
+                    <span className="detail-value">
+                      {formatDate(selectedSubscription.fechaCorte)}
+                    </span>
                   </div>
-                  
+
                   <div className="detail-row">
                     <span className="detail-label">Tarjeta:</span>
                     <span className="detail-value">{selectedSubscription.nombreTarjeta}</span>
                   </div>
-                  
+
                   <div className="detail-row">
                     <span className="detail-label">Banco:</span>
                     <span className="detail-value">{selectedSubscription.banco}</span>
                   </div>
-                  
+
                   {selectedSubscription.esFamiliar && (
                     <div className="detail-row">
                       <span className="detail-label">Tipo:</span>
@@ -831,12 +889,22 @@ function Subscripciones() {
                 </div>
 
                 <div className="detail-actions">
-                  <button className="detail-button edit" onClick={handleEditClick}>
-                    <EditIcon />
+                  <button
+                    className="detail-button edit"
+                    onClick={handleEditClick}
+                    type="button"
+                    aria-label="Editar subscripción"
+                  >
+                    <EditIcon aria-hidden="true" />
                     <span>Editar Subscripción</span>
                   </button>
-                  <button className="detail-button delete" onClick={handleDeleteClick}>
-                    <DeleteIcon />
+                  <button
+                    className="detail-button delete"
+                    onClick={handleDeleteClick}
+                    type="button"
+                    aria-label="Eliminar subscripción"
+                  >
+                    <DeleteIcon aria-hidden="true" />
                     <span>Eliminar Subscripción</span>
                   </button>
                 </div>
@@ -855,9 +923,7 @@ function Subscripciones() {
                     placeholder="Ej: Netflix"
                     className={formErrors.nombre ? 'input-error' : ''}
                   />
-                  {formErrors.nombre && (
-                    <span className="error-message">{formErrors.nombre}</span>
-                  )}
+                  {formErrors.nombre && <span className="error-message">{formErrors.nombre}</span>}
                 </div>
                 <div className="form-group">
                   <label htmlFor="edit-precio">Precio (COP)</label>
@@ -873,9 +939,7 @@ function Subscripciones() {
                     placeholder="0.00"
                     className={formErrors.precio ? 'input-error' : ''}
                   />
-                  {formErrors.precio && (
-                    <span className="error-message">{formErrors.precio}</span>
-                  )}
+                  {formErrors.precio && <span className="error-message">{formErrors.precio}</span>}
                 </div>
                 <div className="form-group">
                   <label htmlFor="edit-fechaCorte">Fecha de Corte</label>
@@ -904,7 +968,7 @@ function Subscripciones() {
                     disabled
                   >
                     <option value="">Selecciona una tarjeta</option>
-                    {cards.map((card) => (
+                    {cards.map(card => (
                       <option key={card.id} value={card.id}>
                         {card.nombre} - {formatCardNumber(card.ultimos4Digitos)}
                       </option>
@@ -924,7 +988,11 @@ function Subscripciones() {
                   </label>
                 </div>
                 <div className="modal-actions">
-                  <button type="button" className="modal-button cancel" onClick={() => setIsEditMode(false)}>
+                  <button
+                    type="button"
+                    className="modal-button cancel"
+                    onClick={() => setIsEditMode(false)}
+                  >
                     Cancelar
                   </button>
                   <button type="submit" className="modal-button submit">
@@ -940,10 +1008,12 @@ function Subscripciones() {
       {/* Modal de Debug */}
       {isDebugModalOpen && (
         <div className="modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">Debug - Subscripciones</h2>
-              <button className="modal-close" onClick={() => setIsDebugModalOpen(false)}>×</button>
+              <button className="modal-close" onClick={() => setIsDebugModalOpen(false)}>
+                ×
+              </button>
             </div>
             <div className="debug-modal-content">
               <div className="debug-options">
@@ -955,7 +1025,9 @@ function Subscripciones() {
                   <span className="debug-option-icon">📦</span>
                   <div className="debug-option-info">
                     <h3 className="debug-option-title">Crear Subscripciones Demo</h3>
-                    <p className="debug-option-description">Crea 3 subscripciones de ejemplo para pruebas</p>
+                    <p className="debug-option-description">
+                      Crea 3 subscripciones de ejemplo para pruebas
+                    </p>
                   </div>
                 </button>
                 <button
@@ -966,7 +1038,9 @@ function Subscripciones() {
                   <span className="debug-option-icon">🗑️</span>
                   <div className="debug-option-info">
                     <h3 className="debug-option-title">Eliminar Todas las Subscripciones</h3>
-                    <p className="debug-option-description">⚠️ PELIGROSO: Elimina todas las subscripciones (IRREVERSIBLE)</p>
+                    <p className="debug-option-description">
+                      ⚠️ PELIGROSO: Elimina todas las subscripciones (IRREVERSIBLE)
+                    </p>
                   </div>
                 </button>
               </div>
