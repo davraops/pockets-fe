@@ -13,6 +13,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
   margin-bottom: var(--spacing-md);
   width: 100%;
 }
@@ -71,12 +72,12 @@
   color: var(--text-primary);
 }
 
-[data-theme="light"] .tarjetas-debito-toolbar-button {
+[data-theme='light'] .tarjetas-debito-toolbar-button {
   background: var(--bg-glass);
   border-color: var(--border-glass);
 }
 
-[data-theme="light"] .tarjetas-debito-toolbar-button:hover:not(:disabled) {
+[data-theme='light'] .tarjetas-debito-toolbar-button:hover:not(:disabled) {
   background: var(--bg-glass-hover);
   border-color: var(--border-glass-hover);
 }
@@ -93,7 +94,7 @@
   text-align: left;
 }
 
-[data-theme="light"] .tarjetas-debito-page-title {
+[data-theme='light'] .tarjetas-debito-page-title {
   color: rgba(0, 0, 0, 0.95);
 }
 
@@ -165,17 +166,17 @@
   flex-shrink: 0;
 }
 
-[data-theme="light"] .tarjetas-debito-menu {
+[data-theme='light'] .tarjetas-debito-menu {
   background: var(--bg-glass);
   border-color: var(--border-glass);
 }
 
-[data-theme="light"] .tarjetas-debito-menu-item {
+[data-theme='light'] .tarjetas-debito-menu-item {
   color: rgba(0, 0, 0, 0.9);
   border-bottom-color: var(--border-glass-light);
 }
 
-[data-theme="light"] .tarjetas-debito-menu-item:hover:not(:disabled) {
+[data-theme='light'] .tarjetas-debito-menu-item:hover:not(:disabled) {
   background: var(--bg-glass-light);
 }
 
@@ -196,15 +197,19 @@
   width: fit-content;
   margin-left: auto;
   margin-right: auto;
-  box-shadow: 0 4px 16px 0 rgba(0, 199, 190, 0.15), var(--shadow-sm);
+  box-shadow:
+    0 4px 16px 0 rgba(0, 199, 190, 0.15),
+    var(--shadow-sm);
   font-family: var(--font-family);
   flex-wrap: wrap;
 }
 
-[data-theme="light"] .tarjetas-debito-summary-block {
+[data-theme='light'] .tarjetas-debito-summary-block {
   background: linear-gradient(135deg, rgba(0, 199, 190, 0.08) 0%, rgba(10, 132, 255, 0.08) 100%);
   border-color: rgba(0, 199, 190, 0.25);
-  box-shadow: 0 4px 16px 0 rgba(0, 199, 190, 0.1), var(--shadow-sm);
+  box-shadow:
+    0 4px 16px 0 rgba(0, 199, 190, 0.1),
+    var(--shadow-sm);
 }
 
 .tarjetas-debito-summary-block .summary-item {
@@ -226,7 +231,7 @@
   line-height: 1.5;
 }
 
-[data-theme="light"] .tarjetas-debito-summary-block .summary-label {
+[data-theme='light'] .tarjetas-debito-summary-block .summary-label {
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -239,39 +244,39 @@
   line-height: 1.3;
 }
 
-[data-theme="light"] .tarjetas-debito-summary-block .summary-value {
+[data-theme='light'] .tarjetas-debito-summary-block .summary-value {
   color: rgba(0, 0, 0, 0.9);
 }
 
 .tarjetas-debito-summary-block .summary-item:nth-child(1) .summary-value {
-  color: #0A84FF;
+  color: #0a84ff;
 }
 
-[data-theme="light"] .tarjetas-debito-summary-block .summary-item:nth-child(1) .summary-value {
-  color: #0051D5;
+[data-theme='light'] .tarjetas-debito-summary-block .summary-item:nth-child(1) .summary-value {
+  color: #0051d5;
 }
 
 .tarjetas-debito-summary-block .summary-item:nth-child(2) .summary-value {
-  color: #00C7BE;
+  color: #00c7be;
 }
 
-[data-theme="light"] .tarjetas-debito-summary-block .summary-item:nth-child(2) .summary-value {
+[data-theme='light'] .tarjetas-debito-summary-block .summary-item:nth-child(2) .summary-value {
   color: #17a2b8;
 }
 
 .tarjetas-debito-summary-block .summary-item:nth-child(3) .summary-value {
-  color: #5856D6;
+  color: #5856d6;
 }
 
-[data-theme="light"] .tarjetas-debito-summary-block .summary-item:nth-child(3) .summary-value {
-  color: #4A47B8;
+[data-theme='light'] .tarjetas-debito-summary-block .summary-item:nth-child(3) .summary-value {
+  color: #4a47b8;
 }
 
 .tarjetas-debito-summary-block .summary-item:nth-child(4) .summary-value {
-  color: #FF9500;
+  color: #ff9500;
 }
 
-[data-theme="light"] .tarjetas-debito-summary-block .summary-item:nth-child(4) .summary-value {
+[data-theme='light'] .tarjetas-debito-summary-block .summary-item:nth-child(4) .summary-value {
   color: #fd7e14;
 }
 
@@ -303,7 +308,7 @@
   border-top: 1px solid var(--border-glass);
   border-right: 1px solid var(--border-glass);
   border-bottom: 1px solid var(--border-glass);
-  border-left: 4px solid var(--card-color, #00C7BE);
+  border-left: 4px solid var(--card-color, #00c7be);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
   transition: all var(--transition-base);
@@ -319,7 +324,9 @@
   border-right-color: var(--border-glass-hover);
   border-bottom-color: var(--border-glass-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px 0 rgba(0, 199, 190, 0.2), var(--shadow-md);
+  box-shadow:
+    0 4px 16px 0 rgba(0, 199, 190, 0.2),
+    var(--shadow-md);
 }
 
 .tarjeta-debito-row:active:not(:disabled) {
@@ -337,7 +344,7 @@
   cursor: not-allowed;
 }
 
-[data-theme="light"] .tarjeta-debito-row {
+[data-theme='light'] .tarjeta-debito-row {
   background: var(--bg-glass);
   border-top-color: var(--border-glass);
   border-right-color: var(--border-glass);
@@ -345,7 +352,7 @@
   /* border-left mantiene su color específico */
 }
 
-[data-theme="light"] .tarjeta-debito-row:hover:not(:disabled) {
+[data-theme='light'] .tarjeta-debito-row:hover:not(:disabled) {
   background: var(--bg-glass-hover);
   border-top-color: var(--border-glass-hover);
   border-right-color: var(--border-glass-hover);
@@ -376,7 +383,7 @@
   line-height: 1.3;
 }
 
-[data-theme="light"] .tarjeta-debito-row-title {
+[data-theme='light'] .tarjeta-debito-row-title {
   color: rgba(0, 0, 0, 0.9);
 }
 
@@ -388,7 +395,7 @@
   line-height: 1.4;
 }
 
-[data-theme="light"] .tarjeta-debito-row-subtitle {
+[data-theme='light'] .tarjeta-debito-row-subtitle {
   color: rgba(0, 0, 0, 0.7);
 }
 
@@ -410,10 +417,10 @@
   line-height: 1.4;
 }
 
-[data-theme="light"] .tarjeta-debito-row-number,
-[data-theme="light"] .tarjeta-debito-row-type,
-[data-theme="light"] .tarjeta-debito-row-subscriptions,
-[data-theme="light"] .tarjeta-debito-row-expiration {
+[data-theme='light'] .tarjeta-debito-row-number,
+[data-theme='light'] .tarjeta-debito-row-type,
+[data-theme='light'] .tarjeta-debito-row-subscriptions,
+[data-theme='light'] .tarjeta-debito-row-expiration {
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -429,7 +436,7 @@
   font-weight: var(--font-weight-medium);
 }
 
-[data-theme="light"] .tarjeta-debito-row-subscriptions {
+[data-theme='light'] .tarjeta-debito-row-subscriptions {
   color: rgba(0, 122, 255, 0.9);
 }
 
@@ -441,7 +448,7 @@
   flex-shrink: 0;
 }
 
-[data-theme="light"] .tarjeta-debito-row-chevron {
+[data-theme='light'] .tarjeta-debito-row-chevron {
   color: rgba(0, 0, 0, 0.5);
 }
 
@@ -466,7 +473,7 @@
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
+  box-shadow:
     0 20px 60px 0 rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
@@ -490,7 +497,12 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.7);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   font-weight: 500;
   letter-spacing: -0.01em;
 }
@@ -523,7 +535,12 @@
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
   margin: 0 0 0.5rem 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   letter-spacing: -0.01em;
 }
 
@@ -531,7 +548,12 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.6);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 /* Cards Grid */
@@ -550,7 +572,7 @@
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
+  box-shadow:
     0 4px 16px 0 rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   cursor: pointer;
@@ -568,7 +590,7 @@
   top: 0;
   bottom: 0;
   width: 4px;
-  background: var(--banco-color, #5856D6);
+  background: var(--banco-color, #5856d6);
   opacity: 0.8;
   border-radius: 20px 0 0 20px;
   pointer-events: none;
@@ -594,7 +616,7 @@
   width: 56px;
   height: 56px;
   border-radius: 14px;
-  background: var(--banco-color, #5856D6);
+  background: var(--banco-color, #5856d6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -618,7 +640,12 @@
   color: rgba(255, 255, 255, 0.95);
   margin: 0 0 0.25rem 0;
   letter-spacing: -0.01em;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
@@ -627,7 +654,12 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.6);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .card-item-body {
@@ -650,7 +682,12 @@
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   letter-spacing: 0.1em;
 }
 
@@ -658,7 +695,12 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.6);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .card-subscriptions-badge {
@@ -687,7 +729,12 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.8);
   font-weight: 500;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   letter-spacing: -0.01em;
 }
 
@@ -702,7 +749,12 @@
   font-weight: 500;
   padding: 0.25rem 0.625rem;
   border-radius: 8px;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   letter-spacing: -0.01em;
 }
 
@@ -751,7 +803,7 @@
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
+  box-shadow:
     0 20px 60px 0 rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   width: 100%;
@@ -863,7 +915,12 @@
   font-size: 1.125rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.8);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   letter-spacing: -0.01em;
 }
 
@@ -877,7 +934,12 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);
   font-size: 1.125rem;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   transition: all 0.2s;
   width: 100%;
 }
@@ -901,7 +963,12 @@
 .error-message {
   font-size: 1.125rem;
   color: rgba(255, 59, 48, 0.9);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .form-select {
@@ -929,7 +996,12 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.5);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .checkbox-label {
@@ -945,46 +1017,51 @@
   font-size: 1rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   letter-spacing: -0.01em;
   line-height: 1.5;
   flex: 1;
 }
 
-[data-theme="light"] .checkbox-label span {
+[data-theme='light'] .checkbox-label span {
   color: rgba(0, 0, 0, 0.9);
 }
 
 /* Basic Checkbox */
-.checkbox-label input[type="checkbox"] {
+.checkbox-label input[type='checkbox'] {
   width: 24px;
   height: 24px;
   min-width: 24px;
   margin: 0;
   margin-right: 1rem;
   cursor: pointer;
-  accent-color: #00C7BE;
+  accent-color: #00c7be;
   flex-shrink: 0;
   border-radius: 6px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   transition: all 0.2s ease;
 }
 
-[data-theme="light"] .checkbox-label input[type="checkbox"] {
-  accent-color: #00C7BE;
+[data-theme='light'] .checkbox-label input[type='checkbox'] {
+  accent-color: #00c7be;
   border-color: rgba(0, 0, 0, 0.3);
 }
 
-.checkbox-label input[type="checkbox"]:hover {
-  border-color: #00C7BE;
+.checkbox-label input[type='checkbox']:hover {
+  border-color: #00c7be;
   transform: scale(1.05);
 }
 
-[data-theme="light"] .checkbox-label input[type="checkbox"]:hover {
-  border-color: #00C7BE;
+[data-theme='light'] .checkbox-label input[type='checkbox']:hover {
+  border-color: #00c7be;
 }
 
-.checkbox-label input[type="checkbox"]:focus-visible {
+.checkbox-label input[type='checkbox']:focus-visible {
   outline: 2px solid rgba(0, 199, 190, 0.5);
   outline-offset: 2px;
 }
@@ -1008,7 +1085,12 @@
   border: none;
   font-size: 1.125rem;
   font-weight: 500;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   cursor: pointer;
   transition: all 0.2s;
   letter-spacing: -0.01em;
@@ -1047,7 +1129,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: var(--banco-color, #00C7BE);
+  background: var(--banco-color, #00c7be);
   border-radius: 32px 32px 0 0;
   opacity: 0.8;
   z-index: 1;
@@ -1176,7 +1258,7 @@
 }
 
 [data-theme='light'] .detail-value.virtual {
-  color: #5856D6;
+  color: #5856d6;
 }
 
 .detail-value.fisica {
@@ -1185,7 +1267,7 @@
 }
 
 [data-theme='light'] .detail-value.fisica {
-  color: #34C759;
+  color: #34c759;
 }
 
 /* Actions Section - HIG: Clear Separation */
@@ -1294,7 +1376,12 @@
     0 4px 16px 0 rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: left;
@@ -1354,14 +1441,24 @@
   color: rgba(255, 255, 255, 0.95);
   margin: 0;
   letter-spacing: -0.01em;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .debug-option-description {
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.6);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   line-height: 1.4;
 }
 
@@ -1374,7 +1471,12 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.9);
   margin: 0 0 1.5rem 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   line-height: 1.5;
 }
 
@@ -1392,7 +1494,12 @@
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
   margin: 0 0 0.75rem 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .subscriptions-list {
@@ -1435,13 +1542,23 @@
   font-size: 1rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .subscription-list-price {
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.6);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .warning-reminder {
@@ -1455,7 +1572,12 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.9);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   line-height: 1.5;
 }
 
@@ -1492,6 +1614,7 @@
 
 @media (max-width: 768px) {
   .tarjetas-debito-toolbar {
+    margin-top: var(--spacing-xl);
     margin-bottom: var(--spacing-xs);
   }
 
@@ -1520,7 +1643,6 @@
     grid-template-columns: 1fr;
     padding: 0;
   }
-
 
   .modal-content {
     max-width: 100%;
@@ -1719,4 +1841,3 @@
     min-height: 44px;
   }
 }
-

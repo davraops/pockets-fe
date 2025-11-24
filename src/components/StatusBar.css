@@ -14,7 +14,9 @@
   border-bottom: 1px solid var(--border-glass-light);
   z-index: 1000;
   font-family: var(--font-family);
-  transition: background-color var(--transition-base), border-color var(--transition-base);
+  transition:
+    background-color var(--transition-base),
+    border-color var(--transition-base);
 }
 
 .status-bar-left,
@@ -74,44 +76,16 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  /* Hide StatusBar on mobile - content moves to Footer */
   .status-bar {
-    padding: 0 1rem;
-  }
-
-  .status-bar-title {
-    font-size: 1rem;
-  }
-
-  .status-bar-date,
-  .status-bar-time {
-    font-size: 1rem;
-  }
-
-  .status-bar-left {
-    gap: 0.5rem;
+    display: none;
   }
 }
 
 @media (max-width: 480px) {
+  /* Hide StatusBar on mobile - content moves to Footer */
   .status-bar {
-    padding: 0 0.75rem;
-  }
-
-  .status-bar-title {
-    font-size: 1rem;
-  }
-
-  .status-bar-date,
-  .status-bar-time {
-    font-size: 1rem;
-  }
-
-  .status-bar-separator {
-    font-size: 1rem;
-  }
-
-  .status-bar-left {
-    gap: 0.375rem;
+    display: none;
   }
 }
 

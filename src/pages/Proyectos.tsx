@@ -844,14 +844,6 @@ function Proyectos() {
                   })}
                 </div>
               )}
-
-              {/* Botón de volver */}
-              <div className="back-button-container">
-                <button className="back-button" onClick={() => navigate('/finanzas')}>
-                  <ArrowBackIcon />
-                  <span>Volver a Finanzas</span>
-                </button>
-              </div>
             </>
           )}
         </div>

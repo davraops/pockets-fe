@@ -68,12 +68,12 @@
   color: var(--text-primary);
 }
 
-[data-theme="light"] .finanzas-toolbar-button {
+[data-theme='light'] .finanzas-toolbar-button {
   background: var(--bg-glass);
   border-color: var(--border-glass);
 }
 
-[data-theme="light"] .finanzas-toolbar-button:hover:not(:disabled) {
+[data-theme='light'] .finanzas-toolbar-button:hover:not(:disabled) {
   background: var(--bg-glass-hover);
   border-color: var(--border-glass-hover);
 }
@@ -93,7 +93,7 @@
   -webkit-backdrop-filter: var(--backdrop-blur);
   border: 2px solid rgba(0, 122, 255, 0.5);
   border-radius: var(--radius-lg);
-  box-shadow: 
+  box-shadow:
     0 4px 16px rgba(0, 122, 255, 0.25),
     var(--shadow-md);
   cursor: pointer;
@@ -109,7 +109,7 @@
 .finanzas-add-transaction-button:hover:not(:disabled) {
   background: linear-gradient(135deg, rgba(0, 122, 255, 0.4) 0%, rgba(88, 86, 214, 0.4) 100%);
   border-color: rgba(0, 122, 255, 0.7);
-  box-shadow: 
+  box-shadow:
     0 6px 20px rgba(0, 122, 255, 0.35),
     var(--shadow-lg);
   transform: translateY(-2px);
@@ -140,19 +140,19 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
-[data-theme="light"] .finanzas-add-transaction-button {
+[data-theme='light'] .finanzas-add-transaction-button {
   background: linear-gradient(135deg, rgba(0, 122, 255, 0.2) 0%, rgba(88, 86, 214, 0.2) 100%);
   border-color: rgba(0, 122, 255, 0.4);
   color: rgba(0, 122, 255, 0.95);
 }
 
-[data-theme="light"] .finanzas-add-transaction-button:hover:not(:disabled) {
+[data-theme='light'] .finanzas-add-transaction-button:hover:not(:disabled) {
   background: linear-gradient(135deg, rgba(0, 122, 255, 0.3) 0%, rgba(88, 86, 214, 0.3) 100%);
   border-color: rgba(0, 122, 255, 0.6);
 }
 
-[data-theme="light"] .finanzas-add-transaction-icon,
-[data-theme="light"] .finanzas-add-transaction-text {
+[data-theme='light'] .finanzas-add-transaction-icon,
+[data-theme='light'] .finanzas-add-transaction-text {
   color: rgba(0, 122, 255, 0.95) !important;
 }
 
@@ -168,7 +168,7 @@
   text-align: left;
 }
 
-[data-theme="light"] .finanzas-page-title {
+[data-theme='light'] .finanzas-page-title {
   color: rgba(0, 0, 0, 0.95);
 }
 
@@ -196,7 +196,7 @@
   font-family: var(--font-family);
 }
 
-[data-theme="light"] .settings-section-header {
+[data-theme='light'] .settings-section-header {
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -291,7 +291,7 @@
   line-height: 1.5;
 }
 
-[data-theme="light"] .settings-row-title {
+[data-theme='light'] .settings-row-title {
   color: rgba(0, 0, 0, 0.9);
 }
 
@@ -304,7 +304,7 @@
   line-height: 1.5;
 }
 
-[data-theme="light"] .settings-row-subtitle {
+[data-theme='light'] .settings-row-subtitle {
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -318,7 +318,7 @@
   margin-left: var(--spacing-xs);
 }
 
-[data-theme="light"] .settings-row-chevron {
+[data-theme='light'] .settings-row-chevron {
   color: rgba(0, 0, 0, 0.4);
 }
 
@@ -450,33 +450,32 @@
 }
 
 .summary-positive {
-  color: #34C759;
+  color: #34c759;
 }
 
 .summary-negative {
-  color: #FF3B30;
+  color: #ff3b30;
 }
 
-[data-theme="light"] .summary-positive {
+[data-theme='light'] .summary-positive {
   color: #28a745;
 }
 
-[data-theme="light"] .summary-negative {
+[data-theme='light'] .summary-negative {
   color: #dc3545;
 }
 
-[data-theme="light"] .summary-label {
+[data-theme='light'] .summary-label {
   color: rgba(0, 0, 0, 0.7);
 }
 
-[data-theme="light"] .summary-value {
+[data-theme='light'] .summary-value {
   color: rgba(0, 0, 0, 0.95);
 }
 
-[data-theme="light"] .summary-label-small {
+[data-theme='light'] .summary-label-small {
   color: rgba(0, 0, 0, 0.6);
 }
-
 
 /* Stat Card - HIG: Touch Target, Feedback, Accessibility */
 .stat-card {
@@ -583,11 +582,11 @@
 }
 
 /* Light mode text adjustments */
-[data-theme="light"] .stat-label {
+[data-theme='light'] .stat-label {
   color: rgba(0, 0, 0, 0.7);
 }
 
-[data-theme="light"] .stat-value {
+[data-theme='light'] .stat-value {
   color: rgba(0, 0, 0, 0.95);
   font-weight: var(--font-weight-bold);
 }
@@ -646,7 +645,6 @@
     animation: none;
   }
 }
-
 
 /* App Icon Button - HIG: Touch Target, Feedback, Accessibility */
 .app-icon {
@@ -715,14 +713,24 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.03) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
   pointer-events: none;
   border-radius: var(--radius-lg);
   transition: opacity var(--transition-fast);
 }
 
-[data-theme="light"] .app-icon-bg::before {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0) 100%);
+[data-theme='light'] .app-icon-bg::before {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
 }
 
 .app-icon:hover:not(:disabled) .app-icon-bg {
@@ -749,7 +757,7 @@
   transition: transform var(--transition-fast);
 }
 
-[data-theme="light"] .app-material-icon {
+[data-theme='light'] .app-material-icon {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
@@ -772,7 +780,7 @@
 }
 
 /* Light mode text adjustments */
-[data-theme="light"] .app-name {
+[data-theme='light'] .app-name {
   color: rgba(0, 0, 0, 0.95) !important;
   font-weight: var(--font-weight-semibold);
 }
@@ -1024,4 +1032,3 @@
     transform: none;
   }
 }
-

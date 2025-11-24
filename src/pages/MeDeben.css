@@ -13,6 +13,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
   margin-bottom: var(--spacing-md);
   width: 100%;
 }
@@ -71,12 +72,12 @@
   color: var(--text-primary);
 }
 
-[data-theme="light"] .me-deben-toolbar-button {
+[data-theme='light'] .me-deben-toolbar-button {
   background: var(--bg-glass);
   border-color: var(--border-glass);
 }
 
-[data-theme="light"] .me-deben-toolbar-button:hover:not(:disabled) {
+[data-theme='light'] .me-deben-toolbar-button:hover:not(:disabled) {
   background: var(--bg-glass-hover);
   border-color: var(--border-glass-hover);
 }
@@ -93,7 +94,7 @@
   text-align: left;
 }
 
-[data-theme="light"] .me-deben-page-title {
+[data-theme='light'] .me-deben-page-title {
   color: rgba(0, 0, 0, 0.95);
 }
 
@@ -165,17 +166,17 @@
   flex-shrink: 0;
 }
 
-[data-theme="light"] .me-deben-menu {
+[data-theme='light'] .me-deben-menu {
   background: var(--bg-glass);
   border-color: var(--border-glass);
 }
 
-[data-theme="light"] .me-deben-menu-item {
+[data-theme='light'] .me-deben-menu-item {
   color: rgba(0, 0, 0, 0.9);
   border-bottom-color: var(--border-glass-light);
 }
 
-[data-theme="light"] .me-deben-menu-item:hover:not(:disabled) {
+[data-theme='light'] .me-deben-menu-item:hover:not(:disabled) {
   background: var(--bg-glass-light);
 }
 
@@ -198,15 +199,19 @@
   width: fit-content;
   margin-left: auto;
   margin-right: auto;
-  box-shadow: 0 4px 16px 0 rgba(52, 199, 89, 0.15), var(--shadow-sm);
+  box-shadow:
+    0 4px 16px 0 rgba(52, 199, 89, 0.15),
+    var(--shadow-sm);
   font-family: var(--font-family);
   flex-wrap: wrap;
 }
 
-[data-theme="light"] .me-deben-summary-block {
+[data-theme='light'] .me-deben-summary-block {
   background: linear-gradient(135deg, rgba(52, 199, 89, 0.08) 0%, rgba(0, 199, 190, 0.08) 100%);
   border-color: rgba(52, 199, 89, 0.25);
-  box-shadow: 0 4px 16px 0 rgba(52, 199, 89, 0.1), var(--shadow-sm);
+  box-shadow:
+    0 4px 16px 0 rgba(52, 199, 89, 0.1),
+    var(--shadow-sm);
 }
 
 .me-deben-summary-block .summary-item {
@@ -228,7 +233,7 @@
   line-height: 1.5;
 }
 
-[data-theme="light"] .me-deben-summary-block .summary-label {
+[data-theme='light'] .me-deben-summary-block .summary-label {
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -241,47 +246,47 @@
   line-height: 1.3;
 }
 
-[data-theme="light"] .me-deben-summary-block .summary-value {
+[data-theme='light'] .me-deben-summary-block .summary-value {
   color: rgba(0, 0, 0, 0.9);
 }
 
 .me-deben-summary-block .summary-item:nth-child(1) .summary-value {
-  color: #0A84FF;
+  color: #0a84ff;
 }
 
-[data-theme="light"] .me-deben-summary-block .summary-item:nth-child(1) .summary-value {
-  color: #0051D5;
+[data-theme='light'] .me-deben-summary-block .summary-item:nth-child(1) .summary-value {
+  color: #0051d5;
 }
 
 .me-deben-summary-block .summary-item:nth-child(2) .summary-value {
-  color: #FF3B30;
+  color: #ff3b30;
 }
 
-[data-theme="light"] .me-deben-summary-block .summary-item:nth-child(2) .summary-value {
+[data-theme='light'] .me-deben-summary-block .summary-item:nth-child(2) .summary-value {
   color: #dc3545;
 }
 
 .me-deben-summary-block .summary-item:nth-child(3) .summary-value {
-  color: #34C759;
+  color: #34c759;
 }
 
-[data-theme="light"] .me-deben-summary-block .summary-item:nth-child(3) .summary-value {
+[data-theme='light'] .me-deben-summary-block .summary-item:nth-child(3) .summary-value {
   color: #28a745;
 }
 
 .me-deben-summary-block .summary-item:nth-child(4) .summary-value {
-  color: #FF9500;
+  color: #ff9500;
 }
 
-[data-theme="light"] .me-deben-summary-block .summary-item:nth-child(4) .summary-value {
+[data-theme='light'] .me-deben-summary-block .summary-item:nth-child(4) .summary-value {
   color: #fd7e14;
 }
 
 .me-deben-summary-block .summary-item:nth-child(5) .summary-value {
-  color: #34C759;
+  color: #34c759;
 }
 
-[data-theme="light"] .me-deben-summary-block .summary-item:nth-child(5) .summary-value {
+[data-theme='light'] .me-deben-summary-block .summary-item:nth-child(5) .summary-value {
   color: #28a745;
 }
 
@@ -329,7 +334,9 @@
   border-right-color: var(--border-glass-hover);
   border-bottom-color: var(--border-glass-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px 0 rgba(52, 199, 89, 0.2), var(--shadow-md);
+  box-shadow:
+    0 4px 16px 0 rgba(52, 199, 89, 0.2),
+    var(--shadow-md);
 }
 
 .deudor-row:active:not(:disabled) {
@@ -352,7 +359,7 @@
   border-right-color: rgba(52, 199, 89, 0.4);
   border-bottom-color: rgba(52, 199, 89, 0.4);
   border-left-color: rgba(52, 199, 89, 0.8);
-  box-shadow: 
+  box-shadow:
     0 4px 16px 0 rgba(52, 199, 89, 0.2),
     var(--shadow-sm);
 }
@@ -362,12 +369,12 @@
   border-right-color: rgba(52, 199, 89, 0.6);
   border-bottom-color: rgba(52, 199, 89, 0.6);
   border-left-color: rgba(52, 199, 89, 1);
-  box-shadow: 
+  box-shadow:
     0 8px 24px 0 rgba(52, 199, 89, 0.3),
     var(--shadow-md);
 }
 
-[data-theme="light"] .deudor-row {
+[data-theme='light'] .deudor-row {
   background: var(--bg-glass);
   border-top-color: var(--border-glass);
   border-right-color: var(--border-glass);
@@ -375,7 +382,7 @@
   /* border-left mantiene su color específico (verde) */
 }
 
-[data-theme="light"] .deudor-row:hover:not(:disabled) {
+[data-theme='light'] .deudor-row:hover:not(:disabled) {
   background: var(--bg-glass-hover);
   border-top-color: var(--border-glass-hover);
   border-right-color: var(--border-glass-hover);
@@ -406,7 +413,7 @@
   line-height: 1.3;
 }
 
-[data-theme="light"] .deudor-row-title {
+[data-theme='light'] .deudor-row-title {
   color: rgba(0, 0, 0, 0.9);
 }
 
@@ -418,7 +425,7 @@
   line-height: 1.4;
 }
 
-[data-theme="light"] .deudor-row-subtitle {
+[data-theme='light'] .deudor-row-subtitle {
   color: rgba(0, 0, 0, 0.7);
 }
 
@@ -448,9 +455,9 @@
   line-height: 1.4;
 }
 
-[data-theme="light"] .deudor-row-pending,
-[data-theme="light"] .deudor-row-total,
-[data-theme="light"] .deudor-row-paid {
+[data-theme='light'] .deudor-row-pending,
+[data-theme='light'] .deudor-row-total,
+[data-theme='light'] .deudor-row-paid {
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -460,7 +467,7 @@
   font-size: var(--font-size-lg);
 }
 
-[data-theme="light"] .deudor-row-total {
+[data-theme='light'] .deudor-row-total {
   color: rgba(0, 0, 0, 0.95);
 }
 
@@ -470,7 +477,7 @@
   font-size: var(--font-size-sm);
 }
 
-[data-theme="light"] .deudor-row-pending {
+[data-theme='light'] .deudor-row-pending {
   color: rgba(0, 0, 0, 0.7);
 }
 
@@ -506,7 +513,7 @@
   text-align: right;
 }
 
-[data-theme="light"] .deudor-row-progress-text {
+[data-theme='light'] .deudor-row-progress-text {
   color: rgba(0, 0, 0, 0.9);
 }
 
@@ -518,7 +525,7 @@
   flex-shrink: 0;
 }
 
-[data-theme="light"] .deudor-row-chevron {
+[data-theme='light'] .deudor-row-chevron {
   color: rgba(0, 0, 0, 0.5);
 }
 
@@ -555,7 +562,7 @@
   top: 0;
   bottom: 0;
   width: 4px;
-  background: var(--debtor-color, #34C759);
+  background: var(--debtor-color, #34c759);
   opacity: 0.8;
   border-radius: 20px 0 0 20px;
   pointer-events: none;
@@ -564,14 +571,14 @@
 
 .debtor-card.debtor-paid-off {
   border-color: rgba(52, 199, 89, 0.4);
-  box-shadow: 
+  box-shadow:
     0 4px 16px 0 rgba(52, 199, 89, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .debtor-card.debtor-paid-off:hover {
   border-color: rgba(52, 199, 89, 0.6);
-  box-shadow: 
+  box-shadow:
     0 8px 24px 0 rgba(52, 199, 89, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
@@ -605,7 +612,7 @@
   width: 64px;
   height: 64px;
   border-radius: 16px;
-  background: var(--debtor-color, #34C759);
+  background: var(--debtor-color, #34c759);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -632,7 +639,12 @@
   color: rgba(255, 255, 255, 0.95);
   margin: 0;
   letter-spacing: -0.01em;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
@@ -641,7 +653,12 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.6);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
@@ -665,7 +682,12 @@
 .debtor-main-label {
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.5);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -674,7 +696,12 @@
   font-size: 1.75rem;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.95);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   letter-spacing: -0.02em;
 }
 
@@ -694,7 +721,12 @@
 .debtor-secondary-label {
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.5);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -703,7 +735,12 @@
   font-size: 1rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   letter-spacing: -0.01em;
 }
 
@@ -726,7 +763,7 @@
 
 .debtor-progress-fill {
   height: 100%;
-  background: var(--debtor-color, #34C759);
+  background: var(--debtor-color, #34c759);
   border-radius: 4px;
   transition: width 0.3s ease;
 }
@@ -735,7 +772,12 @@
   font-size: 1rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.7);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   min-width: 80px;
   text-align: right;
 }
@@ -839,7 +881,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: var(--debtor-color, #34C759);
+  background: var(--debtor-color, #34c759);
   border-radius: 32px 32px 0 0;
   opacity: 0.8;
   z-index: 1;
@@ -932,7 +974,7 @@
 
 .debtor-detail-progress-fill {
   height: 100%;
-  background: var(--debtor-color, #34C759);
+  background: var(--debtor-color, #34c759);
   border-radius: 6px;
   transition: width 0.3s ease;
 }
@@ -1006,7 +1048,7 @@
 }
 
 .detail-value.remaining {
-  color: #34C759;
+  color: #34c759;
   font-weight: var(--font-weight-semibold);
 }
 
@@ -1015,7 +1057,7 @@
 }
 
 .detail-value.spent {
-  color: #FF3B30;
+  color: #ff3b30;
   font-weight: var(--font-weight-semibold);
 }
 
@@ -1119,6 +1161,7 @@
 
 @media (max-width: 768px) {
   .me-deben-toolbar {
+    margin-top: var(--spacing-xl);
     margin-bottom: var(--spacing-xs);
   }
 
@@ -1451,7 +1494,12 @@
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: left;
   width: 100%;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .debug-option-button:hover:not(:disabled) {
@@ -1507,13 +1555,23 @@
   color: rgba(255, 255, 255, 0.95);
   margin: 0;
   letter-spacing: -0.01em;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .debug-option-description {
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.6);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   line-height: 1.4;
 }

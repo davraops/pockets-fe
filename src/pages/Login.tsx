@@ -147,10 +147,10 @@ function Login() {
 
   return (
     <div className="login-container">
-      <div className="login-theme-toggle-wrapper">
-        <ThemeToggle />
-      </div>
       <div className="login-card">
+        <div className="login-theme-toggle-wrapper">
+          <ThemeToggle />
+        </div>
         <div className="login-header">
           <div className="login-icon" aria-hidden="true">
             <LockIcon />

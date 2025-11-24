@@ -50,7 +50,7 @@
   border: 1px solid rgba(255, 193, 7, 0.4);
 }
 
-[data-theme="light"] .theme-toggle-track-light {
+[data-theme='light'] .theme-toggle-track-light {
   background: rgba(255, 193, 7, 0.3);
   border: 1px solid rgba(255, 193, 7, 0.5);
 }
@@ -86,7 +86,7 @@
   transform: translateX(24px);
 }
 
-[data-theme="light"] .theme-toggle-thumb-light {
+[data-theme='light'] .theme-toggle-thumb-light {
   background: rgba(255, 255, 255, 1);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
@@ -123,4 +123,3 @@
     transition: none;
   }
 }
-

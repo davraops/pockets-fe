@@ -13,6 +13,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
   margin-bottom: var(--spacing-md);
   width: 100%;
 }
@@ -71,12 +72,12 @@
   color: var(--text-primary);
 }
 
-[data-theme="light"] .proyectos-toolbar-button {
+[data-theme='light'] .proyectos-toolbar-button {
   background: var(--bg-glass);
   border-color: var(--border-glass);
 }
 
-[data-theme="light"] .proyectos-toolbar-button:hover:not(:disabled) {
+[data-theme='light'] .proyectos-toolbar-button:hover:not(:disabled) {
   background: var(--bg-glass-hover);
   border-color: var(--border-glass-hover);
 }
@@ -93,7 +94,7 @@
   text-align: left;
 }
 
-[data-theme="light"] .proyectos-page-title {
+[data-theme='light'] .proyectos-page-title {
   color: rgba(0, 0, 0, 0.95);
 }
 
@@ -165,17 +166,17 @@
   flex-shrink: 0;
 }
 
-[data-theme="light"] .proyectos-menu {
+[data-theme='light'] .proyectos-menu {
   background: var(--bg-glass);
   border-color: var(--border-glass);
 }
 
-[data-theme="light"] .proyectos-menu-item {
+[data-theme='light'] .proyectos-menu-item {
   color: rgba(0, 0, 0, 0.9);
   border-bottom-color: var(--border-glass-light);
 }
 
-[data-theme="light"] .proyectos-menu-item:hover:not(:disabled) {
+[data-theme='light'] .proyectos-menu-item:hover:not(:disabled) {
   background: var(--bg-glass-light);
 }
 
@@ -196,15 +197,19 @@
   width: fit-content;
   margin-left: auto;
   margin-right: auto;
-  box-shadow: 0 4px 16px 0 rgba(255, 149, 0, 0.15), var(--shadow-sm);
+  box-shadow:
+    0 4px 16px 0 rgba(255, 149, 0, 0.15),
+    var(--shadow-sm);
   font-family: var(--font-family);
   flex-wrap: wrap;
 }
 
-[data-theme="light"] .proyectos-summary-block {
+[data-theme='light'] .proyectos-summary-block {
   background: linear-gradient(135deg, rgba(255, 149, 0, 0.08) 0%, rgba(255, 45, 85, 0.08) 100%);
   border-color: rgba(255, 149, 0, 0.25);
-  box-shadow: 0 4px 16px 0 rgba(255, 149, 0, 0.1), var(--shadow-sm);
+  box-shadow:
+    0 4px 16px 0 rgba(255, 149, 0, 0.1),
+    var(--shadow-sm);
 }
 
 .proyectos-summary-block .summary-item {
@@ -226,7 +231,7 @@
   line-height: 1.5;
 }
 
-[data-theme="light"] .proyectos-summary-block .summary-label {
+[data-theme='light'] .proyectos-summary-block .summary-label {
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -239,39 +244,39 @@
   line-height: 1.3;
 }
 
-[data-theme="light"] .proyectos-summary-block .summary-value {
+[data-theme='light'] .proyectos-summary-block .summary-value {
   color: rgba(0, 0, 0, 0.9);
 }
 
 .proyectos-summary-block .summary-item:nth-child(2) .summary-value {
-  color: #0A84FF;
+  color: #0a84ff;
 }
 
-[data-theme="light"] .proyectos-summary-block .summary-item:nth-child(2) .summary-value {
-  color: #0051D5;
+[data-theme='light'] .proyectos-summary-block .summary-item:nth-child(2) .summary-value {
+  color: #0051d5;
 }
 
 .proyectos-summary-block .summary-item:nth-child(3) .summary-value {
-  color: #34C759;
+  color: #34c759;
 }
 
-[data-theme="light"] .proyectos-summary-block .summary-item:nth-child(3) .summary-value {
+[data-theme='light'] .proyectos-summary-block .summary-item:nth-child(3) .summary-value {
   color: #28a745;
 }
 
 .proyectos-summary-block .summary-item:nth-child(4) .summary-value {
-  color: #34C759;
+  color: #34c759;
 }
 
-[data-theme="light"] .proyectos-summary-block .summary-item:nth-child(4) .summary-value {
+[data-theme='light'] .proyectos-summary-block .summary-item:nth-child(4) .summary-value {
   color: #28a745;
 }
 
 .proyectos-summary-block .summary-item:nth-child(5) .summary-value {
-  color: #FF9500;
+  color: #ff9500;
 }
 
-[data-theme="light"] .proyectos-summary-block .summary-item:nth-child(5) .summary-value {
+[data-theme='light'] .proyectos-summary-block .summary-item:nth-child(5) .summary-value {
   color: #fd7e14;
 }
 
@@ -303,7 +308,7 @@
   border-top: 1px solid var(--border-glass);
   border-right: 1px solid var(--border-glass);
   border-bottom: 1px solid var(--border-glass);
-  border-left: 4px solid var(--project-color, #FF9500);
+  border-left: 4px solid var(--project-color, #ff9500);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
   transition: all var(--transition-base);
@@ -319,7 +324,9 @@
   border-right-color: var(--border-glass-hover);
   border-bottom-color: var(--border-glass-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px 0 rgba(255, 149, 0, 0.2), var(--shadow-md);
+  box-shadow:
+    0 4px 16px 0 rgba(255, 149, 0, 0.2),
+    var(--shadow-md);
 }
 
 .proyecto-row:active:not(:disabled) {
@@ -337,7 +344,7 @@
   cursor: not-allowed;
 }
 
-[data-theme="light"] .proyecto-row {
+[data-theme='light'] .proyecto-row {
   background: var(--bg-glass);
   border-top-color: var(--border-glass);
   border-right-color: var(--border-glass);
@@ -345,7 +352,7 @@
   /* border-left mantiene su color específico */
 }
 
-[data-theme="light"] .proyecto-row:hover:not(:disabled) {
+[data-theme='light'] .proyecto-row:hover:not(:disabled) {
   background: var(--bg-glass-hover);
   border-top-color: var(--border-glass-hover);
   border-right-color: var(--border-glass-hover);
@@ -376,7 +383,7 @@
   line-height: 1.3;
 }
 
-[data-theme="light"] .proyecto-row-title {
+[data-theme='light'] .proyecto-row-title {
   color: rgba(0, 0, 0, 0.9);
 }
 
@@ -388,7 +395,7 @@
   line-height: 1.4;
 }
 
-[data-theme="light"] .proyecto-row-subtitle {
+[data-theme='light'] .proyecto-row-subtitle {
   color: rgba(0, 0, 0, 0.7);
 }
 
@@ -431,7 +438,7 @@
   text-align: right;
 }
 
-[data-theme="light"] .proyecto-row-progress-text {
+[data-theme='light'] .proyecto-row-progress-text {
   color: rgba(0, 0, 0, 0.9);
 }
 
@@ -445,9 +452,9 @@
   line-height: 1.4;
 }
 
-[data-theme="light"] .proyecto-row-amount,
-[data-theme="light"] .proyecto-row-restante,
-[data-theme="light"] .proyecto-row-duration {
+[data-theme='light'] .proyecto-row-amount,
+[data-theme='light'] .proyecto-row-restante,
+[data-theme='light'] .proyecto-row-duration {
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -456,7 +463,7 @@
   color: var(--text-primary);
 }
 
-[data-theme="light"] .proyecto-row-amount {
+[data-theme='light'] .proyecto-row-amount {
   color: rgba(0, 0, 0, 0.9);
 }
 
@@ -468,7 +475,7 @@
   flex-shrink: 0;
 }
 
-[data-theme="light"] .proyecto-row-chevron {
+[data-theme='light'] .proyecto-row-chevron {
   color: rgba(0, 0, 0, 0.5);
 }
 
@@ -493,7 +500,7 @@
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
+  box-shadow:
     0 20px 60px 0 rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
@@ -517,7 +524,12 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.7);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   font-weight: 500;
   letter-spacing: -0.01em;
 }
@@ -550,7 +562,12 @@
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
   margin: 0 0 0.5rem 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   letter-spacing: -0.01em;
 }
 
@@ -558,7 +575,12 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.6);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 /* Projects Grid */
@@ -577,7 +599,7 @@
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
+  box-shadow:
     0 4px 16px 0 rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   cursor: pointer;
@@ -595,7 +617,7 @@
   top: 0;
   bottom: 0;
   width: 4px;
-  background: var(--project-color, #00C7BE);
+  background: var(--project-color, #00c7be);
   opacity: 0.8;
   border-radius: 20px 0 0 20px;
   pointer-events: none;
@@ -621,7 +643,7 @@
   width: 56px;
   height: 56px;
   border-radius: 14px;
-  background: var(--project-color, #00C7BE);
+  background: var(--project-color, #00c7be);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -645,7 +667,12 @@
   color: rgba(255, 255, 255, 0.95);
   margin: 0 0 0.25rem 0;
   letter-spacing: -0.01em;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
@@ -654,7 +681,12 @@
   font-size: 1rem;
   font-weight: 500;
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .project-item-body {
@@ -680,7 +712,7 @@
 
 .project-progress-fill {
   height: 100%;
-  background: var(--project-color, #00C7BE);
+  background: var(--project-color, #00c7be);
   border-radius: 4px;
   transition: width 0.3s ease;
 }
@@ -689,7 +721,12 @@
   font-size: 0.875rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   min-width: 45px;
   text-align: right;
 }
@@ -709,14 +746,24 @@
 .project-amount-label {
   font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.6);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .project-amount-value {
   font-size: 0.875rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .project-dates {
@@ -729,7 +776,12 @@
   font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.6);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .project-date-label {
@@ -750,7 +802,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: var(--project-color, #00C7BE);
+  background: var(--project-color, #00c7be);
   border-radius: 32px 32px 0 0;
   opacity: 0.8;
   z-index: 1;
@@ -840,7 +892,7 @@
 
 .project-detail-progress-fill {
   height: 100%;
-  background: var(--project-color, #00C7BE);
+  background: var(--project-color, #00c7be);
   border-radius: 6px;
   transition: width 0.3s ease;
 }
@@ -1039,7 +1091,7 @@
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
+  box-shadow:
     0 20px 60px 0 rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   width: 100%;
@@ -1151,7 +1203,12 @@
   font-size: 1.125rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.8);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   letter-spacing: -0.01em;
 }
 
@@ -1165,7 +1222,12 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);
   font-size: 1.125rem;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   transition: all 0.2s;
   width: 100%;
 }
@@ -1189,14 +1251,24 @@
 .error-message {
   font-size: 1.125rem;
   color: rgba(255, 59, 48, 0.9);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .form-hint {
   font-size: 0.875rem;
   color: rgba(255, 193, 7, 0.8);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .modal-actions {
@@ -1213,7 +1285,12 @@
   border: none;
   font-size: 1rem;
   font-weight: 500;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   cursor: pointer;
   transition: all 0.2s;
   letter-spacing: -0.01em;
@@ -1264,7 +1341,12 @@
     0 4px 16px 0 rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: left;
@@ -1324,14 +1406,24 @@
   color: rgba(255, 255, 255, 0.95);
   margin: 0;
   letter-spacing: -0.01em;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .debug-option-description {
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.6);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   line-height: 1.4;
 }
 
@@ -1339,6 +1431,11 @@
 @media (max-width: 768px) {
   .proyectos-content {
     padding: 0 0.5rem;
+  }
+
+  .proyectos-toolbar {
+    margin-top: var(--spacing-xl);
+    margin-bottom: var(--spacing-sm);
   }
 
   .projects-grid {
@@ -1559,4 +1656,3 @@
     min-height: 44px;
   }
 }
-

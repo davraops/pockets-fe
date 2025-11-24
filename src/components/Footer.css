@@ -2,45 +2,162 @@
   width: 100%;
   padding: 1.5rem 2rem;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  gap: var(--spacing-md);
+  background: var(--bg-glass-light);
+  backdrop-filter: var(--backdrop-blur-light);
+  -webkit-backdrop-filter: var(--backdrop-blur-light);
+  border-top: 1px solid var(--border-glass-light);
   position: relative;
   z-index: 10;
   margin-top: auto;
 }
 
+[data-theme='light'] .app-footer {
+  background: rgba(0, 0, 0, 0.02);
+  border-top-color: rgba(0, 0, 0, 0.1);
+}
+
 .footer-text {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-  font-weight: 500;
-  letter-spacing: -0.01em;
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-tight);
   text-align: center;
+  line-height: 1.5;
+}
+
+[data-theme='light'] .footer-text {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* Mobile: StatusBar content integrated in Footer */
+.footer-status-mobile {
+  display: none;
+  width: 100%;
+  padding: var(--spacing-md) 0;
+  border-bottom: 1px solid var(--border-glass-light);
+  margin-bottom: var(--spacing-md);
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+[data-theme='light'] .footer-status-mobile {
+  border-bottom-color: rgba(0, 0, 0, 0.1);
+}
+
+.footer-status-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.footer-status-theme {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.footer-status-separator {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-base);
+  flex-shrink: 0;
+}
+
+[data-theme='light'] .footer-status-separator {
+  color: rgba(0, 0, 0, 0.3);
+}
+
+.footer-status-date {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  letter-spacing: var(--letter-spacing-tight);
+  text-transform: capitalize;
+  flex-shrink: 0;
+}
+
+[data-theme='light'] .footer-status-date {
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.footer-status-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  letter-spacing: var(--letter-spacing-tight);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+[data-theme='light'] .footer-status-title {
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.footer-status-time {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  letter-spacing: var(--letter-spacing-tight);
+  flex-shrink: 0;
+}
+
+[data-theme='light'] .footer-status-time {
+  color: rgba(0, 0, 0, 0.9);
 }
 
 /* Responsive */
 @media (max-width: 768px) {
   .app-footer {
-    padding: 1.25rem 1.5rem;
+    padding: var(--spacing-lg) var(--spacing-md);
+    gap: var(--spacing-md);
+  }
+
+  /* Show StatusBar content in Footer on mobile */
+  .footer-status-mobile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .footer-text {
-    font-size: 1rem;
+    font-size: var(--font-size-sm);
+    padding-top: var(--spacing-sm);
   }
 }
 
 @media (max-width: 480px) {
   .app-footer {
-    padding: 1rem 1.25rem;
+    padding: var(--spacing-md) var(--spacing-sm);
+    gap: var(--spacing-sm);
+  }
+
+  .footer-status-mobile {
+    padding: var(--spacing-sm) 0;
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .footer-status-center {
+    gap: var(--spacing-xs);
+  }
+
+  .footer-status-date,
+  .footer-status-time {
+    font-size: var(--font-size-sm);
   }
 
   .footer-text {
-    font-size: 1rem;
+    font-size: var(--font-size-xs);
+    padding-top: var(--spacing-xs);
   }
 }
-

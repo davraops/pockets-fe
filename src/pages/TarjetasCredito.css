@@ -13,6 +13,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
   margin-bottom: var(--spacing-md);
   width: 100%;
 }
@@ -71,12 +72,12 @@
   color: var(--text-primary);
 }
 
-[data-theme="light"] .tarjetas-credito-toolbar-button {
+[data-theme='light'] .tarjetas-credito-toolbar-button {
   background: var(--bg-glass);
   border-color: var(--border-glass);
 }
 
-[data-theme="light"] .tarjetas-credito-toolbar-button:hover:not(:disabled) {
+[data-theme='light'] .tarjetas-credito-toolbar-button:hover:not(:disabled) {
   background: var(--bg-glass-hover);
   border-color: var(--border-glass-hover);
 }
@@ -93,7 +94,7 @@
   text-align: left;
 }
 
-[data-theme="light"] .tarjetas-credito-page-title {
+[data-theme='light'] .tarjetas-credito-page-title {
   color: rgba(0, 0, 0, 0.95);
 }
 
@@ -165,16 +166,16 @@
   flex-shrink: 0;
 }
 
-[data-theme="light"] .tarjetas-credito-menu {
+[data-theme='light'] .tarjetas-credito-menu {
   background: var(--bg-glass);
   border-color: var(--border-glass);
 }
 
-[data-theme="light"] .tarjetas-credito-menu-item {
+[data-theme='light'] .tarjetas-credito-menu-item {
   color: rgba(0, 0, 0, 0.9);
 }
 
-[data-theme="light"] .tarjetas-credito-menu-item:hover:not(:disabled) {
+[data-theme='light'] .tarjetas-credito-menu-item:hover:not(:disabled) {
   background: var(--bg-glass-light);
 }
 
@@ -195,14 +196,18 @@
   width: fit-content;
   margin-left: auto;
   margin-right: auto;
-  box-shadow: 0 4px 16px 0 rgba(255, 45, 85, 0.15), var(--shadow-sm);
+  box-shadow:
+    0 4px 16px 0 rgba(255, 45, 85, 0.15),
+    var(--shadow-sm);
   font-family: var(--font-family);
 }
 
-[data-theme="light"] .credit-summary-block {
+[data-theme='light'] .credit-summary-block {
   background: linear-gradient(135deg, rgba(255, 45, 85, 0.08) 0%, rgba(255, 149, 0, 0.08) 100%);
   border-color: rgba(255, 45, 85, 0.25);
-  box-shadow: 0 4px 16px 0 rgba(255, 45, 85, 0.1), var(--shadow-sm);
+  box-shadow:
+    0 4px 16px 0 rgba(255, 45, 85, 0.1),
+    var(--shadow-sm);
 }
 
 .summary-item {
@@ -224,7 +229,7 @@
   line-height: 1.5;
 }
 
-[data-theme="light"] .summary-label {
+[data-theme='light'] .summary-label {
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -237,24 +242,24 @@
   line-height: 1.3;
 }
 
-[data-theme="light"] .summary-value {
+[data-theme='light'] .summary-value {
   color: rgba(0, 0, 0, 0.9);
 }
 
 .summary-value.available {
-  color: #34C759;
+  color: #34c759;
 }
 
-[data-theme="light"] .summary-value.available {
+[data-theme='light'] .summary-value.available {
   color: #28a745;
 }
 
 .credit-summary-block .summary-item:nth-child(1) .summary-value {
-  color: #0A84FF;
+  color: #0a84ff;
 }
 
-[data-theme="light"] .credit-summary-block .summary-item:nth-child(1) .summary-value {
-  color: #0051D5;
+[data-theme='light'] .credit-summary-block .summary-item:nth-child(1) .summary-value {
+  color: #0051d5;
 }
 
 .summary-separator {
@@ -279,10 +284,12 @@
   font-family: var(--font-family);
 }
 
-[data-theme="light"] .credit-warning-banner {
+[data-theme='light'] .credit-warning-banner {
   background: rgba(255, 149, 0, 0.15);
   border-color: rgba(255, 149, 0, 0.4);
-  box-shadow: 0 2px 8px rgba(255, 149, 0, 0.15), var(--shadow-sm);
+  box-shadow:
+    0 2px 8px rgba(255, 149, 0, 0.15),
+    var(--shadow-sm);
 }
 
 .credit-warning-icon {
@@ -292,7 +299,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #FF9500;
+  color: #ff9500;
   margin-top: 2px;
 }
 
@@ -302,7 +309,7 @@
   height: 1.75rem !important;
 }
 
-[data-theme="light"] .credit-warning-icon {
+[data-theme='light'] .credit-warning-icon {
   color: rgba(255, 107, 0, 0.95);
 }
 
@@ -320,16 +327,16 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
-[data-theme="light"] .credit-warning-text {
+[data-theme='light'] .credit-warning-text {
   color: rgba(0, 0, 0, 0.9);
 }
 
 .credit-warning-text strong {
   font-weight: var(--font-weight-bold);
-  color: #FF9500;
+  color: #ff9500;
 }
 
-[data-theme="light"] .credit-warning-text strong {
+[data-theme='light'] .credit-warning-text strong {
   color: rgba(255, 107, 0, 0.95);
 }
 
@@ -364,7 +371,7 @@
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
+  box-shadow:
     0 20px 60px 0 rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
@@ -388,7 +395,12 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.7);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   font-weight: 500;
   letter-spacing: -0.01em;
 }
@@ -413,13 +425,18 @@
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border-radius: 16px;
   border: 1px solid rgba(255, 45, 85, 0.3);
-  box-shadow: 
+  box-shadow:
     0 4px 16px 0 rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);
   font-size: 1rem;
   font-weight: 500;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   letter-spacing: -0.01em;
@@ -429,7 +446,7 @@
   background: rgba(255, 45, 85, 0.3);
   border-color: rgba(255, 45, 85, 0.5);
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 6px 20px 0 rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
@@ -448,13 +465,18 @@
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border-radius: 16px;
   border: 1px solid rgba(255, 59, 48, 0.3);
-  box-shadow: 
+  box-shadow:
     0 4px 16px 0 rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);
   font-size: 1rem;
   font-weight: 500;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   letter-spacing: -0.01em;
@@ -464,7 +486,7 @@
   background: rgba(255, 59, 48, 0.3);
   border-color: rgba(255, 59, 48, 0.5);
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 6px 20px 0 rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
@@ -498,7 +520,7 @@
   opacity: 0.5;
 }
 
-[data-theme="light"] .empty-icon {
+[data-theme='light'] .empty-icon {
   color: rgba(0, 0, 0, 0.3);
 }
 
@@ -510,7 +532,7 @@
   line-height: 1.4;
 }
 
-[data-theme="light"] .empty-text {
+[data-theme='light'] .empty-text {
   color: rgba(0, 0, 0, 0.9);
 }
 
@@ -521,7 +543,7 @@
   line-height: 1.5;
 }
 
-[data-theme="light"] .empty-subtext {
+[data-theme='light'] .empty-subtext {
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -552,7 +574,7 @@
   font-family: var(--font-family);
   cursor: pointer;
   text-align: left;
-  border-left: 4px solid var(--banco-color, #FF2D55);
+  border-left: 4px solid var(--banco-color, #ff2d55);
 }
 
 .card-row::before {
@@ -562,7 +584,7 @@
   top: 0;
   bottom: 0;
   width: 4px;
-  background: var(--banco-color, #FF2D55);
+  background: var(--banco-color, #ff2d55);
   opacity: 0.8;
   border-radius: var(--radius-md) 0 0 var(--radius-md);
   pointer-events: none;
@@ -572,8 +594,10 @@
 .card-row:hover:not(:disabled) {
   background: var(--bg-glass-light);
   transform: translateX(2px);
-  box-shadow: 0 4px 16px 0 rgba(255, 45, 85, 0.2), var(--shadow-md);
-  border-left-color: var(--banco-color, #FF2D55);
+  box-shadow:
+    0 4px 16px 0 rgba(255, 45, 85, 0.2),
+    var(--shadow-md);
+  border-left-color: var(--banco-color, #ff2d55);
   border-top-color: var(--border-glass-hover);
   border-right-color: var(--border-glass-hover);
   border-bottom-color: var(--border-glass-hover);
@@ -619,14 +643,14 @@
   margin: 0;
 }
 
-[data-theme="light"] .card-row-title {
+[data-theme='light'] .card-row-title {
   color: rgba(0, 0, 0, 0.9);
 }
 
 .card-row-available {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
-  color: #34C759;
+  color: #34c759;
   font-family: var(--font-family);
   letter-spacing: var(--letter-spacing-tight);
   line-height: 1.4;
@@ -634,7 +658,7 @@
   text-align: right;
 }
 
-[data-theme="light"] .card-row-available {
+[data-theme='light'] .card-row-available {
   color: #28a745;
 }
 
@@ -654,7 +678,7 @@
   line-height: 1.4;
 }
 
-[data-theme="light"] .card-row-bank {
+[data-theme='light'] .card-row-bank {
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -663,20 +687,20 @@
   font-size: var(--font-size-sm);
 }
 
-[data-theme="light"] .card-row-separator {
+[data-theme='light'] .card-row-separator {
   color: rgba(0, 0, 0, 0.3);
 }
 
 .card-row-usage {
   font-size: var(--font-size-sm);
-  color: #FF9500;
+  color: #ff9500;
   font-weight: var(--font-weight-medium);
   font-family: var(--font-family);
   letter-spacing: var(--letter-spacing-tight);
   line-height: 1.4;
 }
 
-[data-theme="light"] .card-row-usage {
+[data-theme='light'] .card-row-usage {
   color: #fd7e14;
 }
 
@@ -688,7 +712,7 @@
   line-height: 1.4;
 }
 
-[data-theme="light"] .card-row-benefits {
+[data-theme='light'] .card-row-benefits {
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -709,7 +733,7 @@
   overflow: hidden;
 }
 
-[data-theme="light"] .card-row-progress-bar {
+[data-theme='light'] .card-row-progress-bar {
   background: rgba(0, 0, 0, 0.1);
 }
 
@@ -729,7 +753,7 @@
   margin-left: var(--spacing-xs);
 }
 
-[data-theme="light"] .card-row-chevron {
+[data-theme='light'] .card-row-chevron {
   color: rgba(0, 0, 0, 0.4);
 }
 
@@ -744,13 +768,18 @@
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border-radius: 16px;
   border: 1px solid rgba(255, 45, 85, 0.3);
-  box-shadow: 
+  box-shadow:
     0 4px 16px 0 rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);
   font-size: 1rem;
   font-weight: 500;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   letter-spacing: -0.01em;
@@ -760,7 +789,7 @@
   background: rgba(255, 45, 85, 0.3);
   border-color: rgba(255, 45, 85, 0.5);
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 6px 20px 0 rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
@@ -828,14 +857,24 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.9);
   font-weight: 600;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .benefit-cards {
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.6);
   font-weight: 400;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .no-benefits-message {
@@ -843,7 +882,12 @@
   color: rgba(255, 255, 255, 0.6);
   font-size: 1rem;
   padding: 2rem;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .card-subscriptions-badge {
@@ -872,7 +916,12 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.8);
   font-weight: 500;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   letter-spacing: -0.01em;
 }
 
@@ -899,7 +948,7 @@
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
+  box-shadow:
     0 20px 60px 0 rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   width: 100%;
@@ -1002,15 +1051,15 @@
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-radius: 16px;
   border: 2px solid rgba(255, 45, 85, 0.3);
-  box-shadow: 
+  box-shadow:
     0 4px 16px 0 rgba(255, 45, 85, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-[data-theme="light"] .credit-card-warning {
+[data-theme='light'] .credit-card-warning {
   background: rgba(255, 45, 85, 0.18);
   border-color: rgba(255, 45, 85, 0.45);
-  box-shadow: 
+  box-shadow:
     0 4px 16px 0 rgba(255, 45, 85, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
@@ -1032,12 +1081,17 @@
   font-weight: 700;
   color: rgba(255, 45, 85, 0.95);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   letter-spacing: -0.01em;
   flex: 1;
 }
 
-[data-theme="light"] .warning-title {
+[data-theme='light'] .warning-title {
   color: rgba(220, 20, 60, 1);
 }
 
@@ -1050,10 +1104,15 @@
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
   margin: 0 0 0.75rem 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
-[data-theme="light"] .warning-subtitle {
+[data-theme='light'] .warning-subtitle {
   color: rgba(0, 0, 0, 0.9);
 }
 
@@ -1070,11 +1129,16 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.8);
   line-height: 1.5;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   padding-left: 0;
 }
 
-[data-theme="light"] .tip-item {
+[data-theme='light'] .tip-item {
   color: rgba(0, 0, 0, 0.85);
 }
 
@@ -1083,7 +1147,7 @@
   font-weight: 600;
 }
 
-[data-theme="light"] .tip-item strong {
+[data-theme='light'] .tip-item strong {
   color: rgba(0, 0, 0, 0.95);
 }
 
@@ -1104,7 +1168,12 @@
   font-size: 1.125rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.8);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   letter-spacing: -0.01em;
 }
 
@@ -1119,7 +1188,12 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);
   font-size: 1.125rem;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   transition: all 0.2s;
   width: 100%;
   resize: vertical;
@@ -1127,7 +1201,12 @@
 
 .form-group textarea {
   min-height: 80px;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .form-group input:focus,
@@ -1151,7 +1230,12 @@
 .error-message {
   font-size: 1.125rem;
   color: rgba(255, 59, 48, 0.9);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .form-select {
@@ -1179,7 +1263,12 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.5);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .disabled-input {
@@ -1201,7 +1290,12 @@
   border: none;
   font-size: 1.125rem;
   font-weight: 500;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   cursor: pointer;
   transition: all 0.2s;
   letter-spacing: -0.01em;
@@ -1240,7 +1334,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: var(--banco-color, #FF2D55);
+  background: var(--banco-color, #ff2d55);
   border-radius: 32px 32px 0 0;
   opacity: 0.8;
   z-index: 1;
@@ -1400,7 +1494,7 @@
 .detail-progress-percentage {
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
-  color: #FF3B30;
+  color: #ff3b30;
   font-family: var(--font-family);
   min-width: 50px;
   text-align: right;
@@ -1540,7 +1634,12 @@
     0 4px 16px 0 rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: left;
@@ -1600,14 +1699,24 @@
   color: rgba(255, 255, 255, 0.95);
   margin: 0;
   letter-spacing: -0.01em;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .debug-option-description {
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.6);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   line-height: 1.4;
 }
 
@@ -1620,7 +1729,12 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.9);
   margin: 0 0 1.5rem 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   line-height: 1.5;
 }
 
@@ -1638,7 +1752,12 @@
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
   margin: 0 0 0.75rem 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .subscriptions-list {
@@ -1681,13 +1800,23 @@
   font-size: 1rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .subscription-list-price {
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.6);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .warning-reminder {
@@ -1701,7 +1830,12 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.9);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   line-height: 1.5;
 }
 
@@ -1734,6 +1868,7 @@
   }
 
   .tarjetas-credito-toolbar {
+    margin-top: var(--spacing-xl);
     margin-bottom: var(--spacing-sm);
   }
 
@@ -1880,6 +2015,7 @@
   }
 
   .tarjetas-credito-toolbar {
+    margin-top: var(--spacing-xl);
     margin-bottom: var(--spacing-xs);
   }
 
@@ -2083,4 +2219,3 @@
     height: 20px;
   }
 }
-

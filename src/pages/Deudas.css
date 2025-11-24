@@ -13,6 +13,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
   margin-bottom: var(--spacing-md);
   width: 100%;
 }
@@ -71,12 +72,12 @@
   color: var(--text-primary);
 }
 
-[data-theme="light"] .deudas-toolbar-button {
+[data-theme='light'] .deudas-toolbar-button {
   background: var(--bg-glass);
   border-color: var(--border-glass);
 }
 
-[data-theme="light"] .deudas-toolbar-button:hover:not(:disabled) {
+[data-theme='light'] .deudas-toolbar-button:hover:not(:disabled) {
   background: var(--bg-glass-hover);
   border-color: var(--border-glass-hover);
 }
@@ -93,7 +94,7 @@
   text-align: left;
 }
 
-[data-theme="light"] .deudas-page-title {
+[data-theme='light'] .deudas-page-title {
   color: rgba(0, 0, 0, 0.95);
 }
 
@@ -165,16 +166,16 @@
   flex-shrink: 0;
 }
 
-[data-theme="light"] .deudas-menu {
+[data-theme='light'] .deudas-menu {
   background: var(--bg-glass);
   border-color: var(--border-glass);
 }
 
-[data-theme="light"] .deudas-menu-item {
+[data-theme='light'] .deudas-menu-item {
   color: rgba(0, 0, 0, 0.9);
 }
 
-[data-theme="light"] .deudas-menu-item:hover:not(:disabled) {
+[data-theme='light'] .deudas-menu-item:hover:not(:disabled) {
   background: var(--bg-glass-light);
 }
 
@@ -190,14 +191,18 @@
   border-radius: var(--radius-md);
   border: 1px solid rgba(0, 122, 255, 0.25);
   margin-bottom: var(--spacing-lg);
-  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.15), var(--shadow-sm);
+  box-shadow:
+    0 2px 8px rgba(0, 122, 255, 0.15),
+    var(--shadow-sm);
   font-family: var(--font-family);
 }
 
-[data-theme="light"] .debts-advice-banner {
+[data-theme='light'] .debts-advice-banner {
   background: linear-gradient(135deg, rgba(0, 122, 255, 0.15) 0%, rgba(88, 86, 214, 0.1) 100%);
   border-color: rgba(0, 122, 255, 0.35);
-  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.15), var(--shadow-sm);
+  box-shadow:
+    0 2px 8px rgba(0, 122, 255, 0.15),
+    var(--shadow-sm);
 }
 
 .debts-advice-icon {
@@ -207,15 +212,15 @@
   flex-shrink: 0;
   width: 32px;
   height: 32px;
-  color: #007AFF;
+  color: #007aff;
   font-size: 1.5rem;
   background: rgba(0, 122, 255, 0.15);
   border-radius: var(--radius-sm);
   padding: var(--spacing-xs);
 }
 
-[data-theme="light"] .debts-advice-icon {
-  color: #0051D5;
+[data-theme='light'] .debts-advice-icon {
+  color: #0051d5;
   background: rgba(0, 122, 255, 0.2);
 }
 
@@ -234,7 +239,7 @@
   font-family: var(--font-family);
 }
 
-[data-theme="light"] .debts-advice-text {
+[data-theme='light'] .debts-advice-text {
   color: rgba(0, 0, 0, 0.9);
 }
 
@@ -243,7 +248,7 @@
   color: var(--text-primary);
 }
 
-[data-theme="light"] .debts-advice-text strong {
+[data-theme='light'] .debts-advice-text strong {
   color: rgba(0, 0, 0, 1);
 }
 
@@ -264,15 +269,19 @@
   width: fit-content;
   margin-left: auto;
   margin-right: auto;
-  box-shadow: 0 4px 16px 0 rgba(255, 59, 48, 0.15), var(--shadow-sm);
+  box-shadow:
+    0 4px 16px 0 rgba(255, 59, 48, 0.15),
+    var(--shadow-sm);
   font-family: var(--font-family);
   flex-wrap: wrap;
 }
 
-[data-theme="light"] .debts-summary-block {
+[data-theme='light'] .debts-summary-block {
   background: linear-gradient(135deg, rgba(255, 59, 48, 0.08) 0%, rgba(255, 149, 0, 0.08) 100%);
   border-color: rgba(255, 59, 48, 0.25);
-  box-shadow: 0 4px 16px 0 rgba(255, 59, 48, 0.1), var(--shadow-sm);
+  box-shadow:
+    0 4px 16px 0 rgba(255, 59, 48, 0.1),
+    var(--shadow-sm);
 }
 
 .debts-summary-block .summary-item {
@@ -294,7 +303,7 @@
   line-height: 1.5;
 }
 
-[data-theme="light"] .debts-summary-block .summary-label {
+[data-theme='light'] .debts-summary-block .summary-label {
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -307,31 +316,31 @@
   line-height: 1.3;
 }
 
-[data-theme="light"] .debts-summary-block .summary-value {
+[data-theme='light'] .debts-summary-block .summary-value {
   color: rgba(0, 0, 0, 0.9);
 }
 
 .debts-summary-block .summary-item:nth-child(1) .summary-value {
-  color: #FF3B30;
+  color: #ff3b30;
 }
 
-[data-theme="light"] .debts-summary-block .summary-item:nth-child(1) .summary-value {
+[data-theme='light'] .debts-summary-block .summary-item:nth-child(1) .summary-value {
   color: #dc3545;
 }
 
 .debts-summary-block .summary-item:nth-child(2) .summary-value {
-  color: #0A84FF;
+  color: #0a84ff;
 }
 
-[data-theme="light"] .debts-summary-block .summary-item:nth-child(2) .summary-value {
-  color: #0051D5;
+[data-theme='light'] .debts-summary-block .summary-item:nth-child(2) .summary-value {
+  color: #0051d5;
 }
 
 .debts-summary-block .summary-item:nth-child(3) .summary-value {
-  color: #FF9500;
+  color: #ff9500;
 }
 
-[data-theme="light"] .debts-summary-block .summary-item:nth-child(3) .summary-value {
+[data-theme='light'] .debts-summary-block .summary-item:nth-child(3) .summary-value {
   color: #fd7e14;
 }
 
@@ -403,7 +412,7 @@
   font-family: var(--font-family);
   cursor: pointer;
   text-align: left;
-  border-left: 4px solid var(--debt-color, #FF3B30);
+  border-left: 4px solid var(--debt-color, #ff3b30);
 }
 
 .debt-row::before {
@@ -413,7 +422,7 @@
   top: 0;
   bottom: 0;
   width: 4px;
-  background: var(--debt-color, #FF3B30);
+  background: var(--debt-color, #ff3b30);
   opacity: 0.8;
   border-radius: var(--radius-md) 0 0 var(--radius-md);
   pointer-events: none;
@@ -421,11 +430,11 @@
 }
 
 .debt-row.debt-paid-off {
-  border-left-color: #34C759;
+  border-left-color: #34c759;
 }
 
 .debt-row.debt-paid-off::before {
-  background: #34C759;
+  background: #34c759;
 }
 
 .debt-row:hover:not(:disabled) {
@@ -475,7 +484,7 @@
   margin: 0;
 }
 
-[data-theme="light"] .debt-row-title {
+[data-theme='light'] .debt-row-title {
   color: rgba(0, 0, 0, 0.9);
 }
 
@@ -490,7 +499,7 @@
   text-align: right;
 }
 
-[data-theme="light"] .debt-row-amount {
+[data-theme='light'] .debt-row-amount {
   color: rgba(0, 0, 0, 0.9);
 }
 
@@ -510,20 +519,20 @@
   line-height: 1.4;
 }
 
-[data-theme="light"] .debt-row-reference {
+[data-theme='light'] .debt-row-reference {
   color: rgba(0, 0, 0, 0.6);
 }
 
 .debt-row-rate {
   font-size: var(--font-size-sm);
-  color: #FF9500;
+  color: #ff9500;
   font-weight: var(--font-weight-medium);
   font-family: var(--font-family);
   letter-spacing: var(--letter-spacing-tight);
   line-height: 1.4;
 }
 
-[data-theme="light"] .debt-row-rate {
+[data-theme='light'] .debt-row-rate {
   color: #fd7e14;
 }
 
@@ -545,7 +554,7 @@
   overflow: hidden;
 }
 
-[data-theme="light"] .debt-row-progress-bar {
+[data-theme='light'] .debt-row-progress-bar {
   background: rgba(0, 0, 0, 0.1);
 }
 
@@ -567,7 +576,7 @@
   text-align: right;
 }
 
-[data-theme="light"] .debt-row-progress-text {
+[data-theme='light'] .debt-row-progress-text {
   color: rgba(0, 0, 0, 0.9);
 }
 
@@ -581,7 +590,7 @@
   margin-left: var(--spacing-xs);
 }
 
-[data-theme="light"] .debt-row-chevron {
+[data-theme='light'] .debt-row-chevron {
   color: rgba(0, 0, 0, 0.4);
 }
 
@@ -606,7 +615,7 @@
   opacity: 0.5;
 }
 
-[data-theme="light"] .empty-icon {
+[data-theme='light'] .empty-icon {
   color: rgba(0, 0, 0, 0.3);
 }
 
@@ -618,7 +627,7 @@
   line-height: 1.4;
 }
 
-[data-theme="light"] .empty-text {
+[data-theme='light'] .empty-text {
   color: rgba(0, 0, 0, 0.9);
 }
 
@@ -629,7 +638,7 @@
   line-height: 1.5;
 }
 
-[data-theme="light"] .empty-subtext {
+[data-theme='light'] .empty-subtext {
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -732,7 +741,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: var(--debt-color, #FF3B30);
+  background: var(--debt-color, #ff3b30);
   border-radius: 32px 32px 0 0;
   opacity: 0.8;
   z-index: 1;
@@ -852,7 +861,7 @@
 }
 
 .detail-value.spent {
-  color: #FF9500;
+  color: #ff9500;
 }
 
 [data-theme='light'] .detail-value.spent {
@@ -860,7 +869,7 @@
 }
 
 .detail-value.remaining {
-  color: #34C759;
+  color: #34c759;
 }
 
 [data-theme='light'] .detail-value.remaining {
@@ -972,7 +981,7 @@
 
 .debt-detail-progress-fill {
   height: 100%;
-  background: var(--debt-color, #FF3B30);
+  background: var(--debt-color, #ff3b30);
   border-radius: 6px;
   transition: width 0.3s ease;
 }
@@ -981,7 +990,12 @@
   font-size: 1rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   min-width: 100px;
   text-align: right;
 }
@@ -998,14 +1012,19 @@
   cursor: pointer;
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.9);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
-[data-theme="light"] .checkbox-label {
+[data-theme='light'] .checkbox-label {
   color: rgba(0, 0, 0, 0.9);
 }
 
-.checkbox-label input[type="checkbox"] {
+.checkbox-label input[type='checkbox'] {
   width: 24px;
   height: 24px;
   min-width: 24px;
@@ -1019,20 +1038,20 @@
   flex-shrink: 0;
 }
 
-[data-theme="light"] .checkbox-label input[type="checkbox"] {
+[data-theme='light'] .checkbox-label input[type='checkbox'] {
   border-color: rgba(0, 0, 0, 0.3);
 }
 
-.checkbox-label input[type="checkbox"]:hover {
+.checkbox-label input[type='checkbox']:hover {
   border-color: rgba(255, 59, 48, 0.8);
   transform: scale(1.05);
 }
 
-[data-theme="light"] .checkbox-label input[type="checkbox"]:hover {
+[data-theme='light'] .checkbox-label input[type='checkbox']:hover {
   border-color: rgba(255, 59, 48, 0.8);
 }
 
-.checkbox-label input[type="checkbox"]:focus-visible {
+.checkbox-label input[type='checkbox']:focus-visible {
   outline: 2px solid rgba(255, 59, 48, 0.5);
   outline-offset: 2px;
 }
@@ -1046,11 +1065,16 @@
   border-radius: 8px;
   font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.9);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   line-height: 1.5;
 }
 
-[data-theme="light"] .debt-modal-note {
+[data-theme='light'] .debt-modal-note {
   background-color: rgba(255, 193, 7, 0.18);
   border-color: rgba(255, 193, 7, 0.45);
   color: rgba(0, 0, 0, 0.9);
@@ -1061,7 +1085,7 @@
   color: rgba(255, 193, 7, 0.95);
 }
 
-[data-theme="light"] .debt-modal-note strong {
+[data-theme='light'] .debt-modal-note strong {
   color: rgba(230, 126, 0, 1);
 }
 
@@ -1159,7 +1183,12 @@
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: left;
   width: 100%;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .debug-option-button:hover:not(:disabled) {
@@ -1215,14 +1244,24 @@
   color: rgba(255, 255, 255, 0.95);
   margin: 0;
   letter-spacing: -0.01em;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .debug-option-description {
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.6);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   line-height: 1.4;
 }
 
@@ -1233,6 +1272,7 @@
   }
 
   .deudas-toolbar {
+    margin-top: var(--spacing-xl);
     margin-bottom: var(--spacing-sm);
   }
 
@@ -1297,7 +1337,6 @@
   .debt-row-progress {
     font-size: var(--font-size-sm);
   }
-
 
   .modal-content {
     max-width: 100%;
@@ -1376,6 +1415,7 @@
   }
 
   .deudas-toolbar {
+    margin-top: var(--spacing-xl);
     margin-bottom: var(--spacing-xs);
   }
 
@@ -1452,7 +1492,6 @@
   .debt-row-progress {
     font-size: var(--font-size-xs);
   }
-
 
   .modal-content {
     margin: 0.5rem;
@@ -1532,4 +1571,3 @@
     min-height: 44px;
   }
 }
-

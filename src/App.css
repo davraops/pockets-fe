@@ -22,7 +22,12 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(180deg, var(--bg-body-gradient-start) 0%, var(--bg-body) 50%, var(--bg-body-gradient-end) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--bg-body-gradient-start) 0%,
+    var(--bg-body) 50%,
+    var(--bg-body-gradient-end) 100%
+  );
   z-index: -1;
   transition: background var(--transition-base);
 }
@@ -155,20 +160,35 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.03) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
   pointer-events: none;
   border-radius: var(--radius-lg);
   transition: opacity var(--transition-fast);
 }
 
 /* Light mode icon background gradient - enhanced visibility */
-[data-theme="light"] .app-icon-bg::before {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0) 100%);
+[data-theme='light'] .app-icon-bg::before {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
 }
 
 /* Light mode logout button - no gradient overlay needed */
-[data-theme="light"] .app-icon-logout .app-icon-bg::before {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0) 100%);
+[data-theme='light'] .app-icon-logout .app-icon-bg::before {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
 }
 
 .app-icon:hover:not(:disabled) .app-icon-bg {
@@ -177,8 +197,10 @@
 }
 
 /* Light mode hover - enhanced shadow for better depth */
-[data-theme="light"] .app-icon:hover:not(:disabled) .app-icon-bg {
-  box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+[data-theme='light'] .app-icon:hover:not(:disabled) .app-icon-bg {
+  box-shadow:
+    0 8px 24px 0 rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .app-icon:active:not(:disabled) .app-icon-bg {
@@ -191,7 +213,7 @@
 }
 
 /* Light mode focus - better visibility */
-[data-theme="light"] .app-icon:focus-visible {
+[data-theme='light'] .app-icon:focus-visible {
   outline-color: rgba(88, 86, 214, 0.6);
 }
 
@@ -207,7 +229,7 @@
 }
 
 /* Light mode icon adjustments */
-[data-theme="light"] .app-material-icon {
+[data-theme='light'] .app-material-icon {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
@@ -232,7 +254,7 @@
 }
 
 /* Light mode text - ensure visibility */
-[data-theme="light"] .app-name {
+[data-theme='light'] .app-name {
   color: rgba(0, 0, 0, 0.95) !important;
   font-weight: var(--font-weight-semibold);
 }
@@ -243,14 +265,18 @@
 }
 
 /* Light mode logout button - better contrast */
-[data-theme="light"] .app-icon-logout .app-icon-bg {
+[data-theme='light'] .app-icon-logout .app-icon-bg {
   background-color: rgba(255, 59, 48, 0.8) !important;
-  box-shadow: 0 4px 16px 0 rgba(255, 59, 48, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 4px 16px 0 rgba(255, 59, 48, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-[data-theme="light"] .app-icon-logout:hover:not(:disabled) .app-icon-bg {
+[data-theme='light'] .app-icon-logout:hover:not(:disabled) .app-icon-bg {
   background-color: rgba(255, 59, 48, 0.9) !important;
-  box-shadow: 0 6px 20px 0 rgba(255, 59, 48, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 6px 20px 0 rgba(255, 59, 48, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 /* iPad-like layout for desktop - HIG: Adaptability */
@@ -296,6 +322,12 @@
 
 /* Responsive adjustments - HIG: Adaptability */
 @media (max-width: 768px) {
+  /* Remove StatusBar padding on mobile (StatusBar moved to Footer) */
+  .app-container {
+    padding-top: var(--spacing-lg);
+    padding-bottom: calc(var(--spacing-lg) + 100px); /* Extra space for Footer with StatusBar */
+  }
+
   .apps-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: var(--spacing-md);
@@ -330,6 +362,12 @@
 }
 
 @media (max-width: 480px) {
+  /* Remove StatusBar padding on mobile (StatusBar moved to Footer) */
+  .app-container {
+    padding-top: var(--spacing-md);
+    padding-bottom: calc(var(--spacing-md) + 100px); /* Extra space for Footer with StatusBar */
+  }
+
   .apps-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: var(--spacing-sm);

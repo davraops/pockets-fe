@@ -562,14 +562,6 @@ function Finanzas() {
                 </div>
               </div>
             </div>
-
-            {/* Botón de volver */}
-            <div className="back-button-container">
-              <button className="back-button" onClick={() => navigate('/')}>
-                <ArrowBackIcon />
-                <span>Volver al Inicio</span>
-              </button>
-            </div>
           </>
         )}
       </div>

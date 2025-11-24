@@ -13,6 +13,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
   margin-bottom: var(--spacing-md);
   width: 100%;
 }
@@ -71,12 +72,12 @@
   color: var(--text-primary);
 }
 
-[data-theme="light"] .cuentas-toolbar-button {
+[data-theme='light'] .cuentas-toolbar-button {
   background: var(--bg-glass);
   border-color: var(--border-glass);
 }
 
-[data-theme="light"] .cuentas-toolbar-button:hover:not(:disabled) {
+[data-theme='light'] .cuentas-toolbar-button:hover:not(:disabled) {
   background: var(--bg-glass-hover);
   border-color: var(--border-glass-hover);
 }
@@ -161,16 +162,16 @@
   flex-shrink: 0;
 }
 
-[data-theme="light"] .cuentas-menu {
+[data-theme='light'] .cuentas-menu {
   background: var(--bg-glass);
   border-color: var(--border-glass);
 }
 
-[data-theme="light"] .cuentas-menu-item {
+[data-theme='light'] .cuentas-menu-item {
   color: rgba(0, 0, 0, 0.9);
 }
 
-[data-theme="light"] .cuentas-menu-item:hover:not(:disabled) {
+[data-theme='light'] .cuentas-menu-item:hover:not(:disabled) {
   background: var(--bg-glass-light);
 }
 
@@ -186,7 +187,7 @@
   text-align: left;
 }
 
-[data-theme="light"] .cuentas-page-title {
+[data-theme='light'] .cuentas-page-title {
   color: rgba(0, 0, 0, 0.95);
 }
 
@@ -211,7 +212,7 @@
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
+  box-shadow:
     0 20px 60px 0 rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
@@ -235,7 +236,12 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.7);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   font-weight: 500;
   letter-spacing: -0.01em;
 }
@@ -277,7 +283,7 @@
   line-height: 1.5;
 }
 
-[data-theme="light"] .exchange-rate-label {
+[data-theme='light'] .exchange-rate-label {
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -290,7 +296,7 @@
   line-height: 1.5;
 }
 
-[data-theme="light"] .exchange-rate-value {
+[data-theme='light'] .exchange-rate-value {
   color: rgba(0, 0, 0, 0.9);
 }
 
@@ -314,7 +320,7 @@
   color: var(--text-secondary);
 }
 
-[data-theme="light"] .exchange-rate-item.total-cop .exchange-rate-label {
+[data-theme='light'] .exchange-rate-item.total-cop .exchange-rate-label {
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -324,7 +330,7 @@
   color: var(--text-primary);
 }
 
-[data-theme="light"] .exchange-rate-item.total-cop .exchange-rate-value.total-value {
+[data-theme='light'] .exchange-rate-item.total-cop .exchange-rate-value.total-value {
   color: rgba(0, 0, 0, 0.95);
 }
 
@@ -390,13 +396,18 @@
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border-radius: 16px;
   border: 1px solid rgba(255, 59, 48, 0.3);
-  box-shadow: 
+  box-shadow:
     0 4px 16px 0 rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);
   font-size: 1rem;
   font-weight: 500;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   letter-spacing: -0.01em;
@@ -406,7 +417,7 @@
   background: rgba(255, 59, 48, 0.3);
   border-color: rgba(255, 59, 48, 0.5);
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 6px 20px 0 rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
@@ -437,7 +448,7 @@
   animation: fadeIn 0.2s ease;
 }
 
-[data-theme="light"] .modal-overlay {
+[data-theme='light'] .modal-overlay {
   background: rgba(0, 0, 0, 0.4);
 }
 
@@ -456,7 +467,7 @@
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border-radius: 32px;
   border: 1px solid rgba(10, 132, 255, 0.3);
-  box-shadow: 
+  box-shadow:
     0 20px 60px 0 rgba(0, 0, 0, 0.5),
     0 0 0 1px rgba(10, 132, 255, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -467,10 +478,10 @@
   animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-[data-theme="light"] .modal-content {
+[data-theme='light'] .modal-content {
   background: rgba(255, 255, 255, 0.95);
   border: 1px solid rgba(10, 132, 255, 0.25);
-  box-shadow: 
+  box-shadow:
     0 20px 60px 0 rgba(0, 0, 0, 0.15),
     0 0 0 1px rgba(10, 132, 255, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
@@ -544,7 +555,7 @@
   font-family: var(--font-family);
 }
 
-[data-theme="light"] .modal-close {
+[data-theme='light'] .modal-close {
   background: rgba(255, 59, 48, 0.1);
   color: rgba(255, 59, 48, 0.8);
   border-color: rgba(255, 59, 48, 0.2);
@@ -572,7 +583,7 @@
   cursor: not-allowed;
 }
 
-[data-theme="light"] .modal-close:hover {
+[data-theme='light'] .modal-close:hover {
   background: rgba(255, 59, 48, 0.15);
   border-color: rgba(255, 59, 48, 0.4);
 }
@@ -592,10 +603,15 @@
   color: rgba(255, 255, 255, 0.8);
   margin-bottom: 0.5rem;
   letter-spacing: -0.01em;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
-[data-theme="light"] .form-group label {
+[data-theme='light'] .form-group label {
   color: rgba(0, 0, 0, 0.8);
 }
 
@@ -610,13 +626,18 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);
   font-size: 1.125rem;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   transition: all 0.2s ease;
   box-sizing: border-box;
 }
 
-[data-theme="light"] .form-group input,
-[data-theme="light"] .form-group select {
+[data-theme='light'] .form-group input,
+[data-theme='light'] .form-group select {
   background: rgba(0, 0, 0, 0.04);
   border: 1px solid rgba(0, 0, 0, 0.15);
   color: rgba(0, 0, 0, 0.9);
@@ -626,7 +647,7 @@
   color: rgba(255, 255, 255, 0.5);
 }
 
-[data-theme="light"] .form-group input::placeholder {
+[data-theme='light'] .form-group input::placeholder {
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -638,8 +659,8 @@
   box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.2);
 }
 
-[data-theme="light"] .form-group input:focus,
-[data-theme="light"] .form-group select:focus {
+[data-theme='light'] .form-group input:focus,
+[data-theme='light'] .form-group select:focus {
   border-color: rgba(10, 132, 255, 0.6);
   background: rgba(10, 132, 255, 0.08);
   box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.15);
@@ -667,7 +688,12 @@
   font-size: 1.125rem;
   color: rgba(255, 59, 48, 0.9);
   margin-top: 0.375rem;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .form-select {
@@ -679,7 +705,7 @@
   padding-right: 2.5rem;
 }
 
-[data-theme="light"] .form-select {
+[data-theme='light'] .form-select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23000000' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
 }
 
@@ -688,7 +714,7 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
-[data-theme="light"] .form-select option {
+[data-theme='light'] .form-select option {
   background: #ffffff;
   color: rgba(0, 0, 0, 0.9);
 }
@@ -701,7 +727,7 @@
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-[data-theme="light"] .modal-actions {
+[data-theme='light'] .modal-actions {
   border-top-color: rgba(0, 0, 0, 0.1);
 }
 
@@ -712,7 +738,12 @@
   border: none;
   font-size: 1.125rem;
   font-weight: 500;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   letter-spacing: -0.01em;
@@ -723,7 +754,7 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
-[data-theme="light"] .modal-button.cancel {
+[data-theme='light'] .modal-button.cancel {
   background: rgba(0, 0, 0, 0.06);
   color: rgba(0, 0, 0, 0.8);
 }
@@ -733,7 +764,7 @@
   transform: translateY(-1px);
 }
 
-[data-theme="light"] .modal-button.cancel:hover {
+[data-theme='light'] .modal-button.cancel:hover {
   background: rgba(0, 0, 0, 0.1);
 }
 
@@ -744,7 +775,7 @@
   box-shadow: 0 4px 12px 0 rgba(52, 199, 89, 0.2);
 }
 
-[data-theme="light"] .modal-button.submit {
+[data-theme='light'] .modal-button.submit {
   background: linear-gradient(135deg, rgba(52, 199, 89, 0.25) 0%, rgba(0, 199, 190, 0.25) 100%);
   color: rgba(0, 0, 0, 0.95);
   border-color: rgba(52, 199, 89, 0.6);
@@ -759,7 +790,7 @@
   transform: translateY(-1px);
 }
 
-[data-theme="light"] .modal-button.submit:hover {
+[data-theme='light'] .modal-button.submit:hover {
   background: linear-gradient(135deg, rgba(52, 199, 89, 0.3) 0%, rgba(0, 199, 190, 0.3) 100%);
   border-color: rgba(52, 199, 89, 0.7);
   box-shadow: 0 6px 16px 0 rgba(52, 199, 89, 0.25);
@@ -812,7 +843,9 @@
 .account-row:hover:not(:disabled) {
   background: var(--bg-glass-light);
   border-left-color: rgba(10, 132, 255, 0.8);
-  box-shadow: 0 4px 16px 0 rgba(10, 132, 255, 0.2), var(--shadow-sm);
+  box-shadow:
+    0 4px 16px 0 rgba(10, 132, 255, 0.2),
+    var(--shadow-sm);
 }
 
 .account-row:active:not(:disabled) {
@@ -860,7 +893,7 @@
   text-align: left;
 }
 
-[data-theme="light"] .account-row-title {
+[data-theme='light'] .account-row-title {
   color: rgba(0, 0, 0, 0.9);
 }
 
@@ -875,7 +908,7 @@
   text-align: right;
 }
 
-[data-theme="light"] .account-row-balance {
+[data-theme='light'] .account-row-balance {
   color: rgba(0, 0, 0, 0.9);
 }
 
@@ -895,7 +928,7 @@
   line-height: 1.4;
 }
 
-[data-theme="light"] .account-row-bank {
+[data-theme='light'] .account-row-bank {
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -911,7 +944,7 @@
   border: 1px solid var(--accent-primary-border);
 }
 
-[data-theme="light"] .account-row-cards {
+[data-theme='light'] .account-row-cards {
   color: rgba(0, 0, 0, 0.7);
 }
 
@@ -923,7 +956,7 @@
   line-height: 1.4;
 }
 
-[data-theme="light"] .account-row-equivalent {
+[data-theme='light'] .account-row-equivalent {
   color: rgba(0, 0, 0, 0.5);
 }
 
@@ -937,7 +970,7 @@
   margin-left: var(--spacing-xs);
 }
 
-[data-theme="light"] .account-row-chevron {
+[data-theme='light'] .account-row-chevron {
   color: rgba(0, 0, 0, 0.4);
 }
 
@@ -955,7 +988,7 @@
   width: 56px;
   height: 56px;
   border-radius: 14px;
-  background: var(--banco-color, #007AFF);
+  background: var(--banco-color, #007aff);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -991,7 +1024,7 @@
   line-height: 1.4;
 }
 
-[data-theme="light"] .account-name {
+[data-theme='light'] .account-name {
   color: rgba(0, 0, 0, 0.95);
 }
 
@@ -1007,7 +1040,7 @@
   line-height: 1.5;
 }
 
-[data-theme="light"] .account-bank {
+[data-theme='light'] .account-bank {
   color: rgba(0, 0, 0, 0.7);
 }
 
@@ -1057,7 +1090,7 @@
   line-height: 1.5;
 }
 
-[data-theme="light"] .account-currency {
+[data-theme='light'] .account-currency {
   color: rgba(0, 0, 0, 0.5);
 }
 
@@ -1072,7 +1105,7 @@
   line-height: 1.5;
 }
 
-[data-theme="light"] .account-equivalent-cop {
+[data-theme='light'] .account-equivalent-cop {
   color: rgba(0, 0, 0, 0.4);
 }
 
@@ -1087,7 +1120,7 @@
   line-height: 1.5;
 }
 
-[data-theme="light"] .account-number {
+[data-theme='light'] .account-number {
   color: rgba(0, 0, 0, 0.5);
 }
 
@@ -1137,7 +1170,7 @@
   line-height: 1.3;
 }
 
-[data-theme="light"] .account-balance {
+[data-theme='light'] .account-balance {
   color: rgba(0, 0, 0, 0.95);
 }
 
@@ -1169,7 +1202,7 @@
   line-height: 1.4;
 }
 
-[data-theme="light"] .empty-text {
+[data-theme='light'] .empty-text {
   color: rgba(0, 0, 0, 0.9);
 }
 
@@ -1181,7 +1214,7 @@
   line-height: 1.5;
 }
 
-[data-theme="light"] .empty-subtext {
+[data-theme='light'] .empty-subtext {
   color: rgba(0, 0, 0, 0.7);
 }
 
@@ -1192,6 +1225,7 @@
   }
 
   .cuentas-toolbar {
+    margin-top: var(--spacing-xl);
     margin-bottom: var(--spacing-sm);
   }
 
@@ -1337,7 +1371,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: var(--banco-color, #007AFF);
+  background: var(--banco-color, #007aff);
   border-radius: 32px 32px 0 0;
   opacity: 0.8;
   z-index: 1;
@@ -1372,7 +1406,7 @@
   min-width: 36px;
   min-height: 36px;
   border-radius: var(--radius-sm);
-  background: var(--banco-color, #007AFF);
+  background: var(--banco-color, #007aff);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1638,7 +1672,12 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.5);
   font-weight: 500;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   pointer-events: none;
 }
 
@@ -1646,10 +1685,15 @@
   font-size: 1.125rem;
   color: rgba(255, 255, 255, 0.5);
   margin: 0.5rem 0 0 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
-[data-theme="light"] .form-hint {
+[data-theme='light'] .form-hint {
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -1698,6 +1742,7 @@
   }
 
   .cuentas-toolbar {
+    margin-top: var(--spacing-xl);
     margin-bottom: var(--spacing-xs);
   }
 
@@ -1759,7 +1804,6 @@
     padding-top: 0.75rem;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
   }
-
 
   .accounts-grid {
     gap: 0.75rem;
@@ -1994,7 +2038,12 @@
     0 4px 16px 0 rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: left;
@@ -2054,14 +2103,23 @@
   color: rgba(255, 255, 255, 0.95);
   margin: 0;
   letter-spacing: -0.01em;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
 }
 
 .debug-option-description {
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.6);
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Display',
+    sans-serif;
   line-height: 1.4;
 }
-

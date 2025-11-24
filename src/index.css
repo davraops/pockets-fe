@@ -10,14 +10,18 @@ body {
 }
 
 /* Asegurar que los elementos de formulario tengan al menos 1rem */
-input, textarea, select, button {
+input,
+textarea,
+select,
+button {
   font-size: max(1rem, 1em);
 }
 
 :root {
   /* Typography - HIG: Readability */
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 
-    'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  --font-family:
+    'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI',
+    'Roboto', 'Helvetica Neue', Arial, sans-serif;
   --font-size-xs: 0.875rem; /* 14px - tamaño mínimo legible */
   --font-size-sm: 1rem; /* 16px */
   --font-size-base: 1.125rem; /* 18px - base más legible */
@@ -30,30 +34,30 @@ input, textarea, select, button {
   --font-weight-bold: 700;
   --letter-spacing-tight: -0.01em;
   --letter-spacing-normal: 0;
-  
+
   /* Spacing */
   --spacing-xs: 0.5rem;
   --spacing-sm: 0.75rem;
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
-  
+
   /* Border Radius */
   --radius-sm: 12px;
   --radius-md: 16px;
   --radius-lg: 20px;
   --radius-xl: 24px;
   --radius-2xl: 32px;
-  
+
   /* Backdrop Filter */
   --backdrop-blur: blur(40px) saturate(180%);
   --backdrop-blur-light: blur(20px) saturate(180%);
-  
+
   /* Transitions */
   --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  
+
   font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -63,7 +67,7 @@ input, textarea, select, button {
 
 /* Dark Theme (Default) */
 :root,
-[data-theme="dark"] {
+[data-theme='dark'] {
   /* Colors - Backgrounds */
   --bg-glass: rgba(0, 0, 0, 0.3);
   --bg-glass-hover: rgba(0, 0, 0, 0.4);
@@ -72,18 +76,18 @@ input, textarea, select, button {
   --bg-body: #2c2c2e;
   --bg-body-gradient-start: #1c1c1e;
   --bg-body-gradient-end: #1c1c1e;
-  
+
   /* Colors - Borders */
   --border-glass: rgba(255, 255, 255, 0.1);
   --border-glass-hover: rgba(255, 255, 255, 0.15);
   --border-glass-light: rgba(255, 255, 255, 0.08);
-  
+
   /* Colors - Text */
   --text-primary: rgba(255, 255, 255, 0.95);
   --text-secondary: rgba(255, 255, 255, 0.7);
   --text-tertiary: rgba(255, 255, 255, 0.5);
   --text-disabled: rgba(255, 255, 255, 0.3);
-  
+
   /* Colors - Accent */
   --accent-primary: rgba(88, 86, 214, 0.3);
   --accent-primary-hover: rgba(88, 86, 214, 0.4);
@@ -94,7 +98,7 @@ input, textarea, select, button {
   --accent-danger: rgba(255, 59, 48, 0.2);
   --accent-danger-hover: rgba(255, 59, 48, 0.3);
   --accent-danger-border: rgba(255, 59, 48, 0.3);
-  
+
   /* Shadows */
   --shadow-sm: 0 4px 16px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   --shadow-md: 0 6px 20px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
@@ -104,7 +108,7 @@ input, textarea, select, button {
 }
 
 /* Light Theme */
-[data-theme="light"] {
+[data-theme='light'] {
   /* Colors - Backgrounds */
   --bg-glass: rgba(255, 255, 255, 0.7);
   --bg-glass-hover: rgba(255, 255, 255, 0.8);
@@ -113,18 +117,18 @@ input, textarea, select, button {
   --bg-body: #f5f5f7;
   --bg-body-gradient-start: #ffffff;
   --bg-body-gradient-end: #f5f5f7;
-  
+
   /* Colors - Borders */
   --border-glass: rgba(0, 0, 0, 0.1);
   --border-glass-hover: rgba(0, 0, 0, 0.15);
   --border-glass-light: rgba(0, 0, 0, 0.08);
-  
+
   /* Colors - Text */
   --text-primary: rgba(0, 0, 0, 0.9);
   --text-secondary: rgba(0, 0, 0, 0.7);
   --text-tertiary: rgba(0, 0, 0, 0.5);
   --text-disabled: rgba(0, 0, 0, 0.3);
-  
+
   /* Colors - Accent */
   --accent-primary: rgba(88, 86, 214, 0.2);
   --accent-primary-hover: rgba(88, 86, 214, 0.3);
@@ -135,7 +139,7 @@ input, textarea, select, button {
   --accent-danger: rgba(255, 59, 48, 0.15);
   --accent-danger-hover: rgba(255, 59, 48, 0.25);
   --accent-danger-border: rgba(255, 59, 48, 0.3);
-  
+
   /* Shadows */
   --shadow-sm: 0 4px 16px 0 rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
   --shadow-md: 0 6px 20px 0 rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
@@ -182,16 +186,16 @@ body {
 }
 
 /* Custom Scrollbar Styles - Light Theme */
-[data-theme="light"] ::-webkit-scrollbar-track {
+[data-theme='light'] ::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.05);
 }
 
-[data-theme="light"] ::-webkit-scrollbar-thumb {
+[data-theme='light'] ::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.2);
   border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
-[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.3);
 }
 
@@ -201,7 +205,7 @@ body {
   scrollbar-color: rgba(255, 255, 255, 0.2) rgba(0, 0, 0, 0.2);
 }
 
-[data-theme="light"] * {
+[data-theme='light'] * {
   scrollbar-color: rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.05);
 }
 

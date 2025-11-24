@@ -21,7 +21,12 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(180deg, var(--bg-body-gradient-start) 0%, var(--bg-body) 50%, var(--bg-body-gradient-end) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--bg-body-gradient-start) 0%,
+    var(--bg-body) 50%,
+    var(--bg-body-gradient-end) 100%
+  );
   z-index: -1;
   transition: background var(--transition-base);
 }
@@ -65,13 +70,15 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  /* Remove margin-top since StatusBar is hidden on mobile (moved to Footer) */
   .app-page-container {
-    margin-top: 52px;
+    margin-top: 0;
   }
 
   .app-page-content {
     padding: 1rem 1.25rem 1.5rem 1.25rem;
-    padding-top: 1.25rem;
+    padding-top: var(--spacing-md);
+    min-height: calc(100vh - 60px); /* Adjust for Footer only */
   }
 
   .glass-content {
@@ -85,13 +92,15 @@
 }
 
 @media (max-width: 480px) {
+  /* Remove margin-top since StatusBar is hidden on mobile (moved to Footer) */
   .app-page-container {
-    margin-top: 52px;
+    margin-top: 0;
   }
 
   .app-page-content {
     padding: 1rem 1rem 1.25rem 1rem;
-    padding-top: 1rem;
+    padding-top: var(--spacing-sm);
+    min-height: calc(100vh - 60px); /* Adjust for Footer only */
   }
 
   .glass-content {
@@ -214,4 +223,3 @@
     height: 1rem;
   }
 }
-
