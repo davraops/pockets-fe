@@ -4123,6 +4123,446 @@ const deleteAllEvents = async () => {
 
 ---
 
+### Routines (Rutinas / Hábitos)
+
+Sistema de dos tablas para gestionar rutinas y sus completados. Permite crear rutinas diarias, semanales y mensuales, y registrar cada vez que se completan.
+
+#### POST /routines
+Crear una nueva rutina.
+
+**URL:** `POST ${API_URL}/routines`
+
+**Request Body:**
+```json
+{
+  "title": "Ejercicio matutino",
+  "description": "30 minutos de ejercicio cada mañana",
+  "frequency": "daily",
+  "scheduled_time": "07:00",
+  "duration_minutes": 30,
+  "start_date": "2024-02-01",
+  "is_active": true,
+  "color": "#FF5733",
+  "target_count": 1
+}
+```
+
+**Ejemplo JavaScript:**
+```javascript
+const createRoutine = async (routineData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/routines`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(routineData),
+  });
+  return response.json();
+};
+
+// Rutina diaria
+const dailyRoutine = await createRoutine({
+  title: "Meditación",
+  frequency: "daily",
+  scheduled_time: "06:00",
+  duration_minutes: 15
+});
+
+// Rutina semanal (lunes, miércoles, viernes)
+const weeklyRoutine = await createRoutine({
+  title: "Gimnasio",
+  frequency: "weekly",
+  days_of_week: [1, 3, 5], // Lunes, Miércoles, Viernes
+  scheduled_time: "18:00",
+  duration_minutes: 60,
+  target_count: 3
+});
+
+// Rutina mensual (día 1 de cada mes)
+const monthlyRoutine = await createRoutine({
+  title: "Revisión de gastos",
+  frequency: "monthly",
+  day_of_month: 1,
+  scheduled_time: "09:00"
+});
+```
+
+**Campos Requeridos:**
+- `title` - Título de la rutina (string, no vacío)
+- `frequency` - Frecuencia: 'daily', 'weekly', 'monthly' (string)
+
+**Campos Condicionales:**
+- `days_of_week` - Array de días [0-6] donde 0=Domingo, 6=Sábado (requerido si frequency='weekly')
+- `day_of_month` - Día del mes 1-31 (requerido si frequency='monthly')
+
+**Campos Opcionales:**
+- `description` - Descripción de la rutina (string)
+- `scheduled_time` - Hora programada en formato HH:MM o HH:MM:SS (string)
+- `duration_minutes` - Duración estimada en minutos (integer)
+- `start_date` - Fecha de inicio en formato YYYY-MM-DD (string, default: hoy)
+- `end_date` - Fecha de fin en formato YYYY-MM-DD (string, opcional)
+- `is_active` - Si la rutina está activa (boolean, default: true)
+- `color` - Color hexadecimal para UI (string, ej: "#FF5733")
+- `target_count` - Meta de completados por período (integer, default: 1)
+
+**Response (201):**
+```json
+{
+  "message": "Routine created successfully",
+  "routine": {
+    "id": "uuid-here",
+    "title": "Ejercicio matutino",
+    "description": "30 minutos de ejercicio cada mañana",
+    "frequency": "daily",
+    "days_of_week": null,
+    "day_of_month": null,
+    "scheduled_time": "07:00:00",
+    "duration_minutes": 30,
+    "start_date": "2024-02-01",
+    "end_date": null,
+    "is_active": true,
+    "color": "#FF5733",
+    "target_count": 1,
+    "created_at": "2024-01-15T00:00:00.000Z",
+    "updated_at": "2024-01-15T00:00:00.000Z"
+  }
+}
+```
+
+---
+
+#### GET /routines
+Obtener rutinas. Permite filtrar por ID o obtener todas.
+
+**URL:** `GET ${API_URL}/routines?id={id}`
+
+**Query Parameters:**
+- `id` (opcional) - ID de la rutina específica
+
+**Ejemplo JavaScript:**
+```javascript
+const getRoutines = async (routineId = null) => {
+  const token = localStorage.getItem('authToken');
+  const url = routineId ? `${API_URL}/routines?id=${routineId}` : `${API_URL}/routines`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todas las rutinas
+const allRoutines = await getRoutines();
+
+// Obtener una rutina específica
+const specificRoutine = await getRoutines('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "routines": [
+    {
+      "id": "uuid-here",
+      "title": "Ejercicio matutino",
+      "frequency": "daily",
+      "scheduled_time": "07:00:00",
+      "is_active": true,
+      ...
+    }
+  ]
+}
+```
+
+**Nota:** Las rutinas están ordenadas por `is_active` (activas primero) y luego por fecha de creación (más recientes primero).
+
+---
+
+#### PUT /routines/{id}
+Actualizar una rutina existente.
+
+**URL:** `PUT ${API_URL}/routines/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const updateRoutine = async (routineId, routineData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/routines/${routineId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(routineData),
+  });
+  return response.json();
+};
+
+// Desactivar una rutina
+await updateRoutine('uuid-here', {
+  is_active: false
+});
+
+// Cambiar la hora programada
+await updateRoutine('uuid-here', {
+  scheduled_time: "08:00"
+});
+```
+
+**Request Body (todos los campos son opcionales, pero al menos uno es requerido):**
+```json
+{
+  "title": "Ejercicio matutino (Actualizado)",
+  "is_active": false,
+  "scheduled_time": "08:00"
+}
+```
+
+---
+
+#### DELETE /routines/{id}
+Eliminar una rutina específica.
+
+**URL:** `DELETE ${API_URL}/routines/{id}`
+
+**⚠️ Advertencia:** Esta operación eliminará la rutina y todos sus completados asociados (CASCADE).
+
+---
+
+#### DELETE /routines
+Eliminar todas las rutinas.
+
+**URL:** `DELETE ${API_URL}/routines`
+
+**⚠️ Advertencia:** Esta operación eliminará todas las rutinas y sus completados asociados.
+
+---
+
+### Routine Completions (Completados de Rutinas)
+
+#### POST /routine-completions
+Registrar un completado de rutina.
+
+**URL:** `POST ${API_URL}/routine-completions`
+
+**Request Body:**
+```json
+{
+  "routine_id": "uuid-here",
+  "completed_date": "2024-02-15",
+  "completed_time": "07:15",
+  "notes": "Hice 30 minutos de cardio",
+  "value": 30
+}
+```
+
+**Ejemplo JavaScript:**
+```javascript
+const createRoutineCompletion = async (completionData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/routine-completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(completionData),
+  });
+  return response.json();
+};
+
+// Completado simple (fecha actual)
+const completion = await createRoutineCompletion({
+  routine_id: "uuid-here"
+});
+
+// Completado con detalles
+const detailedCompletion = await createRoutineCompletion({
+  routine_id: "uuid-here",
+  completed_date: "2024-02-15",
+  completed_time: "07:15",
+  notes: "Hice 30 minutos de cardio",
+  value: 30 // minutos ejercitados
+});
+```
+
+**Campos Requeridos:**
+- `routine_id` - ID de la rutina (UUID)
+
+**Campos Opcionales:**
+- `completed_date` - Fecha de completado en formato YYYY-MM-DD (string, default: hoy)
+- `completed_time` - Hora de completado en formato HH:MM o HH:MM:SS (string)
+- `notes` - Notas sobre este completado (string)
+- `value` - Valor numérico opcional (number, ej: minutos ejercitados, páginas leídas)
+
+**Response (201):**
+```json
+{
+  "message": "Routine completion created successfully",
+  "completion": {
+    "id": "uuid-here",
+    "routine_id": "uuid-here",
+    "completed_date": "2024-02-15",
+    "completed_time": "07:15:00",
+    "notes": "Hice 30 minutos de cardio",
+    "value": 30,
+    "created_at": "2024-02-15T07:15:00.000Z",
+    "updated_at": "2024-02-15T07:15:00.000Z"
+  }
+}
+```
+
+---
+
+#### GET /routine-completions
+Obtener completados. Permite filtrar por ID, routine_id, o rango de fechas.
+
+**URL:** `GET ${API_URL}/routine-completions?id={id}&routine_id={routine_id}&start_date=2024-02-01&end_date=2024-02-28`
+
+**Query Parameters:**
+- `id` (opcional) - ID del completado específico
+- `routine_id` (opcional) - Filtrar por rutina
+- `start_date` (opcional) - Fecha de inicio del rango (YYYY-MM-DD)
+- `end_date` (opcional) - Fecha de fin del rango (YYYY-MM-DD)
+
+**Ejemplo JavaScript:**
+```javascript
+const getRoutineCompletions = async (filters = {}) => {
+  const token = localStorage.getItem('authToken');
+  const params = new URLSearchParams();
+  if (filters.id) params.append('id', filters.id);
+  if (filters.routine_id) params.append('routine_id', filters.routine_id);
+  if (filters.start_date) params.append('start_date', filters.start_date);
+  if (filters.end_date) params.append('end_date', filters.end_date);
+  
+  const url = `${API_URL}/routine-completions${params.toString() ? '?' + params.toString() : ''}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todos los completados
+const allCompletions = await getRoutineCompletions();
+
+// Obtener completados de una rutina específica
+const routineCompletions = await getRoutineCompletions({
+  routine_id: "uuid-here"
+});
+
+// Obtener completados de un rango de fechas
+const februaryCompletions = await getRoutineCompletions({
+  start_date: "2024-02-01",
+  end_date: "2024-02-28"
+});
+```
+
+**Response (200):**
+```json
+{
+  "count": 5,
+  "completions": [
+    {
+      "id": "uuid-here",
+      "routine_id": "uuid-here",
+      "completed_date": "2024-02-15",
+      "completed_time": "07:15:00",
+      "notes": "Hice 30 minutos de cardio",
+      "value": 30,
+      "created_at": "2024-02-15T07:15:00.000Z",
+      "updated_at": "2024-02-15T07:15:00.000Z"
+    }
+  ]
+}
+```
+
+**Nota:** Los completados están ordenados por fecha (descendente, más recientes primero).
+
+---
+
+#### PUT /routine-completions/{id}
+Actualizar un completado existente.
+
+**URL:** `PUT ${API_URL}/routine-completions/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const updateRoutineCompletion = async (completionId, completionData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/routine-completions/${completionId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(completionData),
+  });
+  return response.json();
+};
+
+// Actualizar notas
+await updateRoutineCompletion('uuid-here', {
+  notes: "Actualicé las notas"
+});
+
+// Actualizar valor
+await updateRoutineCompletion('uuid-here', {
+  value: 35
+});
+```
+
+---
+
+#### DELETE /routine-completions/{id}
+Eliminar un completado específico.
+
+**URL:** `DELETE ${API_URL}/routine-completions/{id}`
+
+---
+
+#### DELETE /routine-completions
+Eliminar completados. Permite filtrar por routine_id.
+
+**URL:** `DELETE ${API_URL}/routine-completions?routine_id={routine_id}`
+
+**Query Parameters:**
+- `routine_id` (opcional) - Eliminar solo completados de esta rutina
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllRoutineCompletions = async (routineId = null) => {
+  const token = localStorage.getItem('authToken');
+  const url = routineId 
+    ? `${API_URL}/routine-completions?routine_id=${routineId}`
+    : `${API_URL}/routine-completions`;
+  const response = await fetch(url, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Eliminar todos los completados
+await deleteAllRoutineCompletions();
+
+// Eliminar solo completados de una rutina específica
+await deleteAllRoutineCompletions('uuid-here');
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
 ### Crypto Exchange Rates (Tasas de Cambio de Criptomonedas)
 
 #### GET /crypto-exchange-rates/sync
@@ -5035,6 +5475,80 @@ class PocketsAPI {
 
   async deleteAllEvents() {
     return this.request('/events', {
+      method: 'DELETE',
+    });
+  }
+
+  async createRoutine(routineData) {
+    return this.request('/routines', {
+      method: 'POST',
+      body: routineData,
+    });
+  }
+
+  async getRoutines(routineId = null) {
+    const url = routineId ? `/routines?id=${routineId}` : '/routines';
+    return this.request(url, {
+      method: 'GET',
+    });
+  }
+
+  async updateRoutine(routineId, routineData) {
+    return this.request(`/routines/${routineId}`, {
+      method: 'PUT',
+      body: routineData,
+    });
+  }
+
+  async deleteRoutine(routineId) {
+    return this.request(`/routines/${routineId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async deleteAllRoutines() {
+    return this.request('/routines', {
+      method: 'DELETE',
+    });
+  }
+
+  async createRoutineCompletion(completionData) {
+    return this.request('/routine-completions', {
+      method: 'POST',
+      body: completionData,
+    });
+  }
+
+  async getRoutineCompletions(filters = {}) {
+    const params = new URLSearchParams();
+    if (filters.id) params.append('id', filters.id);
+    if (filters.routine_id) params.append('routine_id', filters.routine_id);
+    if (filters.start_date) params.append('start_date', filters.start_date);
+    if (filters.end_date) params.append('end_date', filters.end_date);
+    const queryString = params.toString();
+    return this.request(`/routine-completions${queryString ? '?' + queryString : ''}`, {
+      method: 'GET',
+    });
+  }
+
+  async updateRoutineCompletion(completionId, completionData) {
+    return this.request(`/routine-completions/${completionId}`, {
+      method: 'PUT',
+      body: completionData,
+    });
+  }
+
+  async deleteRoutineCompletion(completionId) {
+    return this.request(`/routine-completions/${completionId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async deleteAllRoutineCompletions(routineId = null) {
+    const url = routineId 
+      ? `/routine-completions?routine_id=${routineId}`
+      : '/routine-completions';
+    return this.request(url, {
       method: 'DELETE',
     });
   }

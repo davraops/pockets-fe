@@ -924,6 +924,81 @@ class PocketsAPI {
       method: 'DELETE',
     })
   }
+
+  // Events (Fechas)
+  async createEvent(data: {
+    title: string
+    event_date: string
+    description?: string
+    event_time?: string
+    is_all_day?: boolean
+    is_recurring?: boolean
+    recurrence_frequency?: string
+    recurrence_interval?: number
+    recurrence_end_date?: string
+    recurrence_count?: number
+    location?: string
+    color?: string
+    reminder_minutes?: number
+  }) {
+    return this.request('/events', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getEvents(filters?: {
+    id?: string
+    start_date?: string
+    end_date?: string
+  }) {
+    const params = new URLSearchParams()
+    if (filters?.id) params.append('id', filters.id)
+    if (filters?.start_date) params.append('start_date', filters.start_date)
+    if (filters?.end_date) params.append('end_date', filters.end_date)
+
+    const queryString = params.toString()
+    const endpoint = queryString ? `/events?${queryString}` : '/events'
+    return this.request(endpoint, {
+      method: 'GET',
+    })
+  }
+
+  async updateEvent(
+    eventId: string,
+    updates: {
+      title?: string
+      description?: string
+      event_date?: string
+      event_time?: string
+      is_all_day?: boolean
+      is_recurring?: boolean
+      recurrence_frequency?: string
+      recurrence_interval?: number
+      recurrence_end_date?: string
+      recurrence_count?: number
+      location?: string
+      color?: string
+      reminder_minutes?: number
+    }
+  ) {
+    return this.request(`/events/${eventId}`, {
+      method: 'PUT',
+      body: updates,
+    })
+  }
+
+  async deleteEvent(eventId: string) {
+    return this.request(`/events/${eventId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllEvents() {
+    return this.request('/events', {
+      method: 'DELETE',
+    })
+  }
 }
 
 export const api = new PocketsAPI(API_BASE_URL)
