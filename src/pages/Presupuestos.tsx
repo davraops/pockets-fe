@@ -10,6 +10,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { api } from '../services/api'
+import { useNotification } from '../contexts/NotificationContext'
+import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
 import './Presupuestos.css'
 
@@ -42,6 +44,7 @@ interface Budget {
 
 function Presupuestos() {
   const navigate = useNavigate()
+  const { showNotification } = useNotification()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
@@ -126,7 +129,11 @@ function Presupuestos() {
       }
     } catch (err: any) {
       console.error('Error al cargar presupuestos:', err)
-      setError('Frontend says: Error al cargar los presupuestos. Por favor, intenta de nuevo.')
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al cargar los presupuestos. Por favor, intenta de nuevo.'
+      )
+      setError(errorMessage)
       setBudgets([])
     } finally {
       setIsLoading(false)
@@ -225,10 +232,17 @@ function Presupuestos() {
         await reloadBudgets()
         setIsDeleteModalOpen(false)
         handleCloseDetailModal()
-        alert('Presupuesto eliminado (soft delete). Puedes restaurarlo más tarde.')
+        showNotification(
+          'Presupuesto eliminado (soft delete). Puedes restaurarlo más tarde.',
+          'success'
+        )
       } catch (err: any) {
         console.error('Error al eliminar presupuesto:', err)
-        alert('Frontend says: Error al eliminar el presupuesto. Por favor, intenta de nuevo.')
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al eliminar el presupuesto. Por favor, intenta de nuevo.'
+        )
+        showNotification(errorMessage, 'error')
       }
     }
   }
@@ -255,17 +269,22 @@ function Presupuestos() {
         setIsDeleteModalOpen(false)
         handleCloseDetailModal()
         const deletedCount = response.deleted_transactions_count || 0
-        alert(
-          `Presupuesto eliminado permanentemente.\n${deletedCount} transacción(es) asociada(s) también fueron eliminadas.`
+        showNotification(
+          `Presupuesto eliminado permanentemente. ${deletedCount} transacción(es) asociada(s) también fueron eliminadas.`,
+          'success'
         )
       } catch (err: any) {
         console.error('Error al eliminar presupuesto:', err)
-        alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al eliminar el presupuesto. Por favor, intenta de nuevo.'
+        )
+        showNotification(errorMessage, 'error')
       } finally {
         setIsLoading(false)
       }
     } else if (userInput !== null) {
-      alert('Frontend says: Confirmación incorrecta. La eliminación fue cancelada.')
+      showNotification('Confirmación incorrecta. La eliminación fue cancelada.', 'warning')
     }
   }
 
@@ -362,10 +381,11 @@ function Presupuestos() {
       }
     } catch (err: any) {
       console.error('Error al guardar presupuesto:', err)
-      const errorMessage = err.data?.error
-        ? `Backend says: ${err.data.error}`
-        : 'Frontend says: Error al guardar el presupuesto. Por favor, intenta de nuevo.'
-      alert(errorMessage)
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al guardar el presupuesto. Por favor, intenta de nuevo.'
+      )
+      showNotification(errorMessage, 'error')
     }
   }
 
@@ -555,10 +575,14 @@ function Presupuestos() {
         await api.restoreBudget(budgetId)
         await reloadBudgets()
         await loadDeletedBudgets()
-        alert('Presupuesto restaurado exitosamente')
+        showNotification('Presupuesto restaurado exitosamente', 'success')
       } catch (err: any) {
         console.error('Error al restaurar presupuesto:', err)
-        alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al restaurar el presupuesto. Por favor, intenta de nuevo.'
+        )
+        showNotification(errorMessage, 'error')
       }
     }
   }
@@ -583,10 +607,14 @@ function Presupuestos() {
       }
       await reloadBudgets()
       setIsDebugModalOpen(false)
-      alert('Presupuestos demo creados exitosamente')
+      showNotification('Presupuestos demo creados exitosamente', 'success')
     } catch (err: any) {
       console.error('Error al crear presupuestos demo:', err)
-      alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al crear los presupuestos demo. Por favor, intenta de nuevo.'
+      )
+      showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
     }
@@ -604,12 +632,17 @@ function Presupuestos() {
         await api.deleteAllBudgets()
         await reloadBudgets()
         setIsDebugModalOpen(false)
-        alert(
-          'Todos los presupuestos han sido eliminados (soft delete). Puedes restaurarlos más tarde.'
+        showNotification(
+          'Todos los presupuestos han sido eliminados (soft delete). Puedes restaurarlos más tarde.',
+          'success'
         )
       } catch (err: any) {
         console.error('Error al eliminar todos los presupuestos:', err)
-        alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al eliminar los presupuestos. Por favor, intenta de nuevo.'
+        )
+        showNotification(errorMessage, 'error')
       } finally {
         setIsLoading(false)
       }
@@ -635,17 +668,22 @@ function Presupuestos() {
         await api.hardDeleteAllBudgets()
         await reloadBudgets()
         setIsDebugModalOpen(false)
-        alert(
-          'Todos los presupuestos y sus transacciones asociadas han sido eliminados permanentemente.'
+        showNotification(
+          'Todos los presupuestos y sus transacciones asociadas han sido eliminados permanentemente.',
+          'success'
         )
       } catch (err: any) {
         console.error('Error al eliminar todos los presupuestos:', err)
-        alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al eliminar los presupuestos. Por favor, intenta de nuevo.'
+        )
+        showNotification(errorMessage, 'error')
       } finally {
         setIsLoading(false)
       }
     } else if (userInput !== null) {
-      alert('Frontend says: Confirmación incorrecta. La eliminación fue cancelada.')
+      showNotification('Confirmación incorrecta. La eliminación fue cancelada.', 'warning')
     }
   }
 

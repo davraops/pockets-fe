@@ -1,5 +1,7 @@
 import '../App.css'
 import TrendingUpIcon from '@mui/icons-material/TrendingUp'
+import BookIcon from '@mui/icons-material/Book'
+import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import LogoutIcon from '@mui/icons-material/Logout'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../services/api'
@@ -21,6 +23,22 @@ const apps: App[] = [
     Icon: TrendingUpIcon,
     color: '#34C759',
     path: '/finanzas',
+  },
+  {
+    id: '2',
+    name: 'Registros',
+    hasIcon: true,
+    Icon: BookIcon,
+    color: '#007AFF',
+    path: '/registros',
+  },
+  {
+    id: '3',
+    name: 'Tiempo',
+    hasIcon: true,
+    Icon: AccessTimeIcon,
+    color: '#FF9500',
+    path: '/tiempo',
   },
   { id: 'logout', name: 'Salir', hasIcon: true, Icon: LogoutIcon, color: '#FF3B30', path: '' },
 ]

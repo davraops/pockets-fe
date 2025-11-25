@@ -19,6 +19,13 @@ import CriptoWallet from './pages/CriptoWallet'
 import CriptoTransacciones from './pages/CriptoTransacciones'
 import Inflacion from './pages/Inflacion'
 import CDTs from './pages/CDTs'
+import Registros from './pages/Registros'
+import Cuadernos from './pages/Cuadernos'
+import Secretos from './pages/Secretos'
+import GeneradorContrasenas from './pages/GeneradorContrasenas'
+import Tiempo from './pages/Tiempo'
+import Fechas from './pages/Fechas'
+import Rutinas from './pages/Rutinas'
 import StatusBar from './components/StatusBar'
 import ProtectedRoute from './components/ProtectedRoute'
 import Footer from './components/Footer'
@@ -156,6 +163,62 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <CDTs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/registros"
+          element={
+            <ProtectedRoute>
+              <Registros />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/registros/cuadernos"
+          element={
+            <ProtectedRoute>
+              <Cuadernos />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/registros/secretos"
+          element={
+            <ProtectedRoute>
+              <Secretos />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/registros/generador-contrasenas"
+          element={
+            <ProtectedRoute>
+              <GeneradorContrasenas />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tiempo"
+          element={
+            <ProtectedRoute>
+              <Tiempo />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tiempo/fechas"
+          element={
+            <ProtectedRoute>
+              <Fechas />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tiempo/rutinas"
+          element={
+            <ProtectedRoute>
+              <Rutinas />
             </ProtectedRoute>
           }
         />

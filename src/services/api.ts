@@ -834,6 +834,96 @@ class PocketsAPI {
       method: 'DELETE',
     })
   }
+
+  // Notes (Cuadernos)
+  async createNote(data: { title: string; content: string }) {
+    return this.request('/notes', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getNotes(noteId: string | null = null) {
+    const endpoint = noteId ? `/notes?id=${noteId}` : '/notes'
+    return this.request(endpoint)
+  }
+
+  async updateNote(
+    noteId: string,
+    updates: {
+      title?: string
+      content?: string
+    }
+  ) {
+    return this.request(`/notes/${noteId}`, {
+      method: 'PUT',
+      body: updates,
+    })
+  }
+
+  async deleteNote(noteId: string) {
+    return this.request(`/notes/${noteId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllNotes() {
+    return this.request('/notes', {
+      method: 'DELETE',
+    })
+  }
+
+  // Secrets
+  async createSecret(data: { title: string; value: string }) {
+    return this.request('/secrets', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getSecrets(secretId: string | null = null) {
+    const endpoint = secretId ? `/secrets?id=${secretId}` : '/secrets'
+    return this.request(endpoint)
+  }
+
+  async updateSecret(
+    secretId: string,
+    updates: {
+      title?: string
+      value?: string
+    }
+  ) {
+    return this.request(`/secrets/${secretId}`, {
+      method: 'PUT',
+      body: updates,
+    })
+  }
+
+  async verifySecret(secretId: string, value: string) {
+    return this.request(`/secrets/${secretId}/verify`, {
+      method: 'POST',
+      body: { value },
+    })
+  }
+
+  async getSecretValue(secretId: string, password: string) {
+    return this.request(`/secrets/${secretId}/value`, {
+      method: 'POST',
+      body: { password },
+    })
+  }
+
+  async deleteSecret(secretId: string) {
+    return this.request(`/secrets/${secretId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllSecrets() {
+    return this.request('/secrets', {
+      method: 'DELETE',
+    })
+  }
 }
 
 export const api = new PocketsAPI(API_BASE_URL)

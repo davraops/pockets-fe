@@ -8,6 +8,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
+import { useNotification } from '../contexts/NotificationContext'
+import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
 import './Subscripciones.css'
 
@@ -60,6 +62,7 @@ interface Card {
 
 function Subscripciones() {
   const navigate = useNavigate()
+  const { showNotification } = useNotification()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
@@ -257,7 +260,8 @@ function Subscripciones() {
         handleCloseDetailModal()
       } catch (err: any) {
         console.error('Error al eliminar subscripción:', err)
-        alert('Frontend says: Error al eliminar la subscripción. Por favor, intenta de nuevo.')
+        const errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar la subscripción. Por favor, intenta de nuevo.')
+        showNotification(errorMessage, 'error')
       }
     }
   }
@@ -362,13 +366,13 @@ function Subscripciones() {
       !formData.fechaCorte ||
       !formData.tarjetaId.trim()
     ) {
-      alert('Frontend says: Por favor completa todos los campos requeridos')
+      showNotification('Por favor completa todos los campos requeridos', 'warning')
       return
     }
 
     const precioNum = parseFloat(formData.precio)
     if (isNaN(precioNum) || precioNum <= 0) {
-      alert('Frontend says: El precio debe ser un número positivo')
+      showNotification('El precio debe ser un número positivo', 'warning')
       return
     }
 
@@ -527,10 +531,11 @@ function Subscripciones() {
       // Disparar evento para actualizar otros componentes
       window.dispatchEvent(new Event('subscriptionsUpdated'))
       setIsDebugModalOpen(false)
-      alert(`${testSubscriptions.length} subscripciones de prueba creadas exitosamente`)
+      showNotification(`${testSubscriptions.length} subscripciones de prueba creadas exitosamente`, 'success')
     } catch (err: any) {
       console.error('Error al crear subscripciones de prueba:', err)
-      alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
+      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear las subscripciones de prueba. Por favor, intenta de nuevo.')
+      showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
     }
@@ -555,10 +560,11 @@ function Subscripciones() {
         // Disparar evento para actualizar otros componentes
         window.dispatchEvent(new Event('subscriptionsUpdated'))
         setIsDebugModalOpen(false)
-        alert('Todas las subscripciones han sido eliminadas exitosamente')
+        showNotification('Todas las subscripciones han sido eliminadas exitosamente', 'success')
       } catch (err: any) {
         console.error('Error al eliminar todas las subscripciones:', err)
-        alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
+        const errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar las subscripciones. Por favor, intenta de nuevo.')
+        showNotification(errorMessage, 'error')
       } finally {
         setIsLoading(false)
       }

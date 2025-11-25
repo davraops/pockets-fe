@@ -9,6 +9,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
+import { useNotification } from '../contexts/NotificationContext'
+import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
 import './TarjetasDebito.css'
 
@@ -52,6 +54,7 @@ interface BankAccount {
 
 function TarjetasDebito() {
   const navigate = useNavigate()
+  const { showNotification } = useNotification()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
@@ -326,13 +329,15 @@ function TarjetasDebito() {
 
       // Mostrar mensaje recordatorio si se eliminaron subscripciones
       if (cardSubscriptions.length > 0) {
-        alert(
-          `Tarjeta eliminada exitosamente.\n\n⚠️ IMPORTANTE: Se eliminaron ${cardSubscriptions.length} subscripción(es) asociada(s). Tendrás que volver a registrarlas si las necesitas.`
+        showNotification(
+          `Tarjeta eliminada exitosamente. ⚠️ IMPORTANTE: Se eliminaron ${cardSubscriptions.length} subscripción(es) asociada(s). Tendrás que volver a registrarlas si las necesitas.`,
+          'success'
         )
       }
     } catch (err: any) {
       console.error('Error al eliminar tarjeta:', err)
-      alert('Frontend says: Error al eliminar la tarjeta. Por favor, intenta de nuevo.')
+      const errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar la tarjeta. Por favor, intenta de nuevo.')
+      showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
     }
@@ -497,14 +502,14 @@ function TarjetasDebito() {
       !formData.ultimos4Digitos.trim() ||
       !formData.fechaVencimiento
     ) {
-      alert('Frontend says: Por favor completa todos los campos requeridos')
+      showNotification('Por favor completa todos los campos requeridos', 'warning')
       return
     }
 
     // Asegurar que últimos 4 dígitos tengan exactamente 4 dígitos
     const ultimos4Digitos = formData.ultimos4Digitos.trim()
     if (!/^\d{4}$/.test(ultimos4Digitos)) {
-      alert('Frontend says: Los últimos 4 dígitos deben ser exactamente 4 números')
+      showNotification('Los últimos 4 dígitos deben ser exactamente 4 números', 'warning')
       return
     }
 
@@ -518,7 +523,7 @@ function TarjetasDebito() {
         if (month && year && month.length === 2 && year.length === 4) {
           expirationDate = `${year}-${month}-01`
         } else {
-          alert('Frontend says: Formato de fecha inválido. Use MM/YYYY (ej: 12/2025)')
+          showNotification('Formato de fecha inválido. Use MM/YYYY (ej: 12/2025)', 'warning')
           return
         }
       } else if (formData.fechaVencimiento.includes('-')) {
@@ -531,7 +536,7 @@ function TarjetasDebito() {
           // Ya está en formato YYYY-MM-DD
           expirationDate = formData.fechaVencimiento
         } else {
-          alert('Frontend says: Formato de fecha inválido')
+          showNotification('Formato de fecha inválido', 'warning')
           return
         }
       } else {
@@ -541,7 +546,7 @@ function TarjetasDebito() {
 
       // Validar que expirationDate tenga el formato correcto
       if (!/^\d{4}-\d{2}-\d{2}$/.test(expirationDate)) {
-        alert('Frontend says: Error al formatear la fecha. Por favor, intenta de nuevo.')
+        showNotification('Error al formatear la fecha. Por favor, intenta de nuevo.', 'error')
         return
       }
 
@@ -869,10 +874,11 @@ function TarjetasDebito() {
       // Disparar evento para actualizar otros componentes
       window.dispatchEvent(new Event('cardsUpdated'))
       setIsDebugModalOpen(false)
-      alert(`${testCards.length} tarjetas de prueba creadas exitosamente`)
+      showNotification(`${testCards.length} tarjetas de prueba creadas exitosamente`, 'success')
     } catch (err: any) {
       console.error('Error al crear tarjetas de prueba:', err)
-      alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
+      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear las tarjetas de prueba. Por favor, intenta de nuevo.')
+      showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
     }
@@ -897,10 +903,11 @@ function TarjetasDebito() {
         // Disparar evento para actualizar otros componentes
         window.dispatchEvent(new Event('cardsUpdated'))
         setIsDebugModalOpen(false)
-        alert('Todas las tarjetas han sido eliminadas exitosamente')
+        showNotification('Todas las tarjetas han sido eliminadas exitosamente', 'success')
       } catch (err: any) {
         console.error('Error al eliminar todas las tarjetas:', err)
-        alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
+        const errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar las tarjetas. Por favor, intenta de nuevo.')
+        showNotification(errorMessage, 'error')
       } finally {
         setIsLoading(false)
       }

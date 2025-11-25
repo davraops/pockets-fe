@@ -1,0 +1,112 @@
+/* Tiempo Page Styles */
+.tiempo-content {
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: stretch;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Toolbar - HIG: Navigation & Actions */
+.tiempo-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .tiempo-toolbar {
+    margin-top: var(--spacing-xl);
+    margin-bottom: var(--spacing-sm);
+  }
+}
+
+/* Toolbar Button - HIG: Touch Target, Feedback */
+.tiempo-toolbar-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--border-glass);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  padding: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.tiempo-toolbar-button:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-glass-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.tiempo-toolbar-button:active {
+  transform: translateY(0);
+  transition: transform var(--transition-fast);
+}
+
+.tiempo-toolbar-button:focus-visible {
+  outline: 2px solid var(--accent-primary-border);
+  outline-offset: 2px;
+}
+
+.tiempo-toolbar-icon {
+  font-size: 1.5rem !important;
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  color: var(--text-primary);
+}
+
+[data-theme='light'] .tiempo-toolbar-button {
+  background: var(--bg-glass);
+  border-color: var(--border-glass);
+}
+
+[data-theme='light'] .tiempo-toolbar-icon {
+  color: rgba(0, 0, 0, 0.9);
+}
+
+/* Page Title - HIG: Typography */
+.tiempo-page-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: 1.2;
+  margin: 0;
+  margin-bottom: var(--spacing-xs);
+}
+
+[data-theme='light'] .tiempo-page-title {
+  color: rgba(0, 0, 0, 0.9);
+}
+
+/* Page Subtitle - HIG: Typography */
+.tiempo-page-subtitle {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: 1.5;
+  margin: 0;
+  margin-bottom: var(--spacing-lg);
+}
+
+[data-theme='light'] .tiempo-page-subtitle {
+  color: rgba(0, 0, 0, 0.6);
+}
+

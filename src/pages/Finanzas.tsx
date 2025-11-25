@@ -13,6 +13,7 @@ import FolderSpecialIcon from '@mui/icons-material/FolderSpecial'
 import PersonAddIcon from '@mui/icons-material/PersonAdd'
 import CurrencyBitcoinIcon from '@mui/icons-material/CurrencyBitcoin'
 import TrendingDownIcon from '@mui/icons-material/TrendingDown'
+import SavingsIcon from '@mui/icons-material/Savings'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import AddIcon from '@mui/icons-material/Add'
@@ -617,16 +618,18 @@ function Finanzas() {
                     </div>
                     <div className="settings-row-content">
                       <span className="settings-row-title">Mi Cripto</span>
-                      <span className="settings-row-subtitle">Registra compras y ventas de criptomonedas</span>
+                      <span className="settings-row-subtitle">
+                        Registra compras y ventas de criptomonedas
+                      </span>
                     </div>
                     <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
                   </button>
                 </div>
               </div>
 
-              {/* Sección: Inversiones */}
+              {/* Sección: Protección de la Riqueza */}
               <div className="settings-section">
-                <div className="settings-section-header">Inversiones</div>
+                <div className="settings-section-header">Protección de la Riqueza</div>
                 <div className="settings-group">
                   <button
                     className="settings-row"
@@ -636,24 +639,19 @@ function Finanzas() {
                   >
                     <div
                       className="settings-row-icon"
-                      style={{ backgroundColor: '#34C759' }}
+                      style={{ backgroundColor: '#007AFF' }}
                       aria-hidden="true"
                     >
-                      <AccountBalanceWalletIcon />
+                      <SavingsIcon />
                     </div>
                     <div className="settings-row-content">
                       <span className="settings-row-title">CDTs</span>
-                      <span className="settings-row-subtitle">Certificados de Depósito a Término</span>
+                      <span className="settings-row-subtitle">
+                        Certificados de Depósito a Término
+                      </span>
                     </div>
                     <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
                   </button>
-                </div>
-              </div>
-
-              {/* Sección: Análisis */}
-              <div className="settings-section">
-                <div className="settings-section-header">Análisis</div>
-                <div className="settings-group">
                   <button
                     className="settings-row"
                     onClick={() => navigate('/finanzas/inflacion')}
@@ -669,7 +667,9 @@ function Finanzas() {
                     </div>
                     <div className="settings-row-content">
                       <span className="settings-row-title">Inflación</span>
-                      <span className="settings-row-subtitle">Calculadora de devaluación y predictor</span>
+                      <span className="settings-row-subtitle">
+                        Calculadora de devaluación y predictor
+                      </span>
                     </div>
                     <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
                   </button>

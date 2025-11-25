@@ -3250,6 +3250,879 @@ const deleteAllCDTs = async () => {
 
 ---
 
+### Notes (Notas/Cuadernos)
+
+#### POST /notes
+Crear una nueva nota.
+
+**URL:** `POST ${API_URL}/notes`
+
+**Request Body:**
+```json
+{
+  "title": "Mi primera nota",
+  "content": "Este es el contenido de mi nota. Puedo escribir texto libre aquí."
+}
+```
+
+**Ejemplo JavaScript:**
+```javascript
+const createNote = async (noteData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/notes`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(noteData),
+  });
+  return response.json();
+};
+
+// Uso
+const newNote = await createNote({
+  title: "Mi primera nota",
+  content: "Este es el contenido de mi nota. Puedo escribir texto libre aquí."
+});
+```
+
+**Campos Requeridos:**
+- `title` - Título de la nota (string, no vacío)
+- `content` - Contenido de la nota (string, texto libre)
+
+**Nota de Seguridad:** El contenido y título se sanitizan automáticamente para prevenir script injection. Se eliminan tags `<script>`, event handlers (onclick, etc.), y protocolos javascript:.
+
+**Response (201):**
+```json
+{
+  "message": "Note created successfully",
+  "note": {
+    "id": "uuid-here",
+    "title": "Mi primera nota",
+    "content": "Este es el contenido de mi nota. Puedo escribir texto libre aquí.",
+    "created_at": "2024-01-15T00:00:00.000Z",
+    "updated_at": "2024-01-15T00:00:00.000Z"
+  }
+}
+```
+
+---
+
+#### GET /notes
+Obtener notas.
+
+**URL:** `GET ${API_URL}/notes?id={uuid}` (opcional)
+
+**Ejemplo JavaScript:**
+```javascript
+const getNotes = async (noteId = null) => {
+  const token = localStorage.getItem('authToken');
+  const url = noteId 
+    ? `${API_URL}/notes?id=${noteId}`
+    : `${API_URL}/notes`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todas las notas
+const allNotes = await getNotes();
+
+// Obtener nota específica
+const note = await getNotes('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "notes": [
+    {
+      "id": "uuid-here",
+      "title": "Mi primera nota",
+      "content": "Este es el contenido de mi nota. Puedo escribir texto libre aquí.",
+      "created_at": "2024-01-15T00:00:00.000Z",
+      "updated_at": "2024-01-15T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+**Nota:** Los resultados están ordenados por `created_at` (descendente, más recientes primero).
+
+---
+
+#### PUT /notes/{id}
+Actualizar una nota específica.
+
+**URL:** `PUT ${API_URL}/notes/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const updateNote = async (noteId, updates) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/notes/${noteId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(updates),
+  });
+  return response.json();
+};
+
+// Uso - actualizar solo el título
+await updateNote('uuid-here', {
+  title: "Título actualizado"
+});
+
+// Uso - actualizar múltiples campos
+await updateNote('uuid-here', {
+  title: "Nota actualizada",
+  content: "Nuevo contenido de la nota"
+});
+```
+
+**Request Body (todos los campos son opcionales, pero al menos uno es requerido):**
+```json
+{
+  "title": "Nota actualizada",
+  "content": "Nuevo contenido de la nota"
+}
+```
+
+**Nota de Seguridad:** El contenido y título se sanitizan automáticamente antes de guardarse.
+
+---
+
+#### DELETE /notes/{id}
+Eliminar una nota específica.
+
+**URL:** `DELETE ${API_URL}/notes/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteNote = async (noteId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/notes/${noteId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+```
+
+**Response (200):**
+```json
+{
+  "message": "Note deleted successfully",
+  "deleted_note": {
+    "id": "uuid-here",
+    "title": "Mi primera nota"
+  }
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+#### DELETE /notes
+Eliminar todas las notas.
+
+**URL:** `DELETE ${API_URL}/notes`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllNotes = async () => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/notes`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+```
+
+**Response (200):**
+```json
+{
+  "message": "Successfully deleted 3 note(s)",
+  "deleted_count": 3,
+  "deleted_notes": [
+    {
+      "id": "uuid-here",
+      "title": "Mi primera nota"
+    }
+  ]
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+### Secrets (Secretos)
+
+#### POST /secrets
+Crear un nuevo secreto. El valor se hashea automáticamente antes de guardarse.
+
+**URL:** `POST ${API_URL}/secrets`
+
+**Request Body:**
+```json
+{
+  "title": "API Key de GitHub",
+  "value": "ghp_xxxxxxxxxxxxxxxxxxxx"
+}
+```
+
+**Ejemplo JavaScript:**
+```javascript
+const createSecret = async (secretData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/secrets`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(secretData),
+  });
+  return response.json();
+};
+
+// Uso
+const newSecret = await createSecret({
+  title: "API Key de GitHub",
+  value: "ghp_xxxxxxxxxxxxxxxxxxxx"
+});
+```
+
+**Campos Requeridos:**
+- `title` - Título del secreto (string, no vacío)
+- `value` - Valor del secreto en texto plano (string, no vacío)
+
+**Nota de Seguridad:** 
+- El valor se encripta automáticamente usando AES-256-CBC con JWT_TOKEN_PASSPHRASE antes de guardarse
+- El valor encriptado se puede desencriptar usando el endpoint `/secrets/{id}/value` con la contraseña del usuario
+- El título se sanitiza para prevenir script injection
+
+**Response (201):**
+```json
+{
+  "message": "Secret created successfully",
+  "secret": {
+    "id": "uuid-here",
+    "title": "API Key de GitHub",
+    "created_at": "2024-01-15T00:00:00.000Z",
+    "updated_at": "2024-01-15T00:00:00.000Z"
+  }
+}
+```
+
+---
+
+#### GET /secrets
+Obtener secretos. **Nota:** El hash nunca se devuelve por seguridad.
+
+**URL:** `GET ${API_URL}/secrets?id={uuid}` (opcional)
+
+**Ejemplo JavaScript:**
+```javascript
+const getSecrets = async (secretId = null) => {
+  const token = localStorage.getItem('authToken');
+  const url = secretId 
+    ? `${API_URL}/secrets?id=${secretId}`
+    : `${API_URL}/secrets`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todos los secretos
+const allSecrets = await getSecrets();
+
+// Obtener secreto específico
+const secret = await getSecrets('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "secrets": [
+    {
+      "id": "uuid-here",
+      "title": "API Key de GitHub",
+      "created_at": "2024-01-15T00:00:00.000Z",
+      "updated_at": "2024-01-15T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+**Nota:** Los resultados están ordenados por `created_at` (descendente, más recientes primero). El valor encriptado nunca se incluye en la respuesta por seguridad. Use `/secrets/{id}/value` para obtener el valor desencriptado.
+
+---
+
+#### PUT /secrets/{id}
+Actualizar un secreto específico. Si se proporciona `value`, se hasheará antes de guardarse.
+
+**URL:** `PUT ${API_URL}/secrets/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const updateSecret = async (secretId, updates) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/secrets/${secretId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(updates),
+  });
+  return response.json();
+};
+
+// Uso - actualizar solo el título
+await updateSecret('uuid-here', {
+  title: "API Key de GitHub (Actualizada)"
+});
+
+// Uso - actualizar el valor (se hasheará automáticamente)
+await updateSecret('uuid-here', {
+  value: "nuevo-valor-secreto"
+});
+
+// Uso - actualizar ambos
+await updateSecret('uuid-here', {
+  title: "API Key de GitHub (Actualizada)",
+  value: "nuevo-valor-secreto"
+});
+```
+
+**Request Body (todos los campos son opcionales, pero al menos uno es requerido):**
+```json
+{
+  "title": "API Key de GitHub (Actualizada)",
+  "value": "nuevo-valor-secreto"
+}
+```
+
+**Nota de Seguridad:** Si se proporciona `value`, se encriptará automáticamente antes de guardarse.
+
+---
+
+#### POST /secrets/{id}/verify
+Verificar si un valor coincide con el secreto almacenado.
+
+**URL:** `POST ${API_URL}/secrets/{id}/verify`
+
+**Ejemplo JavaScript:**
+```javascript
+const verifySecret = async (secretId, value) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/secrets/${secretId}/verify`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify({ value }),
+  });
+  return response.json();
+};
+
+// Uso
+const result = await verifySecret('uuid-here', 'mi-valor-a-verificar');
+if (result.verified) {
+  console.log('El valor coincide');
+} else {
+  console.log('El valor no coincide');
+}
+```
+
+**Request Body:**
+```json
+{
+  "value": "mi-valor-a-verificar"
+}
+```
+
+**Response (200):**
+```json
+{
+  "message": "Secret value matches",
+  "secret_id": "uuid-here",
+  "title": "API Key de GitHub",
+  "verified": true
+}
+```
+
+**Nota:** Este endpoint desencripta el valor almacenado y lo compara con el valor proporcionado. El valor original se desencripta temporalmente para la comparación.
+
+---
+
+#### POST /secrets/{id}/value
+Obtener el valor original de un secreto (requiere contraseña de usuario). El valor se desencripta y se devuelve en texto plano.
+
+**URL:** `POST ${API_URL}/secrets/{id}/value`
+
+**Ejemplo JavaScript:**
+```javascript
+const getSecretValue = async (secretId, password) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/secrets/${secretId}/value`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify({ password }),
+  });
+  return response.json();
+};
+
+// Uso
+const result = await getSecretValue('uuid-here', 'mi-password');
+console.log('Valor del secreto:', result.secret.value);
+```
+
+**Request Body:**
+```json
+{
+  "password": "mi-password-de-usuario"
+}
+```
+
+**Campos Requeridos:**
+- `password` - Contraseña del usuario (string, no vacío)
+
+**Response (200):**
+```json
+{
+  "message": "Secret accessed successfully",
+  "secret": {
+    "id": "uuid-here",
+    "title": "API Key de GitHub",
+    "value": "ghp_xxxxxxxxxxxxxxxxxxxx",
+    "created_at": "2024-01-15T00:00:00.000Z",
+    "updated_at": "2024-01-15T00:00:00.000Z"
+  }
+}
+```
+
+**Notas de Seguridad:**
+- Requiere la contraseña del usuario para acceder al secreto
+- El valor se encripta usando AES-256-CBC con JWT_TOKEN_PASSPHRASE como clave
+- El valor se desencripta y se devuelve en texto plano solo si la contraseña es correcta
+- Este endpoint es más sensible que otros, ya que expone el valor original del secreto
+
+**Error Responses:**
+- `400`: Password requerido o formato inválido
+- `403`: Contraseña incorrecta
+- `404`: Secreto no encontrado o no pertenece al usuario
+
+---
+
+#### DELETE /secrets/{id}
+Eliminar un secreto específico.
+
+**URL:** `DELETE ${API_URL}/secrets/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteSecret = async (secretId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/secrets/${secretId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+```
+
+**Response (200):**
+```json
+{
+  "message": "Secret deleted successfully",
+  "deleted_secret": {
+    "id": "uuid-here",
+    "title": "API Key de GitHub"
+  }
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+#### DELETE /secrets
+Eliminar todos los secretos.
+
+**URL:** `DELETE ${API_URL}/secrets`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllSecrets = async () => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/secrets`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+```
+
+**Response (200):**
+```json
+{
+  "message": "Successfully deleted 3 secret(s)",
+  "deleted_count": 3,
+  "deleted_secrets": [
+    {
+      "id": "uuid-here",
+      "title": "API Key de GitHub"
+    }
+  ]
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+### Events (Eventos / Calendario)
+
+#### POST /events
+Crear un nuevo evento en el calendario.
+
+**URL:** `POST ${API_URL}/events`
+
+**Request Body:**
+```json
+{
+  "title": "Reunión de trabajo",
+  "description": "Reunión con el equipo para revisar el proyecto",
+  "event_date": "2024-02-15",
+  "event_time": "14:30",
+  "is_all_day": false,
+  "is_recurring": false,
+  "location": "Oficina principal",
+  "color": "#FF5733",
+  "reminder_minutes": 15
+}
+```
+
+**Ejemplo JavaScript:**
+```javascript
+const createEvent = async (eventData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/events`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(eventData),
+  });
+  return response.json();
+};
+
+// Evento simple (una sola vez)
+const simpleEvent = await createEvent({
+  title: "Cumpleaños de Juan",
+  event_date: "2024-03-20",
+  is_all_day: true,
+  is_recurring: false
+});
+
+// Evento recurrente (semanal)
+const recurringEvent = await createEvent({
+  title: "Reunión semanal",
+  description: "Reunión de equipo cada lunes",
+  event_date: "2024-02-12",
+  event_time: "10:00",
+  is_all_day: false,
+  is_recurring: true,
+  recurrence_frequency: "weekly",
+  recurrence_interval: 1,
+  recurrence_end_date: "2024-12-31",
+  location: "Sala de conferencias",
+  color: "#3498db",
+  reminder_minutes: 30
+});
+```
+
+**Campos Requeridos:**
+- `title` - Título del evento (string, no vacío)
+- `event_date` - Fecha del evento en formato YYYY-MM-DD (string)
+
+**Campos Opcionales:**
+- `description` - Descripción del evento (string)
+- `event_time` - Hora del evento en formato HH:MM o HH:MM:SS (string, requerido si `is_all_day` es false)
+- `is_all_day` - Si el evento es de todo el día (boolean, default: false)
+- `is_recurring` - Si el evento es recurrente (boolean, default: false)
+- `recurrence_frequency` - Frecuencia de recurrencia: 'daily', 'weekly', 'monthly', 'yearly', 'custom' (string, requerido si `is_recurring` es true)
+- `recurrence_interval` - Intervalo de recurrencia: cada X días/semanas/meses/años (integer, default: 1)
+- `recurrence_end_date` - Fecha de fin de recurrencia en formato YYYY-MM-DD (string, opcional)
+- `recurrence_count` - Número de ocurrencias (integer, opcional, si no se especifica es infinito o hasta end_date)
+- `location` - Ubicación del evento (string)
+- `color` - Color en formato hexadecimal para UI (string, ej: "#FF5733")
+- `reminder_minutes` - Recordatorio X minutos antes del evento (integer, opcional)
+
+**Response (201):**
+```json
+{
+  "message": "Event created successfully",
+  "event": {
+    "id": "uuid-here",
+    "title": "Reunión de trabajo",
+    "description": "Reunión con el equipo",
+    "event_date": "2024-02-15",
+    "event_time": "14:30:00",
+    "is_all_day": false,
+    "is_recurring": false,
+    "recurrence_frequency": null,
+    "recurrence_interval": null,
+    "recurrence_end_date": null,
+    "recurrence_count": null,
+    "location": "Oficina principal",
+    "color": "#FF5733",
+    "reminder_minutes": 15,
+    "created_at": "2024-01-15T00:00:00.000Z",
+    "updated_at": "2024-01-15T00:00:00.000Z"
+  }
+}
+```
+
+---
+
+#### GET /events
+Obtener eventos. Permite filtrar por ID, rango de fechas, o obtener todos.
+
+**URL:** `GET ${API_URL}/events?id={id}` o `GET ${API_URL}/events?start_date=2024-02-01&end_date=2024-02-28`
+
+**Query Parameters:**
+- `id` (opcional) - ID del evento específico
+- `start_date` (opcional) - Fecha de inicio del rango (YYYY-MM-DD)
+- `end_date` (opcional) - Fecha de fin del rango (YYYY-MM-DD)
+
+**Ejemplo JavaScript:**
+```javascript
+const getEvents = async (filters = {}) => {
+  const token = localStorage.getItem('authToken');
+  const params = new URLSearchParams();
+  if (filters.id) params.append('id', filters.id);
+  if (filters.start_date) params.append('start_date', filters.start_date);
+  if (filters.end_date) params.append('end_date', filters.end_date);
+  
+  const url = `${API_URL}/events${params.toString() ? '?' + params.toString() : ''}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todos los eventos
+const allEvents = await getEvents();
+
+// Obtener eventos de un rango de fechas
+const februaryEvents = await getEvents({
+  start_date: "2024-02-01",
+  end_date: "2024-02-28"
+});
+
+// Obtener un evento específico
+const specificEvent = await getEvents({ id: "uuid-here" });
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "events": [
+    {
+      "id": "uuid-here",
+      "title": "Reunión de trabajo",
+      "description": "Reunión con el equipo",
+      "event_date": "2024-02-15",
+      "event_time": "14:30:00",
+      "is_all_day": false,
+      "is_recurring": false,
+      "recurrence_frequency": null,
+      "recurrence_interval": null,
+      "recurrence_end_date": null,
+      "recurrence_count": null,
+      "location": "Oficina principal",
+      "color": "#FF5733",
+      "reminder_minutes": 15,
+      "created_at": "2024-01-15T00:00:00.000Z",
+      "updated_at": "2024-01-15T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+**Nota:** Los eventos están ordenados por fecha y hora (ascendente).
+
+---
+
+#### PUT /events/{id}
+Actualizar un evento existente.
+
+**URL:** `PUT ${API_URL}/events/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const updateEvent = async (eventId, eventData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/events/${eventId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(eventData),
+  });
+  return response.json();
+};
+
+// Actualizar solo el título
+await updateEvent('uuid-here', {
+  title: "Reunión de trabajo (Actualizada)"
+});
+
+// Cambiar a evento de todo el día
+await updateEvent('uuid-here', {
+  is_all_day: true
+});
+
+// Hacer el evento recurrente
+await updateEvent('uuid-here', {
+  is_recurring: true,
+  recurrence_frequency: "weekly",
+  recurrence_interval: 1,
+  recurrence_end_date: "2024-12-31"
+});
+```
+
+**Request Body (todos los campos son opcionales, pero al menos uno es requerido):**
+```json
+{
+  "title": "Reunión de trabajo (Actualizada)",
+  "description": "Nueva descripción",
+  "event_date": "2024-02-16",
+  "event_time": "15:00",
+  "is_all_day": false,
+  "is_recurring": true,
+  "recurrence_frequency": "weekly",
+  "recurrence_interval": 1,
+  "recurrence_end_date": "2024-12-31",
+  "location": "Nueva ubicación",
+  "color": "#2ecc71",
+  "reminder_minutes": 30
+}
+```
+
+**Nota:** Si cambias `is_all_day` a `true`, el `event_time` se establecerá automáticamente a `null`. Si cambias `is_recurring` a `false`, todos los campos de recurrencia se limpiarán.
+
+---
+
+#### DELETE /events/{id}
+Eliminar un evento específico.
+
+**URL:** `DELETE ${API_URL}/events/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteEvent = async (eventId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/events/${eventId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+```
+
+**Response (200):**
+```json
+{
+  "message": "Event deleted successfully",
+  "deleted_event": {
+    "id": "uuid-here",
+    "title": "Reunión de trabajo"
+  }
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+#### DELETE /events
+Eliminar todos los eventos.
+
+**URL:** `DELETE ${API_URL}/events`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllEvents = async () => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/events`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+```
+
+**Response (200):**
+```json
+{
+  "message": "Successfully deleted 5 event(s)",
+  "deleted_count": 5,
+  "deleted_events": [
+    {
+      "id": "uuid-here",
+      "title": "Reunión de trabajo"
+    }
+  ]
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
 ### Crypto Exchange Rates (Tasas de Cambio de Criptomonedas)
 
 #### GET /crypto-exchange-rates/sync
@@ -4043,6 +4916,125 @@ class PocketsAPI {
 
   async deleteAllCDTs() {
     return this.request('/cdts', {
+      method: 'DELETE',
+    });
+  }
+
+  // Notes
+  async createNote(data) {
+    return this.request('/notes', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  async getNotes(noteId = null) {
+    const endpoint = noteId ? `/notes?id=${noteId}` : '/notes';
+    return this.request(endpoint);
+  }
+
+  async updateNote(noteId, updates) {
+    return this.request(`/notes/${noteId}`, {
+      method: 'PUT',
+      body: updates,
+    });
+  }
+
+  async deleteNote(noteId) {
+    return this.request(`/notes/${noteId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async deleteAllNotes() {
+    return this.request('/notes', {
+      method: 'DELETE',
+    });
+  }
+
+  // Secrets
+  async createSecret(data) {
+    return this.request('/secrets', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  async getSecrets(secretId = null) {
+    const endpoint = secretId ? `/secrets?id=${secretId}` : '/secrets';
+    return this.request(endpoint);
+  }
+
+  async updateSecret(secretId, updates) {
+    return this.request(`/secrets/${secretId}`, {
+      method: 'PUT',
+      body: updates,
+    });
+  }
+
+  async verifySecret(secretId, value) {
+    return this.request(`/secrets/${secretId}/verify`, {
+      method: 'POST',
+      body: { value },
+    });
+  }
+
+  async getSecretValue(secretId, password, valueToVerify = null) {
+    const body = { password };
+    if (valueToVerify) {
+      body.value = valueToVerify;
+    }
+    return this.request(`/secrets/${secretId}/value`, {
+      method: 'POST',
+      body,
+    });
+  }
+
+  async deleteSecret(secretId) {
+    return this.request(`/secrets/${secretId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async deleteAllSecrets() {
+    return this.request('/secrets', {
+      method: 'DELETE',
+    });
+  }
+
+  async createEvent(eventData) {
+    return this.request('/events', {
+      method: 'POST',
+      body: eventData,
+    });
+  }
+
+  async getEvents(filters = {}) {
+    const params = new URLSearchParams();
+    if (filters.id) params.append('id', filters.id);
+    if (filters.start_date) params.append('start_date', filters.start_date);
+    if (filters.end_date) params.append('end_date', filters.end_date);
+    const queryString = params.toString();
+    return this.request(`/events${queryString ? '?' + queryString : ''}`, {
+      method: 'GET',
+    });
+  }
+
+  async updateEvent(eventId, eventData) {
+    return this.request(`/events/${eventId}`, {
+      method: 'PUT',
+      body: eventData,
+    });
+  }
+
+  async deleteEvent(eventId) {
+    return this.request(`/events/${eventId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async deleteAllEvents() {
+    return this.request('/events', {
       method: 'DELETE',
     });
   }

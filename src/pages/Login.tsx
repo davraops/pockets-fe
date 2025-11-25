@@ -5,6 +5,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import ThemeToggle from '../components/ThemeToggle'
 import { api } from '../services/api'
+import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './Login.css'
 
 function Login() {
@@ -104,36 +105,10 @@ function Login() {
       }
     } catch (err: any) {
       console.error('Error al iniciar sesión:', err)
-      let errorMessage = 'Error al iniciar sesión. Por favor, verifica tus credenciales.'
-
-      // Traducir mensajes de error comunes
-      if (err.data?.error) {
-        const error = err.data.error.toLowerCase()
-        if (error.includes('invalid') || error.includes('incorrect') || error.includes('wrong')) {
-          errorMessage = 'Usuario o contraseña incorrectos'
-        } else if (error.includes('not found') || error.includes('no existe')) {
-          errorMessage = 'Usuario no encontrado'
-        } else if (error.includes('unauthorized') || error.includes('no autorizado')) {
-          errorMessage = 'Credenciales inválidas'
-        } else {
-          errorMessage = err.data.error
-        }
-      } else if (err.data?.message) {
-        const message = err.data.message.toLowerCase()
-        if (
-          message.includes('invalid') ||
-          message.includes('incorrect') ||
-          message.includes('wrong')
-        ) {
-          errorMessage = 'Usuario o contraseña incorrectos'
-        } else if (message.includes('not found') || message.includes('no existe')) {
-          errorMessage = 'Usuario no encontrado'
-        } else if (message.includes('unauthorized') || message.includes('no autorizado')) {
-          errorMessage = 'Credenciales inválidas'
-        } else {
-          errorMessage = err.data.message
-        }
-      }
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al iniciar sesión. Por favor, verifica tus credenciales.'
+      )
 
       setFormErrors({
         username: '',

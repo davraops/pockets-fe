@@ -1,0 +1,1056 @@
+.inflacion-content {
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: stretch;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Toolbar */
+.inflacion-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  width: 100%;
+}
+
+.inflacion-toolbar-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--border-glass);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  padding: 0;
+  box-shadow: var(--shadow-sm);
+  color: var(--text-primary);
+}
+
+.inflacion-toolbar-button:hover:not(:disabled) {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-glass-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.inflacion-toolbar-button:active:not(:disabled) {
+  transform: translateY(0);
+  transition: transform var(--transition-fast);
+}
+
+.inflacion-toolbar-icon {
+  font-size: 1.5rem !important;
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  color: var(--text-primary);
+}
+
+/* Page Title */
+.inflacion-page-title {
+  font-size: 2.5rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
+  letter-spacing: var(--letter-spacing-tight);
+  font-family: var(--font-family);
+  line-height: 1.2;
+  text-align: left;
+}
+
+[data-theme='light'] .inflacion-page-title {
+  color: rgba(0, 0, 0, 0.95);
+}
+
+.inflacion-page-subtitle {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-xl) 0;
+  letter-spacing: var(--letter-spacing-tight);
+  font-family: var(--font-family);
+  line-height: 1.4;
+  text-align: left;
+}
+
+[data-theme='light'] .inflacion-page-subtitle {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* Section Title */
+.inflacion-section-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+  letter-spacing: var(--letter-spacing-tight);
+  font-family: var(--font-family);
+  line-height: 1.3;
+}
+
+[data-theme='light'] .inflacion-section-title {
+  color: rgba(0, 0, 0, 0.95);
+}
+
+/* Calculator */
+.inflacion-calculator {
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-glass);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme='light'] .inflacion-calculator {
+  background: var(--bg-glass);
+  border-color: var(--border-glass);
+}
+
+.inflacion-calculator-inputs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.inflacion-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.inflacion-label {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+[data-theme='light'] .inflacion-label {
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.inflacion-input {
+  width: 100%;
+  padding: var(--spacing-md);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+  font-family: var(--font-family);
+  transition: all var(--transition-base);
+  box-sizing: border-box;
+}
+
+[data-theme='light'] .inflacion-input {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.15);
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.inflacion-input:focus {
+  outline: none;
+  border-color: rgba(10, 132, 255, 0.6);
+  background: rgba(10, 132, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.2);
+}
+
+[data-theme='light'] .inflacion-input:focus {
+  border-color: rgba(10, 132, 255, 0.6);
+  background: rgba(10, 132, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.15);
+}
+
+/* Result */
+.inflacion-result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: rgba(255, 59, 48, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 59, 48, 0.3);
+}
+
+[data-theme='light'] .inflacion-result {
+  background: rgba(255, 59, 48, 0.05);
+  border-color: rgba(255, 59, 48, 0.2);
+}
+
+.inflacion-result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.inflacion-result-item.highlight {
+  padding-top: var(--spacing-md);
+  border-top: 1px solid rgba(255, 59, 48, 0.3);
+  margin-top: var(--spacing-xs);
+}
+
+.inflacion-result-label {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+}
+
+[data-theme='light'] .inflacion-result-label {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.inflacion-result-value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  text-align: right;
+}
+
+.inflacion-result-value.devalued {
+  color: rgba(255, 149, 0, 0.9);
+}
+
+.inflacion-result-value.loss {
+  color: rgba(255, 59, 48, 0.9);
+  font-size: var(--font-size-xl);
+}
+
+[data-theme='light'] .inflacion-result-value.devalued {
+  color: #ff9500;
+}
+
+[data-theme='light'] .inflacion-result-value.loss {
+  color: #ff3b30;
+}
+
+/* Predictor */
+.inflacion-predictor {
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-glass);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.inflacion-predictor-description {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-lg) 0;
+  font-family: var(--font-family);
+  line-height: 1.5;
+}
+
+[data-theme='light'] .inflacion-predictor-description {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.inflacion-predictions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.inflacion-prediction-card {
+  background: rgba(255, 149, 0, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 149, 0, 0.3);
+  padding: var(--spacing-lg);
+  text-align: center;
+  transition: all var(--transition-base);
+}
+
+.inflacion-prediction-card:hover {
+  background: rgba(255, 149, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+[data-theme='light'] .inflacion-prediction-card {
+  background: rgba(255, 149, 0, 0.05);
+  border-color: rgba(255, 149, 0, 0.2);
+}
+
+.inflacion-prediction-period {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+  font-family: var(--font-family);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+[data-theme='light'] .inflacion-prediction-period {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.inflacion-prediction-value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: rgba(255, 149, 0, 0.9);
+  font-family: var(--font-family);
+}
+
+[data-theme='light'] .inflacion-prediction-value {
+  color: #ff9500;
+}
+
+/* Warning Message */
+.inflacion-warning {
+  background: linear-gradient(135deg, rgba(255, 59, 48, 0.15) 0%, rgba(255, 149, 0, 0.15) 100%);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border-radius: var(--radius-lg);
+  border: 2px solid rgba(255, 59, 48, 0.4);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+  box-shadow:
+    0 8px 32px 0 rgba(255, 59, 48, 0.2),
+    var(--shadow-sm);
+  display: flex;
+  gap: var(--spacing-lg);
+  align-items: flex-start;
+}
+
+[data-theme='light'] .inflacion-warning {
+  background: linear-gradient(135deg, rgba(255, 59, 48, 0.08) 0%, rgba(255, 149, 0, 0.08) 100%);
+  border-color: rgba(255, 59, 48, 0.3);
+  box-shadow:
+    0 8px 32px 0 rgba(255, 59, 48, 0.1),
+    var(--shadow-sm);
+}
+
+.inflacion-warning-icon {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 59, 48, 0.2);
+  border-radius: 50%;
+  color: rgba(255, 59, 48, 0.9);
+}
+
+.inflacion-warning-icon svg {
+  font-size: 2rem !important;
+  width: 2rem !important;
+  height: 2rem !important;
+}
+
+[data-theme='light'] .inflacion-warning-icon {
+  background: rgba(255, 59, 48, 0.1);
+  color: #ff3b30;
+}
+
+.inflacion-warning-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.inflacion-warning-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: rgba(255, 59, 48, 0.95);
+  margin: 0;
+  font-family: var(--font-family);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+[data-theme='light'] .inflacion-warning-title {
+  color: #ff3b30;
+}
+
+.inflacion-warning-text {
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.6;
+  font-family: var(--font-family);
+  font-style: italic;
+}
+
+[data-theme='light'] .inflacion-warning-text {
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.inflacion-warning-quote {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: rgba(255, 149, 0, 0.9);
+  margin: 0;
+  line-height: 1.5;
+  font-family: var(--font-family);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid rgba(255, 149, 0, 0.3);
+}
+
+[data-theme='light'] .inflacion-warning-quote {
+  color: #ff9500;
+  border-top-color: rgba(255, 149, 0, 0.2);
+}
+
+/* Tips Section */
+.inflacion-tips {
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-glass);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.inflacion-tips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+}
+
+.inflacion-tip-card {
+  background: rgba(10, 132, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(10, 132, 255, 0.3);
+  padding: var(--spacing-lg);
+  transition: all var(--transition-base);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.inflacion-tip-card:hover {
+  background: rgba(10, 132, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(10, 132, 255, 0.5);
+}
+
+[data-theme='light'] .inflacion-tip-card {
+  background: rgba(10, 132, 255, 0.05);
+  border-color: rgba(10, 132, 255, 0.2);
+}
+
+.inflacion-tip-icon {
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: var(--spacing-xs);
+}
+
+.inflacion-tip-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+  font-family: var(--font-family);
+  text-align: center;
+}
+
+[data-theme='light'] .inflacion-tip-title {
+  color: rgba(0, 0, 0, 0.95);
+}
+
+.inflacion-tip-description {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+  font-family: var(--font-family);
+  text-align: center;
+}
+
+[data-theme='light'] .inflacion-tip-description {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+/* Salario Mínimo Section */
+.inflacion-salary-section {
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-glass);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.inflacion-salary-description {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-lg) 0;
+  font-family: var(--font-family);
+  line-height: 1.5;
+}
+
+[data-theme='light'] .inflacion-salary-description {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.inflacion-salary-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+}
+
+.inflacion-salary-stat-card {
+  background: rgba(10, 132, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(10, 132, 255, 0.3);
+  padding: var(--spacing-lg);
+  transition: all var(--transition-base);
+}
+
+.inflacion-salary-stat-card:hover {
+  background: rgba(10, 132, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+[data-theme='light'] .inflacion-salary-stat-card {
+  background: rgba(10, 132, 255, 0.05);
+  border-color: rgba(10, 132, 255, 0.2);
+}
+
+.inflacion-salary-stat-year {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+  font-family: var(--font-family);
+}
+
+[data-theme='light'] .inflacion-salary-stat-year {
+  color: rgba(0, 0, 0, 0.95);
+}
+
+.inflacion-salary-stat-amount {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: rgba(52, 199, 89, 0.9);
+  margin-bottom: var(--spacing-md);
+  font-family: var(--font-family);
+}
+
+[data-theme='light'] .inflacion-salary-stat-amount {
+  color: #34c759;
+}
+
+.inflacion-salary-stat-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.inflacion-salary-stat-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-sm);
+}
+
+.inflacion-salary-stat-label {
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+}
+
+[data-theme='light'] .inflacion-salary-stat-label {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.inflacion-salary-stat-value {
+  font-weight: var(--font-weight-semibold);
+  font-family: var(--font-family);
+}
+
+.inflacion-salary-stat-value.positive {
+  color: rgba(52, 199, 89, 0.9);
+}
+
+.inflacion-salary-stat-value.negative {
+  color: rgba(255, 59, 48, 0.9);
+}
+
+[data-theme='light'] .inflacion-salary-stat-value.positive {
+  color: #34c759;
+}
+
+[data-theme='light'] .inflacion-salary-stat-value.negative {
+  color: #ff3b30;
+}
+
+.inflacion-subsection-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+  font-family: var(--font-family);
+}
+
+[data-theme='light'] .inflacion-subsection-title {
+  color: rgba(0, 0, 0, 0.95);
+}
+
+.inflacion-salary-chart-container {
+  margin-bottom: var(--spacing-xl);
+}
+
+.inflacion-salary-chart-wrapper {
+  width: 100%;
+  height: 400px;
+  position: relative;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+}
+
+[data-theme='light'] .inflacion-salary-chart-wrapper {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.inflacion-purchasing-power {
+  background: rgba(255, 149, 0, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 149, 0, 0.3);
+  padding: var(--spacing-lg);
+}
+
+[data-theme='light'] .inflacion-purchasing-power {
+  background: rgba(255, 149, 0, 0.05);
+  border-color: rgba(255, 149, 0, 0.2);
+}
+
+.inflacion-analysis-text {
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-lg) 0;
+  line-height: 1.6;
+  font-family: var(--font-family);
+}
+
+[data-theme='light'] .inflacion-analysis-text {
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.inflacion-purchasing-power-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.inflacion-power-stat {
+  text-align: center;
+  padding: var(--spacing-md);
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: var(--radius-sm);
+}
+
+[data-theme='light'] .inflacion-power-stat {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.inflacion-power-stat-value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+  font-family: var(--font-family);
+}
+
+[data-theme='light'] .inflacion-power-stat-value {
+  color: rgba(0, 0, 0, 0.95);
+}
+
+.inflacion-power-stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  line-height: 1.4;
+}
+
+[data-theme='light'] .inflacion-power-stat-label {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* Economics Section */
+.inflacion-economics-section {
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-glass);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.inflacion-economics-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.inflacion-economics-warning {
+  background: linear-gradient(135deg, rgba(255, 149, 0, 0.15) 0%, rgba(255, 59, 48, 0.15) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-md);
+  border: 2px solid rgba(255, 149, 0, 0.4);
+  padding: var(--spacing-lg);
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: flex-start;
+}
+
+[data-theme='light'] .inflacion-economics-warning {
+  background: linear-gradient(135deg, rgba(255, 149, 0, 0.08) 0%, rgba(255, 59, 48, 0.08) 100%);
+  border-color: rgba(255, 149, 0, 0.3);
+}
+
+.inflacion-economics-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.inflacion-economics-text {
+  flex: 1;
+}
+
+.inflacion-economics-text p {
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+  line-height: 1.6;
+  font-family: var(--font-family);
+}
+
+.inflacion-economics-text p:last-child {
+  margin-bottom: 0;
+}
+
+.inflacion-economics-text strong {
+  color: rgba(255, 149, 0, 0.9);
+  font-weight: var(--font-weight-semibold);
+}
+
+[data-theme='light'] .inflacion-economics-text p {
+  color: rgba(0, 0, 0, 0.8);
+}
+
+[data-theme='light'] .inflacion-economics-text strong {
+  color: #ff9500;
+}
+
+.inflacion-economics-explanation {
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+}
+
+[data-theme='light'] .inflacion-economics-explanation {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.inflacion-economics-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+.inflacion-economics-step {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: flex-start;
+  padding: var(--spacing-md);
+  background: rgba(10, 132, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: var(--radius-sm);
+  border-left: 4px solid rgba(10, 132, 255, 0.5);
+  transition: all var(--transition-base);
+}
+
+.inflacion-economics-step:hover {
+  background: rgba(10, 132, 255, 0.15);
+  transform: translateX(4px);
+}
+
+[data-theme='light'] .inflacion-economics-step {
+  background: rgba(10, 132, 255, 0.05);
+  border-left-color: rgba(10, 132, 255, 0.3);
+}
+
+.inflacion-economics-step-number {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 132, 255, 0.3);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  font-family: var(--font-family);
+}
+
+[data-theme='light'] .inflacion-economics-step-number {
+  background: rgba(10, 132, 255, 0.2);
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.inflacion-economics-step-content {
+  flex: 1;
+}
+
+.inflacion-economics-step-content h4 {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
+  font-family: var(--font-family);
+}
+
+[data-theme='light'] .inflacion-economics-step-content h4 {
+  color: rgba(0, 0, 0, 0.95);
+}
+
+.inflacion-economics-step-content p {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+  font-family: var(--font-family);
+}
+
+[data-theme='light'] .inflacion-economics-step-content p {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.inflacion-economics-conclusion {
+  background: rgba(255, 59, 48, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 59, 48, 0.3);
+  padding: var(--spacing-lg);
+}
+
+[data-theme='light'] .inflacion-economics-conclusion {
+  background: rgba(255, 59, 48, 0.05);
+  border-color: rgba(255, 59, 48, 0.2);
+}
+
+.inflacion-conclusion-text {
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+  line-height: 1.6;
+  font-family: var(--font-family);
+}
+
+.inflacion-conclusion-text:last-child {
+  margin-bottom: 0;
+}
+
+.inflacion-conclusion-text strong {
+  color: rgba(255, 59, 48, 0.9);
+  font-weight: var(--font-weight-semibold);
+}
+
+[data-theme='light'] .inflacion-conclusion-text {
+  color: rgba(0, 0, 0, 0.8);
+}
+
+[data-theme='light'] .inflacion-conclusion-text strong {
+  color: #ff3b30;
+}
+
+/* Chart Container */
+.inflacion-chart-container {
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-glass);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-xl);
+}
+
+.inflacion-chart-wrapper {
+  width: 100%;
+  height: 400px;
+  position: relative;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .inflacion-toolbar {
+    margin-top: var(--spacing-xl);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .inflacion-toolbar-button {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .inflacion-page-title {
+    font-size: 2rem;
+  }
+
+  .inflacion-calculator,
+  .inflacion-predictor,
+  .inflacion-chart-container {
+    padding: var(--spacing-md);
+  }
+
+  .inflacion-calculator-inputs {
+    grid-template-columns: 1fr;
+  }
+
+  .inflacion-predictions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .inflacion-chart-wrapper {
+    height: 300px;
+  }
+
+  .inflacion-result-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+
+  .inflacion-result-value {
+    text-align: left;
+  }
+
+  .inflacion-warning {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+  }
+
+  .inflacion-warning-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .inflacion-warning-icon svg {
+    font-size: 1.5rem !important;
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+  }
+
+  .inflacion-tips-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .inflacion-page-title {
+    font-size: 1.75rem;
+  }
+
+  .inflacion-predictions {
+    grid-template-columns: 1fr;
+  }
+
+  .inflacion-chart-wrapper {
+    height: 250px;
+  }
+
+  .inflacion-warning-title {
+    font-size: var(--font-size-lg);
+  }
+
+  .inflacion-warning-text {
+    font-size: var(--font-size-sm);
+  }
+
+  .inflacion-warning-quote {
+    font-size: var(--font-size-base);
+  }
+
+  .inflacion-salary-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .inflacion-salary-chart-wrapper {
+    height: 300px;
+    padding: var(--spacing-sm);
+  }
+
+  .inflacion-purchasing-power-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .inflacion-economics-warning {
+    flex-direction: column;
+  }
+
+  .inflacion-economics-icon {
+    font-size: 2rem;
+  }
+
+  .inflacion-economics-step {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .inflacion-economics-step-number {
+    width: 36px;
+    height: 36px;
+    font-size: var(--font-size-base);
+  }
+}

@@ -9,6 +9,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { api } from '../services/api'
+import { useNotification } from '../contexts/NotificationContext'
+import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
 import './Cuentas.css'
 
@@ -48,6 +50,7 @@ interface BankAccount {
 
 function Cuentas() {
   const navigate = useNavigate()
+  const { showNotification } = useNotification()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
@@ -98,7 +101,11 @@ function Cuentas() {
         }
       } catch (err: any) {
         console.error('Error al cargar cuentas:', err)
-        setError('Frontend says: Error al cargar las cuentas. Por favor, intenta de nuevo.')
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al cargar las cuentas. Por favor, intenta de nuevo.'
+        )
+        setError(errorMessage)
         setAccounts([])
       } finally {
         setIsLoading(false)
@@ -230,7 +237,11 @@ function Cuentas() {
         handleCloseDetailModal()
       } catch (err: any) {
         console.error('Error al eliminar cuenta:', err)
-        alert('Frontend says: Error al eliminar la cuenta. Por favor, intenta de nuevo.')
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al eliminar la cuenta. Por favor, intenta de nuevo.'
+        )
+        showNotification(errorMessage, 'error')
       }
     }
   }
@@ -339,10 +350,11 @@ function Cuentas() {
       }
     } catch (err: any) {
       console.error('Error al guardar cuenta:', err)
-      const errorMessage = err.data?.error
-        ? `Backend says: ${err.data.error}`
-        : 'Frontend says: Error al guardar la cuenta. Por favor, intenta de nuevo.'
-      alert(errorMessage)
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al guardar la cuenta. Por favor, intenta de nuevo.'
+      )
+      showNotification(errorMessage, 'error')
     }
   }
 
@@ -616,10 +628,14 @@ function Cuentas() {
         setAccounts(mappedAccounts)
       }
       setIsDebugModalOpen(false)
-      alert('10 cuentas de prueba creadas exitosamente')
+      showNotification('10 cuentas de prueba creadas exitosamente', 'success')
     } catch (err: any) {
       console.error('Error al crear cuentas de prueba:', err)
-      alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al crear las cuentas de prueba. Por favor, intenta de nuevo.'
+      )
+      showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
     }
@@ -642,10 +658,14 @@ function Cuentas() {
           setAccounts(mappedAccounts)
         }
         setIsDebugModalOpen(false)
-        alert('Todas las cuentas han sido eliminadas exitosamente')
+        showNotification('Todas las cuentas han sido eliminadas exitosamente', 'success')
       } catch (err: any) {
         console.error('Error al eliminar todas las cuentas:', err)
-        alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al eliminar las cuentas. Por favor, intenta de nuevo.'
+        )
+        showNotification(errorMessage, 'error')
       } finally {
         setIsLoading(false)
       }

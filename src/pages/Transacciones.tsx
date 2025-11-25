@@ -12,6 +12,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
 import { useNotification } from '../contexts/NotificationContext'
+import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
 import './Transacciones.css'
 
@@ -87,7 +88,7 @@ interface Debtor {
 function Transacciones() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { showError, showSuccess, showWarning } = useNotification()
+  const { showNotification, showError, showSuccess, showWarning } = useNotification()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
@@ -284,7 +285,8 @@ function Transacciones() {
         }
       } catch (err: any) {
         console.error('Error al cargar datos:', err)
-        setError('Frontend says: Error al cargar las transacciones. Por favor, intenta de nuevo.')
+        const errorMessage = getTranslatedErrorMessage(err, 'Error al cargar las transacciones. Por favor, intenta de nuevo.')
+        setError(errorMessage)
         setTransactions([])
       } finally {
         setIsLoading(false)
@@ -441,9 +443,8 @@ function Transacciones() {
           tx = transactionResponse.transactions[0]
         } catch (err: any) {
           console.error('Error al obtener transacción:', err)
-          throw new Error(
-            `Error al obtener transacción: ${err.data?.error || err.message || 'Error desconocido'}`
-          )
+          const errorMessage = getTranslatedErrorMessage(err, 'Error al obtener la transacción. Por favor, intenta de nuevo.')
+          throw new Error(errorMessage)
         }
 
         // Guardar valores originales para rollback
@@ -788,20 +789,14 @@ function Transacciones() {
         console.error('Error data:', err.data)
         console.error('Error message:', err.message)
 
-        let errorMessage =
-          'Frontend says: Error al eliminar la transacción. Por favor, intenta de nuevo.'
-
-        if (err.data?.error) {
-          errorMessage = `Backend says: ${err.data.error}`
-        } else if (err.message) {
-          errorMessage = `Frontend says: ${err.message}`
-        } else if (err.response?.status) {
-          errorMessage = `Backend says: Error ${err.response.status} - ${err.response.statusText || 'Error desconocido'}`
+        let errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar la transacción. Por favor, intenta de nuevo.')
+        if (err.response?.status) {
+          errorMessage = `Error ${err.response.status} - ${err.response.statusText || 'Error desconocido'}`
         } else if (typeof err === 'string') {
-          errorMessage = `Frontend says: ${err}`
+          errorMessage = err
         }
 
-        alert(errorMessage)
+        showNotification(errorMessage, 'error')
       } finally {
         setIsLoading(false)
       }
@@ -1122,7 +1117,7 @@ function Transacciones() {
 
       if (isEditMode && selectedTransaction) {
         // Nota: La API no tiene PUT, pero podemos implementarlo si existe
-        alert('Frontend says: Funcionalidad de edición pendiente de implementar en la API')
+        showNotification('Funcionalidad de edición pendiente de implementar en la API', 'warning')
         handleCloseModal()
       } else {
         // Crear nueva transacción con rollback manual
@@ -1214,7 +1209,7 @@ function Transacciones() {
                     tipoAdeudado: typeof associatedDebt.adeudado,
                   })
                   throw new Error(
-                    `Frontend says: Error al calcular el nuevo monto adeudado. Valor inválido: ${nuevoAdeudado}`
+                    `Error al calcular el nuevo monto adeudado. Valor inválido: ${nuevoAdeudado}`
                   )
                 }
 
@@ -1513,9 +1508,7 @@ function Transacciones() {
             )
           }
 
-          const errorMessage = err.data?.error
-            ? err.data.error
-            : 'Error al guardar la transacción. Por favor, intenta de nuevo.'
+          const errorMessage = getTranslatedErrorMessage(err, 'Error al guardar la transacción. Por favor, intenta de nuevo.')
           showError(errorMessage)
         } finally {
           setIsLoading(false)
@@ -1524,9 +1517,7 @@ function Transacciones() {
       }
     } catch (err: any) {
       console.error('Error al guardar transacción:', err)
-      const errorMessage = err.data?.error
-        ? err.data.error
-        : 'Error al guardar la transacción. Por favor, intenta de nuevo.'
+      const errorMessage = getTranslatedErrorMessage(err, 'Error al guardar la transacción. Por favor, intenta de nuevo.')
       showError(errorMessage)
       setIsLoading(false)
       setIsSubmitting(false)
@@ -1774,13 +1765,11 @@ function Transacciones() {
 
         await reloadTransactions()
         setIsDebugModalOpen(false)
-        alert('Frontend says: Todas las transacciones han sido eliminadas exitosamente.')
+        showNotification('Todas las transacciones han sido eliminadas exitosamente.', 'success')
       } catch (err: any) {
         console.error('Error al eliminar todas las transacciones:', err)
-        const errorMessage = err.data?.error
-          ? `Backend says: ${err.data.error}`
-          : 'Frontend says: Error al eliminar todas las transacciones. Por favor, intenta de nuevo.'
-        alert(errorMessage)
+        const errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar todas las transacciones. Por favor, intenta de nuevo.')
+        showNotification(errorMessage, 'error')
       } finally {
         setIsLoading(false)
       }
@@ -1789,9 +1778,7 @@ function Transacciones() {
 
   const handleCreateDemoIncomes = async () => {
     if (accounts.length === 0) {
-      alert(
-        'Frontend says: No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.'
-      )
+      showNotification('No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.', 'warning')
       return
     }
 
@@ -1860,13 +1847,11 @@ function Transacciones() {
 
       await reloadTransactions()
       setIsDebugModalOpen(false)
-      alert(`Frontend says: ${demoIncomes.length} ingresos demo creados exitosamente.`)
+      showNotification(`${demoIncomes.length} ingresos demo creados exitosamente.`, 'success')
     } catch (err: any) {
       console.error('Error al crear ingresos demo:', err)
-      const errorMessage = err.data?.error
-        ? `Backend says: ${err.data.error}`
-        : 'Frontend says: Error al crear ingresos demo. Por favor, intenta de nuevo.'
-      alert(errorMessage)
+      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear los ingresos demo. Por favor, intenta de nuevo.')
+      showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
     }
@@ -1874,9 +1859,7 @@ function Transacciones() {
 
   const handleCreateDemoExpenses = async () => {
     if (accounts.length === 0) {
-      alert(
-        'Frontend says: No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.'
-      )
+      showNotification('No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.', 'warning')
       return
     }
 
@@ -1945,13 +1928,11 @@ function Transacciones() {
 
       await reloadTransactions()
       setIsDebugModalOpen(false)
-      alert(`Frontend says: ${demoExpenses.length} egresos demo creados exitosamente.`)
+      showNotification(`${demoExpenses.length} egresos demo creados exitosamente.`, 'success')
     } catch (err: any) {
       console.error('Error al crear egresos demo:', err)
-      const errorMessage = err.data?.error
-        ? `Backend says: ${err.data.error}`
-        : 'Frontend says: Error al crear egresos demo. Por favor, intenta de nuevo.'
-      alert(errorMessage)
+      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear los egresos demo. Por favor, intenta de nuevo.')
+      showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
     }
@@ -1959,15 +1940,11 @@ function Transacciones() {
 
   const handleCreateDemoCreditCardPayments = async () => {
     if (accounts.length === 0) {
-      alert(
-        'Frontend says: No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.'
-      )
+      showNotification('No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.', 'warning')
       return
     }
     if (creditCards.length === 0) {
-      alert(
-        'Frontend says: No hay tarjetas de crédito disponibles. Crea al menos una tarjeta primero.'
-      )
+      showNotification('No hay tarjetas de crédito disponibles. Crea al menos una tarjeta primero.', 'warning')
       return
     }
 
@@ -2044,15 +2021,14 @@ function Transacciones() {
       await reloadTransactions()
       window.dispatchEvent(new Event('debtsUpdated'))
       setIsDebugModalOpen(false)
-      alert(
-        `Frontend says: ${demoPayments.length} egresos con pago de tarjeta demo creados exitosamente.`
+      showNotification(
+        `${demoPayments.length} egresos con pago de tarjeta demo creados exitosamente.`,
+        'success'
       )
     } catch (err: any) {
       console.error('Error al crear egresos con tarjeta demo:', err)
-      const errorMessage = err.data?.error
-        ? `Backend says: ${err.data.error}`
-        : 'Frontend says: Error al crear egresos con tarjeta demo. Por favor, intenta de nuevo.'
-      alert(errorMessage)
+      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear los egresos con tarjeta demo. Por favor, intenta de nuevo.')
+      showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
     }
@@ -2060,13 +2036,11 @@ function Transacciones() {
 
   const handleCreateDemoDebtPayments = async () => {
     if (accounts.length === 0) {
-      alert(
-        'Frontend says: No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.'
-      )
+      showNotification('No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.', 'warning')
       return
     }
     if (debts.length === 0) {
-      alert('Frontend says: No hay deudas disponibles. Crea al menos una deuda primero.')
+      showNotification('No hay deudas disponibles. Crea al menos una deuda primero.', 'warning')
       return
     }
 
@@ -2128,15 +2102,14 @@ function Transacciones() {
       await reloadTransactions()
       window.dispatchEvent(new Event('debtsUpdated'))
       setIsDebugModalOpen(false)
-      alert(
-        `Frontend says: ${demoPayments.length} egresos con pago de deuda demo creados exitosamente.`
+      showNotification(
+        `${demoPayments.length} egresos con pago de deuda demo creados exitosamente.`,
+        'success'
       )
     } catch (err: any) {
       console.error('Error al crear egresos con deuda demo:', err)
-      const errorMessage = err.data?.error
-        ? `Backend says: ${err.data.error}`
-        : 'Frontend says: Error al crear egresos con deuda demo. Por favor, intenta de nuevo.'
-      alert(errorMessage)
+      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear los egresos con deuda demo. Por favor, intenta de nuevo.')
+      showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
     }
@@ -2144,15 +2117,11 @@ function Transacciones() {
 
   const handleCreateDemoSavings = async () => {
     if (accounts.length === 0) {
-      alert(
-        'Frontend says: No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.'
-      )
+      showNotification('No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.', 'warning')
       return
     }
     if (projectBudgets.length === 0) {
-      alert(
-        'Frontend says: No hay presupuestos asociados a proyectos. Crea al menos un proyecto primero.'
-      )
+      showNotification('No hay presupuestos asociados a proyectos. Crea al menos un proyecto primero.', 'warning')
       return
     }
 
@@ -2232,13 +2201,11 @@ function Transacciones() {
 
       await reloadTransactions()
       setIsDebugModalOpen(false)
-      alert(`Frontend says: ${demoSavings.length} ahorros demo creados exitosamente.`)
+      showNotification(`${demoSavings.length} ahorros demo creados exitosamente.`, 'success')
     } catch (err: any) {
       console.error('Error al crear ahorros demo:', err)
-      const errorMessage = err.data?.error
-        ? `Backend says: ${err.data.error}`
-        : 'Frontend says: Error al crear ahorros demo. Por favor, intenta de nuevo.'
-      alert(errorMessage)
+      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear los ahorros demo. Por favor, intenta de nuevo.')
+      showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
     }

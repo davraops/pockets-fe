@@ -9,6 +9,8 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import WarningIcon from '@mui/icons-material/Warning'
 import { api } from '../services/api'
+import { useNotification } from '../contexts/NotificationContext'
+import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
 import './TarjetasCredito.css'
 
@@ -44,6 +46,7 @@ interface CreditCard {
 
 function TarjetasCredito() {
   const navigate = useNavigate()
+  const { showNotification } = useNotification()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
@@ -251,7 +254,8 @@ function TarjetasCredito() {
         handleCloseDetailModal()
       } catch (err: any) {
         console.error('Error al eliminar tarjeta:', err)
-        alert('Frontend says: Error al eliminar la tarjeta. Por favor, intenta de nuevo.')
+        const errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar la tarjeta. Por favor, intenta de nuevo.')
+        showNotification(errorMessage, 'error')
       }
     }
   }
@@ -382,7 +386,7 @@ function TarjetasCredito() {
       !formData.cupo.trim() ||
       !formData.tasaMensual.trim()
     ) {
-      alert('Frontend says: Por favor completa todos los campos requeridos')
+      showNotification('Por favor completa todos los campos requeridos', 'warning')
       return
     }
 
@@ -392,27 +396,27 @@ function TarjetasCredito() {
     const cupoUsadoNum = formData.cupoUsado.trim() ? parseFloat(formData.cupoUsado) : 0
 
     if (isNaN(cupoNum) || cupoNum <= 0) {
-      alert('Frontend says: El cupo debe ser un número positivo')
+      showNotification('El cupo debe ser un número positivo', 'warning')
       return
     }
 
     if (isNaN(tasaNum) || tasaNum < 0) {
-      alert('Frontend says: La tasa mensual debe ser un número positivo')
+      showNotification('La tasa mensual debe ser un número positivo', 'warning')
       return
     }
 
     if (formData.cuotaManejo.trim() && (isNaN(cuotaNum) || cuotaNum < 0)) {
-      alert('Frontend says: La cuota de manejo debe ser un número positivo')
+      showNotification('La cuota de manejo debe ser un número positivo', 'warning')
       return
     }
 
     if (formData.cupoUsado.trim() && (isNaN(cupoUsadoNum) || cupoUsadoNum < 0)) {
-      alert('Frontend says: El cupo usado debe ser un número positivo')
+      showNotification('El cupo usado debe ser un número positivo', 'warning')
       return
     }
 
     if (cupoUsadoNum > cupoNum) {
-      alert('Frontend says: El cupo usado no puede exceder el cupo de crédito')
+      showNotification('El cupo usado no puede exceder el cupo de crédito', 'warning')
       return
     }
 
@@ -740,10 +744,11 @@ function TarjetasCredito() {
       const debtMessage = createdDebts > 0 ? `\n${createdDebts} deudas asociadas creadas.` : ''
       const errorMessage =
         failedDebts > 0 ? `\n⚠️ ${failedDebts} deudas no pudieron crearse (revisa la consola).` : ''
-      alert(message + debtMessage + errorMessage)
+      showNotification(message + debtMessage + errorMessage, 'success')
     } catch (err: any) {
       console.error('Error al crear tarjetas de prueba:', err)
-      alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
+      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear las tarjetas de prueba. Por favor, intenta de nuevo.')
+      showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
     }
@@ -828,11 +833,12 @@ function TarjetasCredito() {
 
       alertMessage += '\n\nRevisa la consola (F12) para más detalles.'
 
-      alert(alertMessage)
+      showNotification(alertMessage, 'info')
       console.log('=== FIN DEBUG ===')
     } catch (err: any) {
       console.error('Error en debug logs:', err)
-      alert('Backend says: ' + (err.data?.error || err.message))
+      const errorMessage = getTranslatedErrorMessage(err, 'Error al obtener los logs de debug. Por favor, intenta de nuevo.')
+      showNotification(errorMessage, 'error')
     }
   }
 
@@ -853,10 +859,11 @@ function TarjetasCredito() {
           setCards(mappedCards)
         }
         setIsDebugModalOpen(false)
-        alert('Todas las tarjetas de crédito han sido eliminadas exitosamente')
+        showNotification('Todas las tarjetas de crédito han sido eliminadas exitosamente', 'success')
       } catch (err: any) {
         console.error('Error al eliminar todas las tarjetas:', err)
-        alert('Backend says: ' + (err.data?.error || 'Error desconocido'))
+        const errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar las tarjetas. Por favor, intenta de nuevo.')
+        showNotification(errorMessage, 'error')
       } finally {
         setIsLoading(false)
       }

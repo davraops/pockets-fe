@@ -9,6 +9,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
 import { useNotification } from '../contexts/NotificationContext'
+import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
 import './CDTs.css'
 
@@ -75,7 +76,10 @@ function CDTs() {
       tasa: apiCDT.rate,
       fechaRetiro: apiCDT.withdrawal_date,
       duracion: apiCDT.duration !== undefined && apiCDT.duration !== null ? apiCDT.duration : null,
-      emisor: apiCDT.issuer !== undefined && apiCDT.issuer !== null && apiCDT.issuer.trim() !== '' ? apiCDT.issuer.trim() : null,
+      emisor:
+        apiCDT.issuer !== undefined && apiCDT.issuer !== null && apiCDT.issuer.trim() !== ''
+          ? apiCDT.issuer.trim()
+          : null,
       created_at: apiCDT.created_at,
     }
   }
@@ -202,8 +206,10 @@ function CDTs() {
         showNotification('CDT eliminado exitosamente', 'success')
       } catch (err: any) {
         console.error('Error al eliminar CDT:', err)
-        const errorMessage =
-          err.data?.error || err.data?.message || 'Error al eliminar el CDT. Por favor, intenta de nuevo.'
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al eliminar el CDT. Por favor, intenta de nuevo.'
+        )
         showNotification(errorMessage, 'error')
       }
     }
@@ -325,8 +331,10 @@ function CDTs() {
       }
     } catch (err: any) {
       console.error('Error al guardar CDT:', err)
-      const errorMessage =
-        err.data?.error || err.data?.message || 'Error al guardar el CDT. Por favor, intenta de nuevo.'
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al guardar el CDT. Por favor, intenta de nuevo.'
+      )
       showNotification(errorMessage, 'error')
     }
   }
@@ -392,8 +400,10 @@ function CDTs() {
 
     const createdDate = new Date(cdt.created_at)
     const today = new Date()
-    const daysElapsed = Math.floor((today.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24))
-    
+    const daysElapsed = Math.floor(
+      (today.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24)
+    )
+
     // Si aún no ha pasado tiempo, retornar 0
     if (daysElapsed <= 0) return 0
 
@@ -497,7 +507,9 @@ function CDTs() {
     } catch (err: any) {
       console.error('Error al crear CDTs demo:', err)
       const errorMessage =
-        err.data?.error || err.data?.message || 'Error al crear los CDTs demo. Por favor, intenta de nuevo.'
+        err.data?.error ||
+        err.data?.message ||
+        'Error al crear los CDTs demo. Por favor, intenta de nuevo.'
       showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
@@ -505,7 +517,11 @@ function CDTs() {
   }
 
   const handleDeleteAllCDTs = async () => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar TODOS los CDTs? Esta acción es irreversible.')) {
+    if (
+      window.confirm(
+        '¿Estás seguro de que quieres eliminar TODOS los CDTs? Esta acción es irreversible.'
+      )
+    ) {
       try {
         setIsLoading(true)
         await api.deleteAllCDTs()
@@ -515,7 +531,9 @@ function CDTs() {
       } catch (err: any) {
         console.error('Error al eliminar todos los CDTs:', err)
         const errorMessage =
-          err.data?.error || err.data?.message || 'Error al eliminar los CDTs. Por favor, intenta de nuevo.'
+          err.data?.error ||
+          err.data?.message ||
+          'Error al eliminar los CDTs. Por favor, intenta de nuevo.'
         showNotification(errorMessage, 'error')
       } finally {
         setIsLoading(false)
@@ -630,7 +648,9 @@ function CDTs() {
                               style={{ width: `${calculateProgress(cdt)}%` }}
                             />
                           </div>
-                          <span className="cdts-progress-text">{calculateProgress(cdt)}% completado</span>
+                          <span className="cdts-progress-text">
+                            {calculateProgress(cdt)}% completado
+                          </span>
                         </div>
                       )}
                       <div className="cdts-row-info">
@@ -650,7 +670,12 @@ function CDTs() {
 
           {/* Botón flotante para agregar */}
           {cdts.length > 0 && (
-            <button className="cdts-fab" onClick={handleOpenModal} aria-label="Agregar CDT" type="button">
+            <button
+              className="cdts-fab"
+              onClick={handleOpenModal}
+              aria-label="Agregar CDT"
+              type="button"
+            >
               <AddIcon />
             </button>
           )}
@@ -857,9 +882,7 @@ function CDTs() {
 
               <div className="detail-row">
                 <span className="detail-label">Emisor</span>
-                <span className="detail-value">
-                  {selectedCDT.emisor || 'No especificado'}
-                </span>
+                <span className="detail-value">{selectedCDT.emisor || 'No especificado'}</span>
               </div>
             </div>
 
@@ -1028,7 +1051,11 @@ function CDTs() {
               </div>
 
               <div className="modal-actions">
-                <button type="button" className="modal-button secondary" onClick={handleCloseDetailModal}>
+                <button
+                  type="button"
+                  className="modal-button secondary"
+                  onClick={handleCloseDetailModal}
+                >
                   Cancelar
                 </button>
                 <button type="submit" className="modal-button primary" disabled={isLoading}>
@@ -1104,4 +1131,3 @@ function CDTs() {
 }
 
 export default CDTs
-

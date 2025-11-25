@@ -1,0 +1,126 @@
+/* Fechas Page Styles */
+.fechas-content {
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: stretch;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Toolbar - HIG: Navigation & Actions */
+.fechas-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .fechas-toolbar {
+    margin-top: var(--spacing-xl);
+    margin-bottom: var(--spacing-sm);
+  }
+}
+
+/* Toolbar Button - HIG: Touch Target, Feedback */
+.fechas-toolbar-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--border-glass);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  padding: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.fechas-toolbar-button:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-glass-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.fechas-toolbar-button:active {
+  transform: translateY(0);
+  transition: transform var(--transition-fast);
+}
+
+.fechas-toolbar-button:focus-visible {
+  outline: 2px solid var(--accent-primary-border);
+  outline-offset: 2px;
+}
+
+.fechas-toolbar-icon {
+  font-size: 1.5rem !important;
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  color: var(--text-primary);
+}
+
+[data-theme='light'] .fechas-toolbar-button {
+  background: var(--bg-glass);
+  border-color: var(--border-glass);
+}
+
+[data-theme='light'] .fechas-toolbar-icon {
+  color: rgba(0, 0, 0, 0.9);
+}
+
+/* Page Title - HIG: Typography */
+.fechas-page-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: 1.2;
+  margin: 0;
+  margin-bottom: var(--spacing-xs);
+}
+
+[data-theme='light'] .fechas-page-title {
+  color: rgba(0, 0, 0, 0.9);
+}
+
+/* Page Subtitle - HIG: Typography */
+.fechas-page-subtitle {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: 1.5;
+  margin: 0;
+  margin-bottom: var(--spacing-lg);
+}
+
+[data-theme='light'] .fechas-page-subtitle {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* Empty State */
+.fechas-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+}
+
+[data-theme='light'] .fechas-empty-state {
+  color: rgba(0, 0, 0, 0.5);
+}
