@@ -4,6 +4,7 @@ import './Tiempo.css'
 import { useNavigate } from 'react-router-dom'
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import RepeatIcon from '@mui/icons-material/Repeat'
+import TodayIcon from '@mui/icons-material/Today'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 
@@ -60,6 +61,25 @@ function Tiempo() {
           <div className="settings-section">
             <div className="settings-section-header">Rutinas</div>
             <div className="settings-group">
+              <button
+                className="settings-row"
+                onClick={() => navigate('/tiempo/mi-dia')}
+                aria-label="Ir a Mi Día"
+                type="button"
+              >
+                <div
+                  className="settings-row-icon"
+                  style={{ backgroundColor: '#FF9500' }}
+                  aria-hidden="true"
+                >
+                  <TodayIcon />
+                </div>
+                <div className="settings-row-content">
+                  <span className="settings-row-title">Mi Día</span>
+                  <span className="settings-row-subtitle">Rutinas del día y la semana</span>
+                </div>
+                <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+              </button>
               <button
                 className="settings-row"
                 onClick={() => navigate('/tiempo/rutinas')}

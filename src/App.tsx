@@ -26,6 +26,7 @@ import GeneradorContrasenas from './pages/GeneradorContrasenas'
 import Tiempo from './pages/Tiempo'
 import Fechas from './pages/Fechas'
 import Rutinas from './pages/Rutinas'
+import MiDia from './pages/MiDia'
 import StatusBar from './components/StatusBar'
 import ProtectedRoute from './components/ProtectedRoute'
 import Footer from './components/Footer'
@@ -219,6 +220,14 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <Rutinas />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tiempo/mi-dia"
+          element={
+            <ProtectedRoute>
+              <MiDia />
             </ProtectedRoute>
           }
         />

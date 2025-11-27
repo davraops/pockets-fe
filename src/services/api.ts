@@ -1,15 +1,77 @@
 // API Client for Pockets Backend
-// Por defecto usa la URL de producción (AWS)
-// Para desarrollo local, configurar VITE_API_URL en el archivo .env
-const API_BASE_URL =
-  (import.meta as any).env?.VITE_API_URL ||
-  'https://x1bom9m0bd.execute-api.us-east-1.amazonaws.com/dev'
+// Arquitectura de múltiples servicios: 3 servicios independientes
+// Para desarrollo local, configurar variables de entorno en el archivo .env
+
+// Configuración de APIs por servicio - URLs de producción
+const API_CONFIG = {
+  core: 'https://qe765aps3a.execute-api.us-east-1.amazonaws.com/dev',
+  financial: 'https://l1nfx233y1.execute-api.us-east-1.amazonaws.com/dev',
+  lifestyle: 'https://kstxcg0o0g.execute-api.us-east-1.amazonaws.com/dev'
+}
 
 class PocketsAPI {
-  private baseURL: string
+  private coreURL: string
+  private financialURL: string
+  private lifestyleURL: string
 
-  constructor(baseURL: string) {
-    this.baseURL = baseURL
+  constructor() {
+    this.coreURL = API_CONFIG.core
+    this.financialURL = API_CONFIG.financial
+    this.lifestyleURL = API_CONFIG.lifestyle
+  }
+
+  /**
+   * Determina qué servicio usar según el endpoint
+   */
+  private getServiceForEndpoint(endpoint: string): 'core' | 'financial' | 'lifestyle' {
+    if (
+      endpoint.startsWith('/auth/') ||
+      endpoint.startsWith('/bank-accounts') ||
+      endpoint.startsWith('/budgets') ||
+      endpoint.startsWith('/transactions') ||
+      endpoint.startsWith('/exchange-rates')
+    ) {
+      return 'core'
+    } else if (
+      endpoint.startsWith('/debts') ||
+      endpoint.startsWith('/debtors') ||
+      endpoint.startsWith('/cards') ||
+      endpoint.startsWith('/credit-cards') ||
+      endpoint.startsWith('/subscriptions') ||
+      endpoint.startsWith('/cryptocurrencies') ||
+      endpoint.startsWith('/wallets') ||
+      endpoint.startsWith('/cdts') ||
+      endpoint.startsWith('/projects')
+    ) {
+      return 'financial'
+    } else if (
+      endpoint.startsWith('/routines') ||
+      endpoint.startsWith('/routine-completions') ||
+      endpoint.startsWith('/events') ||
+      endpoint.startsWith('/notes') ||
+      endpoint.startsWith('/secrets') ||
+      endpoint.startsWith('/notifications') ||
+      endpoint.startsWith('/crypto-exchange-rates')
+    ) {
+      return 'lifestyle'
+    }
+    return 'core' // Default
+  }
+
+  /**
+   * Obtiene la URL base según el servicio
+   */
+  private getBaseURL(service: 'core' | 'financial' | 'lifestyle'): string {
+    switch (service) {
+      case 'core':
+        return this.coreURL
+      case 'financial':
+        return this.financialURL
+      case 'lifestyle':
+        return this.lifestyleURL
+      default:
+        return this.coreURL
+    }
   }
 
   private getToken(): string | null {
@@ -44,9 +106,15 @@ class PocketsAPI {
    * - No es necesario pasar `user_id` en los requests; el sistema lo obtiene automáticamente del token.
    * - Los nuevos registros se asignan automáticamente al usuario autenticado.
    * - Los exchange rates son globales y compartidos entre todos los usuarios.
+   *
+   * 🏗️ Arquitectura de Múltiples Servicios:
+   * - Determina automáticamente qué servicio usar según el endpoint.
+   * - Usa la URL base correcta para cada servicio (core, financial, lifestyle).
    */
   private async request(endpoint: string, options: any = {}) {
-    const url = `${this.baseURL}${endpoint}`
+    const service = this.getServiceForEndpoint(endpoint)
+    const baseURL = this.getBaseURL(service)
+    const url = `${baseURL}${endpoint}`
     const token = this.getToken()
 
     const config: RequestInit = {
@@ -999,6 +1067,141 @@ class PocketsAPI {
       method: 'DELETE',
     })
   }
+
+  // Routines (Rutinas)
+  async createRoutine(data: {
+    title: string
+    frequency: 'daily' | 'weekly' | 'monthly'
+    description?: string
+    scheduled_time?: string
+    start_date?: string
+    end_date?: string
+    is_active?: boolean
+    color?: string
+    target_count?: number
+    days_of_week?: number[]
+    day_of_month?: number
+    duration?: number
+  }) {
+    return this.request('/routines', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getRoutines(routineId: string | null = null) {
+    const endpoint = routineId ? `/routines?id=${routineId}` : '/routines'
+    return this.request(endpoint, {
+      method: 'GET',
+    })
+  }
+
+  async getRoutinesByDate(date?: string) {
+    const endpoint = date ? `/routines/by-date?date=${date}` : '/routines/by-date'
+    return this.request(endpoint, {
+      method: 'GET',
+    })
+  }
+
+  async updateRoutine(
+    routineId: string,
+    updates: {
+      title?: string
+      description?: string
+      frequency?: 'daily' | 'weekly' | 'monthly'
+      scheduled_time?: string
+      start_date?: string
+      end_date?: string
+      is_active?: boolean
+      color?: string
+      target_count?: number
+      days_of_week?: number[]
+      day_of_month?: number
+      duration?: number
+      current_streak?: number
+      longest_streak?: number
+    }
+  ) {
+    return this.request(`/routines/${routineId}`, {
+      method: 'PUT',
+      body: updates,
+    })
+  }
+
+  async deleteRoutine(routineId: string) {
+    return this.request(`/routines/${routineId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllRoutines() {
+    return this.request('/routines', {
+      method: 'DELETE',
+    })
+  }
+
+  // Routine Completions (Completados de Rutinas)
+  async createRoutineCompletion(data: {
+    routine_id: string
+    completed_date?: string
+    completed_time?: string
+    notes?: string
+    value?: number
+    duration?: number
+  }) {
+    return this.request('/routine-completions', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getRoutineCompletions(filters?: {
+    id?: string
+    routine_id?: string
+    start_date?: string
+    end_date?: string
+  }) {
+    const params = new URLSearchParams()
+    if (filters?.id) params.append('id', filters.id)
+    if (filters?.routine_id) params.append('routine_id', filters.routine_id)
+    if (filters?.start_date) params.append('start_date', filters.start_date)
+    if (filters?.end_date) params.append('end_date', filters.end_date)
+
+    const queryString = params.toString()
+    const endpoint = queryString ? `/routine-completions?${queryString}` : '/routine-completions'
+    return this.request(endpoint, {
+      method: 'GET',
+    })
+  }
+
+  async updateRoutineCompletion(
+    completionId: string,
+    updates: {
+      completed_date?: string
+      completed_time?: string
+      notes?: string
+      value?: number
+      duration?: number
+    }
+  ) {
+    return this.request(`/routine-completions/${completionId}`, {
+      method: 'PUT',
+      body: updates,
+    })
+  }
+
+  async deleteRoutineCompletion(completionId: string) {
+    return this.request(`/routine-completions/${completionId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllRoutineCompletions(routineId?: string) {
+    const endpoint = routineId ? `/routine-completions?routine_id=${routineId}` : '/routine-completions'
+    return this.request(endpoint, {
+      method: 'DELETE',
+    })
+  }
 }
 
-export const api = new PocketsAPI(API_BASE_URL)
+export const api = new PocketsAPI()

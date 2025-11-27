@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Calendar, dateFnsLocalizer, View, Event as CalendarEvent } from 'react-big-calendar'
+import { format, parse, startOfWeek, getDay } from 'date-fns'
+import { es } from 'date-fns/locale'
+import 'react-big-calendar/lib/css/react-big-calendar.css'
 import AddIcon from '@mui/icons-material/Add'
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import EditIcon from '@mui/icons-material/Edit'
@@ -7,6 +11,8 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import ViewListIcon from '@mui/icons-material/ViewList'
+import CalendarViewWeekIcon from '@mui/icons-material/CalendarViewWeek'
 import { api } from '../services/api'
 import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
@@ -53,6 +59,15 @@ interface Event {
   fechaActualizacion: string
 }
 
+// Configurar localizer para date-fns
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  locales: { es },
+})
+
 function Fechas() {
   const navigate = useNavigate()
   const { showNotification } = useNotification()
@@ -65,6 +80,9 @@ function Fechas() {
   const [error, setError] = useState<string | null>(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
+  const [calendarView, setCalendarView] = useState<View>('month')
+  const [calendarDate, setCalendarDate] = useState(new Date())
   const menuRef = useRef<HTMLDivElement>(null)
   const [formData, setFormData] = useState({
     titulo: '',
@@ -100,6 +118,75 @@ function Fechas() {
       fechaActualizacion: apiEvent.updated_at,
     }
   }
+
+  // Convertir eventos al formato de react-big-calendar
+  const getCalendarEvents = (): CalendarEvent[] => {
+    return events.map(event => {
+      const eventDate = new Date(event.fecha)
+      let start: Date
+      let end: Date
+
+      if (event.esTodoElDia) {
+        // Evento de todo el día: de 00:00 a 23:59
+        start = new Date(eventDate)
+        start.setHours(0, 0, 0, 0)
+        end = new Date(eventDate)
+        end.setHours(23, 59, 59, 999)
+      } else if (event.hora) {
+        // Evento con hora específica: duración de 1 hora por defecto
+        const [hours, minutes] = event.hora.split(':').map(Number)
+        start = new Date(eventDate)
+        start.setHours(hours, minutes, 0, 0)
+        end = new Date(start)
+        end.setHours(hours + 1, minutes, 0, 0)
+      } else {
+        // Evento sin hora: todo el día
+        start = new Date(eventDate)
+        start.setHours(0, 0, 0, 0)
+        end = new Date(eventDate)
+        end.setHours(23, 59, 59, 999)
+      }
+
+      return {
+        id: event.id,
+        title: event.titulo,
+        start,
+        end,
+        resource: event, // Guardar el evento completo para acceso rápido
+      }
+    })
+  }
+
+  // Manejar clic en evento del calendario
+  const handleSelectEvent = (calendarEvent: CalendarEvent) => {
+    const event = calendarEvent.resource as Event
+    if (event) {
+      handleOpenDetailModal(event)
+    }
+  }
+
+  // Obtener eventos próximos (hasta 30 días)
+  const getUpcomingEvents = (): Event[] => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const thirtyDaysLater = new Date(today)
+    thirtyDaysLater.setDate(today.getDate() + 30)
+
+    return events
+      .filter(event => {
+        const eventDate = new Date(event.fecha)
+        eventDate.setHours(0, 0, 0, 0)
+        return eventDate >= today && eventDate <= thirtyDaysLater
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.fecha)
+        const dateB = new Date(b.fecha)
+        return dateA.getTime() - dateB.getTime()
+      })
+      .slice(0, 5) // Mostrar máximo 5 eventos próximos
+  }
+
+  const upcomingEvents = getUpcomingEvents()
 
   // Cargar eventos desde la API
   useEffect(() => {
@@ -392,14 +479,14 @@ function Fechas() {
           location: 'Casa de Juan',
         },
         {
-          title: 'Reunión de trabajo',
-          description: 'Revisión de proyectos trimestrales',
+          title: 'Reunión con amigos',
+          description: 'Quedada para ver el partido de fútbol',
           event_date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 3)
             .toISOString()
             .split('T')[0],
           event_time: '14:00',
           is_all_day: false,
-          location: 'Oficina principal',
+          location: 'Bar El Deportivo',
         },
         {
           title: 'Cita médica',
@@ -421,13 +508,14 @@ function Fechas() {
           location: 'Restaurante El Jardín',
         },
         {
-          title: 'Entrega de proyecto',
-          description: 'Deadline para entrega del proyecto final',
+          title: 'Cena con la familia',
+          description: 'Cena especial en casa de los padres',
           event_date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 10)
             .toISOString()
             .split('T')[0],
-          event_time: '17:00',
+          event_time: '19:00',
           is_all_day: false,
+          location: 'Casa de los padres',
         },
         {
           title: 'Reunión familiar',
@@ -563,8 +651,149 @@ function Fechas() {
         <h1 className="fechas-page-title">Fechas</h1>
         <p className="fechas-page-subtitle">Gestiona tus eventos, recordatorios y cumpleaños</p>
 
+        {/* Mensaje Inspirador */}
+        <div className="fechas-inspiration-message">
+          <div className="fechas-inspiration-content">
+            <p className="fechas-inspiration-badge">✨ Respira tranquilo</p>
+            <p className="fechas-inspiration-main">
+              Este es un espacio libre de trabajo
+            </p>
+            <p className="fechas-inspiration-text">
+              Cuando todos los engaños fallen y cuando las cosas se pongan difíciles, te vas a necesitar a ti y a tu familia real. Este espacio es para las fechas y compromisos contigo y los tuyos.
+            </p>
+          </div>
+        </div>
+
+        {/* Próximos Eventos */}
+        {!isLoading && !error && upcomingEvents.length > 0 && (
+          <div className="fechas-upcoming-section">
+            <h2 className="fechas-upcoming-title">Próximos Eventos</h2>
+            <div className="fechas-upcoming-list">
+              {upcomingEvents.map(event => {
+                const eventDate = new Date(event.fecha)
+                const today = new Date()
+                today.setHours(0, 0, 0, 0)
+                eventDate.setHours(0, 0, 0, 0)
+                const daysUntil = Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+                const isToday = daysUntil === 0
+                const isTomorrow = daysUntil === 1
+
+                return (
+                  <div
+                    key={event.id}
+                    className="fechas-upcoming-item"
+                    onClick={() => handleOpenDetailModal(event)}
+                  >
+                    <div className="fechas-upcoming-item-date">
+                      <span className="fechas-upcoming-item-day">
+                        {eventDate.toLocaleDateString('es-ES', { day: 'numeric' })}
+                      </span>
+                      <span className="fechas-upcoming-item-month">
+                        {eventDate.toLocaleDateString('es-ES', { month: 'short' })}
+                      </span>
+                    </div>
+                    <div className="fechas-upcoming-item-content">
+                      <div className="fechas-upcoming-item-header">
+                        <h3 className="fechas-upcoming-item-title">{event.titulo}</h3>
+                        <span className="fechas-upcoming-item-badge">
+                          {isToday
+                            ? 'Hoy'
+                            : isTomorrow
+                              ? 'Mañana'
+                              : `En ${daysUntil} días`}
+                        </span>
+                      </div>
+                      <div className="fechas-upcoming-item-meta">
+                        {event.hora && !event.esTodoElDia && (
+                          <span className="fechas-upcoming-item-time">{formatTime(event.hora)}</span>
+                        )}
+                        {event.esTodoElDia && (
+                          <span className="fechas-upcoming-item-all-day">Todo el día</span>
+                        )}
+                        {event.ubicacion && (
+                          <span className="fechas-upcoming-item-location">📍 {event.ubicacion}</span>
+                        )}
+                      </div>
+                      {event.descripcion && (
+                        <p className="fechas-upcoming-item-description">{event.descripcion}</p>
+                      )}
+                    </div>
+                    <ChevronRightIcon className="fechas-upcoming-item-chevron" />
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Toggle de Vista */}
+        <div className="fechas-view-toggle">
+          <button
+            className={`fechas-view-toggle-button ${viewMode === 'list' ? 'active' : ''}`}
+            onClick={() => setViewMode('list')}
+            type="button"
+            aria-label="Vista de lista"
+          >
+            <ViewListIcon />
+            <span>Lista</span>
+          </button>
+          <button
+            className={`fechas-view-toggle-button ${viewMode === 'calendar' ? 'active' : ''}`}
+            onClick={() => setViewMode('calendar')}
+            type="button"
+            aria-label="Vista de calendario"
+          >
+            <CalendarViewWeekIcon />
+            <span>Calendario</span>
+          </button>
+        </div>
+
+        {/* Vista de Calendario */}
+        {viewMode === 'calendar' && (
+          <div className="fechas-calendar-container">
+            {isLoading ? (
+              <div className="fechas-empty-state">
+                <p>Cargando eventos...</p>
+              </div>
+            ) : error ? (
+              <div className="fechas-empty-state">
+                <p>{error}</p>
+              </div>
+            ) : (
+              <Calendar
+                localizer={localizer}
+                events={getCalendarEvents()}
+                startAccessor="start"
+                endAccessor="end"
+                style={{ height: 600 }}
+                view={calendarView}
+                onView={setCalendarView}
+                date={calendarDate}
+                onNavigate={setCalendarDate}
+                onSelectEvent={handleSelectEvent}
+                messages={{
+                  next: 'Siguiente',
+                  previous: 'Anterior',
+                  today: 'Hoy',
+                  month: 'Mes',
+                  week: 'Semana',
+                  day: 'Día',
+                  agenda: 'Agenda',
+                  date: 'Fecha',
+                  time: 'Hora',
+                  event: 'Evento',
+                  noEventsInRange: 'No hay eventos en este rango',
+                }}
+                culture="es"
+              />
+            )}
+          </div>
+        )}
+
         {/* Lista de Eventos */}
-        {isLoading ? (
+        {viewMode === 'list' && (
+          <>
+            {isLoading ? (
           <div className="fechas-empty-state">
             <p>Cargando eventos...</p>
           </div>
@@ -613,6 +842,8 @@ function Fechas() {
             ))}
           </div>
         )}
+          </>
+        )}
 
         {/* Modal de Crear/Editar Evento */}
         {isModalOpen && (
@@ -633,6 +864,14 @@ function Fechas() {
               </div>
 
               <form onSubmit={handleSubmit} className="fechas-modal-form">
+                {/* Nota sobre eventos laborales */}
+                <div className="fechas-form-notice">
+                  <span className="fechas-form-notice-icon">🚫</span>
+                  <span className="fechas-form-notice-text">
+                    Prohibido agregar eventos laborales aquí. Este espacio es solo para fechas y compromisos contigo y los tuyos.
+                  </span>
+                </div>
+
                 <div className="fechas-form-group">
                   <label htmlFor="titulo" className="fechas-form-label">
                     Título *
@@ -723,7 +962,7 @@ function Fechas() {
                     value={formData.ubicacion}
                     onChange={handleChange}
                     className="fechas-form-input"
-                    placeholder="Ej: Oficina principal"
+                    placeholder="Ej: Restaurante El Jardín"
                   />
                 </div>
 
@@ -764,6 +1003,14 @@ function Fechas() {
 
               {isEditMode ? (
                 <form onSubmit={handleSubmit} className="fechas-modal-form">
+                  {/* Nota sobre eventos laborales */}
+                  <div className="fechas-form-notice">
+                    <span className="fechas-form-notice-icon">🚫</span>
+                    <span className="fechas-form-notice-text">
+                      Prohibido agregar eventos laborales aquí. Este espacio es solo para fechas y compromisos contigo y los tuyos.
+                    </span>
+                  </div>
+
                   <div className="fechas-form-group">
                     <label htmlFor="titulo" className="fechas-form-label">
                       Título *

@@ -2,22 +2,57 @@
 
 Guía completa de endpoints para integración frontend.
 
+## ⚠️ Arquitectura de Múltiples Servicios
+
+**IMPORTANTE:** El proyecto Pockets está dividido en **3 servicios Serverless independientes**, cada uno con su propio API Gateway y URL base. Debes configurar **3 URLs base diferentes** en tu aplicación frontend.
+
+Para más detalles sobre la arquitectura, consulta `SERVICES_ARCHITECTURE.md`.
+
 ## Configuración Base
 
-### URLs Base
+### URLs Base - Múltiples Servicios
 
 ```javascript
-// Producción (AWS)
-const API_BASE_URL = 'https://x1bom9m0bd.execute-api.us-east-1.amazonaws.com/dev';
+// Configuración de APIs por servicio
+const API_CONFIG = {
+  core: {
+    production: 'https://qe765aps3a.execute-api.us-east-1.amazonaws.com/dev',
+    local: 'http://localhost:5000'
+  },
+  financial: {
+    production: 'https://l1nfx233y1.execute-api.us-east-1.amazonaws.com/dev',
+    local: 'http://localhost:5001'
+  },
+  lifestyle: {
+    production: 'https://kstxcg0o0g.execute-api.us-east-1.amazonaws.com/dev',
+    local: 'http://localhost:5002'
+  }
+};
 
-// Desarrollo Local
-const API_BASE_URL_LOCAL = 'http://localhost:3000';
+// Helper para obtener la URL según el entorno
+const getApiUrl = (service) => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  return isProduction ? API_CONFIG[service].production : API_CONFIG[service].local;
+};
 
-// Usar según el entorno
-const API_URL = process.env.NODE_ENV === 'production' 
-  ? API_BASE_URL 
-  : API_BASE_URL_LOCAL;
+// URLs base para cada servicio
+const API_CORE = getApiUrl('core');        // Autenticación, cuentas bancarias, presupuestos, transacciones, exchange rates
+const API_FINANCIAL = getApiUrl('financial'); // Deudas, tarjetas, criptomonedas, wallets, CDTs, suscripciones, proyectos
+const API_LIFESTYLE = getApiUrl('lifestyle'); // Rutinas, eventos, notas, secretos, notificaciones
+
+// Ejemplo de uso
+const response = await fetch(`${API_CORE}/bank-accounts`, {
+  headers: { 'Authorization': `Bearer ${token}` }
+});
 ```
+
+### Distribución de Endpoints por Servicio
+
+| Servicio | Endpoints | Puerto Local |
+|----------|-----------|--------------|
+| **pockets-core** | `/auth/*`, `/bank-accounts/*`, `/budgets/*`, `/transactions/*`, `/exchange-rates/*` | 5000 |
+| **pockets-financial** | `/debts/*`, `/debtors/*`, `/cards/*`, `/credit-cards/*`, `/subscriptions/*`, `/cryptocurrencies/*`, `/wallets/*`, `/cdts/*`, `/projects/*` | 5001 |
+| **pockets-lifestyle** | `/routines/*`, `/routine-completions/*`, `/events/*`, `/notes/*`, `/secrets/*`, `/notifications/*`, `/crypto-exchange-rates/*` | 5002 |
 
 ### CORS
 
@@ -136,6 +171,9 @@ const headers = {
 > - Los exchange rates son globales y compartidos entre todos los usuarios
 
 ### Bank Accounts
+**🔵 Servicio: pockets-core** | **URL Base:** `API_CORE`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-core`. Usa `API_CORE` como URL base.
 
 #### POST /bank-accounts
 Crear una nueva cuenta bancaria.
@@ -350,6 +388,9 @@ const recalculateBalance = async (accountId) => {
 ---
 
 ### Exchange Rates
+**🔵 Servicio: pockets-core** | **URL Base:** `API_CORE`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-core`. Usa `API_CORE` como URL base.
 
 #### POST /exchange-rates
 Crear o actualizar una tasa de cambio.
@@ -438,6 +479,9 @@ const syncExchangeRates = async () => {
 ---
 
 ### Budgets
+**🔵 Servicio: pockets-core** | **URL Base:** `API_CORE`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-core`. Usa `API_CORE` como URL base.
 
 #### POST /budgets
 Crear un nuevo presupuesto.
@@ -754,6 +798,9 @@ const resetBudget = async (budgetId) => {
 ---
 
 ### Transactions
+**🔵 Servicio: pockets-core** | **URL Base:** `API_CORE`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-core`. Usa `API_CORE` como URL base.
 
 #### POST /transactions
 Crear una nueva transacción (ingreso o egreso).
@@ -1270,6 +1317,9 @@ const deleteAllTransactions = async () => {
 ---
 
 ### Debts
+**🟢 Servicio: pockets-financial** | **URL Base:** `API_FINANCIAL`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-financial`. Usa `API_FINANCIAL` como URL base.
 
 #### POST /debts
 Crear una nueva deuda.
@@ -1520,6 +1570,9 @@ const deleteAllDebts = async () => {
 ---
 
 ### Debtors (Deudores - Personas que te deben dinero)
+**🟢 Servicio: pockets-financial** | **URL Base:** `API_FINANCIAL`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-financial`. Usa `API_FINANCIAL` como URL base.
 
 #### POST /debtors
 Crear un nuevo deudor (persona que te debe dinero).
@@ -1771,6 +1824,9 @@ const deleteAllDebtors = async () => {
 ---
 
 ### Cards (Tarjetas de Débito)
+**🟢 Servicio: pockets-financial** | **URL Base:** `API_FINANCIAL`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-financial`. Usa `API_FINANCIAL` como URL base.
 
 #### POST /cards
 Crear una nueva tarjeta de débito.
@@ -1999,6 +2055,9 @@ const deleteAllCards = async () => {
 ---
 
 ### Projects (Proyectos de Ahorro)
+**🟢 Servicio: pockets-financial** | **URL Base:** `API_FINANCIAL`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-financial`. Usa `API_FINANCIAL` como URL base.
 
 #### POST /projects
 Crear un nuevo proyecto de ahorro.
@@ -2258,6 +2317,9 @@ const deleteAllProjects = async () => {
 ---
 
 ### Credit Cards (Tarjetas de Crédito)
+**🟢 Servicio: pockets-financial** | **URL Base:** `API_FINANCIAL`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-financial`. Usa `API_FINANCIAL` como URL base.
 
 #### POST /credit-cards
 Crear una nueva tarjeta de crédito.
@@ -2522,6 +2584,9 @@ const deleteAllCreditCards = async () => {
 ---
 
 ### Subscriptions (Suscripciones Activas)
+**🟢 Servicio: pockets-financial** | **URL Base:** `API_FINANCIAL`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-financial`. Usa `API_FINANCIAL` como URL base.
 
 #### POST /subscriptions
 Crear una nueva suscripción activa.
@@ -2747,6 +2812,9 @@ const deleteAllSubscriptions = async () => {
 ---
 
 ### Cryptocurrencies (Criptomonedas)
+**🟢 Servicio: pockets-financial** | **URL Base:** `API_FINANCIAL`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-financial`. Usa `API_FINANCIAL` como URL base.
 
 #### POST /cryptocurrencies
 Crear una nueva criptomoneda.
@@ -3001,6 +3069,9 @@ const deleteAllCryptocurrencies = async () => {
 ---
 
 ### CDTs (Certificados de Depósito a Término)
+**🟢 Servicio: pockets-financial** | **URL Base:** `API_FINANCIAL`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-financial`. Usa `API_FINANCIAL` como URL base.
 
 #### POST /cdts
 Crear un nuevo CDT.
@@ -3251,6 +3322,9 @@ const deleteAllCDTs = async () => {
 ---
 
 ### Notes (Notas/Cuadernos)
+**🟡 Servicio: pockets-lifestyle** | **URL Base:** `API_LIFESTYLE`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-lifestyle`. Usa `API_LIFESTYLE` como URL base.
 
 #### POST /notes
 Crear una nueva nota.
@@ -3473,6 +3547,9 @@ const deleteAllNotes = async () => {
 ---
 
 ### Secrets (Secretos)
+**🟡 Servicio: pockets-lifestyle** | **URL Base:** `API_LIFESTYLE`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-lifestyle`. Usa `API_LIFESTYLE` como URL base.
 
 #### POST /secrets
 Crear un nuevo secreto. El valor se hashea automáticamente antes de guardarse.
@@ -3813,6 +3890,9 @@ const deleteAllSecrets = async () => {
 ---
 
 ### Events (Eventos / Calendario)
+**🟡 Servicio: pockets-lifestyle** | **URL Base:** `API_LIFESTYLE`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-lifestyle`. Usa `API_LIFESTYLE` como URL base.
 
 #### POST /events
 Crear un nuevo evento en el calendario.
@@ -4124,8 +4204,24 @@ const deleteAllEvents = async () => {
 ---
 
 ### Routines (Rutinas / Hábitos)
+**🟡 Servicio: pockets-lifestyle** | **URL Base:** `API_LIFESTYLE`
 
-Sistema de dos tablas para gestionar rutinas y sus completados. Permite crear rutinas diarias, semanales y mensuales, y registrar cada vez que se completan.
+> **Nota:** Estos endpoints están en el servicio `pockets-lifestyle`. Usa `API_LIFESTYLE` como URL base.
+
+Sistema para gestionar rutinas y hábitos con diferentes frecuencias (diarias, semanales, mensuales) y sus completados.
+
+**⚠️ Importante:** Las rutinas no tienen campo de `status`. Una rutina simplemente existe o no existe. Cuando se elimina una rutina, se elimina permanentemente de la base de datos (hard delete) junto con todos sus completados asociados.
+
+**📝 Nota sobre duración:**
+- **Rutinas (`duration`)**: Duración **esperada o estimada** de la rutina en minutos. Es un valor de referencia que indica cuánto tiempo se espera que tome completar la rutina.
+- **Completions (`duration`)**: Duración **real** del completado en minutos. Es el tiempo que realmente tomó completar la rutina en esa ocasión específica.
+
+**📊 Campos de Estadísticas (incluidos en todas las respuestas):**
+- `current_streak` - Racha actual (días/sesiones consecutivas desde hoy/ayer hacia atrás). Se lee directamente de la base de datos.
+- `longest_streak` - Racha más larga histórica. Se lee directamente de la base de datos.
+- `last_completed_date` - Última fecha de completado en formato YYYY-MM-DD (o `null` si nunca se ha completado). Calculado desde `routine_completions`.
+- `total_completions` - Total de completados de la rutina. Calculado desde `routine_completions`.
+- `completions_this_month` - Completados en el mes actual. Calculado desde `routine_completions`.
 
 #### POST /routines
 Crear una nueva rutina.
@@ -4139,11 +4235,7 @@ Crear una nueva rutina.
   "description": "30 minutos de ejercicio cada mañana",
   "frequency": "daily",
   "scheduled_time": "07:00",
-  "duration_minutes": 30,
-  "start_date": "2024-02-01",
-  "is_active": true,
-  "color": "#FF5733",
-  "target_count": 1
+  "duration": 30
 }
 ```
 
@@ -4167,7 +4259,8 @@ const dailyRoutine = await createRoutine({
   title: "Meditación",
   frequency: "daily",
   scheduled_time: "06:00",
-  duration_minutes: 15
+  description: "15 minutos de meditación",
+  duration: 15 // Duración esperada en minutos
 });
 
 // Rutina semanal (lunes, miércoles, viernes)
@@ -4176,8 +4269,8 @@ const weeklyRoutine = await createRoutine({
   frequency: "weekly",
   days_of_week: [1, 3, 5], // Lunes, Miércoles, Viernes
   scheduled_time: "18:00",
-  duration_minutes: 60,
-  target_count: 3
+  description: "Entrenamiento de fuerza",
+  duration: 60 // Duración esperada: 1 hora
 });
 
 // Rutina mensual (día 1 de cada mes)
@@ -4185,7 +4278,9 @@ const monthlyRoutine = await createRoutine({
   title: "Revisión de gastos",
   frequency: "monthly",
   day_of_month: 1,
-  scheduled_time: "09:00"
+  scheduled_time: "09:00",
+  description: "Revisar y planificar gastos del mes",
+  duration: 45 // Duración esperada: 45 minutos
 });
 ```
 
@@ -4200,12 +4295,12 @@ const monthlyRoutine = await createRoutine({
 **Campos Opcionales:**
 - `description` - Descripción de la rutina (string)
 - `scheduled_time` - Hora programada en formato HH:MM o HH:MM:SS (string)
-- `duration_minutes` - Duración estimada en minutos (integer)
-- `start_date` - Fecha de inicio en formato YYYY-MM-DD (string, default: hoy)
-- `end_date` - Fecha de fin en formato YYYY-MM-DD (string, opcional)
+- `duration` - Duración esperada de la rutina en minutos (integer, no negativo)
+- `start_date` - Fecha de inicio en formato YYYY-MM-DD (date, opcional)
+- `end_date` - Fecha de fin en formato YYYY-MM-DD (date, opcional)
 - `is_active` - Si la rutina está activa (boolean, default: true)
-- `color` - Color hexadecimal para UI (string, ej: "#FF5733")
-- `target_count` - Meta de completados por período (integer, default: 1)
+- `color` - Color de la rutina en formato hexadecimal (string, opcional)
+- `target_count` - Cantidad objetivo de completados (integer, opcional)
 
 **Response (201):**
 ```json
@@ -4219,14 +4314,19 @@ const monthlyRoutine = await createRoutine({
     "days_of_week": null,
     "day_of_month": null,
     "scheduled_time": "07:00:00",
-    "duration_minutes": 30,
-    "start_date": "2024-02-01",
+    "duration": 30,
+    "start_date": null,
     "end_date": null,
     "is_active": true,
-    "color": "#FF5733",
-    "target_count": 1,
+    "color": null,
+    "target_count": null,
     "created_at": "2024-01-15T00:00:00.000Z",
-    "updated_at": "2024-01-15T00:00:00.000Z"
+    "updated_at": "2024-01-15T00:00:00.000Z",
+    "current_streak": 0,
+    "longest_streak": 0,
+    "last_completed_date": null,
+    "total_completions": 0,
+    "completions_this_month": 0
   }
 }
 ```
@@ -4234,7 +4334,7 @@ const monthlyRoutine = await createRoutine({
 ---
 
 #### GET /routines
-Obtener rutinas. Permite filtrar por ID o obtener todas.
+Obtener todas las rutinas del usuario.
 
 **URL:** `GET ${API_URL}/routines?id={id}`
 
@@ -4270,16 +4370,121 @@ const specificRoutine = await getRoutines('uuid-here');
     {
       "id": "uuid-here",
       "title": "Ejercicio matutino",
+      "description": "30 minutos de ejercicio cada mañana",
+      "frequency": "daily",
+      "days_of_week": null,
+      "day_of_month": null,
+      "scheduled_time": "07:00:00",
+      "duration": 30,
+      "start_date": "2024-01-01",
+      "end_date": null,
+      "is_active": true,
+      "color": "#FF5733",
+      "target_count": 1,
+      "created_at": "2024-01-15T00:00:00.000Z",
+      "updated_at": "2024-01-15T00:00:00.000Z",
+      "current_streak": 14,
+      "longest_streak": 30,
+      "last_completed_date": "2024-02-15",
+      "total_completions": 45,
+      "completions_this_month": 14
+    }
+  ]
+}
+```
+
+**Nota:** Las rutinas están ordenadas por fecha de creación (descendente, más recientes primero).
+
+**Campos de Estadísticas:**
+- `current_streak` - Racha actual (días/sesiones consecutivas desde hoy/ayer hacia atrás)
+- `longest_streak` - Racha más larga histórica
+- `last_completed_date` - Última fecha de completado (YYYY-MM-DD o null)
+- `total_completions` - Total de completados de la rutina
+- `completions_this_month` - Completados en el mes actual
+
+---
+
+#### GET /routines/by-date
+Obtener las rutinas que deben completarse en una fecha específica.
+
+**URL:** `GET ${API_URL}/routines/by-date?date=YYYY-MM-DD`
+
+**Query Parameters:**
+- `date` (opcional) - Fecha en formato YYYY-MM-DD (default: hoy)
+
+**Ejemplo JavaScript:**
+```javascript
+const getRoutinesByDate = async (date = null) => {
+  const token = localStorage.getItem('authToken');
+  const url = date 
+    ? `${API_URL}/routines/by-date?date=${date}`
+    : `${API_URL}/routines/by-date`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener rutinas de hoy
+const todayRoutines = await getRoutinesByDate();
+
+// Obtener rutinas de una fecha específica
+const specificDateRoutines = await getRoutinesByDate('2024-02-15');
+```
+
+**Response (200):**
+```json
+{
+  "date": "2024-02-15",
+  "count": 2,
+  "routines": [
+    {
+      "id": "uuid-here",
+      "title": "Ejercicio matutino",
       "frequency": "daily",
       "scheduled_time": "07:00:00",
+      "duration": 30,
+      "start_date": "2024-01-01",
+      "end_date": null,
       "is_active": true,
+      "color": "#FF5733",
+      "target_count": 1,
+      "current_streak": 14,
+      "longest_streak": 30,
+      "last_completed_date": "2024-02-15",
+      "total_completions": 45,
+      "completions_this_month": 14,
+      ...
+    },
+    {
+      "id": "uuid-here-2",
+      "title": "Gimnasio",
+      "frequency": "weekly",
+      "days_of_week": [1, 3, 5], // Si hoy es lunes, miércoles o viernes
+      "duration": 60,
+      "start_date": null,
+      "end_date": null,
+      "is_active": true,
+      "color": null,
+      "target_count": null,
+      "current_streak": 6,
+      "longest_streak": 12,
+      "last_completed_date": "2024-02-14",
+      "total_completions": 24,
+      "completions_this_month": 6,
       ...
     }
   ]
 }
 ```
 
-**Nota:** Las rutinas están ordenadas por `is_active` (activas primero) y luego por fecha de creación (más recientes primero).
+**Lógica de filtrado:**
+- **Rutinas diarias:** Siempre incluidas
+- **Rutinas semanales:** Incluidas si el día de la semana está en `days_of_week`
+- **Rutinas mensuales:** Incluidas si el día del mes coincide con `day_of_month`
 
 ---
 
@@ -4303,9 +4508,9 @@ const updateRoutine = async (routineId, routineData) => {
   return response.json();
 };
 
-// Desactivar una rutina
+// Actualizar título
 await updateRoutine('uuid-here', {
-  is_active: false
+  title: "Ejercicio matutino (Actualizado)"
 });
 
 // Cambiar la hora programada
@@ -4318,8 +4523,48 @@ await updateRoutine('uuid-here', {
 ```json
 {
   "title": "Ejercicio matutino (Actualizado)",
-  "is_active": false,
-  "scheduled_time": "08:00"
+  "description": "Nueva descripción",
+  "frequency": "daily",
+  "scheduled_time": "08:00",
+  "duration": 45,
+  "start_date": "2024-01-01",
+  "end_date": null,
+  "is_active": true,
+  "color": "#FF5733",
+  "target_count": 1,
+  "days_of_week": [1, 3, 5],
+  "day_of_month": 1
+}
+```
+
+**Nota:** Si cambias `frequency`, debes proporcionar los campos correspondientes (`days_of_week` para weekly, `day_of_month` para monthly).
+
+**Response (200):**
+```json
+{
+  "message": "Routine updated successfully",
+  "routine": {
+    "id": "uuid-here",
+    "title": "Ejercicio matutino (Actualizado)",
+    "description": "Nueva descripción",
+    "frequency": "daily",
+    "days_of_week": null,
+    "day_of_month": null,
+    "scheduled_time": "08:00:00",
+    "duration": 45,
+    "start_date": "2024-01-01",
+    "end_date": null,
+    "is_active": true,
+    "color": "#FF5733",
+    "target_count": 1,
+    "created_at": "2024-01-15T00:00:00.000Z",
+    "updated_at": "2024-01-16T00:00:00.000Z",
+    "current_streak": 14,
+    "longest_streak": 30,
+    "last_completed_date": "2024-02-15",
+    "total_completions": 45,
+    "completions_this_month": 14
+  }
 }
 ```
 
@@ -4330,23 +4575,33 @@ Eliminar una rutina específica.
 
 **URL:** `DELETE ${API_URL}/routines/{id}`
 
-**⚠️ Advertencia:** Esta operación eliminará la rutina y todos sus completados asociados (CASCADE).
+**⚠️ Advertencia:** Esta operación eliminará permanentemente la rutina y todos sus completados asociados (CASCADE). No hay soft delete - la rutina se elimina completamente de la base de datos.
 
 ---
 
 #### DELETE /routines
-Eliminar todas las rutinas.
+Eliminar todas las rutinas del usuario.
 
 **URL:** `DELETE ${API_URL}/routines`
 
-**⚠️ Advertencia:** Esta operación eliminará todas las rutinas y sus completados asociados.
+**⚠️ Advertencia:** Esta operación eliminará permanentemente todas las rutinas y sus completados asociados. No hay soft delete - las rutinas se eliminan completamente de la base de datos.
 
 ---
 
 ### Routine Completions (Completados de Rutinas)
+**🟡 Servicio: pockets-lifestyle** | **URL Base:** `API_LIFESTYLE`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-lifestyle`. Usa `API_LIFESTYLE` como URL base.
+
+Sistema para marcar cuando se completa una rutina. Almacena fecha, hora y duración real (en minutos) del completado.
+
+**📝 Nota sobre duración:**
+- El campo `duration` en completions representa la **duración real** que tomó completar la rutina en esa ocasión específica (en minutos).
+- Este valor puede diferir de la `duration` esperada definida en la rutina, permitiendo comparar el tiempo estimado vs el tiempo real.
+- Si no se proporciona `duration` al crear un completado, el valor será `null`.
 
 #### POST /routine-completions
-Registrar un completado de rutina.
+Crear una marcación de completado.
 
 **URL:** `POST ${API_URL}/routine-completions`
 
@@ -4355,9 +4610,8 @@ Registrar un completado de rutina.
 {
   "routine_id": "uuid-here",
   "completed_date": "2024-02-15",
-  "completed_time": "07:15",
-  "notes": "Hice 30 minutos de cardio",
-  "value": 30
+  "completed_time": "07:30",
+  "duration": 30
 }
 ```
 
@@ -4376,18 +4630,17 @@ const createRoutineCompletion = async (completionData) => {
   return response.json();
 };
 
-// Completado simple (fecha actual)
+// Completado simple (fecha y hora actuales)
 const completion = await createRoutineCompletion({
   routine_id: "uuid-here"
 });
 
-// Completado con detalles
+// Completado con fecha, hora y duración específicas
 const detailedCompletion = await createRoutineCompletion({
   routine_id: "uuid-here",
   completed_date: "2024-02-15",
-  completed_time: "07:15",
-  notes: "Hice 30 minutos de cardio",
-  value: 30 // minutos ejercitados
+  completed_time: "07:30",
+  duration: 30 // Duración en minutos
 });
 ```
 
@@ -4397,8 +4650,7 @@ const detailedCompletion = await createRoutineCompletion({
 **Campos Opcionales:**
 - `completed_date` - Fecha de completado en formato YYYY-MM-DD (string, default: hoy)
 - `completed_time` - Hora de completado en formato HH:MM o HH:MM:SS (string)
-- `notes` - Notas sobre este completado (string)
-- `value` - Valor numérico opcional (number, ej: minutos ejercitados, páginas leídas)
+- `duration` - Duración del completado en minutos (integer, no negativo)
 
 **Response (201):**
 ```json
@@ -4408,11 +4660,10 @@ const detailedCompletion = await createRoutineCompletion({
     "id": "uuid-here",
     "routine_id": "uuid-here",
     "completed_date": "2024-02-15",
-    "completed_time": "07:15:00",
-    "notes": "Hice 30 minutos de cardio",
-    "value": 30,
-    "created_at": "2024-02-15T07:15:00.000Z",
-    "updated_at": "2024-02-15T07:15:00.000Z"
+    "completed_time": "07:30:00",
+    "duration": 30,
+    "created_at": "2024-02-15T07:30:00.000Z",
+    "updated_at": "2024-02-15T07:30:00.000Z"
   }
 }
 ```
@@ -4420,28 +4671,15 @@ const detailedCompletion = await createRoutineCompletion({
 ---
 
 #### GET /routine-completions
-Obtener completados. Permite filtrar por ID, routine_id, o rango de fechas.
+Obtener la última marcación de cada rutina del usuario.
 
-**URL:** `GET ${API_URL}/routine-completions?id={id}&routine_id={routine_id}&start_date=2024-02-01&end_date=2024-02-28`
-
-**Query Parameters:**
-- `id` (opcional) - ID del completado específico
-- `routine_id` (opcional) - Filtrar por rutina
-- `start_date` (opcional) - Fecha de inicio del rango (YYYY-MM-DD)
-- `end_date` (opcional) - Fecha de fin del rango (YYYY-MM-DD)
+**URL:** `GET ${API_URL}/routine-completions`
 
 **Ejemplo JavaScript:**
 ```javascript
-const getRoutineCompletions = async (filters = {}) => {
+const getRoutineCompletions = async () => {
   const token = localStorage.getItem('authToken');
-  const params = new URLSearchParams();
-  if (filters.id) params.append('id', filters.id);
-  if (filters.routine_id) params.append('routine_id', filters.routine_id);
-  if (filters.start_date) params.append('start_date', filters.start_date);
-  if (filters.end_date) params.append('end_date', filters.end_date);
-  
-  const url = `${API_URL}/routine-completions${params.toString() ? '?' + params.toString() : ''}`;
-  const response = await fetch(url, {
+  const response = await fetch(`${API_URL}/routine-completions`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
@@ -4450,100 +4688,50 @@ const getRoutineCompletions = async (filters = {}) => {
   return response.json();
 };
 
-// Obtener todos los completados
-const allCompletions = await getRoutineCompletions();
-
-// Obtener completados de una rutina específica
-const routineCompletions = await getRoutineCompletions({
-  routine_id: "uuid-here"
-});
-
-// Obtener completados de un rango de fechas
-const februaryCompletions = await getRoutineCompletions({
-  start_date: "2024-02-01",
-  end_date: "2024-02-28"
-});
+const completions = await getRoutineCompletions();
 ```
 
 **Response (200):**
 ```json
 {
-  "count": 5,
+  "count": 3,
   "completions": [
     {
       "id": "uuid-here",
-      "routine_id": "uuid-here",
+      "routine_id": "uuid-routine-1",
       "completed_date": "2024-02-15",
-      "completed_time": "07:15:00",
-      "notes": "Hice 30 minutos de cardio",
-      "value": 30,
-      "created_at": "2024-02-15T07:15:00.000Z",
-      "updated_at": "2024-02-15T07:15:00.000Z"
+      "completed_time": "07:30:00",
+      "duration": 30,
+      "created_at": "2024-02-15T07:30:00.000Z",
+      "updated_at": "2024-02-15T07:30:00.000Z"
+    },
+    {
+      "id": "uuid-here-2",
+      "routine_id": "uuid-routine-2",
+      "completed_date": "2024-02-14",
+      "completed_time": "18:00:00",
+      "duration": 45,
+      "created_at": "2024-02-14T18:00:00.000Z",
+      "updated_at": "2024-02-14T18:00:00.000Z"
     }
   ]
 }
 ```
 
-**Nota:** Los completados están ordenados por fecha (descendente, más recientes primero).
-
----
-
-#### PUT /routine-completions/{id}
-Actualizar un completado existente.
-
-**URL:** `PUT ${API_URL}/routine-completions/{id}`
-
-**Ejemplo JavaScript:**
-```javascript
-const updateRoutineCompletion = async (completionId, completionData) => {
-  const token = localStorage.getItem('authToken');
-  const response = await fetch(`${API_URL}/routine-completions/${completionId}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
-    },
-    body: JSON.stringify(completionData),
-  });
-  return response.json();
-};
-
-// Actualizar notas
-await updateRoutineCompletion('uuid-here', {
-  notes: "Actualicé las notas"
-});
-
-// Actualizar valor
-await updateRoutineCompletion('uuid-here', {
-  value: 35
-});
-```
+**Nota:** Este endpoint devuelve solo la **última marcación** de cada rutina del usuario. Si una rutina no tiene completados, no aparecerá en la respuesta.
 
 ---
 
 #### DELETE /routine-completions/{id}
-Eliminar un completado específico.
+Eliminar una marcación específica.
 
 **URL:** `DELETE ${API_URL}/routine-completions/{id}`
 
----
-
-#### DELETE /routine-completions
-Eliminar completados. Permite filtrar por routine_id.
-
-**URL:** `DELETE ${API_URL}/routine-completions?routine_id={routine_id}`
-
-**Query Parameters:**
-- `routine_id` (opcional) - Eliminar solo completados de esta rutina
-
 **Ejemplo JavaScript:**
 ```javascript
-const deleteAllRoutineCompletions = async (routineId = null) => {
+const deleteRoutineCompletion = async (completionId) => {
   const token = localStorage.getItem('authToken');
-  const url = routineId 
-    ? `${API_URL}/routine-completions?routine_id=${routineId}`
-    : `${API_URL}/routine-completions`;
-  const response = await fetch(url, {
+  const response = await fetch(`${API_URL}/routine-completions/${completionId}`, {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
@@ -4552,14 +4740,22 @@ const deleteAllRoutineCompletions = async (routineId = null) => {
   return response.json();
 };
 
-// Eliminar todos los completados
-await deleteAllRoutineCompletions();
-
-// Eliminar solo completados de una rutina específica
-await deleteAllRoutineCompletions('uuid-here');
+await deleteRoutineCompletion('uuid-here');
 ```
 
-**⚠️ Advertencia:** Esta operación es irreversible.
+**Response (200):**
+```json
+{
+  "message": "Routine completion deleted successfully",
+  "deleted_completion": {
+    "id": "uuid-here",
+    "routine_id": "uuid-here",
+    "completed_date": "2024-02-15",
+    "completed_time": "07:30:00",
+    "duration": 30
+  }
+}
+```
 
 ---
 
@@ -4641,6 +4837,9 @@ const result = await syncCryptoExchangeRates();
 ---
 
 ### Wallets (Billeteras de Criptomonedas)
+**🟢 Servicio: pockets-financial** | **URL Base:** `API_FINANCIAL`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-financial`. Usa `API_FINANCIAL` como URL base.
 
 #### POST /wallets
 Crear una nueva wallet.
@@ -4868,6 +5067,9 @@ const deleteAllWallets = async () => {
 ---
 
 ### Authentication
+**🔵 Servicio: pockets-core** | **URL Base:** `API_CORE`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-core`. Usa `API_CORE` como URL base.
 
 #### POST /auth/register
 Registrar un nuevo usuario.
@@ -5025,6 +5227,310 @@ const fetchWithAuth = async (url, options = {}) => {
 
 ---
 
+### Notifications (Notificaciones)
+**🟡 Servicio: pockets-lifestyle** | **URL Base:** `API_LIFESTYLE`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-lifestyle`. Usa `API_LIFESTYLE` como URL base.
+
+El sistema de notificaciones permite gestionar alertas y recordatorios para el usuario. Las notificaciones se crean automáticamente por el sistema y pueden ser consultadas, marcadas como leídas o eliminadas.
+
+#### GET /notifications
+Obtener notificaciones del usuario con filtros y paginación.
+
+**URL:** `GET ${API_URL}/notifications`
+
+**Query Parameters:**
+- `is_read` (opcional) - Filtrar por estado de lectura: `"true"` o `"false"`
+- `type` (opcional) - Filtrar por tipo de notificación
+- `priority` (opcional) - Filtrar por prioridad: `"low"`, `"normal"`, `"high"`, `"urgent"`
+- `limit` (opcional) - Límite de resultados (default: 50, máximo: 100)
+- `offset` (opcional) - Offset para paginación (default: 0)
+
+**Ejemplo JavaScript:**
+```javascript
+const getNotifications = async (filters = {}) => {
+  const token = localStorage.getItem('authToken');
+  const params = new URLSearchParams();
+  
+  if (filters.is_read !== undefined) params.append('is_read', filters.is_read);
+  if (filters.type) params.append('type', filters.type);
+  if (filters.priority) params.append('priority', filters.priority);
+  if (filters.limit) params.append('limit', filters.limit);
+  if (filters.offset) params.append('offset', filters.offset);
+  
+  const url = `${API_URL}/notifications${params.toString() ? '?' + params.toString() : ''}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todas las notificaciones
+const allNotifications = await getNotifications();
+
+// Obtener solo no leídas
+const unreadNotifications = await getNotifications({ is_read: 'false' });
+
+// Obtener notificaciones de rutinas
+const routineNotifications = await getNotifications({ type: 'routine_streak_alert' });
+
+// Paginación
+const page1 = await getNotifications({ limit: 20, offset: 0 });
+const page2 = await getNotifications({ limit: 20, offset: 20 });
+```
+
+**Response (200):**
+```json
+{
+  "count": 10,
+  "total": 25,
+  "unread_count": 5,
+  "limit": 50,
+  "offset": 0,
+  "notifications": [
+    {
+      "id": "uuid-here",
+      "type": "routine_streak_alert",
+      "title": "¡Racha en riesgo!",
+      "message": "Tu racha de 5 días está en riesgo. Completa tu rutina hoy para mantenerla.",
+      "is_read": false,
+      "priority": "high",
+      "metadata": {
+        "routine_id": "routine-uuid",
+        "streak_count": 5
+      },
+      "created_at": "2024-02-15T08:00:00.000Z",
+      "read_at": null
+    }
+  ]
+}
+```
+
+**Campos de Respuesta:**
+- `count` - Número de notificaciones en esta página
+- `total` - Total de notificaciones que coinciden con los filtros
+- `unread_count` - Total de notificaciones no leídas del usuario
+- `limit` - Límite aplicado
+- `offset` - Offset aplicado
+- `notifications` - Array de notificaciones
+
+**Nota:** Las notificaciones están ordenadas por fecha de creación (descendente, más recientes primero).
+
+---
+
+#### PUT /notifications/{id}/read
+Marcar una notificación como leída o no leída.
+
+**URL:** `PUT ${API_URL}/notifications/{id}/read`
+
+**Ejemplo JavaScript:**
+```javascript
+const markNotificationRead = async (notificationId, isRead = true) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/notifications/${notificationId}/read`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify({ is_read: isRead })
+  });
+  return response.json();
+};
+
+// Marcar como leída
+await markNotificationRead('uuid-here', true);
+
+// Marcar como no leída
+await markNotificationRead('uuid-here', false);
+```
+
+**Request Body (opcional):**
+```json
+{
+  "is_read": true
+}
+```
+
+**Response (200):**
+```json
+{
+  "message": "Notification marked as read",
+  "notification": {
+    "id": "uuid-here",
+    "type": "routine_streak_alert",
+    "title": "¡Racha en riesgo!",
+    "message": "Tu racha de 5 días está en riesgo...",
+    "is_read": true,
+    "priority": "high",
+    "metadata": { ... },
+    "created_at": "2024-02-15T08:00:00.000Z",
+    "read_at": "2024-02-15T10:30:00.000Z"
+  }
+}
+```
+
+**Nota:** El campo `read_at` se actualiza automáticamente cuando se marca como leída.
+
+---
+
+#### POST /notifications/mark-all-read
+Marcar todas las notificaciones como leídas o no leídas.
+
+**URL:** `POST ${API_URL}/notifications/mark-all-read`
+
+**Ejemplo JavaScript:**
+```javascript
+const markAllNotificationsRead = async (isRead = true) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/notifications/mark-all-read`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify({ is_read: isRead })
+  });
+  return response.json();
+};
+
+// Marcar todas como leídas
+await markAllNotificationsRead(true);
+```
+
+**Request Body (opcional):**
+```json
+{
+  "is_read": true
+}
+```
+
+**Response (200):**
+```json
+{
+  "message": "All notifications marked as read",
+  "affected_count": 5
+}
+```
+
+---
+
+#### DELETE /notifications/{id}
+Eliminar una notificación específica.
+
+**URL:** `DELETE ${API_URL}/notifications/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteNotification = async (notificationId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/notifications/${notificationId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+await deleteNotification('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "message": "Notification deleted successfully",
+  "deleted_notification": {
+    "id": "uuid-here",
+    "type": "routine_streak_alert",
+    "title": "¡Racha en riesgo!"
+  }
+}
+```
+
+---
+
+#### DELETE /notifications
+Eliminar todas las notificaciones del usuario.
+
+**URL:** `DELETE ${API_URL}/notifications`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllNotifications = async () => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_URL}/notifications`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+await deleteAllNotifications();
+```
+
+**Response (200):**
+```json
+{
+  "message": "All notifications deleted successfully",
+  "deleted_count": 25
+}
+```
+
+---
+
+#### Tipos de Notificaciones
+
+El sistema soporta los siguientes tipos de notificaciones:
+
+- `routine_reminder` - Recordatorio de rutina programada
+- `routine_streak_alert` - Alerta de racha en riesgo
+- `routine_streak_milestone` - Hito de racha alcanzado (ej: 7 días, 30 días)
+- `budget_alert` - Alerta de presupuesto (80%, 90% usado)
+- `budget_exceeded` - Presupuesto excedido
+- `debt_due` - Deuda próxima a vencer
+- `debt_overdue` - Deuda vencida
+- `subscription_payment` - Pago de suscripción próximo
+- `subscription_renewal` - Renovación de suscripción
+- `credit_card_cut_date` - Fecha de corte de tarjeta de crédito
+- `credit_card_payment_due` - Pago de tarjeta de crédito próximo
+- `event_reminder` - Recordatorio de evento
+- `cdt_maturity` - Vencimiento de CDT
+- `crypto_price_alert` - Alerta de precio de criptomoneda
+- `system` - Notificación del sistema
+- `general` - Notificación general
+
+#### Prioridades
+
+- `low` - Baja prioridad
+- `normal` - Prioridad normal (default)
+- `high` - Alta prioridad
+- `urgent` - Urgente
+
+#### Metadata
+
+El campo `metadata` contiene información adicional en formato JSON que puede incluir:
+- IDs relacionados (routine_id, budget_id, debt_id, etc.)
+- Valores numéricos (amounts, counts, etc.)
+- Fechas importantes
+- Cualquier otro dato relevante para el frontend
+
+**Ejemplo de metadata:**
+```json
+{
+  "routine_id": "uuid-here",
+  "streak_count": 5,
+  "target_streak": 7
+}
+```
+
+---
+
 ## Códigos de Estado HTTP
 
 - `200` - OK (operación exitosa)
@@ -5132,16 +5638,89 @@ const handleApiCall = async (apiFunction) => {
     - **Exchange Rates Globales**: Los exchange rates son compartidos entre todos los usuarios y no requieren filtrado por usuario.
     - **Transacciones**: Al crear una transacción, el sistema verifica automáticamente que la cuenta bancaria y el presupuesto (si aplica) pertenezcan al usuario autenticado.
 
+17. **🏗️ Arquitectura de Múltiples Servicios**:
+    - **⚠️ IMPORTANTE**: El proyecto está dividido en 3 servicios Serverless independientes, cada uno con su propio API Gateway.
+    - **3 URLs Base**: Debes configurar 3 URLs base diferentes en tu aplicación:
+      - `API_CORE`: Autenticación, cuentas bancarias, presupuestos, transacciones, exchange rates
+      - `API_FINANCIAL`: Deudas, tarjetas, criptomonedas, wallets, CDTs, suscripciones, proyectos
+      - `API_LIFESTYLE`: Rutinas, eventos, notas, secretos, notificaciones
+    - **Mismo Token JWT**: Todos los servicios comparten el mismo `JWT_TOKEN_PASSPHRASE`, por lo que un token generado en `pockets-core` funciona en todos los servicios.
+    - **Misma Base de Datos**: Todos los servicios comparten la misma base de datos PostgreSQL.
+    - **CORS Configurado**: Todos los servicios tienen la misma configuración CORS.
+    - **Ver `SERVICES_ARCHITECTURE.md`**: Para más detalles sobre la arquitectura y cómo desplegar los servicios.
+
 ## Ejemplo de Cliente API Completo
 
 ```javascript
 // api.js
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+// Configuración de APIs por servicio
+const API_CONFIG = {
+  core: {
+    production: process.env.REACT_APP_API_CORE_URL || 'https://qe765aps3a.execute-api.us-east-1.amazonaws.com/dev',
+    local: 'http://localhost:5000'
+  },
+  financial: {
+    production: process.env.REACT_APP_API_FINANCIAL_URL || 'https://l1nfx233y1.execute-api.us-east-1.amazonaws.com/dev',
+    local: 'http://localhost:5001'
+  },
+  lifestyle: {
+    production: process.env.REACT_APP_API_LIFESTYLE_URL || 'https://kstxcg0o0g.execute-api.us-east-1.amazonaws.com/dev',
+    local: 'http://localhost:5002'
+  }
+};
+
+// Helper para obtener la URL según el entorno
+const getApiUrl = (service) => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  return isProduction ? API_CONFIG[service].production : API_CONFIG[service].local;
+};
 
 class PocketsAPI {
-  constructor(baseURL) {
-    this.baseURL = baseURL;
+  constructor() {
+    this.coreURL = getApiUrl('core');
+    this.financialURL = getApiUrl('financial');
+    this.lifestyleURL = getApiUrl('lifestyle');
     this.token = null;
+  }
+  
+  // Método helper para determinar qué servicio usar según el endpoint
+  getServiceForEndpoint(endpoint) {
+    if (endpoint.startsWith('/auth/') || 
+        endpoint.startsWith('/bank-accounts') || 
+        endpoint.startsWith('/budgets') || 
+        endpoint.startsWith('/transactions') || 
+        endpoint.startsWith('/exchange-rates')) {
+      return 'core';
+    } else if (endpoint.startsWith('/debts') || 
+               endpoint.startsWith('/debtors') || 
+               endpoint.startsWith('/cards') || 
+               endpoint.startsWith('/credit-cards') || 
+               endpoint.startsWith('/subscriptions') || 
+               endpoint.startsWith('/cryptocurrencies') || 
+               endpoint.startsWith('/wallets') || 
+               endpoint.startsWith('/cdts') || 
+               endpoint.startsWith('/projects')) {
+      return 'financial';
+    } else if (endpoint.startsWith('/routines') || 
+               endpoint.startsWith('/routine-completions') || 
+               endpoint.startsWith('/events') || 
+               endpoint.startsWith('/notes') || 
+               endpoint.startsWith('/secrets') || 
+               endpoint.startsWith('/notifications') || 
+               endpoint.startsWith('/crypto-exchange-rates')) {
+      return 'lifestyle';
+    }
+    return 'core'; // Default
+  }
+  
+  // Método helper para obtener la URL base según el servicio
+  getBaseURL(service) {
+    switch(service) {
+      case 'core': return this.coreURL;
+      case 'financial': return this.financialURL;
+      case 'lifestyle': return this.lifestyleURL;
+      default: return this.coreURL;
+    }
   }
 
   // Método para establecer el token de autenticación
@@ -5163,7 +5742,10 @@ class PocketsAPI {
   }
 
   async request(endpoint, options = {}) {
-    const url = `${this.baseURL}${endpoint}`;
+    // Determinar qué servicio usar según el endpoint
+    const service = this.getServiceForEndpoint(endpoint);
+    const baseURL = this.getBaseURL(service);
+    const url = `${baseURL}${endpoint}`;
     
     // Determinar si el endpoint requiere autenticación
     const requiresAuth = !endpoint.startsWith('/auth/register') && 
@@ -5754,7 +6336,7 @@ class PocketsAPI {
 }
 
 // Exportar instancia
-export const api = new PocketsAPI(API_URL);
+export const api = new PocketsAPI();
 ```
 
 **Uso del cliente:**
