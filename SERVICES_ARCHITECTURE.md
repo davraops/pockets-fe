@@ -8,7 +8,7 @@ El proyecto Pockets está dividido en **3 servicios Serverless independientes** 
 
 ### 1. **pockets-core** (Servicio Principal)
 **Archivo:** `serverless-core.yml`  
-**Puerto Local:** 5000  
+**Puerto Local:** 7000 (desarrollo offline)  
 **Funciones:** 26
 
 **Responsabilidades:**
@@ -23,15 +23,14 @@ El proyecto Pockets está dividido en **3 servicios Serverless independientes** 
 - Local: `http://localhost:5000`
 
 **Funciones Incluidas:**
-- `register`, `login`
+- `register`, `login`, `updateUserDetails` (nuevo - actualizar detalles de usuario)
 - `createBankAccount`, `getBankAccounts`, `updateBankAccount`, `deleteBankAccount`, `deleteAllBankAccounts`, `recalculateBalance`
 - `createBudget`, `getBudgets`, `updateBudget`, `deleteBudget`, `deleteAllBudgets`, `restoreBudget`, `hardDeleteBudget`, `hardDeleteAllBudgets`, `recalculateBudget`, `resetBudgets`, `resetBudget`
 - `createTransaction`, `getTransactions`, `deleteTransaction`, `deleteAllTransactions`
 - `createExchangeRate`, `getExchangeRates`, `syncExchangeRates`
 
 **Endpoints Desplegados:**
-- `POST /auth/register`
-- `POST /auth/login`
+- `POST /auth/register`, `POST /auth/login`, `PUT /user-details` (nuevo)
 - `POST /bank-accounts`
 - `GET /bank-accounts`
 - `DELETE /bank-accounts`
@@ -61,7 +60,7 @@ El proyecto Pockets está dividido en **3 servicios Serverless independientes** 
 
 ### 2. **pockets-financial** (Activos y Pasivos Financieros)
 **Archivo:** `serverless-financial.yml`  
-**Puerto Local:** 5001  
+**Puerto Local:** 7001 (desarrollo offline)  
 **Funciones:** 39
 
 **Responsabilidades:**
@@ -103,15 +102,18 @@ El proyecto Pockets está dividido en **3 servicios Serverless independientes** 
 
 ### 3. **pockets-lifestyle** (Rutinas y Estilo de Vida)
 **Archivo:** `serverless-lifestyle.yml`  
-**Puerto Local:** 5002  
+**Puerto Local:** 7002 (desarrollo offline)  
 **Funciones:** 32
 
 **Responsabilidades:**
 - Rutinas y completaciones
 - Eventos
 - Notas
+- Diario (entradas diarias) - Sistema simple con fecha y contenido
+- Archivos/Documentos - Sistema de subida y gestión de archivos en S3 (PDFs, documentos, < 25MB)
+- Procesos Judiciales - Endpoints proxy para consultar procesos desde la API de la Rama Judicial de Colombia, con sistema de seguimiento automático y notificaciones
 - Secretos
-- Notificaciones
+- Notificaciones - Sistema completo de notificaciones con filtros y paginación
 - Funciones programadas (scheduled)
 
 **Endpoints Base:**
@@ -126,8 +128,13 @@ El proyecto Pockets está dividido en **3 servicios Serverless independientes** 
 - `createEvent`, `getEvents`, `updateEvent`, `deleteEvent`, `deleteAllEvents`
 - `syncCryptoExchangeRates` (HTTP endpoint)
 - `createNote`, `getNotes`, `updateNote`, `deleteNote`, `deleteAllNotes`
+- `createDiaryEntry`, `getDiaryEntries`, `updateDiaryEntry`, `deleteDiaryEntry` (diario simple)
+- `uploadFile`, `getFiles`, `getFile`, `deleteFile` (gestión de archivos en S3)
+- `getJudicialProcesses`, `getJudicialProcessActuaciones` (proxy para procesos judiciales)
+- `createJudicialProcessTracking`, `getJudicialProcessTracking`, `deleteJudicialProcessTracking` (nuevo - seguimiento de procesos)
+- `checkJudicialProcessActuaciones` (scheduled - diario 3 AM UTC-5 para verificar nuevas actuaciones)
 - `createSecret`, `getSecrets`, `updateSecret`, `verifySecret`, `getSecretValue`, `deleteSecret`, `deleteAllSecrets`
-- `getNotifications`, `markNotificationRead`, `deleteNotification`, `markAllNotificationsRead`, `deleteAllNotifications`
+- `createNotification`, `getNotifications`, `markNotificationRead`, `deleteNotification`, `markAllNotificationsRead`, `deleteAllNotifications` (createNotification nuevo)
 
 **Endpoints Desplegados:**
 - `POST /routines`, `GET /routines`, `GET /routines/by-date`, `PUT /routines/{id}`, `DELETE /routines/{id}`, `DELETE /routines`
@@ -135,8 +142,12 @@ El proyecto Pockets está dividido en **3 servicios Serverless independientes** 
 - `POST /events`, `GET /events`, `PUT /events/{id}`, `DELETE /events/{id}`, `DELETE /events`
 - `GET /crypto-exchange-rates/sync`
 - `POST /notes`, `GET /notes`, `PUT /notes/{id}`, `DELETE /notes/{id}`, `DELETE /notes`
+- `POST /diary-entries`, `GET /diary-entries`, `PUT /diary-entries/{id}`, `DELETE /diary-entries/{id}`
+- `POST /files`, `GET /files`, `GET /files/{id}`, `DELETE /files/{id}` (gestión de archivos)
+- `GET /judicial-processes`, `GET /judicial-processes/{idProceso}/actuaciones` (procesos judiciales)
+- `POST /judicial-processes/tracking`, `GET /judicial-processes/tracking`, `DELETE /judicial-processes/tracking/{id}` (nuevo - seguimiento de procesos)
 - `POST /secrets`, `GET /secrets`, `PUT /secrets/{id}`, `POST /secrets/{id}/verify`, `POST /secrets/{id}/value`, `DELETE /secrets/{id}`, `DELETE /secrets`
-- `GET /notifications`, `PUT /notifications/{id}/read`, `DELETE /notifications/{id}`, `POST /notifications/mark-all-read`, `DELETE /notifications`
+- `POST /notifications`, `GET /notifications`, `PUT /notifications/{id}/read`, `DELETE /notifications/{id}`, `POST /notifications/mark-all-read`, `DELETE /notifications`
 
 ---
 
@@ -170,13 +181,13 @@ serverless deploy --config serverless-lifestyle.yml
 ### Desarrollo Local
 
 ```bash
-# Core (puerto 5000)
+# Core (puerto 7000)
 serverless offline --config serverless-core.yml
 
-# Financial (puerto 5001)
+# Financial (puerto 7001)
 serverless offline --config serverless-financial.yml
 
-# Lifestyle (puerto 5002)
+# Lifestyle (puerto 7002)
 serverless offline --config serverless-lifestyle.yml
 ```
 
@@ -191,15 +202,15 @@ El frontend debe configurar **3 URLs base** diferentes, una para cada servicio:
 const API_CONFIG = {
   core: {
     production: 'https://qe765aps3a.execute-api.us-east-1.amazonaws.com/dev',
-    local: 'http://localhost:5000'
+    local: 'http://localhost:7000'
   },
   financial: {
     production: 'https://l1nfx233y1.execute-api.us-east-1.amazonaws.com/dev',
-    local: 'http://localhost:5001'
+    local: 'http://localhost:7001'
   },
   lifestyle: {
     production: 'https://kstxcg0o0g.execute-api.us-east-1.amazonaws.com/dev',
-    local: 'http://localhost:5002'
+    local: 'http://localhost:7002'
   }
 };
 
@@ -226,7 +237,7 @@ const LIFESTYLE_API = process.env.NODE_ENV === 'production'
 |----------|-----------|-----------------|-------------|
 | **pockets-core** | 26 | ~150-200 | Funciones financieras principales y autenticación |
 | **pockets-financial** | 39 | ~200-250 | Activos y pasivos financieros |
-| **pockets-lifestyle** | 32 | ~180-220 | Rutinas, eventos, notas, secretos, notificaciones |
+| **pockets-lifestyle** | 36 | ~200-250 | Rutinas, eventos, notas, diario, archivos, secretos, notificaciones |
 | **Total** | **97** | **~530-670** | Todos los servicios combinados |
 
 ---

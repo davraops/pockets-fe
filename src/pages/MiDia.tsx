@@ -124,7 +124,6 @@ function MiDia() {
 
       setWeekRoutines(weekEvents)
     } catch (err: any) {
-      console.error('Error al cargar rutinas:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al cargar las rutinas. Por favor, intenta de nuevo.'
@@ -155,27 +154,12 @@ function MiDia() {
         duration: routine.duration || null,
       }
 
-      console.log('🟢 POST /routine-completions - Creando completado:', completionData)
-      console.log('📊 Racha ANTES de completar:', {
-        current_streak: routine.current_streak,
-        longest_streak: routine.longest_streak,
-        total_completions: routine.total_completions,
-      })
-
       // Crear el completado
-      const completionResponse = await api.createRoutineCompletion(completionData)
-      console.log('✅ POST /routine-completions - Respuesta:', completionResponse)
+      await api.createRoutineCompletion(completionData)
 
       // Calcular nuevos valores de racha
       const currentStreak = (routine.current_streak || 0) + 1
       const longestStreak = Math.max(routine.longest_streak || 0, currentStreak)
-
-      console.log('📊 Calculando nuevas rachas:', {
-        current_streak_anterior: routine.current_streak || 0,
-        current_streak_nuevo: currentStreak,
-        longest_streak_anterior: routine.longest_streak || 0,
-        longest_streak_nuevo: longestStreak,
-      })
 
       // Actualizar las rachas en la rutina
       const updateData = {
@@ -184,16 +168,13 @@ function MiDia() {
         longest_streak: longestStreak,
       }
 
-      console.log(`🟡 PUT /routines/${routine.id} - Actualizando rachas:`, updateData)
-      const updateResponse = await api.updateRoutine(routine.id, updateData)
-      console.log('✅ PUT /routines - Respuesta:', updateResponse)
+      await api.updateRoutine(routine.id, updateData)
 
       showNotification(`${routine.title} completada`, 'success')
       
       // Recargar para actualizar el estado
       await loadRoutines()
     } catch (err: any) {
-      console.error('Error al completar rutina:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al completar la rutina. Por favor, intenta de nuevo.'

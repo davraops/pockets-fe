@@ -17,15 +17,15 @@ Para más detalles sobre la arquitectura, consulta `SERVICES_ARCHITECTURE.md`.
 const API_CONFIG = {
   core: {
     production: 'https://qe765aps3a.execute-api.us-east-1.amazonaws.com/dev',
-    local: 'http://localhost:5000'
+    local: 'http://localhost:7000'
   },
   financial: {
     production: 'https://l1nfx233y1.execute-api.us-east-1.amazonaws.com/dev',
-    local: 'http://localhost:5001'
+    local: 'http://localhost:7001'
   },
   lifestyle: {
     production: 'https://kstxcg0o0g.execute-api.us-east-1.amazonaws.com/dev',
-    local: 'http://localhost:5002'
+    local: 'http://localhost:7002'
   }
 };
 
@@ -52,7 +52,7 @@ const response = await fetch(`${API_CORE}/bank-accounts`, {
 |----------|-----------|--------------|
 | **pockets-core** | `/auth/*`, `/bank-accounts/*`, `/budgets/*`, `/transactions/*`, `/exchange-rates/*` | 5000 |
 | **pockets-financial** | `/debts/*`, `/debtors/*`, `/cards/*`, `/credit-cards/*`, `/subscriptions/*`, `/cryptocurrencies/*`, `/wallets/*`, `/cdts/*`, `/projects/*` | 5001 |
-| **pockets-lifestyle** | `/routines/*`, `/routine-completions/*`, `/events/*`, `/notes/*`, `/secrets/*`, `/notifications/*`, `/crypto-exchange-rates/*` | 5002 |
+| **pockets-lifestyle** | `/routines/*`, `/routine-completions/*`, `/events/*`, `/notes/*`, `/diary-entries/*`, `/files/*`, `/judicial-processes/*`, `/secrets/*`, `/notifications/*`, `/crypto-exchange-rates/*` | 7002 |
 
 ### CORS
 
@@ -85,7 +85,8 @@ const newUser = await fetch(`${API_URL}/auth/register`, {
     username: "johndoe",
     password_hash: passwordHash,
     nombre_usuario: "John Doe",
-    fecha_nacimiento: "1990-01-15"
+    fecha_nacimiento: "1990-01-15",
+    nombre_completo: "John Michael Doe" // Opcional
   })
 });
 ```
@@ -3546,6 +3547,850 @@ const deleteAllNotes = async () => {
 
 ---
 
+### Diary Entries (Entradas de Diario)
+**🟡 Servicio: pockets-lifestyle** | **URL Base:** `API_LIFESTYLE`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-lifestyle`. Usa `API_LIFESTYLE` como URL base.
+
+Sistema simple de diario con fecha y contenido. Solo se permite una entrada por fecha por usuario.
+
+#### POST /diary-entries
+Crear una nueva entrada de diario.
+
+**URL:** `POST ${API_LIFESTYLE}/diary-entries`
+
+**Request Body:**
+```json
+{
+  "entry_date": "2024-01-15",
+  "content": "Hoy fue un día increíble. Hice muchas cosas importantes..."
+}
+```
+
+**Campos:**
+- `entry_date` (string, requerido): Fecha de la entrada en formato `YYYY-MM-DD`
+- `content` (string, requerido): Contenido de la entrada (texto)
+
+**Ejemplo JavaScript:**
+```javascript
+const createDiaryEntry = async (entryDate, content) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/diary-entries`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify({
+      entry_date: entryDate,
+      content: content
+    })
+  });
+  return response.json();
+};
+
+// Crear entrada
+const newEntry = await createDiaryEntry('2024-01-15', 'Hoy fue un día increíble...');
+```
+
+**Response (201):**
+```json
+{
+  "message": "Diary entry created successfully",
+  "entry": {
+    "id": "uuid-here",
+    "entry_date": "2024-01-15",
+    "content": "Hoy fue un día increíble...",
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+**Nota:** Si ya existe una entrada para esa fecha, se actualizará automáticamente con el nuevo contenido.
+
+---
+
+#### GET /diary-entries
+Obtener entradas de diario.
+
+**URL:** `GET ${API_LIFESTYLE}/diary-entries`
+
+**Query Parameters (opcionales):**
+- `id` (string): Obtener entrada específica por ID
+- `date` (string): Obtener entrada para una fecha específica (YYYY-MM-DD)
+- `start_date` (string): Obtener entradas desde esta fecha (YYYY-MM-DD)
+- `end_date` (string): Obtener entradas hasta esta fecha (YYYY-MM-DD)
+
+**Ejemplo JavaScript:**
+```javascript
+const getDiaryEntries = async (filters = {}) => {
+  const token = localStorage.getItem('authToken');
+  const params = new URLSearchParams(filters);
+  const url = params.toString() 
+    ? `${API_LIFESTYLE}/diary-entries?${params.toString()}`
+    : `${API_LIFESTYLE}/diary-entries`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todas las entradas
+const allEntries = await getDiaryEntries();
+
+// Obtener entrada específica por ID
+const entry = await getDiaryEntries({ id: 'uuid-here' });
+
+// Obtener entrada para una fecha específica
+const todayEntry = await getDiaryEntries({ date: '2024-01-15' });
+
+// Obtener entradas en un rango de fechas
+const monthEntries = await getDiaryEntries({ 
+  start_date: '2024-01-01', 
+  end_date: '2024-01-31' 
+});
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "entries": [
+    {
+      "id": "uuid-here",
+      "entry_date": "2024-01-15",
+      "content": "Hoy fue un día increíble...",
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-15T10:30:00Z"
+    },
+    {
+      "id": "uuid-here-2",
+      "entry_date": "2024-01-14",
+      "content": "Ayer también fue genial...",
+      "created_at": "2024-01-14T09:00:00Z",
+      "updated_at": "2024-01-14T09:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+#### PUT /diary-entries/{id}
+Actualizar una entrada de diario existente.
+
+**URL:** `PUT ${API_LIFESTYLE}/diary-entries/{id}`
+
+**Request Body:**
+```json
+{
+  "entry_date": "2024-01-15",
+  "content": "Contenido actualizado..."
+}
+```
+
+**Campos (opcionales, al menos uno requerido):**
+- `entry_date` (string): Nueva fecha en formato `YYYY-MM-DD`
+- `content` (string): Nuevo contenido
+
+**Ejemplo JavaScript:**
+```javascript
+const updateDiaryEntry = async (entryId, updates) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/diary-entries/${entryId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(updates)
+  });
+  return response.json();
+};
+
+// Actualizar solo el contenido
+await updateDiaryEntry('uuid-here', {
+  content: 'Contenido actualizado...'
+});
+
+// Actualizar fecha y contenido
+await updateDiaryEntry('uuid-here', {
+  entry_date: '2024-01-16',
+  content: 'Contenido actualizado...'
+});
+```
+
+**Response (200):**
+```json
+{
+  "message": "Diary entry updated successfully",
+  "entry": {
+    "id": "uuid-here",
+    "entry_date": "2024-01-15",
+    "content": "Contenido actualizado...",
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T15:45:00Z"
+  }
+}
+```
+
+**Errores:**
+- `404`: Entrada no encontrada o no pertenece al usuario
+- `409`: Si se cambia la fecha a una que ya tiene una entrada
+
+---
+
+#### DELETE /diary-entries/{id}
+Eliminar una entrada de diario específica.
+
+**URL:** `DELETE ${API_LIFESTYLE}/diary-entries/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteDiaryEntry = async (entryId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/diary-entries/${entryId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Eliminar entrada
+await deleteDiaryEntry('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "message": "Diary entry deleted successfully",
+  "deleted_entry": {
+    "id": "uuid-here",
+    "entry_date": "2024-01-15"
+  }
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+### User Files (Archivos/Documentos)
+**🟡 Servicio: pockets-lifestyle** | **URL Base:** `API_LIFESTYLE`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-lifestyle`. Usa `API_LIFESTYLE` como URL base.
+
+Sistema para subir y gestionar archivos (documentos, PDFs) almacenados en S3. 
+
+**⚠️ Límite de tamaño:** Los archivos deben ser menores a 25MB. Sin embargo, debido a las limitaciones de API Gateway (10MB de payload), se recomienda mantener los archivos por debajo de 10MB para una subida directa. Para archivos más grandes (10-25MB), se recomienda usar presigned URLs (funcionalidad futura).
+
+**Tipos de archivo permitidos:**
+- PDFs (`application/pdf`)
+- Documentos Word (`.doc`, `.docx`)
+- Hojas de cálculo Excel (`.xls`, `.xlsx`)
+- Presentaciones PowerPoint (`.ppt`, `.pptx`)
+- Archivos de texto (`.txt`)
+- CSV (`.csv`)
+- Imágenes (JPEG, PNG, GIF)
+
+#### POST /files
+Subir un archivo a S3.
+
+**URL:** `POST ${API_LIFESTYLE}/files`
+
+**Content-Type:** `multipart/form-data`
+
+**Form Fields:**
+- `file` (file, requerido): El archivo a subir (máximo 25MB)
+- `title` (string, requerido): Título/descripción del archivo
+- `description` (string, opcional): Descripción adicional o tipo de documento
+
+**Ejemplo JavaScript:**
+```javascript
+const uploadFile = async (file, title, description = null) => {
+  const token = localStorage.getItem('authToken');
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('title', title);
+  if (description) {
+    formData.append('description', description);
+  }
+
+  const response = await fetch(`${API_LIFESTYLE}/files`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+      // NO incluir Content-Type, el navegador lo agregará automáticamente con el boundary
+    },
+    body: formData
+  });
+  return response.json();
+};
+
+// Ejemplo de uso
+const fileInput = document.querySelector('input[type="file"]');
+const file = fileInput.files[0];
+
+if (file) {
+  const result = await uploadFile(
+    file, 
+    'Contrato de arrendamiento', 
+    'Contrato firmado del apartamento'
+  );
+  console.log('Archivo subido:', result);
+}
+```
+
+**Response (201):**
+```json
+{
+  "message": "File uploaded successfully",
+  "file": {
+    "id": "uuid-here",
+    "title": "Contrato de arrendamiento",
+    "description": "Contrato firmado del apartamento",
+    "file_name": "contrato.pdf",
+    "file_size": 1048576,
+    "mime_type": "application/pdf",
+    "created_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+**Errores:**
+- `400`: Archivo faltante, título faltante, archivo vacío, tamaño excede 25MB, tipo de archivo no permitido
+- `401`: Token de autenticación inválido o faltante
+- `500`: Error al subir el archivo
+
+---
+
+#### GET /files
+Obtener lista de archivos del usuario.
+
+**URL:** `GET ${API_LIFESTYLE}/files`
+
+**Query Parameters (opcionales):**
+- `id` (string): Obtener archivo específico por ID
+- `mime_type` (string): Filtrar por tipo MIME (ej: `application/pdf`)
+
+**Ejemplo JavaScript:**
+```javascript
+const getFiles = async (filters = {}) => {
+  const token = localStorage.getItem('authToken');
+  const params = new URLSearchParams(filters);
+  const url = params.toString() 
+    ? `${API_LIFESTYLE}/files?${params.toString()}`
+    : `${API_LIFESTYLE}/files`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todos los archivos
+const allFiles = await getFiles();
+
+// Obtener archivo específico por ID
+const file = await getFiles({ id: 'uuid-here' });
+
+// Obtener solo PDFs
+const pdfs = await getFiles({ mime_type: 'application/pdf' });
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "files": [
+    {
+      "id": "uuid-here",
+      "title": "Contrato de arrendamiento",
+      "description": "Contrato firmado del apartamento",
+      "file_name": "contrato.pdf",
+      "file_size": 1048576,
+      "mime_type": "application/pdf",
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-15T10:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+#### GET /files/{id}
+Obtener URL de descarga (presigned URL) para un archivo específico.
+
+**URL:** `GET ${API_LIFESTYLE}/files/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const getFileDownloadUrl = async (fileId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/files/${fileId}`, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  const data = await response.json();
+  
+  // La URL presigned es válida por 1 hora
+  return data.download_url;
+};
+
+// Obtener URL de descarga
+const downloadUrl = await getFileDownloadUrl('uuid-here');
+
+// Descargar el archivo
+window.open(downloadUrl, '_blank');
+
+// O descargar programáticamente
+const link = document.createElement('a');
+link.href = downloadUrl;
+link.download = 'archivo.pdf';
+link.click();
+```
+
+**Response (200):**
+```json
+{
+  "file": {
+    "id": "uuid-here",
+    "title": "Contrato de arrendamiento",
+    "description": "Contrato firmado del apartamento",
+    "file_name": "contrato.pdf",
+    "file_size": 1048576,
+    "mime_type": "application/pdf",
+    "created_at": "2024-01-15T10:30:00Z"
+  },
+  "download_url": "https://pockets-user-files-dev.s3.amazonaws.com/user-id/file-id/contrato.pdf?X-Amz-Algorithm=...",
+  "expires_in": 3600
+}
+```
+
+**Nota:** La URL presigned es válida por 1 hora (3600 segundos). Después de ese tiempo, necesitarás generar una nueva URL.
+
+---
+
+#### DELETE /files/{id}
+Eliminar un archivo (de S3 y de la base de datos).
+
+**URL:** `DELETE ${API_LIFESTYLE}/files/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteFile = async (fileId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/files/${fileId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Eliminar archivo
+await deleteFile('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "message": "File deleted successfully",
+  "deleted_file": {
+    "id": "uuid-here",
+    "title": "Contrato de arrendamiento",
+    "file_name": "contrato.pdf"
+  }
+}
+```
+
+**⚠️ Advertencia:** Esta operación elimina el archivo de S3 y de la base de datos. Es irreversible.
+
+---
+
+### Judicial Processes (Procesos Judiciales)
+**🟡 Servicio: pockets-lifestyle** | **URL Base:** `API_LIFESTYLE`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-lifestyle`. Usa `API_LIFESTYLE` como URL base.
+
+Endpoints proxy para consultar procesos judiciales desde la API de la Rama Judicial de Colombia. Estos endpoints actúan como intermediarios para evitar problemas de CORS y 403 Forbidden que ocurren al hacer llamadas directas desde el navegador.
+
+#### GET /judicial-processes
+Consultar procesos judiciales por nombre completo.
+
+**URL:** `GET ${API_LIFESTYLE}/judicial-processes`
+
+**Query Parameters:**
+- `nombre` (string, requerido) - Nombre completo de la persona a consultar (URL-encoded)
+- `tipoPersona` (string, opcional) - Tipo de persona: `'nat'` (natural) o `'jur'` (jurídica). Default: `'nat'`
+- `SoloActivos` (string, opcional) - Si solo se deben mostrar procesos activos. Default: `'false'` (valores: `'true'` o `'false'`)
+- `pagina` (integer, opcional) - Número de página para paginación. Default: `1`
+
+**Ejemplo JavaScript:**
+```javascript
+const getJudicialProcesses = async (nombre, filters = {}) => {
+  const token = localStorage.getItem('authToken');
+  const params = new URLSearchParams({
+    nombre: nombre,
+    tipoPersona: filters.tipoPersona || 'nat',
+    SoloActivos: filters.soloActivos || 'false',
+    pagina: filters.pagina || '1'
+  });
+  
+  const response = await fetch(`${API_LIFESTYLE}/judicial-processes?${params.toString()}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`, // ⚠️ REQUERIDO
+      'Content-Type': 'application/json'
+    }
+  });
+  return response.json();
+};
+
+// Consultar procesos por nombre
+const procesos = await getJudicialProcesses('Rafael Augusto Avella Pena');
+
+// Con filtros
+const procesosActivos = await getJudicialProcesses('Rafael Augusto Avella Pena', {
+  tipoPersona: 'nat',
+  soloActivos: 'true',
+  pagina: 1
+});
+```
+
+**Response (200):**
+```json
+{
+  "procesos": [
+    {
+      "idProceso": 216809590,
+      "idConexion": 12345,
+      "llaveProceso": "11001-00331-2023-00001-01",
+      "fechaProceso": "2023-01-15T00:00:00",
+      "fechaUltimaActuacion": "2024-01-20T00:00:00",
+      "despacho": "JUZGADO 001 CIVIL MUNICIPAL DE BOGOTÁ",
+      "departamento": "CUNDINAMARCA",
+      "sujetosProcesales": "DEMANDANTE: JUAN PÉREZ | DEMANDADO: RAFAEL AUGUSTO AVELLA PENA",
+      "esPrivado": false,
+      "cantFilas": 10
+    }
+  ],
+  "paginacion": {
+    "pagina": 1,
+    "totalPaginas": 1,
+    "totalRegistros": 1
+  }
+}
+```
+
+**Errores:**
+- `400`: Parámetro `nombre` faltante o inválido, `tipoPersona` inválido, `pagina` inválida
+- `401`: Token de autenticación inválido o faltante
+- `500`: Error de conexión con la API externa
+- `504`: Timeout al consultar la API externa
+
+---
+
+#### GET /judicial-processes/{idProceso}/actuaciones
+Obtener las actuaciones (acciones/procedimientos) de un proceso judicial específico.
+
+**URL:** `GET ${API_LIFESTYLE}/judicial-processes/{idProceso}/actuaciones`
+
+**Path Parameters:**
+- `idProceso` (integer, requerido) - ID del proceso judicial
+
+**Query Parameters:**
+- `pagina` (integer, opcional) - Número de página para paginación. Default: `1`
+
+**Ejemplo JavaScript:**
+```javascript
+const getProcessActuaciones = async (idProceso, pagina = 1) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(
+    `${API_LIFESTYLE}/judicial-processes/${idProceso}/actuaciones?pagina=${pagina}`,
+    {
+      headers: {
+        'Authorization': `Bearer ${token}`, // ⚠️ REQUERIDO
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+  return response.json();
+};
+
+// Obtener actuaciones de un proceso
+const actuaciones = await getProcessActuaciones(216809590);
+```
+
+**Response (200):**
+```json
+{
+  "actuaciones": [
+    {
+      "idRegActuacion": 123456,
+      "llaveProceso": "11001-00331-2023-00001-01",
+      "consActuacion": 1,
+      "fechaActuacion": "2023-01-20T00:00:00",
+      "actuacion": "ADMISIÓN DE LA DEMANDA",
+      "anotacion": "Se admite la demanda presentada por el demandante.",
+      "fechaInicial": null,
+      "fechaFinal": null,
+      "fechaRegistro": "2023-01-20T10:30:00",
+      "codRegla": "001",
+      "conDocumentos": true,
+      "cant": 1
+    }
+  ],
+  "paginacion": {
+    "pagina": 1,
+    "totalPaginas": 1,
+    "totalRegistros": 2
+  }
+}
+```
+
+**Errores:**
+- `400`: Parámetro `idProceso` faltante o inválido, `pagina` inválida
+- `401`: Token de autenticación inválido o faltante
+- `404`: Proceso no encontrado
+- `500`: Error de conexión con la API externa
+- `504`: Timeout al consultar la API externa
+
+**Nota:** Estos endpoints actúan como proxy a la API externa de la Rama Judicial de Colombia (`https://consultaprocesos.ramajudicial.gov.co:448/api/v2`). Las respuestas pueden tardar hasta 30 segundos debido a la latencia de la API externa.
+
+---
+
+#### POST /judicial-processes/tracking
+Agregar un proceso judicial a la lista de seguimiento. El sistema verificará automáticamente cada día si hay nuevas actuaciones y creará notificaciones cuando las detecte.
+
+**URL:** `POST ${API_LIFESTYLE}/judicial-processes/tracking`
+
+**Ejemplo JavaScript:**
+```javascript
+const addProcessTracking = async (processData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/judicial-processes/tracking`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`, // ⚠️ REQUERIDO
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(processData)
+  });
+  return response.json();
+};
+
+// Agregar proceso a seguimiento
+await addProcessTracking({
+  id_proceso: 216809590,
+  llave_proceso: "11001-00331-2023-00001-01",
+  nombre_persona: "Rafael Augusto Avella Pena",
+  despacho: "JUZGADO 001 CIVIL MUNICIPAL DE BOGOTÁ",
+  departamento: "CUNDINAMARCA"
+});
+```
+
+**Request Body:**
+```json
+{
+  "id_proceso": 216809590,
+  "llave_proceso": "11001-00331-2023-00001-01",
+  "nombre_persona": "Rafael Augusto Avella Pena",
+  "despacho": "JUZGADO 001 CIVIL MUNICIPAL DE BOGOTÁ",
+  "departamento": "CUNDINAMARCA"
+}
+```
+
+**Campos Requeridos:**
+- `id_proceso` (integer) - ID del proceso judicial
+- `llave_proceso` (string) - Llave única del proceso (ej: "11001-00331-2023-00001-01")
+- `nombre_persona` (string) - Nombre completo de la persona en el proceso
+
+**Campos Opcionales:**
+- `despacho` (string) - Nombre del despacho/juzgado
+- `departamento` (string) - Departamento donde se encuentra el proceso
+
+**Response (201):**
+```json
+{
+  "message": "Process tracking created successfully",
+  "tracking": {
+    "id": "uuid-here",
+    "id_proceso": 216809590,
+    "llave_proceso": "11001-00331-2023-00001-01",
+    "nombre_persona": "Rafael Augusto Avella Pena",
+    "despacho": "JUZGADO 001 CIVIL MUNICIPAL DE BOGOTÁ",
+    "departamento": "CUNDINAMARCA",
+    "is_active": true,
+    "created_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+**Response (200) - Si el proceso ya estaba en seguimiento:**
+```json
+{
+  "message": "Process tracking reactivated",
+  "tracking": {
+    "id": "uuid-here",
+    "id_proceso": 216809590,
+    "llave_proceso": "11001-00331-2023-00001-01",
+    "nombre_persona": "Rafael Augusto Avella Pena",
+    "is_active": true,
+    "created_at": "2024-01-10T08:00:00Z",
+    "updated_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+**Errores:**
+- `400`: Campos requeridos faltantes, `id_proceso` inválido
+- `401`: Token de autenticación inválido o faltante
+- `500`: Error al crear el seguimiento
+
+---
+
+#### GET /judicial-processes/tracking
+Obtener todos los procesos judiciales que el usuario está siguiendo.
+
+**URL:** `GET ${API_LIFESTYLE}/judicial-processes/tracking`
+
+**Query Parameters (opcionales):**
+- `active_only` (string) - Si es `'true'`, solo retorna procesos activos. Default: `'false'`
+
+**Ejemplo JavaScript:**
+```javascript
+const getProcessTracking = async (activeOnly = false) => {
+  const token = localStorage.getItem('authToken');
+  const params = activeOnly ? '?active_only=true' : '';
+  const response = await fetch(`${API_LIFESTYLE}/judicial-processes/tracking${params}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`, // ⚠️ REQUERIDO
+      'Content-Type': 'application/json'
+    }
+  });
+  return response.json();
+};
+
+// Obtener todos los procesos en seguimiento
+const allTracking = await getProcessTracking();
+
+// Solo procesos activos
+const activeTracking = await getProcessTracking(true);
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "tracking": [
+    {
+      "id": "uuid-here",
+      "id_proceso": 216809590,
+      "llave_proceso": "11001-00331-2023-00001-01",
+      "nombre_persona": "Rafael Augusto Avella Pena",
+      "despacho": "JUZGADO 001 CIVIL MUNICIPAL DE BOGOTÁ",
+      "departamento": "CUNDINAMARCA",
+      "ultima_actuacion_fecha": "2024-01-20T00:00:00Z",
+      "ultima_verificacion": "2024-01-21T08:00:00Z",
+      "is_active": true,
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-21T08:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+#### DELETE /judicial-processes/tracking/{id}
+Remover un proceso de la lista de seguimiento (soft delete - se marca como inactivo).
+
+**URL:** `DELETE ${API_LIFESTYLE}/judicial-processes/tracking/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const removeProcessTracking = async (trackingId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/judicial-processes/tracking/${trackingId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Remover proceso de seguimiento
+await removeProcessTracking('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "message": "Process tracking removed successfully",
+  "deleted_tracking": {
+    "id": "uuid-here",
+    "id_proceso": 216809590,
+    "llave_proceso": "11001-00331-2023-00001-01",
+    "nombre_persona": "Rafael Augusto Avella Pena"
+  }
+}
+```
+
+**Errores:**
+- `400`: ID de seguimiento faltante
+- `401`: Token de autenticación inválido o faltante
+- `404`: Seguimiento no encontrado o no pertenece al usuario
+- `500`: Error al eliminar el seguimiento
+
+**Nota:** Este es un soft delete. El proceso se marca como `is_active = false` pero no se elimina de la base de datos. Puedes reactivarlo agregándolo nuevamente con `POST /judicial-processes/tracking`.
+
+---
+
+### ⚙️ Verificación Automática
+
+El sistema verifica automáticamente todos los procesos en seguimiento **diariamente a las 3:00 AM UTC-5** (8:00 AM UTC). Cuando se detecta una nueva actuación:
+
+1. Se crea automáticamente una notificación de tipo `judicial_process`
+2. La notificación incluye detalles de la nueva actuación en el campo `metadata`
+3. El seguimiento se actualiza con la fecha e ID de la última actuación
+
+**Ejemplo de notificación automática:**
+```json
+{
+  "id": "notification-uuid",
+  "type": "judicial_process",
+  "title": "Nueva actuación en proceso judicial",
+  "message": "Se registró una nueva actuación en el proceso 11001-00331-2023-00001-01 de Rafael Augusto Avella Pena",
+  "priority": "normal",
+  "is_read": false,
+  "metadata": {
+    "id_proceso": 216809590,
+    "llave_proceso": "11001-00331-2023-00001-01",
+    "nombre_persona": "Rafael Augusto Avella Pena",
+    "actuacion": "ADMISIÓN DE LA DEMANDA",
+    "fecha_actuacion": "2024-01-20T00:00:00",
+    "id_reg_actuacion": 123456
+  },
+  "created_at": "2024-01-21T08:00:00Z"
+}
+```
+
+Para recibir estas notificaciones, asegúrate de consultar regularmente el endpoint `GET /notifications` con filtro `type=judicial_process` o `is_read=false`.
+
+---
+
 ### Secrets (Secretos)
 **🟡 Servicio: pockets-lifestyle** | **URL Base:** `API_LIFESTYLE`
 
@@ -5099,7 +5944,8 @@ const newUser = await register({
   username: "johndoe",
   password_hash: passwordHash,
   nombre_usuario: "John Doe",
-  fecha_nacimiento: "1990-01-15"
+  fecha_nacimiento: "1990-01-15",
+  nombre_completo: "John Michael Doe" // Opcional
 });
 ```
 
@@ -5109,15 +5955,19 @@ const newUser = await register({
   "username": "johndoe",
   "password_hash": "$2a$10$hashedpasswordhere...",
   "nombre_usuario": "John Doe",
-  "fecha_nacimiento": "1990-01-15"
+  "fecha_nacimiento": "1990-01-15",
+  "nombre_completo": "John Michael Doe"
 }
 ```
 
 **Campos Requeridos:**
 - `username` - Nombre de usuario único (case-insensitive)
 - `password_hash` - Hash bcrypt del password (generado en el cliente)
-- `nombre_usuario` - Nombre completo del usuario
+- `nombre_usuario` - Nombre de usuario (display name)
 - `fecha_nacimiento` - Fecha de nacimiento en formato YYYY-MM-DD
+
+**Campos Opcionales:**
+- `nombre_completo` - Nombre completo del usuario (ej: "Rafael Augusto Avella Pena")
 
 **Response (201):**
 ```json
@@ -5128,7 +5978,8 @@ const newUser = await register({
     "username": "johndoe",
     "user_details": {
       "nombre_usuario": "John Doe",
-      "fecha_nacimiento": "1990-01-15"
+      "fecha_nacimiento": "1990-01-15",
+      "nombre_completo": "John Michael Doe"
     },
     "created_at": "2024-01-15T00:00:00.000Z",
     "updated_at": "2024-01-15T00:00:00.000Z"
@@ -5192,7 +6043,8 @@ localStorage.setItem('authToken', loginResult.token);
     "username": "johndoe",
     "user_details": {
       "nombre_usuario": "John Doe",
-      "fecha_nacimiento": "1990-01-15"
+      "fecha_nacimiento": "1990-01-15",
+      "nombre_completo": "John Michael Doe"
     }
   }
 }
@@ -5227,12 +6079,172 @@ const fetchWithAuth = async (url, options = {}) => {
 
 ---
 
+#### PUT /user-details
+Actualizar los detalles del usuario autenticado (nombre_usuario, fecha_nacimiento, nombre_completo).
+
+**URL:** `PUT ${API_CORE}/user-details`
+
+**Ejemplo JavaScript:**
+```javascript
+const updateUserDetails = async (details) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_CORE}/user-details`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(details),
+  });
+  return response.json();
+};
+
+// Actualizar solo nombre_completo
+await updateUserDetails({
+  nombre_completo: "Rafael Augusto Avella Pena"
+});
+
+// Actualizar múltiples campos
+await updateUserDetails({
+  nombre_usuario: "John",
+  fecha_nacimiento: "1990-01-15",
+  nombre_completo: "John Michael Doe"
+});
+```
+
+**Request Body:**
+```json
+{
+  "nombre_usuario": "John",
+  "fecha_nacimiento": "1990-01-15",
+  "nombre_completo": "John Michael Doe"
+}
+```
+
+**Campos Opcionales (puedes actualizar uno o varios):**
+- `nombre_usuario` - Nombre de usuario (display name)
+- `fecha_nacimiento` - Fecha de nacimiento en formato YYYY-MM-DD
+- `nombre_completo` - Nombre completo del usuario
+
+**Response (200):**
+```json
+{
+  "message": "User details updated successfully",
+  "user": {
+    "id": "uuid-here",
+    "username": "johndoe",
+    "user_details": {
+      "nombre_usuario": "John",
+      "fecha_nacimiento": "1990-01-15",
+      "nombre_completo": "John Michael Doe"
+    },
+    "created_at": "2024-01-15T00:00:00.000Z",
+    "updated_at": "2024-01-16T10:30:00.000Z"
+  }
+}
+```
+
+**Nota:** 
+- Solo necesitas enviar los campos que deseas actualizar
+- Los campos no enviados se mantienen con sus valores actuales
+- Todos los campos son opcionales en el request, pero si se envían deben tener valores válidos
+
+---
+
 ### Notifications (Notificaciones)
 **🟡 Servicio: pockets-lifestyle** | **URL Base:** `API_LIFESTYLE`
 
 > **Nota:** Estos endpoints están en el servicio `pockets-lifestyle`. Usa `API_LIFESTYLE` como URL base.
 
-El sistema de notificaciones permite gestionar alertas y recordatorios para el usuario. Las notificaciones se crean automáticamente por el sistema y pueden ser consultadas, marcadas como leídas o eliminadas.
+El sistema de notificaciones permite gestionar alertas y recordatorios para el usuario. Las notificaciones pueden ser creadas manualmente o automáticamente por el sistema, y pueden ser consultadas, marcadas como leídas o eliminadas.
+
+#### POST /notifications
+Crear una nueva notificación para el usuario autenticado.
+
+**URL:** `POST ${API_LIFESTYLE}/notifications`
+
+**Ejemplo JavaScript:**
+```javascript
+const createNotification = async (notificationData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/notifications`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(notificationData)
+  });
+  return response.json();
+};
+
+// Crear notificación básica
+await createNotification({
+  type: 'general',
+  title: 'Recordatorio importante',
+  message: 'No olvides revisar tu presupuesto mensual'
+});
+
+// Crear notificación con prioridad y metadata
+await createNotification({
+  type: 'routine',
+  title: 'Rutina completada',
+  message: 'Has completado tu rutina de ejercicio',
+  priority: 'high',
+  metadata: {
+    routine_id: 'uuid-here',
+    completion_date: '2024-01-15'
+  }
+});
+```
+
+**Request Body:**
+```json
+{
+  "type": "general",
+  "title": "Recordatorio importante",
+  "message": "No olvides revisar tu presupuesto mensual",
+  "priority": "normal",
+  "metadata": {
+    "custom_field": "value"
+  }
+}
+```
+
+**Campos Requeridos:**
+- `type` (string) - Tipo de notificación: `'general'`, `'routine'`, `'budget'`, `'transaction'`, `'judicial_process'`, `'system'`
+- `title` (string) - Título de la notificación
+- `message` (string) - Mensaje de la notificación
+
+**Campos Opcionales:**
+- `priority` (string) - Prioridad: `'low'`, `'normal'`, `'high'`, `'urgent'`. Default: `'normal'`
+- `metadata` (object) - Metadatos adicionales en formato JSON. Default: `null`
+
+**Response (201):**
+```json
+{
+  "message": "Notification created successfully",
+  "notification": {
+    "id": "uuid-here",
+    "type": "general",
+    "title": "Recordatorio importante",
+    "message": "No olvides revisar tu presupuesto mensual",
+    "priority": "normal",
+    "is_read": false,
+    "metadata": {
+      "custom_field": "value"
+    },
+    "created_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+**Errores:**
+- `400`: Campos requeridos faltantes, tipo o prioridad inválidos, título o mensaje vacíos
+- `401`: Token de autenticación inválido o faltante
+- `500`: Error al crear la notificación
+
+---
 
 #### GET /notifications
 Obtener notificaciones del usuario con filtros y paginación.
@@ -5657,15 +6669,15 @@ const handleApiCall = async (apiFunction) => {
 const API_CONFIG = {
   core: {
     production: process.env.REACT_APP_API_CORE_URL || 'https://qe765aps3a.execute-api.us-east-1.amazonaws.com/dev',
-    local: 'http://localhost:5000'
+    local: 'http://localhost:7000'
   },
   financial: {
     production: process.env.REACT_APP_API_FINANCIAL_URL || 'https://l1nfx233y1.execute-api.us-east-1.amazonaws.com/dev',
-    local: 'http://localhost:5001'
+    local: 'http://localhost:7001'
   },
   lifestyle: {
     production: process.env.REACT_APP_API_LIFESTYLE_URL || 'https://kstxcg0o0g.execute-api.us-east-1.amazonaws.com/dev',
-    local: 'http://localhost:5002'
+    local: 'http://localhost:7002'
   }
 };
 

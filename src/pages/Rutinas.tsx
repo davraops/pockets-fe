@@ -91,21 +91,7 @@ function Rutinas() {
       setIsLoading(true)
       setError(null)
       const response = await api.getRoutines()
-      console.log('🔵 GET /routines - Respuesta completa:', response)
-      console.log('🔵 GET /routines - Rutinas:', response.routines)
       if (response.routines && Array.isArray(response.routines)) {
-        response.routines.forEach((routine, index) => {
-          console.log(`🔵 Rutina ${index + 1}:`, {
-            id: routine.id,
-            title: routine.title,
-            frequency: routine.frequency,
-            is_active: routine.is_active,
-            is_active_type: typeof routine.is_active,
-            days_of_week: routine.days_of_week,
-            day_of_month: routine.day_of_month,
-            scheduled_time: routine.scheduled_time,
-          })
-        })
         // Normalizar is_active: asegurar que sea boolean
         const normalizedRoutines = response.routines.map(routine => ({
           ...routine,
@@ -116,7 +102,6 @@ function Rutinas() {
         setRoutines([])
       }
     } catch (err: any) {
-      console.error('❌ Error al cargar rutinas:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al cargar las rutinas. Por favor, intenta de nuevo.'
@@ -289,9 +274,7 @@ function Rutinas() {
 
       if (selectedRoutine) {
         // Modo edición
-        console.log('🟡 PUT /routines/' + selectedRoutine.id + ' - Payload:', routineData)
         const updateResponse = await api.updateRoutine(selectedRoutine.id, routineData)
-        console.log('🟢 PUT /routines/' + selectedRoutine.id + ' - Respuesta:', updateResponse)
         
         // Recargar todas las rutinas
         await loadRoutines()
@@ -316,9 +299,7 @@ function Rutinas() {
         showNotification('Rutina actualizada exitosamente', 'success')
       } else {
         // Modo creación
-        console.log('🟢 POST /routines - Payload:', routineData)
         const createResponse = await api.createRoutine(routineData)
-        console.log('🟢 POST /routines - Respuesta:', createResponse)
         
         // Recargar todas las rutinas
         await loadRoutines()
@@ -331,7 +312,6 @@ function Rutinas() {
       setIsEditMode(false)
       showNotification('Rutina actualizada exitosamente', 'success')
     } catch (err: any) {
-      console.error('Error al actualizar rutina:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al actualizar la rutina. Por favor, intenta de nuevo.'
@@ -351,14 +331,11 @@ function Rutinas() {
 
     try {
       setIsLoading(true)
-      console.log('🔴 DELETE /routines/' + selectedRoutine.id)
-      const deleteResponse = await api.deleteRoutine(selectedRoutine.id)
-      console.log('🟢 DELETE /routines/' + selectedRoutine.id + ' - Respuesta:', deleteResponse)
+      await api.deleteRoutine(selectedRoutine.id)
       await loadRoutines()
       handleCloseDetailModal()
       showNotification('Rutina eliminada exitosamente', 'success')
     } catch (err: any) {
-      console.error('Error al eliminar rutina:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al eliminar la rutina. Por favor, intenta de nuevo.'
@@ -507,17 +484,11 @@ function Rutinas() {
       }
 
       for (const { routine, current_streak, longest_streak, completionsCount } of routinesWithStreaks) {
-        console.log('🟢 POST /routines - Creando rutina:', routine)
         const response = await api.createRoutine(routine)
-        console.log('🟢 POST /routines - Respuesta:', response)
         
         if (response.routine && response.routine.id) {
-          console.log('✅ Rutina creada:', response.routine.id, response.routine.title)
-          
           // Crear completados para generar historial
           if (completionsCount > 0) {
-            console.log(`📝 Creando ${completionsCount} completados para ${routine.title}`)
-            
             if (routine.frequency === 'daily') {
               // Rutinas diarias: crear completados consecutivos desde hoy hacia atrás
               for (let i = 0; i < completionsCount; i++) {
@@ -528,7 +499,6 @@ function Rutinas() {
                   completed_time: getTimeString(hours, minutes),
                   duration: routine.duration || null,
                 }
-                console.log(`🟢 POST /routine-completions - Día ${i} (${getDateString(i)}):`, completionData)
                 await api.createRoutineCompletion(completionData)
               }
             } else if (routine.frequency === 'weekly' && routine.days_of_week) {
@@ -546,7 +516,6 @@ function Rutinas() {
                     completed_time: getTimeString(hours, minutes),
                     duration: routine.duration || null,
                   }
-                  console.log(`🟢 POST /routine-completions - Día ${i} (${getDateString(i)}, día de semana: ${date.getDay()}):`, completionData)
                   await api.createRoutineCompletion(completionData)
                   count++
                 }
@@ -563,7 +532,6 @@ function Rutinas() {
                   completed_time: getTimeString(hours, minutes),
                   duration: routine.duration || null,
                 }
-                console.log(`🟢 POST /routine-completions - Mes ${i}:`, completionData)
                 await api.createRoutineCompletion(completionData)
               }
             }
@@ -575,12 +543,9 @@ function Rutinas() {
             current_streak,
             longest_streak,
           }
-          console.log(`🟡 PUT /routines/${response.routine.id} - Actualizando rachas:`, updateData)
           try {
-            const updateResponse = await api.updateRoutine(response.routine.id, updateData)
-            console.log(`✅ Rachas actualizadas para ${routine.title}:`, updateResponse)
+            await api.updateRoutine(response.routine.id, updateData)
           } catch (updateErr: any) {
-            console.error(`❌ Error al actualizar rachas para ${routine.title}:`, updateErr)
             // Si falla, intentar solo con title para cumplir el requisito mínimo
             await api.updateRoutine(response.routine.id, { title: routine.title })
           }
@@ -616,7 +581,6 @@ function Rutinas() {
         setIsDebugModalOpen(false)
         showNotification('Todas las rutinas y completaciones han sido eliminadas', 'success')
       } catch (err: any) {
-        console.error('Error al eliminar todas las rutinas:', err)
         const errorMessage = getTranslatedErrorMessage(
           err,
           'Error al eliminar las rutinas. Por favor, intenta de nuevo.'

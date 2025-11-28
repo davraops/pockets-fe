@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import RepeatIcon from '@mui/icons-material/Repeat'
 import TodayIcon from '@mui/icons-material/Today'
+import BookIcon from '@mui/icons-material/Book'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 
@@ -26,7 +27,7 @@ function Tiempo() {
           </button>
         </div>
 
-        <h1 className="tiempo-page-title">Tiempo</h1>
+        <h1 className="tiempo-page-title">Lifestyle</h1>
         <p className="tiempo-page-subtitle">Gestiona tus fechas y rutinas</p>
 
         {/* Lista de Secciones */}
@@ -96,6 +97,32 @@ function Tiempo() {
                 <div className="settings-row-content">
                   <span className="settings-row-title">Rutinas</span>
                   <span className="settings-row-subtitle">Gestiona tus rutinas diarias</span>
+                </div>
+                <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+
+          {/* Sección: Mi Diario */}
+          <div className="settings-section">
+            <div className="settings-section-header">Mi Diario</div>
+            <div className="settings-group">
+              <button
+                className="settings-row"
+                onClick={() => navigate('/tiempo/mi-diario')}
+                aria-label="Ir a Mi Diario"
+                type="button"
+              >
+                <div
+                  className="settings-row-icon"
+                  style={{ backgroundColor: '#AF52DE' }}
+                  aria-hidden="true"
+                >
+                  <BookIcon />
+                </div>
+                <div className="settings-row-content">
+                  <span className="settings-row-title">Mi Diario</span>
+                  <span className="settings-row-subtitle">Reflexiona sobre tus días</span>
                 </div>
                 <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
               </button>

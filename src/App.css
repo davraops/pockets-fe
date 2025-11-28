@@ -55,6 +55,7 @@
   padding: var(--spacing-xl) var(--spacing-xl);
   max-width: 90vw;
   width: fit-content;
+  min-width: fit-content;
   height: fit-content;
   max-height: 90vh;
   overflow-y: auto;
@@ -85,10 +86,28 @@
 /* Apps Grid - HIG: Layout & Spacing */
 .apps-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: var(--spacing-lg);
   justify-items: center;
   align-items: start;
+}
+
+@media (max-width: 1200px) {
+  .apps-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .apps-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .apps-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* App Icon Button - HIG: Touch Target (min 44x44px), Feedback, Accessibility */
@@ -237,6 +256,34 @@
   transform: scale(1.05);
 }
 
+/* App Icon Badge - Notification Count */
+.app-icon-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #FF3B30;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-bold);
+  font-family: var(--font-family);
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  line-height: 1;
+  letter-spacing: 0;
+  border: 2px solid var(--bg-body);
+}
+
+[data-theme='light'] .app-icon-badge {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
 /* App Name - HIG: Typography */
 .app-name {
   font-size: var(--font-size-lg);
@@ -282,14 +329,14 @@
 /* iPad-like layout for desktop - HIG: Adaptability */
 @media (min-width: 769px) {
   .glass-menu {
-    max-width: 800px;
+    max-width: 900px;
     width: fit-content;
   }
 
   .apps-grid {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: var(--spacing-xl);
-    max-width: 700px;
+    max-width: 850px;
     margin: 0 auto;
   }
 

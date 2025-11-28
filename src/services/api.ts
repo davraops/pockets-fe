@@ -49,9 +49,12 @@ class PocketsAPI {
       endpoint.startsWith('/routine-completions') ||
       endpoint.startsWith('/events') ||
       endpoint.startsWith('/notes') ||
+      endpoint.startsWith('/diary-entries') ||
+      endpoint.startsWith('/files') ||
       endpoint.startsWith('/secrets') ||
       endpoint.startsWith('/notifications') ||
-      endpoint.startsWith('/crypto-exchange-rates')
+      endpoint.startsWith('/crypto-exchange-rates') ||
+      endpoint.startsWith('/judicial-processes')
     ) {
       return 'lifestyle'
     }
@@ -1199,6 +1202,233 @@ class PocketsAPI {
   async deleteAllRoutineCompletions(routineId?: string) {
     const endpoint = routineId ? `/routine-completions?routine_id=${routineId}` : '/routine-completions'
     return this.request(endpoint, {
+      method: 'DELETE',
+    })
+  }
+
+  // Notifications (Notificaciones)
+  async getNotifications(filters?: {
+    is_read?: string
+    type?: string
+    priority?: string
+    limit?: number
+    offset?: number
+  }) {
+    const params = new URLSearchParams()
+    if (filters?.is_read !== undefined) params.append('is_read', filters.is_read)
+    if (filters?.type) params.append('type', filters.type)
+    if (filters?.priority) params.append('priority', filters.priority)
+    if (filters?.limit) params.append('limit', filters.limit.toString())
+    if (filters?.offset) params.append('offset', filters.offset.toString())
+
+    const queryString = params.toString()
+    const endpoint = queryString ? `/notifications?${queryString}` : '/notifications'
+    return this.request(endpoint, {
+      method: 'GET',
+    })
+  }
+
+  async markNotificationRead(notificationId: string, isRead: boolean = true) {
+    return this.request(`/notifications/${notificationId}/read`, {
+      method: 'PUT',
+      body: { is_read: isRead },
+    })
+  }
+
+  async markAllNotificationsRead(isRead: boolean = true) {
+    return this.request('/notifications/mark-all-read', {
+      method: 'POST',
+      body: { is_read: isRead },
+    })
+  }
+
+  async deleteNotification(notificationId: string) {
+    return this.request(`/notifications/${notificationId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllNotifications() {
+    return this.request('/notifications', {
+      method: 'DELETE',
+    })
+  }
+
+  async createNotification(data: {
+    type: string // Tipos válidos: 'general', 'routine', 'budget', 'transaction', 'judicial_process', 'system', y otros tipos específicos
+    title: string
+    message: string
+    priority?: 'low' | 'normal' | 'high' | 'urgent'
+    metadata?: any
+  }) {
+    return this.request('/notifications', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  // Diary Entries (Entradas de Diario)
+  async createDiaryEntry(data: { entry_date: string; content: string }) {
+    return this.request('/diary-entries', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getDiaryEntries(filters?: {
+    id?: string
+    date?: string
+    start_date?: string
+    end_date?: string
+  }) {
+    const params = new URLSearchParams()
+    if (filters?.id) params.append('id', filters.id)
+    if (filters?.date) params.append('date', filters.date)
+    if (filters?.start_date) params.append('start_date', filters.start_date)
+    if (filters?.end_date) params.append('end_date', filters.end_date)
+
+    const queryString = params.toString()
+    const endpoint = queryString ? `/diary-entries?${queryString}` : '/diary-entries'
+    return this.request(endpoint, {
+      method: 'GET',
+    })
+  }
+
+  async updateDiaryEntry(entryId: string, updates: { entry_date?: string; content?: string }) {
+    return this.request(`/diary-entries/${entryId}`, {
+      method: 'PUT',
+      body: updates,
+    })
+  }
+
+  async deleteDiaryEntry(entryId: string) {
+    return this.request(`/diary-entries/${entryId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  // User Files (Archivos/Documentos)
+  async uploadFile(file: File, title: string, description?: string) {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('title', title)
+    if (description) {
+      formData.append('description', description)
+    }
+
+    const service = this.getServiceForEndpoint('/files')
+    const baseURL = this.getBaseURL(service)
+    const url = `${baseURL}/files`
+    const token = this.getToken()
+
+    const config: RequestInit = {
+      method: 'POST',
+      headers: {
+        // NO incluir Content-Type, el navegador lo agregará automáticamente con el boundary
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    }
+
+    try {
+      const response = await fetch(url, config)
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          this.logout()
+          throw { response, data, isUnauthorized: true }
+        }
+        throw { response, data }
+      }
+
+      return data
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        throw error
+      }
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+      throw {
+        response: null,
+        data: { error: 'Error de conexión', details: { message: errorMessage } },
+      }
+    }
+  }
+
+  async getFiles(filters?: {
+    id?: string
+    mime_type?: string
+  }) {
+    const params = new URLSearchParams()
+    if (filters?.id) params.append('id', filters.id)
+    if (filters?.mime_type) params.append('mime_type', filters.mime_type)
+
+    const queryString = params.toString()
+    const endpoint = queryString ? `/files?${queryString}` : '/files'
+    return this.request(endpoint, {
+      method: 'GET',
+    })
+  }
+
+  async getFileDownloadUrl(fileId: string) {
+    return this.request(`/files/${fileId}`, {
+      method: 'GET',
+    })
+  }
+
+  async deleteFile(fileId: string) {
+    return this.request(`/files/${fileId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  // Judicial Processes (Procesos Judiciales) - Proxy endpoints en pockets-lifestyle
+  // Estos endpoints actúan como proxy a la API externa de la Rama Judicial de Colombia
+  // para evitar problemas de CORS y 403 Forbidden
+  async getJudicialProcesses(nombreCompleto: string, tipoPersona: 'nat' | 'jur' = 'nat', soloActivos: boolean = false, pagina: number = 1) {
+    const params = new URLSearchParams({
+      nombre: nombreCompleto,
+      tipoPersona: tipoPersona,
+      SoloActivos: soloActivos ? 'true' : 'false', // La API espera string 'true' o 'false'
+      pagina: pagina.toString(),
+    })
+
+    return await this.request(`/judicial-processes?${params.toString()}`)
+  }
+
+  async getProcessActuaciones(idProceso: number, pagina: number = 1) {
+    const params = new URLSearchParams({
+      pagina: pagina.toString(),
+    })
+
+    return await this.request(`/judicial-processes/${idProceso}/actuaciones?${params.toString()}`)
+  }
+
+  // Judicial Process Tracking (Seguimiento de Procesos Judiciales)
+  async addProcessTracking(data: {
+    id_proceso: number
+    llave_proceso: string
+    nombre_persona: string
+    despacho?: string
+    departamento?: string
+  }) {
+    return await this.request('/judicial-processes/tracking', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getProcessTracking(activeOnly: boolean = false) {
+    const params = new URLSearchParams()
+    if (activeOnly) {
+      params.append('active_only', 'true')
+    }
+    const queryString = params.toString()
+    return await this.request(`/judicial-processes/tracking${queryString ? `?${queryString}` : ''}`)
+  }
+
+  async removeProcessTracking(trackingId: string) {
+    return await this.request(`/judicial-processes/tracking/${trackingId}`, {
       method: 'DELETE',
     })
   }

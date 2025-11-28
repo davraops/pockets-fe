@@ -1,9 +1,12 @@
 import '../App.css'
-import TrendingUpIcon from '@mui/icons-material/TrendingUp'
-import BookIcon from '@mui/icons-material/Book'
-import AccessTimeIcon from '@mui/icons-material/AccessTime'
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
+import BuildIcon from '@mui/icons-material/Build'
+import SpaIcon from '@mui/icons-material/Spa'
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive'
+import GavelIcon from '@mui/icons-material/Gavel'
 import LogoutIcon from '@mui/icons-material/Logout'
 import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import { api } from '../services/api'
 
 interface App {
@@ -20,31 +23,74 @@ const apps: App[] = [
     id: '1',
     name: 'Finanzas',
     hasIcon: true,
-    Icon: TrendingUpIcon,
+    Icon: AccountBalanceIcon,
     color: '#34C759',
     path: '/finanzas',
   },
   {
     id: '2',
-    name: 'Registros',
+    name: 'Utilidades',
     hasIcon: true,
-    Icon: BookIcon,
+    Icon: BuildIcon,
     color: '#007AFF',
     path: '/registros',
   },
   {
     id: '3',
-    name: 'Tiempo',
+    name: 'Lifestyle',
     hasIcon: true,
-    Icon: AccessTimeIcon,
+    Icon: SpaIcon,
     color: '#FF9500',
     path: '/tiempo',
+  },
+  {
+    id: '4',
+    name: 'Notificaciones',
+    hasIcon: true,
+    Icon: NotificationsActiveIcon,
+    color: '#AF52DE',
+    path: '/notificaciones',
+  },
+  {
+    id: '5',
+    name: 'Justicia',
+    hasIcon: true,
+    Icon: GavelIcon,
+    color: '#5856D6',
+    path: '/justicia',
   },
   { id: 'logout', name: 'Salir', hasIcon: true, Icon: LogoutIcon, color: '#FF3B30', path: '' },
 ]
 
 function Home() {
   const navigate = useNavigate()
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  // Cargar notificaciones no leídas
+  useEffect(() => {
+    const loadUnreadNotifications = async () => {
+      try {
+        const response = await api.getNotifications()
+        // Usar unread_count de la respuesta (total de no leídas del usuario)
+        if (response.unread_count !== undefined) {
+          setUnreadCount(response.unread_count)
+        } else if (response.notifications && Array.isArray(response.notifications)) {
+          // Fallback: calcular localmente si unread_count no está disponible
+          setUnreadCount(response.notifications.filter((n: any) => !n.is_read).length)
+        } else {
+          setUnreadCount(0)
+        }
+      } catch (err) {
+        // Silenciar errores, no es crítico si falla
+        setUnreadCount(0)
+      }
+    }
+
+    loadUnreadNotifications()
+    // Actualizar cada 30 segundos
+    const interval = setInterval(loadUnreadNotifications, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   const handleAppClick = (app: App) => {
     if (app.id === 'logout') {
@@ -89,6 +135,11 @@ function Home() {
                       <IconComponent className="app-material-icon" aria-hidden="true" />
                     )}
                   </div>
+                  {app.id === '4' && unreadCount > 0 && (
+                    <span className="app-icon-badge" aria-label={`${unreadCount} notificaciones no leídas`}>
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
                 </div>
                 {app.name && (
                   <span className="app-name" id={`app-name-${app.id}`}>

@@ -23,10 +23,16 @@ import Registros from './pages/Registros'
 import Cuadernos from './pages/Cuadernos'
 import Secretos from './pages/Secretos'
 import GeneradorContrasenas from './pages/GeneradorContrasenas'
+import Calculadora from './pages/Calculadora'
+import Archivos from './pages/Archivos'
 import Tiempo from './pages/Tiempo'
 import Fechas from './pages/Fechas'
 import Rutinas from './pages/Rutinas'
 import MiDia from './pages/MiDia'
+import MiDiario from './pages/MiDiario'
+import Notificaciones from './pages/Notificaciones'
+import Justicia from './pages/Justicia'
+import Procesos from './pages/Procesos'
 import StatusBar from './components/StatusBar'
 import ProtectedRoute from './components/ProtectedRoute'
 import Footer from './components/Footer'
@@ -200,6 +206,22 @@ function AppContent() {
           }
         />
         <Route
+          path="/registros/calculadora"
+          element={
+            <ProtectedRoute>
+              <Calculadora />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/registros/archivos"
+          element={
+            <ProtectedRoute>
+              <Archivos />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/tiempo"
           element={
             <ProtectedRoute>
@@ -228,6 +250,38 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <MiDia />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tiempo/mi-diario"
+          element={
+            <ProtectedRoute>
+              <MiDiario />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notificaciones"
+          element={
+            <ProtectedRoute>
+              <Notificaciones />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/justicia"
+          element={
+            <ProtectedRoute>
+              <Justicia />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/justicia/procesos"
+          element={
+            <ProtectedRoute>
+              <Procesos />
             </ProtectedRoute>
           }
         />
