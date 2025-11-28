@@ -93,25 +93,52 @@ function MiDia() {
         end_date: today,
       })
       const completions = completionsResponse.completions || []
+      
+      // Filtrar solo completados que realmente sean de hoy (validación adicional)
+      // Normalizar fechas para comparación (remover hora si existe)
+      const todayCompletions = completions.filter((c: any) => {
+        const completionDate = c.completed_date || c.completedDate
+        if (!completionDate) return false
+        // Normalizar fecha: tomar solo la parte de fecha (YYYY-MM-DD)
+        const normalizedDate = completionDate.split('T')[0]
+        return normalizedDate === today
+      })
+      
       const completedRoutineIds = new Set(
-        completions.map((c: any) => c.routine_id)
+        todayCompletions.map((c: any) => c.routine_id)
       )
 
       // Crear eventos de hoy
       const todayEvents: RoutineEvent[] = todayRoutinesData.map((routine: RoutineAPI) => {
-        const completion = completions.find((c: any) => c.routine_id === routine.id)
+        const completion = todayCompletions.find((c: any) => c.routine_id === routine.id)
         return {
           routine,
           isCompleted: completedRoutineIds.has(routine.id),
           completionId: completion?.id,
-          completedDate: completion?.completed_date,
+          completedDate: completion?.completed_date || completion?.completedDate,
         }
       })
 
+      // Función para ordenar por hora programada
+      const sortByScheduledTime = (a: RoutineEvent, b: RoutineEvent) => {
+        const timeA = a.routine.scheduled_time || ''
+        const timeB = b.routine.scheduled_time || ''
+        
+        // Si ambas tienen hora, comparar por hora
+        if (timeA && timeB) {
+          return timeA.localeCompare(timeB)
+        }
+        // Si solo una tiene hora, la que tiene hora va primero
+        if (timeA && !timeB) return -1
+        if (!timeA && timeB) return 1
+        // Si ninguna tiene hora, mantener orden original
+        return 0
+      }
+
       // Separar pendientes y completadas
-      const pending = todayEvents.filter(e => !e.isCompleted)
-      const completed = todayEvents.filter(e => e.isCompleted)
-      // Ordenar: pendientes primero, completadas al final
+      const pending = todayEvents.filter(e => !e.isCompleted).sort(sortByScheduledTime)
+      const completed = todayEvents.filter(e => e.isCompleted).sort(sortByScheduledTime)
+      // Ordenar: pendientes primero (ordenadas por hora), completadas al final (ordenadas por hora)
       setTodayRoutines([...pending, ...completed])
 
       // Crear eventos de la semana (excluir las de hoy)
@@ -154,27 +181,77 @@ function MiDia() {
         duration: routine.duration || null,
       }
 
-      // Crear el completado
-      await api.createRoutineCompletion(completionData)
-
       // Calcular nuevos valores de racha
       const currentStreak = (routine.current_streak || 0) + 1
       const longestStreak = Math.max(routine.longest_streak || 0, currentStreak)
 
-      // Actualizar las rachas en la rutina
-      const updateData = {
-        title: routine.title, // Campo válido requerido
-        current_streak: currentStreak,
-        longest_streak: longestStreak,
+      // Guardar estado anterior para poder revertir en caso de error
+      const previousRoutines = todayRoutines
+
+      // Función para ordenar por hora programada
+      const sortByScheduledTime = (a: RoutineEvent, b: RoutineEvent) => {
+        const timeA = a.routine.scheduled_time || ''
+        const timeB = b.routine.scheduled_time || ''
+        
+        // Si ambas tienen hora, comparar por hora
+        if (timeA && timeB) {
+          return timeA.localeCompare(timeB)
+        }
+        // Si solo una tiene hora, la que tiene hora va primero
+        if (timeA && !timeB) return -1
+        if (!timeA && timeB) return 1
+        // Si ninguna tiene hora, mantener orden original
+        return 0
       }
 
-      await api.updateRoutine(routine.id, updateData)
+      // Actualización optimista: marcar como completada y actualizar racha inmediatamente
+      setTodayRoutines(prevRoutines => {
+        const updatedRoutines = prevRoutines.map(event => {
+          if (event.routine.id === routine.id) {
+            return {
+              ...event,
+              routine: {
+                ...event.routine,
+                current_streak: currentStreak,
+                longest_streak: longestStreak,
+              },
+              isCompleted: true,
+              completedDate: today,
+            }
+          }
+          return event
+        })
+        
+        // Reordenar: pendientes primero (ordenadas por hora), completadas al final (ordenadas por hora)
+        const pending = updatedRoutines.filter(e => !e.isCompleted).sort(sortByScheduledTime)
+        const completed = updatedRoutines.filter(e => e.isCompleted).sort(sortByScheduledTime)
+        return [...pending, ...completed]
+      })
 
       showNotification(`${routine.title} completada`, 'success')
-      
-      // Recargar para actualizar el estado
-      await loadRoutines()
+
+      // Enviar al backend (en segundo plano, sin bloquear la UI)
+      try {
+        await Promise.all([
+          api.createRoutineCompletion(completionData),
+          api.updateRoutine(routine.id, {
+            title: routine.title,
+            current_streak: currentStreak,
+            longest_streak: longestStreak,
+          })
+        ])
+      } catch (backendErr: any) {
+        // Si falla, revertir actualización optimista
+        setTodayRoutines(previousRoutines)
+        const errorMessage = getTranslatedErrorMessage(
+          backendErr,
+          'Error al guardar el completado. Por favor, intenta de nuevo.'
+        )
+        showNotification(errorMessage, 'error')
+      }
     } catch (err: any) {
+      // Revertir actualización optimista en caso de error
+      await loadRoutines()
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al completar la rutina. Por favor, intenta de nuevo.'
@@ -201,6 +278,19 @@ function MiDia() {
       default:
         return frequency
     }
+  }
+
+  const formatDaysOfWeek = (days: number[] | null | undefined): string => {
+    if (!days || days.length === 0) return ''
+    
+    const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+    const sortedDays = [...days].sort((a, b) => a - b)
+    return sortedDays.map(day => dayNames[day]).join(', ')
+  }
+
+  const formatDayOfMonth = (day: number | null | undefined): string => {
+    if (day === null || day === undefined) return ''
+    return `Día ${day}`
   }
 
   return (
@@ -273,6 +363,16 @@ function MiDia() {
                       <span className="midia-routine-frequency">
                         {formatFrequency(event.routine.frequency)}
                       </span>
+                      {event.routine.frequency === 'weekly' && event.routine.days_of_week && event.routine.days_of_week.length > 0 && (
+                        <span className="midia-routine-days">
+                          {formatDaysOfWeek(event.routine.days_of_week)}
+                        </span>
+                      )}
+                      {event.routine.frequency === 'monthly' && event.routine.day_of_month !== null && event.routine.day_of_month !== undefined && (
+                        <span className="midia-routine-days">
+                          {formatDayOfMonth(event.routine.day_of_month)}
+                        </span>
+                      )}
                       {event.routine.scheduled_time && (
                         <span className="midia-routine-time">
                           <AccessTimeIcon className="midia-routine-time-icon" />
@@ -331,6 +431,16 @@ function MiDia() {
                       <span className="midia-routine-frequency">
                         {formatFrequency(event.routine.frequency)}
                       </span>
+                      {event.routine.frequency === 'weekly' && event.routine.days_of_week && event.routine.days_of_week.length > 0 && (
+                        <span className="midia-routine-days">
+                          {formatDaysOfWeek(event.routine.days_of_week)}
+                        </span>
+                      )}
+                      {event.routine.frequency === 'monthly' && event.routine.day_of_month !== null && event.routine.day_of_month !== undefined && (
+                        <span className="midia-routine-days">
+                          {formatDayOfMonth(event.routine.day_of_month)}
+                        </span>
+                      )}
                       {event.routine.scheduled_time && (
                         <span className="midia-routine-time">
                           <AccessTimeIcon className="midia-routine-time-icon" />

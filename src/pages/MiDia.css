@@ -246,6 +246,15 @@
   font-weight: 600;
 }
 
+.midia-routine-days {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+}
+
 .midia-routine-time,
 .midia-routine-duration {
   display: flex;

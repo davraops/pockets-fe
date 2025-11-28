@@ -8,6 +8,8 @@ import AppPage from './pages/AppPage'
 import Finanzas from './pages/Finanzas'
 import Cuentas from './pages/Cuentas'
 import Presupuestos from './pages/Presupuestos'
+import DiseñadorPresupuestos from './pages/DiseñadorPresupuestos'
+import ListasMercado from './pages/ListasMercado'
 import Transacciones from './pages/Transacciones'
 import Deudas from './pages/Deudas'
 import TarjetasDebito from './pages/TarjetasDebito'
@@ -25,6 +27,9 @@ import Secretos from './pages/Secretos'
 import GeneradorContrasenas from './pages/GeneradorContrasenas'
 import Calculadora from './pages/Calculadora'
 import Archivos from './pages/Archivos'
+import Empleados from './pages/Empleados'
+import Vehiculos from './pages/Vehiculos'
+import Patrimonio from './pages/Patrimonio'
 import Tiempo from './pages/Tiempo'
 import Fechas from './pages/Fechas'
 import Rutinas from './pages/Rutinas'
@@ -82,6 +87,22 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <Presupuestos />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finanzas/diseñador-presupuestos"
+          element={
+            <ProtectedRoute>
+              <DiseñadorPresupuestos />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finanzas/listas-mercado"
+          element={
+            <ProtectedRoute>
+              <ListasMercado />
             </ProtectedRoute>
           }
         />
@@ -218,6 +239,30 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <Archivos />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/registros/empleados"
+          element={
+            <ProtectedRoute>
+              <Empleados />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/registros/vehiculos"
+          element={
+            <ProtectedRoute>
+              <Vehiculos />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/registros/patrimonio"
+          element={
+            <ProtectedRoute>
+              <Patrimonio />
             </ProtectedRoute>
           }
         />

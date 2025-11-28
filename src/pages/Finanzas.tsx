@@ -14,6 +14,8 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd'
 import CurrencyBitcoinIcon from '@mui/icons-material/CurrencyBitcoin'
 import TrendingDownIcon from '@mui/icons-material/TrendingDown'
 import SavingsIcon from '@mui/icons-material/Savings'
+import DesignServicesIcon from '@mui/icons-material/DesignServices'
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import AddIcon from '@mui/icons-material/Add'
@@ -42,6 +44,13 @@ const financeItems: FinanceItem[] = [
     Icon: CalculateIcon,
     color: '#007AFF',
     path: '/finanzas/presupuestos',
+  },
+  {
+    id: '2.5',
+    title: 'Diseñador',
+    Icon: DesignServicesIcon,
+    color: '#AF52DE',
+    path: '/finanzas/diseñador-presupuestos',
   },
   {
     id: '3',
@@ -396,6 +405,28 @@ function Finanzas() {
                     </div>
                     <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
                   </button>
+
+                  <button
+                    className="settings-row"
+                    onClick={() => navigate('/finanzas/diseñador-presupuestos')}
+                    aria-label="Ir a Diseñador de Presupuestos"
+                    type="button"
+                  >
+                    <div
+                      className="settings-row-icon"
+                      style={{ backgroundColor: '#AF52DE' }}
+                      aria-hidden="true"
+                    >
+                      <DesignServicesIcon />
+                    </div>
+                    <div className="settings-row-content">
+                      <span className="settings-row-title">Diseñador de Presupuestos</span>
+                      <span className="settings-row-subtitle">
+                        Diseña tus presupuestos
+                      </span>
+                    </div>
+                    <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+                  </button>
                 </div>
               </div>
 
@@ -420,6 +451,28 @@ function Finanzas() {
                       <span className="settings-row-title">Transacciones</span>
                       <span className="settings-row-subtitle">
                         {stats.totalTransacciones} registros
+                      </span>
+                    </div>
+                    <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+                  </button>
+
+                  <button
+                    className="settings-row"
+                    onClick={() => navigate('/finanzas/listas-mercado')}
+                    aria-label="Ir a Listas de Mercado"
+                    type="button"
+                  >
+                    <div
+                      className="settings-row-icon"
+                      style={{ backgroundColor: '#34C759' }}
+                      aria-hidden="true"
+                    >
+                      <ShoppingCartIcon />
+                    </div>
+                    <div className="settings-row-content">
+                      <span className="settings-row-title">Listas de Mercado</span>
+                      <span className="settings-row-subtitle">
+                        Gestiona tus compras
                       </span>
                     </div>
                     <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />

@@ -54,7 +54,11 @@ class PocketsAPI {
       endpoint.startsWith('/secrets') ||
       endpoint.startsWith('/notifications') ||
       endpoint.startsWith('/crypto-exchange-rates') ||
-      endpoint.startsWith('/judicial-processes')
+      endpoint.startsWith('/judicial-processes') ||
+      endpoint.startsWith('/shopping-lists') ||
+      endpoint.startsWith('/employees') ||
+      endpoint.startsWith('/vehicles') ||
+      endpoint.startsWith('/patrimony')
     ) {
       return 'lifestyle'
     }
@@ -386,6 +390,47 @@ class PocketsAPI {
   async recalculateBudget(budgetId: string) {
     return this.request(`/budgets/${budgetId}/recalculate`, {
       method: 'POST',
+    })
+  }
+
+  // Budget Drafts
+  async createBudgetDraft(data: {
+    name: string
+    data: any // JSON object
+  }) {
+    return this.request('/budget-drafts', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getBudgetDrafts(draftId: string | null = null) {
+    const endpoint = draftId ? `/budget-drafts?id=${draftId}` : '/budget-drafts'
+    return this.request(endpoint)
+  }
+
+  async updateBudgetDraft(
+    draftId: string,
+    updates: {
+      name?: string
+      data?: any
+    }
+  ) {
+    return this.request(`/budget-drafts/${draftId}`, {
+      method: 'PUT',
+      body: updates,
+    })
+  }
+
+  async deleteBudgetDraft(draftId: string) {
+    return this.request(`/budget-drafts/${draftId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllBudgetDrafts() {
+    return this.request('/budget-drafts', {
+      method: 'DELETE',
     })
   }
 
@@ -1429,6 +1474,167 @@ class PocketsAPI {
 
   async removeProcessTracking(trackingId: string) {
     return await this.request(`/judicial-processes/tracking/${trackingId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  // Shopping Lists (Listas de Mercado)
+  async createShoppingList(data: {
+    name: string
+    data: any // JSON object
+  }) {
+    return this.request('/shopping-lists', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getShoppingLists(listId: string | null = null) {
+    const endpoint = listId ? `/shopping-lists?id=${listId}` : '/shopping-lists'
+    return this.request(endpoint)
+  }
+
+  async updateShoppingList(
+    listId: string,
+    updates: {
+      name?: string
+      data?: any
+    }
+  ) {
+    return this.request(`/shopping-lists/${listId}`, {
+      method: 'PUT',
+      body: updates,
+    })
+  }
+
+  async deleteShoppingList(listId: string) {
+    return this.request(`/shopping-lists/${listId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllShoppingLists() {
+    return this.request('/shopping-lists', {
+      method: 'DELETE',
+    })
+  }
+
+  // Employees
+  async createEmployee(data: {
+    name: string
+    data: any // JSON object
+  }) {
+    return this.request('/employees', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getEmployees(employeeId: string | null = null) {
+    const endpoint = employeeId ? `/employees?id=${employeeId}` : '/employees'
+    return this.request(endpoint, {
+      method: 'GET',
+    })
+  }
+
+  async updateEmployee(employeeId: string, data: {
+    name?: string
+    data?: any // JSON object
+  }) {
+    return this.request(`/employees/${employeeId}`, {
+      method: 'PUT',
+      body: data,
+    })
+  }
+
+  async deleteEmployee(employeeId: string) {
+    return this.request(`/employees/${employeeId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllEmployees() {
+    return this.request('/employees', {
+      method: 'DELETE',
+    })
+  }
+
+  // Vehicles
+  async createVehicle(data: {
+    name: string
+    data: any // JSON object
+  }) {
+    return this.request('/vehicles', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getVehicles(vehicleId: string | null = null) {
+    const endpoint = vehicleId ? `/vehicles?id=${vehicleId}` : '/vehicles'
+    return this.request(endpoint, {
+      method: 'GET',
+    })
+  }
+
+  async updateVehicle(vehicleId: string, data: {
+    name?: string
+    data?: any // JSON object
+  }) {
+    return this.request(`/vehicles/${vehicleId}`, {
+      method: 'PUT',
+      body: data,
+    })
+  }
+
+  async deleteVehicle(vehicleId: string) {
+    return this.request(`/vehicles/${vehicleId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllVehicles() {
+    return this.request('/vehicles', {
+      method: 'DELETE',
+    })
+  }
+
+  // Patrimony
+  async createPatrimonyItem(data: {
+    name: string
+    data: any // JSON object
+  }) {
+    return this.request('/patrimony', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getPatrimony(itemId: string | null = null) {
+    const endpoint = itemId ? `/patrimony?id=${itemId}` : '/patrimony'
+    return this.request(endpoint, {
+      method: 'GET',
+    })
+  }
+
+  async updatePatrimonyItem(itemId: string, data: {
+    name?: string
+    data?: any // JSON object
+  }) {
+    return this.request(`/patrimony/${itemId}`, {
+      method: 'PUT',
+      body: data,
+    })
+  }
+
+  async deletePatrimonyItem(itemId: string) {
+    return this.request(`/patrimony/${itemId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllPatrimony() {
+    return this.request('/patrimony', {
       method: 'DELETE',
     })
   }

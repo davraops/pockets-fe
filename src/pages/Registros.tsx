@@ -8,6 +8,9 @@ import LockIcon from '@mui/icons-material/Lock'
 import VpnKeyIcon from '@mui/icons-material/VpnKey'
 import CalculateIcon from '@mui/icons-material/Calculate'
 import FolderIcon from '@mui/icons-material/Folder'
+import PeopleIcon from '@mui/icons-material/People'
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar'
+import InventoryIcon from '@mui/icons-material/Inventory'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 
@@ -99,6 +102,63 @@ function Registros() {
                 <div className="settings-row-content">
                   <span className="settings-row-title">Archivos</span>
                   <span className="settings-row-subtitle">Gestiona tus documentos</span>
+                </div>
+                <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+              </button>
+              <button
+                className="settings-row"
+                onClick={() => navigate('/registros/empleados')}
+                aria-label="Ir a Empleados"
+                type="button"
+              >
+                <div
+                  className="settings-row-icon"
+                  style={{ backgroundColor: '#FF9500' }}
+                  aria-hidden="true"
+                >
+                  <PeopleIcon />
+                </div>
+                <div className="settings-row-content">
+                  <span className="settings-row-title">Empleados</span>
+                  <span className="settings-row-subtitle">Gestiona información de empleados</span>
+                </div>
+                <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+              </button>
+              <button
+                className="settings-row"
+                onClick={() => navigate('/registros/vehiculos')}
+                aria-label="Ir a Vehículos"
+                type="button"
+              >
+                <div
+                  className="settings-row-icon"
+                  style={{ backgroundColor: '#5856D6' }}
+                  aria-hidden="true"
+                >
+                  <DirectionsCarIcon />
+                </div>
+                <div className="settings-row-content">
+                  <span className="settings-row-title">Vehículos</span>
+                  <span className="settings-row-subtitle">Gestiona información de vehículos</span>
+                </div>
+                <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+              </button>
+              <button
+                className="settings-row"
+                onClick={() => navigate('/registros/patrimonio')}
+                aria-label="Ir a Patrimonio"
+                type="button"
+              >
+                <div
+                  className="settings-row-icon"
+                  style={{ backgroundColor: '#FF9500' }}
+                  aria-hidden="true"
+                >
+                  <InventoryIcon />
+                </div>
+                <div className="settings-row-content">
+                  <span className="settings-row-title">Patrimonio</span>
+                  <span className="settings-row-subtitle">Gestiona inventario de items valiosos</span>
                 </div>
                 <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
               </button>

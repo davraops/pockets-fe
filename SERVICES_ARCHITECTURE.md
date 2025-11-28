@@ -15,6 +15,7 @@ El proyecto Pockets está dividido en **3 servicios Serverless independientes** 
 - Autenticación (register, login)
 - Cuentas bancarias (CRUD + recalculate balance)
 - Presupuestos (CRUD completo con soft delete, restore, reset, recalculate)
+- Borradores de Presupuestos (CRUD para guardar drafts en formato JSON)
 - Transacciones (CRUD)
 - Tasas de cambio fiat (USD/EUR)
 
@@ -26,6 +27,7 @@ El proyecto Pockets está dividido en **3 servicios Serverless independientes** 
 - `register`, `login`, `updateUserDetails` (nuevo - actualizar detalles de usuario)
 - `createBankAccount`, `getBankAccounts`, `updateBankAccount`, `deleteBankAccount`, `deleteAllBankAccounts`, `recalculateBalance`
 - `createBudget`, `getBudgets`, `updateBudget`, `deleteBudget`, `deleteAllBudgets`, `restoreBudget`, `hardDeleteBudget`, `hardDeleteAllBudgets`, `recalculateBudget`, `resetBudgets`, `resetBudget`
+- `createBudgetDraft`, `getBudgetDrafts`, `updateBudgetDraft`, `deleteBudgetDraft`, `deleteAllBudgetDrafts` (nuevo - borradores de presupuestos)
 - `createTransaction`, `getTransactions`, `deleteTransaction`, `deleteAllTransactions`
 - `createExchangeRate`, `getExchangeRates`, `syncExchangeRates`
 
@@ -48,6 +50,7 @@ El proyecto Pockets está dividido en **3 servicios Serverless independientes** 
 - `POST /budgets/{id}/recalculate`
 - `POST /budgets/reset`
 - `POST /budgets/{id}/reset`
+- `POST /budget-drafts`, `GET /budget-drafts`, `PUT /budget-drafts/{id}`, `DELETE /budget-drafts/{id}`, `DELETE /budget-drafts` (nuevo - borradores de presupuestos)
 - `POST /transactions`
 - `GET /transactions`
 - `DELETE /transactions/all`
@@ -103,7 +106,7 @@ El proyecto Pockets está dividido en **3 servicios Serverless independientes** 
 ### 3. **pockets-lifestyle** (Rutinas y Estilo de Vida)
 **Archivo:** `serverless-lifestyle.yml`  
 **Puerto Local:** 7002 (desarrollo offline)  
-**Funciones:** 32
+**Funciones:** 62
 
 **Responsabilidades:**
 - Rutinas y completaciones
@@ -112,6 +115,12 @@ El proyecto Pockets está dividido en **3 servicios Serverless independientes** 
 - Diario (entradas diarias) - Sistema simple con fecha y contenido
 - Archivos/Documentos - Sistema de subida y gestión de archivos en S3 (PDFs, documentos, < 25MB)
 - Procesos Judiciales - Endpoints proxy para consultar procesos desde la API de la Rama Judicial de Colombia, con sistema de seguimiento automático y notificaciones
+- Listas de Mercado - Sistema simple para guardar listas de compras en formato JSON
+- Empleados - Sistema simple para guardar registros de empleados en formato JSON
+- Crypto Vendors - Sistema simple para guardar vendedores que aceptan criptomonedas en formato JSON
+- Vehículos - Sistema simple para guardar información de vehículos en formato JSON
+- Patrimonio - Sistema simple para guardar items valiosos del patrimonio en formato JSON (fecha de compra, valor de compra, etc.)
+- Contratos - Sistema simple para guardar contratos activos en formato JSON (fecha inicio, fecha fin, valor, partes, términos, etc.)
 - Secretos
 - Notificaciones - Sistema completo de notificaciones con filtros y paginación
 - Funciones programadas (scheduled)
@@ -133,6 +142,12 @@ El proyecto Pockets está dividido en **3 servicios Serverless independientes** 
 - `getJudicialProcesses`, `getJudicialProcessActuaciones` (proxy para procesos judiciales)
 - `createJudicialProcessTracking`, `getJudicialProcessTracking`, `deleteJudicialProcessTracking` (nuevo - seguimiento de procesos)
 - `checkJudicialProcessActuaciones` (scheduled - diario 3 AM UTC-5 para verificar nuevas actuaciones)
+- `createShoppingList`, `getShoppingLists`, `updateShoppingList`, `deleteShoppingList`, `deleteAllShoppingLists` (nuevo - listas de mercado)
+- `createEmployee`, `getEmployees`, `updateEmployee`, `deleteEmployee`, `deleteAllEmployees` (nuevo - empleados)
+- `createCryptoVendor`, `getCryptoVendors`, `updateCryptoVendor`, `deleteCryptoVendor`, `deleteAllCryptoVendors` (nuevo - vendedores que aceptan cripto)
+- `createVehicle`, `getVehicles`, `updateVehicle`, `deleteVehicle`, `deleteAllVehicles` (nuevo - vehículos)
+- `createPatrimony`, `getPatrimony`, `updatePatrimony`, `deletePatrimony`, `deleteAllPatrimony` (nuevo - patrimonio/items valiosos)
+- `createContract`, `getContracts`, `updateContract`, `deleteContract`, `deleteAllContracts` (nuevo - contratos activos)
 - `createSecret`, `getSecrets`, `updateSecret`, `verifySecret`, `getSecretValue`, `deleteSecret`, `deleteAllSecrets`
 - `createNotification`, `getNotifications`, `markNotificationRead`, `deleteNotification`, `markAllNotificationsRead`, `deleteAllNotifications` (createNotification nuevo)
 
@@ -146,6 +161,12 @@ El proyecto Pockets está dividido en **3 servicios Serverless independientes** 
 - `POST /files`, `GET /files`, `GET /files/{id}`, `DELETE /files/{id}` (gestión de archivos)
 - `GET /judicial-processes`, `GET /judicial-processes/{idProceso}/actuaciones` (procesos judiciales)
 - `POST /judicial-processes/tracking`, `GET /judicial-processes/tracking`, `DELETE /judicial-processes/tracking/{id}` (nuevo - seguimiento de procesos)
+- `POST /shopping-lists`, `GET /shopping-lists`, `PUT /shopping-lists/{id}`, `DELETE /shopping-lists/{id}`, `DELETE /shopping-lists` (nuevo - listas de mercado)
+- `POST /employees`, `GET /employees`, `PUT /employees/{id}`, `DELETE /employees/{id}`, `DELETE /employees` (nuevo - empleados)
+- `POST /crypto-vendors`, `GET /crypto-vendors`, `PUT /crypto-vendors/{id}`, `DELETE /crypto-vendors/{id}`, `DELETE /crypto-vendors` (nuevo - vendedores que aceptan cripto)
+- `POST /vehicles`, `GET /vehicles`, `PUT /vehicles/{id}`, `DELETE /vehicles/{id}`, `DELETE /vehicles` (nuevo - vehículos)
+- `POST /patrimony`, `GET /patrimony`, `PUT /patrimony/{id}`, `DELETE /patrimony/{id}`, `DELETE /patrimony` (nuevo - patrimonio/items valiosos)
+- `POST /contracts`, `GET /contracts`, `PUT /contracts/{id}`, `DELETE /contracts/{id}`, `DELETE /contracts` (nuevo - contratos activos)
 - `POST /secrets`, `GET /secrets`, `PUT /secrets/{id}`, `POST /secrets/{id}/verify`, `POST /secrets/{id}/value`, `DELETE /secrets/{id}`, `DELETE /secrets`
 - `POST /notifications`, `GET /notifications`, `PUT /notifications/{id}/read`, `DELETE /notifications/{id}`, `POST /notifications/mark-all-read`, `DELETE /notifications`
 
@@ -237,7 +258,7 @@ const LIFESTYLE_API = process.env.NODE_ENV === 'production'
 |----------|-----------|-----------------|-------------|
 | **pockets-core** | 26 | ~150-200 | Funciones financieras principales y autenticación |
 | **pockets-financial** | 39 | ~200-250 | Activos y pasivos financieros |
-| **pockets-lifestyle** | 36 | ~200-250 | Rutinas, eventos, notas, diario, archivos, secretos, notificaciones |
+| **pockets-lifestyle** | 62 | ~200-250 | Rutinas, eventos, notas, diario, archivos, listas de mercado, empleados, crypto vendors, vehículos, patrimonio, contratos, secretos, notificaciones |
 | **Total** | **97** | **~530-670** | Todos los servicios combinados |
 
 ---

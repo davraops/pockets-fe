@@ -50,7 +50,7 @@ const response = await fetch(`${API_CORE}/bank-accounts`, {
 
 | Servicio | Endpoints | Puerto Local |
 |----------|-----------|--------------|
-| **pockets-core** | `/auth/*`, `/bank-accounts/*`, `/budgets/*`, `/transactions/*`, `/exchange-rates/*` | 5000 |
+| **pockets-core** | `/auth/*`, `/bank-accounts/*`, `/budgets/*`, `/budget-drafts/*`, `/transactions/*`, `/exchange-rates/*`, `/user-details` | 7000 |
 | **pockets-financial** | `/debts/*`, `/debtors/*`, `/cards/*`, `/credit-cards/*`, `/subscriptions/*`, `/cryptocurrencies/*`, `/wallets/*`, `/cdts/*`, `/projects/*` | 5001 |
 | **pockets-lifestyle** | `/routines/*`, `/routine-completions/*`, `/events/*`, `/notes/*`, `/diary-entries/*`, `/files/*`, `/judicial-processes/*`, `/secrets/*`, `/notifications/*`, `/crypto-exchange-rates/*` | 7002 |
 
@@ -795,6 +795,2488 @@ const resetBudget = async (budgetId) => {
   return response.json();
 };
 ```
+
+---
+
+### Budget Drafts (Borradores de Presupuestos)
+**🔵 Servicio: pockets-core** | **URL Base:** `API_CORE`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-core`. Usa `API_CORE` como URL base.
+
+Sistema simple para guardar borradores de presupuestos en formato JSON. Permite almacenar cualquier estructura JSON que ayude a diseñar presupuestos antes de crearlos.
+
+#### POST /budget-drafts
+Crear un nuevo borrador de presupuesto.
+
+**URL:** `POST ${API_CORE}/budget-drafts`
+
+**Ejemplo JavaScript:**
+```javascript
+const createBudgetDraft = async (draftData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_CORE}/budget-drafts`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(draftData)
+  });
+  return response.json();
+};
+
+// Crear un borrador
+await createBudgetDraft({
+  name: 'Presupuesto Enero 2024',
+  data: {
+    categories: [
+      { name: 'Alimentación', amount: 500000 },
+      { name: 'Transporte', amount: 200000 },
+      { name: 'Entretenimiento', amount: 150000 }
+    ],
+    total: 850000,
+    notes: 'Presupuesto preliminar'
+  }
+});
+```
+
+**Request Body:**
+```json
+{
+  "name": "Presupuesto Enero 2024",
+  "data": {
+    "categories": [
+      { "name": "Alimentación", "amount": 500000 },
+      { "name": "Transporte", "amount": 200000 }
+    ],
+    "total": 700000,
+    "notes": "Presupuesto preliminar"
+  }
+}
+```
+
+**Campos Requeridos:**
+- `name` (string) - Nombre/título del borrador
+- `data` (object) - Objeto JSON con los datos del borrador (cualquier estructura válida)
+
+**Response (201):**
+```json
+{
+  "message": "Budget draft created successfully",
+  "draft": {
+    "id": "uuid-here",
+    "name": "Presupuesto Enero 2024",
+    "data": {
+      "categories": [
+        { "name": "Alimentación", "amount": 500000 },
+        { "name": "Transporte", "amount": 200000 }
+      ],
+      "total": 700000,
+      "notes": "Presupuesto preliminar"
+    },
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+**Errores:**
+- `400`: Campos requeridos faltantes, `name` vacío, `data` no es un objeto válido
+- `401`: Token de autenticación inválido o faltante
+- `500`: Error al crear el borrador
+
+---
+
+#### GET /budget-drafts
+Obtener borradores de presupuestos del usuario.
+
+**URL:** `GET ${API_CORE}/budget-drafts`
+
+**Query Parameters (opcionales):**
+- `id` (string) - Obtener borrador específico por ID
+
+**Ejemplo JavaScript:**
+```javascript
+const getBudgetDrafts = async (draftId = null) => {
+  const token = localStorage.getItem('authToken');
+  const url = draftId 
+    ? `${API_CORE}/budget-drafts?id=${draftId}`
+    : `${API_CORE}/budget-drafts`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todos los borradores
+const allDrafts = await getBudgetDrafts();
+
+// Obtener borrador específico
+const draft = await getBudgetDrafts('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "drafts": [
+    {
+      "id": "uuid-here",
+      "name": "Presupuesto Enero 2024",
+      "data": {
+        "categories": [
+          { "name": "Alimentación", "amount": 500000 },
+          { "name": "Transporte", "amount": 200000 }
+        ],
+        "total": 700000,
+        "notes": "Presupuesto preliminar"
+      },
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-15T10:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+#### PUT /budget-drafts/{id}
+Actualizar un borrador de presupuesto existente.
+
+**URL:** `PUT ${API_CORE}/budget-drafts/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const updateBudgetDraft = async (draftId, updates) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_CORE}/budget-drafts/${draftId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(updates)
+  });
+  return response.json();
+};
+
+// Actualizar solo el nombre
+await updateBudgetDraft('uuid-here', {
+  name: 'Presupuesto Enero 2024 (Actualizado)'
+});
+
+// Actualizar solo los datos
+await updateBudgetDraft('uuid-here', {
+  data: {
+    categories: [
+      { name: 'Alimentación', amount: 600000 },
+      { name: 'Transporte', amount: 250000 }
+    ],
+    total: 850000
+  }
+});
+
+// Actualizar ambos
+await updateBudgetDraft('uuid-here', {
+  name: 'Presupuesto Enero 2024 (Final)',
+  data: {
+    categories: [
+      { name: 'Alimentación', amount: 600000 },
+      { name: 'Transporte', amount: 250000 }
+    ],
+    total: 850000
+  }
+});
+```
+
+**Request Body:**
+```json
+{
+  "name": "Presupuesto Enero 2024 (Actualizado)",
+  "data": {
+    "categories": [
+      { "name": "Alimentación", "amount": 600000 }
+    ],
+    "total": 600000
+  }
+}
+```
+
+**Campos Opcionales (puedes actualizar uno o ambos):**
+- `name` (string) - Nuevo nombre del borrador
+- `data` (object) - Nuevos datos JSON del borrador
+
+**Response (200):**
+```json
+{
+  "message": "Budget draft updated successfully",
+  "draft": {
+    "id": "uuid-here",
+    "name": "Presupuesto Enero 2024 (Actualizado)",
+    "data": {
+      "categories": [
+        { "name": "Alimentación", "amount": 600000 }
+      ],
+      "total": 600000
+    },
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T15:45:00Z"
+  }
+}
+```
+
+**Errores:**
+- `400`: ID faltante, `name` vacío, `data` no es un objeto válido, ningún campo para actualizar
+- `401`: Token de autenticación inválido o faltante
+- `404`: Borrador no encontrado o no pertenece al usuario
+- `500`: Error al actualizar el borrador
+
+---
+
+#### DELETE /budget-drafts/{id}
+Eliminar un borrador de presupuesto específico.
+
+**URL:** `DELETE ${API_CORE}/budget-drafts/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteBudgetDraft = async (draftId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_CORE}/budget-drafts/${draftId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Eliminar borrador
+await deleteBudgetDraft('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "message": "Budget draft deleted successfully",
+  "deleted_draft": {
+    "id": "uuid-here",
+    "name": "Presupuesto Enero 2024"
+  }
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+#### DELETE /budget-drafts
+Eliminar todos los borradores de presupuestos del usuario.
+
+**URL:** `DELETE ${API_CORE}/budget-drafts`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllBudgetDrafts = async () => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_CORE}/budget-drafts`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Eliminar todos los borradores
+await deleteAllBudgetDrafts();
+```
+
+**Response (200):**
+```json
+{
+  "message": "All budget drafts deleted successfully",
+  "deleted_count": 5
+}
+```
+
+**⚠️ Advertencia:** Esta operación elimina todos los borradores del usuario y es irreversible.
+
+---
+
+### Shopping Lists (Listas de Mercado)
+**🟢 Servicio: pockets-lifestyle** | **URL Base:** `API_LIFESTYLE`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-lifestyle`. Usa `API_LIFESTYLE` como URL base.
+
+Sistema simple para guardar listas de mercado en formato JSON. Permite almacenar cualquier estructura JSON que represente una lista de compras (items, categorías, cantidades, etc.).
+
+#### POST /shopping-lists
+Crear una nueva lista de mercado.
+
+**URL:** `POST ${API_LIFESTYLE}/shopping-lists`
+
+**Ejemplo JavaScript:**
+```javascript
+const createShoppingList = async (listData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/shopping-lists`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(listData)
+  });
+  return response.json();
+};
+
+// Crear una lista de mercado
+await createShoppingList({
+  name: 'Lista Semanal',
+  data: {
+    items: [
+      { name: 'Leche', quantity: 2, category: 'Lácteos', checked: false },
+      { name: 'Pan', quantity: 1, category: 'Panadería', checked: false },
+      { name: 'Huevos', quantity: 12, category: 'Lácteos', checked: false }
+    ],
+    store: 'Supermercado',
+    notes: 'Comprar antes del viernes'
+  }
+});
+```
+
+**Request Body:**
+```json
+{
+  "name": "Lista Semanal",
+  "data": {
+    "items": [
+      { "name": "Leche", "quantity": 2, "category": "Lácteos", "checked": false },
+      { "name": "Pan", "quantity": 1, "category": "Panadería", "checked": false }
+    ],
+    "store": "Supermercado",
+    "notes": "Comprar antes del viernes"
+  }
+}
+```
+
+**Campos Requeridos:**
+- `name` (string) - Nombre/título de la lista
+- `data` (object) - Objeto JSON con los datos de la lista (cualquier estructura válida)
+
+**Response (201):**
+```json
+{
+  "message": "Shopping list created successfully",
+  "list": {
+    "id": "uuid-here",
+    "name": "Lista Semanal",
+    "data": {
+      "items": [
+        { "name": "Leche", "quantity": 2, "category": "Lácteos", "checked": false }
+      ],
+      "store": "Supermercado",
+      "notes": "Comprar antes del viernes"
+    },
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+**Errores:**
+- `400`: Campos requeridos faltantes, `name` vacío, `data` no es un objeto válido
+- `401`: Token de autenticación inválido o faltante
+- `500`: Error al crear la lista
+
+---
+
+#### GET /shopping-lists
+Obtener listas de mercado del usuario.
+
+**URL:** `GET ${API_LIFESTYLE}/shopping-lists`
+
+**Query Parameters (opcionales):**
+- `id` (string) - Obtener lista específica por ID
+
+**Ejemplo JavaScript:**
+```javascript
+const getShoppingLists = async (listId = null) => {
+  const token = localStorage.getItem('authToken');
+  const url = listId 
+    ? `${API_LIFESTYLE}/shopping-lists?id=${listId}`
+    : `${API_LIFESTYLE}/shopping-lists`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todas las listas
+const allLists = await getShoppingLists();
+
+// Obtener lista específica
+const list = await getShoppingLists('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "lists": [
+    {
+      "id": "uuid-here",
+      "name": "Lista Semanal",
+      "data": {
+        "items": [
+          { "name": "Leche", "quantity": 2, "category": "Lácteos", "checked": false }
+        ],
+        "store": "Supermercado",
+        "notes": "Comprar antes del viernes"
+      },
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-15T10:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+#### PUT /shopping-lists/{id}
+Actualizar una lista de mercado existente.
+
+**URL:** `PUT ${API_LIFESTYLE}/shopping-lists/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const updateShoppingList = async (listId, updates) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/shopping-lists/${listId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(updates)
+  });
+  return response.json();
+};
+
+// Actualizar solo el nombre
+await updateShoppingList('uuid-here', {
+  name: 'Lista Semanal (Actualizada)'
+});
+
+// Actualizar solo los datos
+await updateShoppingList('uuid-here', {
+  data: {
+    items: [
+      { name: 'Leche', quantity: 2, category: 'Lácteos', checked: true },
+      { name: 'Pan', quantity: 1, category: 'Panadería', checked: false }
+    ],
+    store: 'Supermercado',
+    notes: 'Comprar antes del viernes'
+  }
+});
+
+// Actualizar ambos
+await updateShoppingList('uuid-here', {
+  name: 'Lista Semanal (Final)',
+  data: {
+    items: [
+      { name: 'Leche', quantity: 2, category: 'Lácteos', checked: true }
+    ],
+    store: 'Supermercado'
+  }
+});
+```
+
+**Request Body:**
+```json
+{
+  "name": "Lista Semanal (Actualizada)",
+  "data": {
+    "items": [
+      { "name": "Leche", "quantity": 2, "category": "Lácteos", "checked": true }
+    ],
+    "store": "Supermercado"
+  }
+}
+```
+
+**Campos Opcionales (puedes actualizar uno o ambos):**
+- `name` (string) - Nuevo nombre de la lista
+- `data` (object) - Nuevos datos JSON de la lista
+
+**Response (200):**
+```json
+{
+  "message": "Shopping list updated successfully",
+  "list": {
+    "id": "uuid-here",
+    "name": "Lista Semanal (Actualizada)",
+    "data": {
+      "items": [
+        { "name": "Leche", "quantity": 2, "category": "Lácteos", "checked": true }
+      ],
+      "store": "Supermercado"
+    },
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T15:45:00Z"
+  }
+}
+```
+
+**Errores:**
+- `400`: ID faltante, `name` vacío, `data` no es un objeto válido, ningún campo para actualizar
+- `401`: Token de autenticación inválido o faltante
+- `404`: Lista no encontrada o no pertenece al usuario
+- `500`: Error al actualizar la lista
+
+---
+
+#### DELETE /shopping-lists/{id}
+Eliminar una lista de mercado específica.
+
+**URL:** `DELETE ${API_LIFESTYLE}/shopping-lists/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteShoppingList = async (listId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/shopping-lists/${listId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Eliminar lista
+await deleteShoppingList('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "message": "Shopping list deleted successfully",
+  "deleted_list": {
+    "id": "uuid-here",
+    "name": "Lista Semanal"
+  }
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+#### DELETE /shopping-lists
+Eliminar todas las listas de mercado del usuario.
+
+**URL:** `DELETE ${API_LIFESTYLE}/shopping-lists`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllShoppingLists = async () => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/shopping-lists`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Eliminar todas las listas
+await deleteAllShoppingLists();
+```
+
+**Response (200):**
+```json
+{
+  "message": "All shopping lists deleted successfully",
+  "deleted_count": 5
+}
+```
+
+**⚠️ Advertencia:** Esta operación elimina todas las listas del usuario y es irreversible.
+
+---
+
+### Employees (Empleados)
+**🟢 Servicio: pockets-lifestyle** | **URL Base:** `API_LIFESTYLE`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-lifestyle`. Usa `API_LIFESTYLE` como URL base.
+
+Sistema simple para guardar registros de empleados en formato JSON. Permite almacenar cualquier estructura JSON que represente información de empleados (datos personales, salario, cargo, fechas, etc.).
+
+#### POST /employees
+Crear un nuevo registro de empleado.
+
+**URL:** `POST ${API_LIFESTYLE}/employees`
+
+**Ejemplo JavaScript:**
+```javascript
+const createEmployee = async (employeeData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/employees`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(employeeData)
+  });
+  return response.json();
+};
+
+// Crear un registro de empleado
+await createEmployee({
+  name: 'Juan Pérez',
+  data: {
+    identification: '1234567890',
+    position: 'Desarrollador Senior',
+    salary: 5000000,
+    startDate: '2024-01-15',
+    department: 'Tecnología',
+    email: 'juan.perez@empresa.com',
+    phone: '+57 300 123 4567',
+    address: 'Calle 123 #45-67',
+    emergencyContact: {
+      name: 'María Pérez',
+      phone: '+57 300 987 6543',
+      relationship: 'Esposa'
+    }
+  }
+});
+```
+
+**Request Body:**
+```json
+{
+  "name": "Juan Pérez",
+  "data": {
+    "identification": "1234567890",
+    "position": "Desarrollador Senior",
+    "salary": 5000000,
+    "startDate": "2024-01-15",
+    "department": "Tecnología",
+    "email": "juan.perez@empresa.com",
+    "phone": "+57 300 123 4567",
+    "address": "Calle 123 #45-67",
+    "emergencyContact": {
+      "name": "María Pérez",
+      "phone": "+57 300 987 6543",
+      "relationship": "Esposa"
+    }
+  }
+}
+```
+
+**Campos Requeridos:**
+- `name` (string) - Nombre/título del registro de empleado
+- `data` (object) - Objeto JSON con los datos del empleado (cualquier estructura válida)
+
+**Response (201):**
+```json
+{
+  "message": "Employee created successfully",
+  "employee": {
+    "id": "uuid-here",
+    "name": "Juan Pérez",
+    "data": {
+      "identification": "1234567890",
+      "position": "Desarrollador Senior",
+      "salary": 5000000,
+      "startDate": "2024-01-15",
+      "department": "Tecnología",
+      "email": "juan.perez@empresa.com",
+      "phone": "+57 300 123 4567",
+      "address": "Calle 123 #45-67",
+      "emergencyContact": {
+        "name": "María Pérez",
+        "phone": "+57 300 987 6543",
+        "relationship": "Esposa"
+      }
+    },
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+**Errores:**
+- `400`: Campos requeridos faltantes, `name` vacío, `data` no es un objeto válido
+- `401`: Token de autenticación inválido o faltante
+- `500`: Error al crear el empleado
+
+---
+
+#### GET /employees
+Obtener registros de empleados del usuario.
+
+**URL:** `GET ${API_LIFESTYLE}/employees`
+
+**Query Parameters (opcionales):**
+- `id` (string) - Obtener empleado específico por ID
+
+**Ejemplo JavaScript:**
+```javascript
+const getEmployees = async (employeeId = null) => {
+  const token = localStorage.getItem('authToken');
+  const url = employeeId 
+    ? `${API_LIFESTYLE}/employees?id=${employeeId}`
+    : `${API_LIFESTYLE}/employees`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todos los empleados
+const allEmployees = await getEmployees();
+
+// Obtener empleado específico
+const employee = await getEmployees('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "employees": [
+    {
+      "id": "uuid-here",
+      "name": "Juan Pérez",
+      "data": {
+        "identification": "1234567890",
+        "position": "Desarrollador Senior",
+        "salary": 5000000,
+        "startDate": "2024-01-15",
+        "department": "Tecnología"
+      },
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-15T10:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+#### PUT /employees/{id}
+Actualizar un registro de empleado existente.
+
+**URL:** `PUT ${API_LIFESTYLE}/employees/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const updateEmployee = async (employeeId, updates) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/employees/${employeeId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(updates)
+  });
+  return response.json();
+};
+
+// Actualizar solo el nombre
+await updateEmployee('uuid-here', {
+  name: 'Juan Pérez (Actualizado)'
+});
+
+// Actualizar solo los datos
+await updateEmployee('uuid-here', {
+  data: {
+    identification: '1234567890',
+    position: 'Desarrollador Lead',
+    salary: 6000000,
+    startDate: '2024-01-15',
+    department: 'Tecnología'
+  }
+});
+
+// Actualizar ambos
+await updateEmployee('uuid-here', {
+  name: 'Juan Pérez (Actualizado)',
+  data: {
+    identification: '1234567890',
+    position: 'Desarrollador Lead',
+    salary: 6000000
+  }
+});
+```
+
+**Request Body:**
+```json
+{
+  "name": "Juan Pérez (Actualizado)",
+  "data": {
+    "identification": "1234567890",
+    "position": "Desarrollador Lead",
+    "salary": 6000000,
+    "startDate": "2024-01-15",
+    "department": "Tecnología"
+  }
+}
+```
+
+**Campos Opcionales (puedes actualizar uno o ambos):**
+- `name` (string) - Nuevo nombre del registro
+- `data` (object) - Nuevos datos JSON del empleado
+
+**Response (200):**
+```json
+{
+  "message": "Employee updated successfully",
+  "employee": {
+    "id": "uuid-here",
+    "name": "Juan Pérez (Actualizado)",
+    "data": {
+      "identification": "1234567890",
+      "position": "Desarrollador Lead",
+      "salary": 6000000,
+      "startDate": "2024-01-15",
+      "department": "Tecnología"
+    },
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T15:45:00Z"
+  }
+}
+```
+
+**Errores:**
+- `400`: ID faltante, `name` vacío, `data` no es un objeto válido, ningún campo para actualizar
+- `401`: Token de autenticación inválido o faltante
+- `404`: Empleado no encontrado o no pertenece al usuario
+- `500`: Error al actualizar el empleado
+
+---
+
+#### DELETE /employees/{id}
+Eliminar un registro de empleado específico.
+
+**URL:** `DELETE ${API_LIFESTYLE}/employees/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteEmployee = async (employeeId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/employees/${employeeId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Eliminar empleado
+await deleteEmployee('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "message": "Employee deleted successfully",
+  "deleted_employee": {
+    "id": "uuid-here",
+    "name": "Juan Pérez"
+  }
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+#### DELETE /employees
+Eliminar todos los registros de empleados del usuario.
+
+**URL:** `DELETE ${API_LIFESTYLE}/employees`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllEmployees = async () => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/employees`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Eliminar todos los empleados
+await deleteAllEmployees();
+```
+
+**Response (200):**
+```json
+{
+  "message": "All employees deleted successfully",
+  "deleted_count": 5
+}
+```
+
+**⚠️ Advertencia:** Esta operación elimina todos los registros de empleados del usuario y es irreversible.
+
+---
+
+### Crypto Vendors (Vendedores que Aceptan Criptomonedas)
+**🟢 Servicio: pockets-lifestyle** | **URL Base:** `API_LIFESTYLE`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-lifestyle`. Usa `API_LIFESTYLE` como URL base.
+
+Sistema simple para guardar registros de vendedores que aceptan pagos con criptomonedas en formato JSON. Permite almacenar cualquier estructura JSON que represente información de vendedores (contacto, criptomonedas aceptadas, direcciones de wallet, etc.).
+
+#### POST /crypto-vendors
+Crear un nuevo registro de vendedor que acepta criptomonedas.
+
+**URL:** `POST ${API_LIFESTYLE}/crypto-vendors`
+
+**Ejemplo JavaScript:**
+```javascript
+const createCryptoVendor = async (vendorData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/crypto-vendors`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(vendorData)
+  });
+  return response.json();
+};
+
+// Crear un registro de vendedor
+await createCryptoVendor({
+  name: 'Tienda de Electrónica XYZ',
+  data: {
+    contact: {
+      name: 'Carlos Rodríguez',
+      email: 'carlos@tiendaxyz.com',
+      phone: '+57 300 123 4567',
+      address: 'Calle 100 #50-30, Bogotá'
+    },
+    acceptedCryptocurrencies: ['BTC', 'ETH', 'USDT'],
+    wallets: {
+      BTC: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+      ETH: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
+      USDT: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb'
+    },
+    businessType: 'Retail',
+    notes: 'Acepta pagos en cripto desde $50.000 COP',
+    discount: {
+      percentage: 5,
+      minAmount: 100000
+    }
+  }
+});
+```
+
+**Request Body:**
+```json
+{
+  "name": "Tienda de Electrónica XYZ",
+  "data": {
+    "contact": {
+      "name": "Carlos Rodríguez",
+      "email": "carlos@tiendaxyz.com",
+      "phone": "+57 300 123 4567",
+      "address": "Calle 100 #50-30, Bogotá"
+    },
+    "acceptedCryptocurrencies": ["BTC", "ETH", "USDT"],
+    "wallets": {
+      "BTC": "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+      "ETH": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
+      "USDT": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+    },
+    "businessType": "Retail",
+    "notes": "Acepta pagos en cripto desde $50.000 COP",
+    "discount": {
+      "percentage": 5,
+      "minAmount": 100000
+    }
+  }
+}
+```
+
+**Campos Requeridos:**
+- `name` (string) - Nombre/título del vendedor
+- `data` (object) - Objeto JSON con los datos del vendedor (cualquier estructura válida)
+
+**Response (201):**
+```json
+{
+  "message": "Crypto vendor created successfully",
+  "vendor": {
+    "id": "uuid-here",
+    "name": "Tienda de Electrónica XYZ",
+    "data": {
+      "contact": {
+        "name": "Carlos Rodríguez",
+        "email": "carlos@tiendaxyz.com",
+        "phone": "+57 300 123 4567",
+        "address": "Calle 100 #50-30, Bogotá"
+      },
+      "acceptedCryptocurrencies": ["BTC", "ETH", "USDT"],
+      "wallets": {
+        "BTC": "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+        "ETH": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
+        "USDT": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+      },
+      "businessType": "Retail",
+      "notes": "Acepta pagos en cripto desde $50.000 COP",
+      "discount": {
+        "percentage": 5,
+        "minAmount": 100000
+      }
+    },
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+**Errores:**
+- `400`: Campos requeridos faltantes, `name` vacío, `data` no es un objeto válido
+- `401`: Token de autenticación inválido o faltante
+- `500`: Error al crear el vendedor
+
+---
+
+#### GET /crypto-vendors
+Obtener registros de vendedores que aceptan criptomonedas del usuario.
+
+**URL:** `GET ${API_LIFESTYLE}/crypto-vendors`
+
+**Query Parameters (opcionales):**
+- `id` (string) - Obtener vendedor específico por ID
+
+**Ejemplo JavaScript:**
+```javascript
+const getCryptoVendors = async (vendorId = null) => {
+  const token = localStorage.getItem('authToken');
+  const url = vendorId 
+    ? `${API_LIFESTYLE}/crypto-vendors?id=${vendorId}`
+    : `${API_LIFESTYLE}/crypto-vendors`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todos los vendedores
+const allVendors = await getCryptoVendors();
+
+// Obtener vendedor específico
+const vendor = await getCryptoVendors('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "vendors": [
+    {
+      "id": "uuid-here",
+      "name": "Tienda de Electrónica XYZ",
+      "data": {
+        "contact": {
+          "name": "Carlos Rodríguez",
+          "email": "carlos@tiendaxyz.com",
+          "phone": "+57 300 123 4567"
+        },
+        "acceptedCryptocurrencies": ["BTC", "ETH", "USDT"],
+        "wallets": {
+          "BTC": "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+          "ETH": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+        },
+        "businessType": "Retail"
+      },
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-15T10:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+#### PUT /crypto-vendors/{id}
+Actualizar un registro de vendedor existente.
+
+**URL:** `PUT ${API_LIFESTYLE}/crypto-vendors/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const updateCryptoVendor = async (vendorId, updates) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/crypto-vendors/${vendorId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(updates)
+  });
+  return response.json();
+};
+
+// Actualizar solo el nombre
+await updateCryptoVendor('uuid-here', {
+  name: 'Tienda de Electrónica XYZ (Actualizada)'
+});
+
+// Actualizar solo los datos
+await updateCryptoVendor('uuid-here', {
+  data: {
+    contact: {
+      name: 'Carlos Rodríguez',
+      email: 'carlos.nuevo@tiendaxyz.com',
+      phone: '+57 300 123 4567'
+    },
+    acceptedCryptocurrencies: ['BTC', 'ETH', 'USDT', 'BNB'],
+    wallets: {
+      BTC: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+      ETH: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
+      USDT: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
+      BNB: 'bnb1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh'
+    }
+  }
+});
+
+// Actualizar ambos
+await updateCryptoVendor('uuid-here', {
+  name: 'Tienda de Electrónica XYZ (Actualizada)',
+  data: {
+    contact: {
+      name: 'Carlos Rodríguez',
+      email: 'carlos.nuevo@tiendaxyz.com'
+    },
+    acceptedCryptocurrencies: ['BTC', 'ETH', 'USDT', 'BNB']
+  }
+});
+```
+
+**Request Body:**
+```json
+{
+  "name": "Tienda de Electrónica XYZ (Actualizada)",
+  "data": {
+    "contact": {
+      "name": "Carlos Rodríguez",
+      "email": "carlos.nuevo@tiendaxyz.com",
+      "phone": "+57 300 123 4567"
+    },
+    "acceptedCryptocurrencies": ["BTC", "ETH", "USDT", "BNB"],
+    "wallets": {
+      "BTC": "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+      "ETH": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
+      "USDT": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
+      "BNB": "bnb1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
+    }
+  }
+}
+```
+
+**Campos Opcionales (puedes actualizar uno o ambos):**
+- `name` (string) - Nuevo nombre del vendedor
+- `data` (object) - Nuevos datos JSON del vendedor
+
+**Response (200):**
+```json
+{
+  "message": "Crypto vendor updated successfully",
+  "vendor": {
+    "id": "uuid-here",
+    "name": "Tienda de Electrónica XYZ (Actualizada)",
+    "data": {
+      "contact": {
+        "name": "Carlos Rodríguez",
+        "email": "carlos.nuevo@tiendaxyz.com",
+        "phone": "+57 300 123 4567"
+      },
+      "acceptedCryptocurrencies": ["BTC", "ETH", "USDT", "BNB"],
+      "wallets": {
+        "BTC": "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+        "ETH": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
+        "USDT": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
+        "BNB": "bnb1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
+      }
+    },
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T15:45:00Z"
+  }
+}
+```
+
+**Errores:**
+- `400`: ID faltante, `name` vacío, `data` no es un objeto válido, ningún campo para actualizar
+- `401`: Token de autenticación inválido o faltante
+- `404`: Vendedor no encontrado o no pertenece al usuario
+- `500`: Error al actualizar el vendedor
+
+---
+
+#### DELETE /crypto-vendors/{id}
+Eliminar un registro de vendedor específico.
+
+**URL:** `DELETE ${API_LIFESTYLE}/crypto-vendors/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteCryptoVendor = async (vendorId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/crypto-vendors/${vendorId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Eliminar vendedor
+await deleteCryptoVendor('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "message": "Crypto vendor deleted successfully",
+  "deleted_vendor": {
+    "id": "uuid-here",
+    "name": "Tienda de Electrónica XYZ"
+  }
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+#### DELETE /crypto-vendors
+Eliminar todos los registros de vendedores del usuario.
+
+**URL:** `DELETE ${API_LIFESTYLE}/crypto-vendors`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllCryptoVendors = async () => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/crypto-vendors`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Eliminar todos los vendedores
+await deleteAllCryptoVendors();
+```
+
+**Response (200):**
+```json
+{
+  "message": "All crypto vendors deleted successfully",
+  "deleted_count": 5
+}
+```
+
+**⚠️ Advertencia:** Esta operación elimina todos los registros de vendedores del usuario y es irreversible.
+
+---
+
+### Vehicles (Vehículos)
+**🟢 Servicio: pockets-lifestyle** | **URL Base:** `API_LIFESTYLE`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-lifestyle`. Usa `API_LIFESTYLE` como URL base.
+
+Sistema simple para guardar información de vehículos en formato JSON. Permite almacenar cualquier estructura JSON que represente información de vehículos (marca, modelo, placa, año, mantenimientos, seguros, etc.).
+
+#### POST /vehicles
+Crear un nuevo registro de vehículo.
+
+**URL:** `POST ${API_LIFESTYLE}/vehicles`
+
+**Ejemplo JavaScript:**
+```javascript
+const createVehicle = async (vehicleData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/vehicles`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(vehicleData)
+  });
+  return response.json();
+};
+
+// Crear un registro de vehículo
+await createVehicle({
+  name: 'Mi Carro Principal',
+  data: {
+    type: 'Automóvil',
+    brand: 'Toyota',
+    model: 'Corolla',
+    year: 2020,
+    plate: 'ABC123',
+    color: 'Blanco',
+    vin: '1HGBH41JXMN109186',
+    mileage: 45000,
+    fuelType: 'Gasolina',
+    insurance: {
+      company: 'Seguros XYZ',
+      policyNumber: 'POL-123456',
+      expirationDate: '2024-12-31',
+      coverage: 'Todo Riesgo'
+    },
+    maintenance: {
+      lastService: '2024-01-15',
+      nextService: '2024-07-15',
+      serviceInterval: 10000
+    },
+    documents: {
+      soat: {
+        number: 'SOAT-789012',
+        expiration: '2024-12-31'
+      },
+      technicalReview: {
+        number: 'RT-345678',
+        expiration: '2025-06-30'
+      }
+    },
+    notes: 'Vehículo en buen estado, mantenimiento al día'
+  }
+});
+```
+
+**Request Body:**
+```json
+{
+  "name": "Mi Carro Principal",
+  "data": {
+    "type": "Automóvil",
+    "brand": "Toyota",
+    "model": "Corolla",
+    "year": 2020,
+    "plate": "ABC123",
+    "color": "Blanco",
+    "vin": "1HGBH41JXMN109186",
+    "mileage": 45000,
+    "fuelType": "Gasolina",
+    "insurance": {
+      "company": "Seguros XYZ",
+      "policyNumber": "POL-123456",
+      "expirationDate": "2024-12-31",
+      "coverage": "Todo Riesgo"
+    },
+    "maintenance": {
+      "lastService": "2024-01-15",
+      "nextService": "2024-07-15",
+      "serviceInterval": 10000
+    },
+    "documents": {
+      "soat": {
+        "number": "SOAT-789012",
+        "expiration": "2024-12-31"
+      },
+      "technicalReview": {
+        "number": "RT-345678",
+        "expiration": "2025-06-30"
+      }
+    },
+    "notes": "Vehículo en buen estado, mantenimiento al día"
+  }
+}
+```
+
+**Campos Requeridos:**
+- `name` (string) - Nombre/título del vehículo
+- `data` (object) - Objeto JSON con los datos del vehículo (cualquier estructura válida)
+
+**Response (201):**
+```json
+{
+  "message": "Vehicle created successfully",
+  "vehicle": {
+    "id": "uuid-here",
+    "name": "Mi Carro Principal",
+    "data": {
+      "type": "Automóvil",
+      "brand": "Toyota",
+      "model": "Corolla",
+      "year": 2020,
+      "plate": "ABC123",
+      "color": "Blanco",
+      "vin": "1HGBH41JXMN109186",
+      "mileage": 45000,
+      "fuelType": "Gasolina",
+      "insurance": {
+        "company": "Seguros XYZ",
+        "policyNumber": "POL-123456",
+        "expirationDate": "2024-12-31",
+        "coverage": "Todo Riesgo"
+      },
+      "maintenance": {
+        "lastService": "2024-01-15",
+        "nextService": "2024-07-15",
+        "serviceInterval": 10000
+      },
+      "documents": {
+        "soat": {
+          "number": "SOAT-789012",
+          "expiration": "2024-12-31"
+        },
+        "technicalReview": {
+          "number": "RT-345678",
+          "expiration": "2025-06-30"
+        }
+      },
+      "notes": "Vehículo en buen estado, mantenimiento al día"
+    },
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+**Errores:**
+- `400`: Campos requeridos faltantes, `name` vacío, `data` no es un objeto válido
+- `401`: Token de autenticación inválido o faltante
+- `500`: Error al crear el vehículo
+
+---
+
+#### GET /vehicles
+Obtener registros de vehículos del usuario.
+
+**URL:** `GET ${API_LIFESTYLE}/vehicles`
+
+**Query Parameters (opcionales):**
+- `id` (string) - Obtener vehículo específico por ID
+
+**Ejemplo JavaScript:**
+```javascript
+const getVehicles = async (vehicleId = null) => {
+  const token = localStorage.getItem('authToken');
+  const url = vehicleId 
+    ? `${API_LIFESTYLE}/vehicles?id=${vehicleId}`
+    : `${API_LIFESTYLE}/vehicles`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todos los vehículos
+const allVehicles = await getVehicles();
+
+// Obtener vehículo específico
+const vehicle = await getVehicles('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "vehicles": [
+    {
+      "id": "uuid-here",
+      "name": "Mi Carro Principal",
+      "data": {
+        "type": "Automóvil",
+        "brand": "Toyota",
+        "model": "Corolla",
+        "year": 2020,
+        "plate": "ABC123",
+        "color": "Blanco",
+        "mileage": 45000
+      },
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-15T10:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+#### PUT /vehicles/{id}
+Actualizar un registro de vehículo existente.
+
+**URL:** `PUT ${API_LIFESTYLE}/vehicles/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const updateVehicle = async (vehicleId, updates) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/vehicles/${vehicleId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(updates)
+  });
+  return response.json();
+};
+
+// Actualizar solo el nombre
+await updateVehicle('uuid-here', {
+  name: 'Mi Carro Principal (Actualizado)'
+});
+
+// Actualizar solo los datos (ej: actualizar kilometraje)
+await updateVehicle('uuid-here', {
+  data: {
+    type: 'Automóvil',
+    brand: 'Toyota',
+    model: 'Corolla',
+    year: 2020,
+    plate: 'ABC123',
+    mileage: 48000, // Actualizado
+    maintenance: {
+      lastService: '2024-03-15',
+      nextService: '2024-09-15',
+      serviceInterval: 10000
+    }
+  }
+});
+
+// Actualizar ambos
+await updateVehicle('uuid-here', {
+  name: 'Mi Carro Principal (Actualizado)',
+  data: {
+    mileage: 48000,
+    maintenance: {
+      lastService: '2024-03-15',
+      nextService: '2024-09-15'
+    }
+  }
+});
+```
+
+**Request Body:**
+```json
+{
+  "name": "Mi Carro Principal (Actualizado)",
+  "data": {
+    "mileage": 48000,
+    "maintenance": {
+      "lastService": "2024-03-15",
+      "nextService": "2024-09-15",
+      "serviceInterval": 10000
+    }
+  }
+}
+```
+
+**Campos Opcionales (puedes actualizar uno o ambos):**
+- `name` (string) - Nuevo nombre del vehículo
+- `data` (object) - Nuevos datos JSON del vehículo
+
+**Response (200):**
+```json
+{
+  "message": "Vehicle updated successfully",
+  "vehicle": {
+    "id": "uuid-here",
+    "name": "Mi Carro Principal (Actualizado)",
+    "data": {
+      "mileage": 48000,
+      "maintenance": {
+        "lastService": "2024-03-15",
+        "nextService": "2024-09-15",
+        "serviceInterval": 10000
+      }
+    },
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-03-20T15:45:00Z"
+  }
+}
+```
+
+**Errores:**
+- `400`: ID faltante, `name` vacío, `data` no es un objeto válido, ningún campo para actualizar
+- `401`: Token de autenticación inválido o faltante
+- `404`: Vehículo no encontrado o no pertenece al usuario
+- `500`: Error al actualizar el vehículo
+
+---
+
+#### DELETE /vehicles/{id}
+Eliminar un registro de vehículo específico.
+
+**URL:** `DELETE ${API_LIFESTYLE}/vehicles/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteVehicle = async (vehicleId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/vehicles/${vehicleId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Eliminar vehículo
+await deleteVehicle('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "message": "Vehicle deleted successfully",
+  "deleted_vehicle": {
+    "id": "uuid-here",
+    "name": "Mi Carro Principal"
+  }
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+#### DELETE /vehicles
+Eliminar todos los registros de vehículos del usuario.
+
+**URL:** `DELETE ${API_LIFESTYLE}/vehicles`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllVehicles = async () => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/vehicles`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Eliminar todos los vehículos
+await deleteAllVehicles();
+```
+
+**Response (200):**
+```json
+{
+  "message": "All vehicles deleted successfully",
+  "deleted_count": 3
+}
+```
+
+**⚠️ Advertencia:** Esta operación elimina todos los registros de vehículos del usuario y es irreversible.
+
+---
+
+### Patrimony (Patrimonio - Items Valiosos)
+**🟢 Servicio: pockets-lifestyle** | **URL Base:** `API_LIFESTYLE`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-lifestyle`. Usa `API_LIFESTYLE` como URL base.
+
+Sistema simple para guardar información de items valiosos del patrimonio en formato JSON. Permite almacenar cualquier estructura JSON que represente bienes valiosos (fecha de compra, valor de compra, descripción, categoría, etc.).
+
+#### POST /patrimony
+Crear un nuevo item de patrimonio.
+
+**URL:** `POST ${API_LIFESTYLE}/patrimony`
+
+**Ejemplo JavaScript:**
+```javascript
+const createPatrimonyItem = async (itemData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/patrimony`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(itemData)
+  });
+  return response.json();
+};
+
+// Crear un item de patrimonio
+await createPatrimonyItem({
+  name: 'Reloj Rolex Submariner',
+  data: {
+    category: 'Relojes',
+    purchaseDate: '2020-05-15',
+    purchaseValue: 15000000, // En COP
+    currency: 'COP',
+    description: 'Reloj Rolex Submariner Date, referencia 126610LN',
+    brand: 'Rolex',
+    model: 'Submariner Date',
+    serialNumber: 'M126610LN-0001',
+    condition: 'Excelente',
+    currentValue: 18000000, // Valor actual estimado
+    location: 'Casa',
+    insurance: {
+      company: 'Seguros XYZ',
+      policyNumber: 'POL-REL-001',
+      coverage: 20000000
+    },
+    photos: ['url1', 'url2'],
+    notes: 'Reloj adquirido en tienda oficial Rolex'
+  }
+});
+```
+
+**Request Body:**
+```json
+{
+  "name": "Reloj Rolex Submariner",
+  "data": {
+    "category": "Relojes",
+    "purchaseDate": "2020-05-15",
+    "purchaseValue": 15000000,
+    "currency": "COP",
+    "description": "Reloj Rolex Submariner Date, referencia 126610LN",
+    "brand": "Rolex",
+    "model": "Submariner Date",
+    "serialNumber": "M126610LN-0001",
+    "condition": "Excelente",
+    "currentValue": 18000000,
+    "location": "Casa",
+    "insurance": {
+      "company": "Seguros XYZ",
+      "policyNumber": "POL-REL-001",
+      "coverage": 20000000
+    },
+    "photos": ["url1", "url2"],
+    "notes": "Reloj adquirido en tienda oficial Rolex"
+  }
+}
+```
+
+**Campos Requeridos:**
+- `name` (string) - Nombre/título del item
+- `data` (object) - Objeto JSON con los datos del item (cualquier estructura válida, típicamente incluye `purchaseDate` y `purchaseValue`)
+
+**Response (201):**
+```json
+{
+  "message": "Patrimony item created successfully",
+  "item": {
+    "id": "uuid-here",
+    "name": "Reloj Rolex Submariner",
+    "data": {
+      "category": "Relojes",
+      "purchaseDate": "2020-05-15",
+      "purchaseValue": 15000000,
+      "currency": "COP",
+      "description": "Reloj Rolex Submariner Date, referencia 126610LN",
+      "brand": "Rolex",
+      "model": "Submariner Date",
+      "serialNumber": "M126610LN-0001",
+      "condition": "Excelente",
+      "currentValue": 18000000,
+      "location": "Casa",
+      "insurance": {
+        "company": "Seguros XYZ",
+        "policyNumber": "POL-REL-001",
+        "coverage": 20000000
+      },
+      "photos": ["url1", "url2"],
+      "notes": "Reloj adquirido en tienda oficial Rolex"
+    },
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+**Errores:**
+- `400`: Campos requeridos faltantes, `name` vacío, `data` no es un objeto válido
+- `401`: Token de autenticación inválido o faltante
+- `500`: Error al crear el item
+
+---
+
+#### GET /patrimony
+Obtener items de patrimonio del usuario.
+
+**URL:** `GET ${API_LIFESTYLE}/patrimony`
+
+**Query Parameters (opcionales):**
+- `id` (string) - Obtener item específico por ID
+
+**Ejemplo JavaScript:**
+```javascript
+const getPatrimony = async (itemId = null) => {
+  const token = localStorage.getItem('authToken');
+  const url = itemId 
+    ? `${API_LIFESTYLE}/patrimony?id=${itemId}`
+    : `${API_LIFESTYLE}/patrimony`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todos los items
+const allItems = await getPatrimony();
+
+// Obtener item específico
+const item = await getPatrimony('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "items": [
+    {
+      "id": "uuid-here",
+      "name": "Reloj Rolex Submariner",
+      "data": {
+        "category": "Relojes",
+        "purchaseDate": "2020-05-15",
+        "purchaseValue": 15000000,
+        "currency": "COP",
+        "description": "Reloj Rolex Submariner Date",
+        "brand": "Rolex",
+        "model": "Submariner Date",
+        "currentValue": 18000000
+      },
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-15T10:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+#### PUT /patrimony/{id}
+Actualizar un item de patrimonio existente.
+
+**URL:** `PUT ${API_LIFESTYLE}/patrimony/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const updatePatrimonyItem = async (itemId, updates) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/patrimony/${itemId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(updates)
+  });
+  return response.json();
+};
+
+// Actualizar solo el nombre
+await updatePatrimonyItem('uuid-here', {
+  name: 'Reloj Rolex Submariner (Actualizado)'
+});
+
+// Actualizar solo los datos (ej: actualizar valor actual)
+await updatePatrimonyItem('uuid-here', {
+  data: {
+    category: 'Relojes',
+    purchaseDate: '2020-05-15',
+    purchaseValue: 15000000,
+    currency: 'COP',
+    currentValue: 20000000, // Valor actualizado
+    condition: 'Excelente',
+    location: 'Caja fuerte'
+  }
+});
+
+// Actualizar ambos
+await updatePatrimonyItem('uuid-here', {
+  name: 'Reloj Rolex Submariner (Actualizado)',
+  data: {
+    currentValue: 20000000,
+    condition: 'Excelente',
+    location: 'Caja fuerte'
+  }
+});
+```
+
+**Request Body:**
+```json
+{
+  "name": "Reloj Rolex Submariner (Actualizado)",
+  "data": {
+    "currentValue": 20000000,
+    "condition": "Excelente",
+    "location": "Caja fuerte"
+  }
+}
+```
+
+**Campos Opcionales (puedes actualizar uno o ambos):**
+- `name` (string) - Nuevo nombre del item
+- `data` (object) - Nuevos datos JSON del item
+
+**Response (200):**
+```json
+{
+  "message": "Patrimony item updated successfully",
+  "item": {
+    "id": "uuid-here",
+    "name": "Reloj Rolex Submariner (Actualizado)",
+    "data": {
+      "currentValue": 20000000,
+      "condition": "Excelente",
+      "location": "Caja fuerte"
+    },
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-03-20T15:45:00Z"
+  }
+}
+```
+
+**Errores:**
+- `400`: ID faltante, `name` vacío, `data` no es un objeto válido, ningún campo para actualizar
+- `401`: Token de autenticación inválido o faltante
+- `404`: Item no encontrado o no pertenece al usuario
+- `500`: Error al actualizar el item
+
+---
+
+#### DELETE /patrimony/{id}
+Eliminar un item de patrimonio específico.
+
+**URL:** `DELETE ${API_LIFESTYLE}/patrimony/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deletePatrimonyItem = async (itemId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/patrimony/${itemId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Eliminar item
+await deletePatrimonyItem('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "message": "Patrimony item deleted successfully",
+  "deleted_item": {
+    "id": "uuid-here",
+    "name": "Reloj Rolex Submariner"
+  }
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+#### DELETE /patrimony
+Eliminar todos los items de patrimonio del usuario.
+
+**URL:** `DELETE ${API_LIFESTYLE}/patrimony`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllPatrimony = async () => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/patrimony`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Eliminar todos los items
+await deleteAllPatrimony();
+```
+
+**Response (200):**
+```json
+{
+  "message": "All patrimony items deleted successfully",
+  "deleted_count": 10
+}
+```
+
+**⚠️ Advertencia:** Esta operación elimina todos los items de patrimonio del usuario y es irreversible.
+
+---
+
+### Contracts (Contratos Activos)
+**🟢 Servicio: pockets-lifestyle** | **URL Base:** `API_LIFESTYLE`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-lifestyle`. Usa `API_LIFESTYLE` como URL base.
+
+Sistema simple para guardar información de contratos activos en formato JSON. Permite almacenar cualquier estructura JSON que represente contratos (fecha inicio, fecha fin, valor, partes involucradas, términos, renovaciones, etc.).
+
+#### POST /contracts
+Crear un nuevo contrato.
+
+**URL:** `POST ${API_LIFESTYLE}/contracts`
+
+**Ejemplo JavaScript:**
+```javascript
+const createContract = async (contractData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/contracts`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(contractData)
+  });
+  return response.json();
+};
+
+// Crear un contrato
+await createContract({
+  name: 'Contrato de Arrendamiento Apartamento',
+  data: {
+    type: 'Arrendamiento',
+    startDate: '2024-01-01',
+    endDate: '2024-12-31',
+    monthlyValue: 2000000, // En COP
+    currency: 'COP',
+    parties: {
+      landlord: {
+        name: 'Juan Pérez',
+        identification: '1234567890',
+        contact: {
+          phone: '+57 300 123 4567',
+          email: 'juan.perez@email.com'
+        }
+      },
+      tenant: {
+        name: 'Rafael Avella',
+        identification: '9876543210'
+      }
+    },
+    property: {
+      address: 'Calle 123 #45-67, Bogotá',
+      type: 'Apartamento',
+      area: 80, // m²
+      rooms: 3
+    },
+    terms: {
+      deposit: 4000000, // 2 meses
+      paymentDay: 5, // Día del mes
+      includesUtilities: false,
+      petsAllowed: false
+    },
+    renewal: {
+      automatic: false,
+      noticeDays: 30
+    },
+    documents: {
+      contractNumber: 'CON-2024-001',
+      fileUrl: 'https://example.com/contract.pdf'
+    },
+    notes: 'Contrato renovable anualmente'
+  }
+});
+```
+
+**Request Body:**
+```json
+{
+  "name": "Contrato de Arrendamiento Apartamento",
+  "data": {
+    "type": "Arrendamiento",
+    "startDate": "2024-01-01",
+    "endDate": "2024-12-31",
+    "monthlyValue": 2000000,
+    "currency": "COP",
+    "parties": {
+      "landlord": {
+        "name": "Juan Pérez",
+        "identification": "1234567890",
+        "contact": {
+          "phone": "+57 300 123 4567",
+          "email": "juan.perez@email.com"
+        }
+      },
+      "tenant": {
+        "name": "Rafael Avella",
+        "identification": "9876543210"
+      }
+    },
+    "property": {
+      "address": "Calle 123 #45-67, Bogotá",
+      "type": "Apartamento",
+      "area": 80,
+      "rooms": 3
+    },
+    "terms": {
+      "deposit": 4000000,
+      "paymentDay": 5,
+      "includesUtilities": false,
+      "petsAllowed": false
+    },
+    "renewal": {
+      "automatic": false,
+      "noticeDays": 30
+    },
+    "documents": {
+      "contractNumber": "CON-2024-001",
+      "fileUrl": "https://example.com/contract.pdf"
+    },
+    "notes": "Contrato renovable anualmente"
+  }
+}
+```
+
+**Campos Requeridos:**
+- `name` (string) - Nombre/título del contrato
+- `data` (object) - Objeto JSON con los datos del contrato (cualquier estructura válida)
+
+**Response (201):**
+```json
+{
+  "message": "Contract created successfully",
+  "contract": {
+    "id": "uuid-here",
+    "name": "Contrato de Arrendamiento Apartamento",
+    "data": {
+      "type": "Arrendamiento",
+      "startDate": "2024-01-01",
+      "endDate": "2024-12-31",
+      "monthlyValue": 2000000,
+      "currency": "COP",
+      "parties": {
+        "landlord": {
+          "name": "Juan Pérez",
+          "identification": "1234567890",
+          "contact": {
+            "phone": "+57 300 123 4567",
+            "email": "juan.perez@email.com"
+          }
+        },
+        "tenant": {
+          "name": "Rafael Avella",
+          "identification": "9876543210"
+        }
+      },
+      "property": {
+        "address": "Calle 123 #45-67, Bogotá",
+        "type": "Apartamento",
+        "area": 80,
+        "rooms": 3
+      },
+      "terms": {
+        "deposit": 4000000,
+        "paymentDay": 5,
+        "includesUtilities": false,
+        "petsAllowed": false
+      },
+      "renewal": {
+        "automatic": false,
+        "noticeDays": 30
+      },
+      "documents": {
+        "contractNumber": "CON-2024-001",
+        "fileUrl": "https://example.com/contract.pdf"
+      },
+      "notes": "Contrato renovable anualmente"
+    },
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+**Errores:**
+- `400`: Campos requeridos faltantes, `name` vacío, `data` no es un objeto válido
+- `401`: Token de autenticación inválido o faltante
+- `500`: Error al crear el contrato
+
+---
+
+#### GET /contracts
+Obtener contratos del usuario.
+
+**URL:** `GET ${API_LIFESTYLE}/contracts`
+
+**Query Parameters (opcionales):**
+- `id` (string) - Obtener contrato específico por ID
+
+**Ejemplo JavaScript:**
+```javascript
+const getContracts = async (contractId = null) => {
+  const token = localStorage.getItem('authToken');
+  const url = contractId 
+    ? `${API_LIFESTYLE}/contracts?id=${contractId}`
+    : `${API_LIFESTYLE}/contracts`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todos los contratos
+const allContracts = await getContracts();
+
+// Obtener contrato específico
+const contract = await getContracts('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "contracts": [
+    {
+      "id": "uuid-here",
+      "name": "Contrato de Arrendamiento Apartamento",
+      "data": {
+        "type": "Arrendamiento",
+        "startDate": "2024-01-01",
+        "endDate": "2024-12-31",
+        "monthlyValue": 2000000,
+        "currency": "COP",
+        "parties": {
+          "landlord": {
+            "name": "Juan Pérez",
+            "identification": "1234567890"
+          },
+          "tenant": {
+            "name": "Rafael Avella",
+            "identification": "9876543210"
+          }
+        },
+        "property": {
+          "address": "Calle 123 #45-67, Bogotá",
+          "type": "Apartamento"
+        }
+      },
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-15T10:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+#### PUT /contracts/{id}
+Actualizar un contrato existente.
+
+**URL:** `PUT ${API_LIFESTYLE}/contracts/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const updateContract = async (contractId, updates) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/contracts/${contractId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(updates)
+  });
+  return response.json();
+};
+
+// Actualizar solo el nombre
+await updateContract('uuid-here', {
+  name: 'Contrato de Arrendamiento Apartamento (Renovado)'
+});
+
+// Actualizar solo los datos (ej: extender fecha de fin)
+await updateContract('uuid-here', {
+  data: {
+    type: 'Arrendamiento',
+    startDate: '2024-01-01',
+    endDate: '2025-12-31', // Extendido
+    monthlyValue: 2100000, // Aumento
+    currency: 'COP',
+    renewal: {
+      automatic: true,
+      noticeDays: 30
+    }
+  }
+});
+
+// Actualizar ambos
+await updateContract('uuid-here', {
+  name: 'Contrato de Arrendamiento Apartamento (Renovado)',
+  data: {
+    endDate: '2025-12-31',
+    monthlyValue: 2100000
+  }
+});
+```
+
+**Request Body:**
+```json
+{
+  "name": "Contrato de Arrendamiento Apartamento (Renovado)",
+  "data": {
+    "endDate": "2025-12-31",
+    "monthlyValue": 2100000,
+    "renewal": {
+      "automatic": true,
+      "noticeDays": 30
+    }
+  }
+}
+```
+
+**Campos Opcionales (puedes actualizar uno o ambos):**
+- `name` (string) - Nuevo nombre del contrato
+- `data` (object) - Nuevos datos JSON del contrato
+
+**Response (200):**
+```json
+{
+  "message": "Contract updated successfully",
+  "contract": {
+    "id": "uuid-here",
+    "name": "Contrato de Arrendamiento Apartamento (Renovado)",
+    "data": {
+      "endDate": "2025-12-31",
+      "monthlyValue": 2100000,
+      "renewal": {
+        "automatic": true,
+        "noticeDays": 30
+      }
+    },
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-03-20T15:45:00Z"
+  }
+}
+```
+
+**Errores:**
+- `400`: ID faltante, `name` vacío, `data` no es un objeto válido, ningún campo para actualizar
+- `401`: Token de autenticación inválido o faltante
+- `404`: Contrato no encontrado o no pertenece al usuario
+- `500`: Error al actualizar el contrato
+
+---
+
+#### DELETE /contracts/{id}
+Eliminar un contrato específico.
+
+**URL:** `DELETE ${API_LIFESTYLE}/contracts/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteContract = async (contractId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/contracts/${contractId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Eliminar contrato
+await deleteContract('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "message": "Contract deleted successfully",
+  "deleted_contract": {
+    "id": "uuid-here",
+    "name": "Contrato de Arrendamiento Apartamento"
+  }
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+#### DELETE /contracts
+Eliminar todos los contratos del usuario.
+
+**URL:** `DELETE ${API_LIFESTYLE}/contracts`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllContracts = async () => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/contracts`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Eliminar todos los contratos
+await deleteAllContracts();
+```
+
+**Response (200):**
+```json
+{
+  "message": "All contracts deleted successfully",
+  "deleted_count": 5
+}
+```
+
+**⚠️ Advertencia:** Esta operación elimina todos los contratos del usuario y es irreversible.
 
 ---
 

@@ -396,3 +396,4 @@ Si tienes preguntas sobre la implementación, consulta:
 2. El código del frontend en `src/services/api.ts` (métodos `getJudicialProcesses` y `getProcessActuaciones`)
 3. El componente de frontend en `src/pages/Procesos.tsx`
 
+
