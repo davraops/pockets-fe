@@ -39,6 +39,7 @@
   padding-bottom: var(--spacing-xl);
   margin-bottom: 30px;
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
   position: relative;
@@ -67,6 +68,126 @@
   margin: 0;
   line-height: 1.6;
   font-family: var(--font-family);
+}
+
+/* Shared Styles for Financial Pages - HIG: Consistency */
+/* Toolbar - Shared across financial pages */
+.app-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .app-toolbar {
+    margin-top: var(--spacing-xl);
+    margin-bottom: var(--spacing-sm);
+  }
+}
+
+/* Toolbar Button - Unified style */
+.app-toolbar-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--border-glass);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  padding: 0;
+  box-shadow: var(--shadow-sm);
+  color: var(--text-primary);
+}
+
+.app-toolbar-button:hover:not(:disabled) {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-glass-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.app-toolbar-button:active:not(:disabled) {
+  transform: translateY(0);
+  transition: transform var(--transition-fast);
+}
+
+.app-toolbar-button:focus-visible {
+  outline: 2px solid var(--accent-primary-border);
+  outline-offset: 2px;
+}
+
+.app-toolbar-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.app-toolbar-icon {
+  font-size: 1.5rem !important;
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  color: var(--text-primary);
+}
+
+[data-theme='light'] .app-toolbar-button {
+  background: var(--bg-glass);
+  border-color: var(--border-glass);
+}
+
+[data-theme='light'] .app-toolbar-button:hover:not(:disabled) {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-glass-hover);
+}
+
+/* Page Title - Unified style */
+.app-page-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0;
+  margin-bottom: var(--spacing-xs);
+  letter-spacing: var(--letter-spacing-tight);
+  font-family: var(--font-family);
+  line-height: 1.2;
+}
+
+[data-theme='light'] .app-page-title {
+  color: rgba(0, 0, 0, 0.95);
+}
+
+/* Page Subtitle - Unified style */
+.app-page-subtitle {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  margin: 0;
+  margin-bottom: var(--spacing-lg);
+  letter-spacing: var(--letter-spacing-tight);
+  font-family: var(--font-family);
+  line-height: 1.5;
+}
+
+[data-theme='light'] .app-page-subtitle {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* Content Container - Unified max-width for financial pages */
+.app-page-content-financial {
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: stretch;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 /* Responsive adjustments */

@@ -180,6 +180,7 @@ function Archivos() {
       console.log('🟢 POST /files - Subiendo archivo:', {
         fileName: selectedFileForUpload.name,
         fileSize: selectedFileForUpload.size,
+        fileType: selectedFileForUpload.type,
         title: formData.title,
         description: formData.description,
       })
@@ -196,10 +197,33 @@ function Archivos() {
       await loadFiles()
     } catch (err: any) {
       console.error('Error al subir archivo:', err)
-      const errorMessage = getTranslatedErrorMessage(
-        err,
-        'Error al subir el archivo. Por favor, intenta de nuevo.'
-      )
+      console.error('Detalles del error:', {
+        response: err?.response,
+        data: err?.data,
+        status: err?.response?.status,
+        statusText: err?.response?.statusText,
+      })
+      
+      // Extraer mensaje de error más específico
+      let errorMessage = 'Error al subir el archivo. Por favor, intenta de nuevo.'
+      
+      if (err?.data?.error) {
+        errorMessage = err.data.error
+      } else if (err?.data?.message) {
+        errorMessage = err.data.message
+      } else if (err?.data?.details?.message) {
+        errorMessage = err.data.details.message
+      } else if (err?.message) {
+        errorMessage = err.message
+      } else {
+        errorMessage = getTranslatedErrorMessage(err, errorMessage)
+      }
+      
+      // Agregar información del status si está disponible
+      if (err?.response?.status) {
+        errorMessage += ` (Error ${err.response.status})`
+      }
+      
       showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)

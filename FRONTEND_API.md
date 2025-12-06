@@ -3280,6 +3280,405 @@ await deleteAllContracts();
 
 ---
 
+### Client Activities (Actividades de Clientes)
+**🟢 Servicio: pockets-lifestyle** | **URL Base:** `API_LIFESTYLE`
+
+> **Nota:** Estos endpoints están en el servicio `pockets-lifestyle`. Usa `API_LIFESTYLE` como URL base.
+
+Sistema simple para guardar información de actividades con clientes en formato JSON. Permite almacenar cualquier estructura JSON que represente interacciones y actividades con clientes (reuniones, llamadas, seguimientos, propuestas, etc.).
+
+#### POST /client-activities
+Crear una nueva actividad de cliente.
+
+**URL:** `POST ${API_LIFESTYLE}/client-activities`
+
+**Ejemplo JavaScript:**
+```javascript
+const createClientActivity = async (activityData) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/client-activities`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(activityData)
+  });
+  return response.json();
+};
+
+// Crear una actividad de cliente
+await createClientActivity({
+  name: 'Reunión con Cliente ABC',
+  data: {
+    client: {
+      name: 'Empresa ABC S.A.S.',
+      contact: {
+        name: 'Juan Pérez',
+        email: 'juan.perez@empresaabc.com',
+        phone: '+57 300 123 4567'
+      }
+    },
+    type: 'Reunión',
+    date: '2024-03-20',
+    time: '14:00',
+    duration: 60, // minutos
+    location: 'Oficina del cliente',
+    participants: ['Rafael Avella', 'Juan Pérez', 'María González'],
+    agenda: [
+      'Presentación de propuesta',
+      'Discusión de términos',
+      'Próximos pasos'
+    ],
+    outcome: {
+      status: 'Positivo',
+      nextSteps: [
+        'Enviar cotización formal',
+        'Seguimiento en 1 semana'
+      ],
+      probability: 70 // porcentaje
+    },
+    notes: 'Cliente muy interesado, requiere cotización detallada',
+    attachments: ['propuesta.pdf', 'presentacion.pptx']
+  }
+});
+```
+
+**Request Body:**
+```json
+{
+  "name": "Reunión con Cliente ABC",
+  "data": {
+    "client": {
+      "name": "Empresa ABC S.A.S.",
+      "contact": {
+        "name": "Juan Pérez",
+        "email": "juan.perez@empresaabc.com",
+        "phone": "+57 300 123 4567"
+      }
+    },
+    "type": "Reunión",
+    "date": "2024-03-20",
+    "time": "14:00",
+    "duration": 60,
+    "location": "Oficina del cliente",
+    "participants": ["Rafael Avella", "Juan Pérez", "María González"],
+    "agenda": [
+      "Presentación de propuesta",
+      "Discusión de términos",
+      "Próximos pasos"
+    ],
+    "outcome": {
+      "status": "Positivo",
+      "nextSteps": [
+        "Enviar cotización formal",
+        "Seguimiento en 1 semana"
+      ],
+      "probability": 70
+    },
+    "notes": "Cliente muy interesado, requiere cotización detallada",
+    "attachments": ["propuesta.pdf", "presentacion.pptx"]
+  }
+}
+```
+
+**Campos Requeridos:**
+- `name` (string) - Nombre/título de la actividad
+- `data` (object) - Objeto JSON con los datos de la actividad (cualquier estructura válida)
+
+**Response (201):**
+```json
+{
+  "message": "Client activity created successfully",
+  "activity": {
+    "id": "uuid-here",
+    "name": "Reunión con Cliente ABC",
+    "data": {
+      "client": {
+        "name": "Empresa ABC S.A.S.",
+        "contact": {
+          "name": "Juan Pérez",
+          "email": "juan.perez@empresaabc.com",
+          "phone": "+57 300 123 4567"
+        }
+      },
+      "type": "Reunión",
+      "date": "2024-03-20",
+      "time": "14:00",
+      "duration": 60,
+      "location": "Oficina del cliente",
+      "participants": ["Rafael Avella", "Juan Pérez", "María González"],
+      "agenda": [
+        "Presentación de propuesta",
+        "Discusión de términos",
+        "Próximos pasos"
+      ],
+      "outcome": {
+        "status": "Positivo",
+        "nextSteps": [
+          "Enviar cotización formal",
+          "Seguimiento en 1 semana"
+        ],
+        "probability": 70
+      },
+      "notes": "Cliente muy interesado, requiere cotización detallada",
+      "attachments": ["propuesta.pdf", "presentacion.pptx"]
+    },
+    "created_at": "2024-03-20T14:00:00Z",
+    "updated_at": "2024-03-20T14:00:00Z"
+  }
+}
+```
+
+**Errores:**
+- `400`: Campos requeridos faltantes, `name` vacío, `data` no es un objeto válido
+- `401`: Token de autenticación inválido o faltante
+- `500`: Error al crear la actividad
+
+---
+
+#### GET /client-activities
+Obtener actividades de clientes del usuario.
+
+**URL:** `GET ${API_LIFESTYLE}/client-activities`
+
+**Query Parameters (opcionales):**
+- `id` (string) - Obtener actividad específica por ID
+
+**Ejemplo JavaScript:**
+```javascript
+const getClientActivities = async (activityId = null) => {
+  const token = localStorage.getItem('authToken');
+  const url = activityId 
+    ? `${API_LIFESTYLE}/client-activities?id=${activityId}`
+    : `${API_LIFESTYLE}/client-activities`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Obtener todas las actividades
+const allActivities = await getClientActivities();
+
+// Obtener actividad específica
+const activity = await getClientActivities('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "count": 2,
+  "activities": [
+    {
+      "id": "uuid-here",
+      "name": "Reunión con Cliente ABC",
+      "data": {
+        "client": {
+          "name": "Empresa ABC S.A.S.",
+          "contact": {
+            "name": "Juan Pérez",
+            "email": "juan.perez@empresaabc.com"
+          }
+        },
+        "type": "Reunión",
+        "date": "2024-03-20",
+        "time": "14:00",
+        "duration": 60,
+        "outcome": {
+          "status": "Positivo",
+          "probability": 70
+        }
+      },
+      "created_at": "2024-03-20T14:00:00Z",
+      "updated_at": "2024-03-20T14:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+#### PUT /client-activities/{id}
+Actualizar una actividad de cliente existente.
+
+**URL:** `PUT ${API_LIFESTYLE}/client-activities/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const updateClientActivity = async (activityId, updates) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/client-activities/${activityId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    },
+    body: JSON.stringify(updates)
+  });
+  return response.json();
+};
+
+// Actualizar solo el nombre
+await updateClientActivity('uuid-here', {
+  name: 'Reunión con Cliente ABC (Actualizada)'
+});
+
+// Actualizar solo los datos (ej: actualizar resultado)
+await updateClientActivity('uuid-here', {
+  data: {
+    client: {
+      name: 'Empresa ABC S.A.S.',
+      contact: {
+        name: 'Juan Pérez',
+        email: 'juan.perez@empresaabc.com'
+      }
+    },
+    type: 'Reunión',
+    date: '2024-03-20',
+    outcome: {
+      status: 'Cerrado',
+      nextSteps: ['Firmar contrato'],
+      probability: 90 // Actualizado
+    },
+    notes: 'Cliente aceptó propuesta, esperando firma'
+  }
+});
+
+// Actualizar ambos
+await updateClientActivity('uuid-here', {
+  name: 'Reunión con Cliente ABC (Cerrada)',
+  data: {
+    outcome: {
+      status: 'Cerrado',
+      probability: 90
+    }
+  }
+});
+```
+
+**Request Body:**
+```json
+{
+  "name": "Reunión con Cliente ABC (Cerrada)",
+  "data": {
+    "outcome": {
+      "status": "Cerrado",
+      "nextSteps": ["Firmar contrato"],
+      "probability": 90
+    },
+    "notes": "Cliente aceptó propuesta, esperando firma"
+  }
+}
+```
+
+**Campos Opcionales (puedes actualizar uno o ambos):**
+- `name` (string) - Nuevo nombre de la actividad
+- `data` (object) - Nuevos datos JSON de la actividad
+
+**Response (200):**
+```json
+{
+  "message": "Client activity updated successfully",
+  "activity": {
+    "id": "uuid-here",
+    "name": "Reunión con Cliente ABC (Cerrada)",
+    "data": {
+      "outcome": {
+        "status": "Cerrado",
+        "nextSteps": ["Firmar contrato"],
+        "probability": 90
+      },
+      "notes": "Cliente aceptó propuesta, esperando firma"
+    },
+    "created_at": "2024-03-20T14:00:00Z",
+    "updated_at": "2024-03-20T16:30:00Z"
+  }
+}
+```
+
+**Errores:**
+- `400`: ID faltante, `name` vacío, `data` no es un objeto válido, ningún campo para actualizar
+- `401`: Token de autenticación inválido o faltante
+- `404`: Actividad no encontrada o no pertenece al usuario
+- `500`: Error al actualizar la actividad
+
+---
+
+#### DELETE /client-activities/{id}
+Eliminar una actividad de cliente específica.
+
+**URL:** `DELETE ${API_LIFESTYLE}/client-activities/{id}`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteClientActivity = async (activityId) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/client-activities/${activityId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Eliminar actividad
+await deleteClientActivity('uuid-here');
+```
+
+**Response (200):**
+```json
+{
+  "message": "Client activity deleted successfully",
+  "deleted_activity": {
+    "id": "uuid-here",
+    "name": "Reunión con Cliente ABC"
+  }
+}
+```
+
+**⚠️ Advertencia:** Esta operación es irreversible.
+
+---
+
+#### DELETE /client-activities
+Eliminar todas las actividades de clientes del usuario.
+
+**URL:** `DELETE ${API_LIFESTYLE}/client-activities`
+
+**Ejemplo JavaScript:**
+```javascript
+const deleteAllClientActivities = async () => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/client-activities`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
+    }
+  });
+  return response.json();
+};
+
+// Eliminar todas las actividades
+await deleteAllClientActivities();
+```
+
+**Response (200):**
+```json
+{
+  "message": "All client activities deleted successfully",
+  "deleted_count": 15
+}
+```
+
+**⚠️ Advertencia:** Esta operación elimina todas las actividades de clientes del usuario y es irreversible.
+
+---
+
 ### Transactions
 **🔵 Servicio: pockets-core** | **URL Base:** `API_CORE`
 

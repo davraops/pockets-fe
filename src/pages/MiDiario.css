@@ -220,6 +220,100 @@
   color: rgba(0, 0, 0, 0.6);
 }
 
+/* Streak Container */
+.midiario-streak-container {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  background: linear-gradient(135deg, rgba(255, 87, 51, 0.15) 0%, rgba(255, 152, 0, 0.15) 100%);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border: 1px solid rgba(255, 87, 51, 0.3);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+[data-theme='light'] .midiario-streak-container {
+  background: linear-gradient(135deg, rgba(255, 87, 51, 0.1) 0%, rgba(255, 152, 0, 0.1) 100%);
+  border-color: rgba(255, 87, 51, 0.2);
+}
+
+.midiario-streak-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex: 1;
+}
+
+.midiario-streak-icon {
+  font-size: 2rem !important;
+  width: 2rem !important;
+  height: 2rem !important;
+  color: #FF5733;
+  flex-shrink: 0;
+}
+
+.midiario-streak-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  flex: 1;
+}
+
+.midiario-streak-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+[data-theme='light'] .midiario-streak-label {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.midiario-streak-value {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+[data-theme='light'] .midiario-streak-value {
+  color: rgba(0, 0, 0, 0.95);
+}
+
+.midiario-streak-divider {
+  width: 1px;
+  height: 48px;
+  background: var(--border-glass-light);
+  flex-shrink: 0;
+}
+
+[data-theme='light'] .midiario-streak-divider {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .midiario-streak-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-md);
+  }
+
+  .midiario-streak-divider {
+    width: 100%;
+    height: 1px;
+  }
+
+  .midiario-streak-item {
+    justify-content: center;
+  }
+}
+
 /* Diario List - Compact iOS Style */
 .midiario-list {
   width: 100%;

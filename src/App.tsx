@@ -30,6 +30,7 @@ import Archivos from './pages/Archivos'
 import Empleados from './pages/Empleados'
 import Vehiculos from './pages/Vehiculos'
 import Patrimonio from './pages/Patrimonio'
+import CryptoVendors from './pages/CryptoVendors'
 import Tiempo from './pages/Tiempo'
 import Fechas from './pages/Fechas'
 import Rutinas from './pages/Rutinas'
@@ -38,6 +39,9 @@ import MiDiario from './pages/MiDiario'
 import Notificaciones from './pages/Notificaciones'
 import Justicia from './pages/Justicia'
 import Procesos from './pages/Procesos'
+import Trabajo from './pages/Trabajo'
+import Contratos from './pages/Contratos'
+import Actividades from './pages/Actividades'
 import StatusBar from './components/StatusBar'
 import ProtectedRoute from './components/ProtectedRoute'
 import Footer from './components/Footer'
@@ -103,6 +107,14 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <ListasMercado />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finanzas/crypto-vendors"
+          element={
+            <ProtectedRoute>
+              <CryptoVendors />
             </ProtectedRoute>
           }
         />
@@ -322,14 +334,38 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/justicia/procesos"
-          element={
-            <ProtectedRoute>
-              <Procesos />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/justicia/procesos"
+            element={
+              <ProtectedRoute>
+                <Procesos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/trabajo"
+            element={
+              <ProtectedRoute>
+                <Trabajo />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/trabajo/contratos"
+            element={
+              <ProtectedRoute>
+                <Contratos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/trabajo/actividades"
+            element={
+              <ProtectedRoute>
+                <Actividades />
+              </ProtectedRoute>
+            }
+          />
         <Route path="/blank-2" element={<AppPage title="" />} />
         <Route path="/blank-3" element={<AppPage title="" />} />
         <Route path="/blank-4" element={<AppPage title="" />} />

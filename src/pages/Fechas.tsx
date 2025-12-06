@@ -83,6 +83,7 @@ function Fechas() {
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
   const [calendarView, setCalendarView] = useState<View>('month')
   const [calendarDate, setCalendarDate] = useState(new Date())
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
   const menuRef = useRef<HTMLDivElement>(null)
   const [formData, setFormData] = useState({
     titulo: '',
@@ -765,7 +766,11 @@ function Fechas() {
                 events={getCalendarEvents()}
                 startAccessor="start"
                 endAccessor="end"
-                style={{ height: 600 }}
+                style={{ 
+                  height: calendarView === 'agenda' 
+                    ? 'auto' 
+                    : (isMobile ? 400 : 600) 
+                }}
                 view={calendarView}
                 onView={setCalendarView}
                 date={calendarDate}

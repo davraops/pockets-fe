@@ -106,7 +106,7 @@ El proyecto Pockets está dividido en **3 servicios Serverless independientes** 
 ### 3. **pockets-lifestyle** (Rutinas y Estilo de Vida)
 **Archivo:** `serverless-lifestyle.yml`  
 **Puerto Local:** 7002 (desarrollo offline)  
-**Funciones:** 62
+**Funciones:** 67
 
 **Responsabilidades:**
 - Rutinas y completaciones
@@ -121,6 +121,7 @@ El proyecto Pockets está dividido en **3 servicios Serverless independientes** 
 - Vehículos - Sistema simple para guardar información de vehículos en formato JSON
 - Patrimonio - Sistema simple para guardar items valiosos del patrimonio en formato JSON (fecha de compra, valor de compra, etc.)
 - Contratos - Sistema simple para guardar contratos activos en formato JSON (fecha inicio, fecha fin, valor, partes, términos, etc.)
+- Actividades de Clientes - Sistema simple para guardar actividades con clientes en formato JSON (reuniones, llamadas, seguimientos, propuestas, etc.)
 - Secretos
 - Notificaciones - Sistema completo de notificaciones con filtros y paginación
 - Funciones programadas (scheduled)
@@ -148,6 +149,7 @@ El proyecto Pockets está dividido en **3 servicios Serverless independientes** 
 - `createVehicle`, `getVehicles`, `updateVehicle`, `deleteVehicle`, `deleteAllVehicles` (nuevo - vehículos)
 - `createPatrimony`, `getPatrimony`, `updatePatrimony`, `deletePatrimony`, `deleteAllPatrimony` (nuevo - patrimonio/items valiosos)
 - `createContract`, `getContracts`, `updateContract`, `deleteContract`, `deleteAllContracts` (nuevo - contratos activos)
+- `createClientActivity`, `getClientActivities`, `updateClientActivity`, `deleteClientActivity`, `deleteAllClientActivities` (nuevo - actividades de clientes)
 - `createSecret`, `getSecrets`, `updateSecret`, `verifySecret`, `getSecretValue`, `deleteSecret`, `deleteAllSecrets`
 - `createNotification`, `getNotifications`, `markNotificationRead`, `deleteNotification`, `markAllNotificationsRead`, `deleteAllNotifications` (createNotification nuevo)
 
@@ -167,6 +169,7 @@ El proyecto Pockets está dividido en **3 servicios Serverless independientes** 
 - `POST /vehicles`, `GET /vehicles`, `PUT /vehicles/{id}`, `DELETE /vehicles/{id}`, `DELETE /vehicles` (nuevo - vehículos)
 - `POST /patrimony`, `GET /patrimony`, `PUT /patrimony/{id}`, `DELETE /patrimony/{id}`, `DELETE /patrimony` (nuevo - patrimonio/items valiosos)
 - `POST /contracts`, `GET /contracts`, `PUT /contracts/{id}`, `DELETE /contracts/{id}`, `DELETE /contracts` (nuevo - contratos activos)
+- `POST /client-activities`, `GET /client-activities`, `PUT /client-activities/{id}`, `DELETE /client-activities/{id}`, `DELETE /client-activities` (nuevo - actividades de clientes)
 - `POST /secrets`, `GET /secrets`, `PUT /secrets/{id}`, `POST /secrets/{id}/verify`, `POST /secrets/{id}/value`, `DELETE /secrets/{id}`, `DELETE /secrets`
 - `POST /notifications`, `GET /notifications`, `PUT /notifications/{id}/read`, `DELETE /notifications/{id}`, `POST /notifications/mark-all-read`, `DELETE /notifications`
 
@@ -258,7 +261,7 @@ const LIFESTYLE_API = process.env.NODE_ENV === 'production'
 |----------|-----------|-----------------|-------------|
 | **pockets-core** | 26 | ~150-200 | Funciones financieras principales y autenticación |
 | **pockets-financial** | 39 | ~200-250 | Activos y pasivos financieros |
-| **pockets-lifestyle** | 62 | ~200-250 | Rutinas, eventos, notas, diario, archivos, listas de mercado, empleados, crypto vendors, vehículos, patrimonio, contratos, secretos, notificaciones |
+| **pockets-lifestyle** | 67 | ~200-250 | Rutinas, eventos, notas, diario, archivos, listas de mercado, empleados, crypto vendors, vehículos, patrimonio, contratos, actividades de clientes, secretos, notificaciones |
 | **Total** | **97** | **~530-670** | Todos los servicios combinados |
 
 ---

@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 import SaveIcon from '@mui/icons-material/Save'
-import FolderIcon from '@mui/icons-material/Folder'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
 import StoreIcon from '@mui/icons-material/Store'
+import RefreshIcon from '@mui/icons-material/Refresh'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { api } from '../services/api'
 import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
@@ -57,7 +58,11 @@ function ListasMercado() {
   const [isSaving, setIsSaving] = useState(false)
   const [lists, setLists] = useState<ShoppingList[]>([])
   const [isLoadingLists, setIsLoadingLists] = useState(false)
-  const [showListsModal, setShowListsModal] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
+  const [isDebugLoading, setIsDebugLoading] = useState(false)
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     calculateCategoriesAndStores()
@@ -66,6 +71,24 @@ function ListasMercado() {
   useEffect(() => {
     loadLists()
   }, [])
+
+  // Cerrar menú al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node
+      if (isMenuOpen && menuRef.current && !menuRef.current.contains(target)) {
+        setIsMenuOpen(false)
+      }
+    }
+
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMenuOpen])
 
   const calculateCategoriesAndStores = () => {
     const uniqueCategories = Array.from(new Set(items.map(item => item.category).filter(Boolean)))
@@ -98,6 +121,7 @@ function ListasMercado() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setIsFormModalOpen(false)
 
     if (!formData.name.trim()) {
       showNotification('El nombre del producto es requerido', 'error')
@@ -175,6 +199,7 @@ function ListasMercado() {
       price: item.price ? item.price.toString() : '',
     })
     setEditingId(item.id)
+    setIsFormModalOpen(true)
   }
 
   const handleCancelEdit = () => {
@@ -219,7 +244,6 @@ function ListasMercado() {
       }))
       setItems(mappedItems)
       setListName(list.name)
-      setShowListsModal(false)
       showNotification(`Lista "${list.name}" cargada`, 'success')
     } else {
       showNotification('La lista no tiene datos válidos', 'error')
@@ -241,6 +265,81 @@ function ListasMercado() {
         'Error al eliminar la lista. Por favor, intenta de nuevo.'
       )
       showNotification(errorMessage, 'error')
+    }
+  }
+
+  const handleDebugCreateLists = async () => {
+    try {
+      setIsDebugLoading(true)
+      const demoLists = [
+        {
+          name: 'Lista Semanal',
+          data: {
+            items: [
+              { name: 'Leche', quantity: 2, category: 'Lácteos', store: 'Supermercado', packaging: 'Botella', price: 3500, checked: false },
+              { name: 'Pan', quantity: 3, category: 'Panadería', store: 'Panadería', packaging: 'Unidades', price: 1200, checked: true },
+              { name: 'Huevos', quantity: 1, category: 'Lácteos', store: 'Supermercado', packaging: 'Caja x 12', price: 8500, checked: false },
+            ],
+          },
+        },
+        {
+          name: 'Lista Mensual',
+          data: {
+            items: [
+              { name: 'Arroz', quantity: 2, category: 'Granos', store: 'Supermercado', packaging: 'Bolsa', price: 12000, checked: false },
+              { name: 'Aceite', quantity: 1, category: 'Aceites', store: 'Supermercado', packaging: 'Botella', price: 8500, checked: false },
+              { name: 'Azúcar', quantity: 1, category: 'Endulzantes', store: 'Supermercado', packaging: 'Bolsa', price: 4500, checked: true },
+            ],
+          },
+        },
+        {
+          name: 'Lista Farmacia',
+          data: {
+            items: [
+              { name: 'Acetaminofén', quantity: 1, category: 'Medicamentos', store: 'Farmacia', packaging: 'Caja', price: 15000, checked: false },
+              { name: 'Alcohol', quantity: 2, category: 'Medicamentos', store: 'Farmacia', packaging: 'Botella', price: 3500, checked: false },
+            ],
+          },
+        },
+      ]
+
+      for (const list of demoLists) {
+        await api.createShoppingList(list)
+      }
+
+      showNotification('Listas demo creadas exitosamente', 'success')
+      await loadLists()
+      setIsDebugModalOpen(false)
+    } catch (err: any) {
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al crear listas demo. Por favor, intenta de nuevo.'
+      )
+      showNotification(errorMessage, 'error')
+    } finally {
+      setIsDebugLoading(false)
+    }
+  }
+
+  const handleDebugDeleteAll = async () => {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar TODAS las listas? Esta acción es irreversible.')) {
+      return
+    }
+
+    try {
+      setIsDebugLoading(true)
+      await api.deleteAllShoppingLists()
+      showNotification('Todas las listas han sido eliminadas', 'success')
+      await loadLists()
+      setIsDebugModalOpen(false)
+    } catch (err: any) {
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al eliminar las listas. Por favor, intenta de nuevo.'
+      )
+      showNotification(errorMessage, 'error')
+    } finally {
+      setIsDebugLoading(false)
     }
   }
 
@@ -297,6 +396,29 @@ function ListasMercado() {
 
   const checkedCount = items.filter(item => item.checked).length
   const totalItems = items.length
+  const pendingCount = totalItems - checkedCount
+  const totalPrice = items.reduce((sum, item) => sum + (item.price || 0), 0)
+
+  // Organizar productos por categoría
+  const itemsByCategory = items.reduce((acc, item) => {
+    const category = item.category || 'Sin categoría'
+    if (!acc[category]) {
+      acc[category] = []
+    }
+    acc[category].push(item)
+    return acc
+  }, {} as Record<string, ShoppingItem[]>)
+
+  // Ordenar categorías y productos dentro de cada categoría (pendientes primero)
+  const sortedCategories = Object.keys(itemsByCategory).sort()
+  sortedCategories.forEach(category => {
+    itemsByCategory[category].sort((a, b) => {
+      if (a.checked !== b.checked) {
+        return a.checked ? 1 : -1 // Pendientes primero
+      }
+      return a.name.localeCompare(b.name)
+    })
+  })
 
   return (
     <div className="app-page-container">
@@ -311,259 +433,197 @@ function ListasMercado() {
           >
             <ArrowBackIcon className="listas-toolbar-icon" />
           </button>
-          <button
-            className="listas-toolbar-button"
-            onClick={() => {
-              loadLists()
-              setShowListsModal(true)
-            }}
-            aria-label="Ver listas guardadas"
-            type="button"
-          >
-            <FolderIcon className="listas-toolbar-icon" />
-          </button>
-        </div>
-
-        <h1 className="listas-page-title">Listas de Mercado</h1>
-        <p className="listas-page-subtitle">
-          Crea y gestiona tus listas de compras con productos, cantidades y categorías
-        </p>
-
-        {/* Formulario para agregar productos */}
-        <div className="listas-form-section">
-          <h2 className="listas-section-title">
-            {editingId ? 'Editar Producto' : 'Agregar Producto'}
-          </h2>
-          <form onSubmit={handleSubmit} className="listas-form">
-            <div className="listas-form-group">
-              <label htmlFor="name" className="listas-form-label">
-                Nombre del Producto *
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="listas-form-input"
-                placeholder="Ej: Leche, Pan, Huevos..."
-                required
-              />
-            </div>
-
-            <div className="listas-form-row">
-              <div className="listas-form-group">
-                <label htmlFor="quantity" className="listas-form-label">
-                  Cantidad *
-                </label>
-                <input
-                  type="number"
-                  id="quantity"
-                  name="quantity"
-                  value={formData.quantity}
-                  onChange={handleChange}
-                  className="listas-form-input"
-                  placeholder="1"
-                  min="1"
-                  step="1"
-                  required
-                />
-              </div>
-
-              <div className="listas-form-group">
-                <label htmlFor="packaging" className="listas-form-label">
-                  Embalaje *
-                </label>
-                <input
-                  type="text"
-                  id="packaging"
-                  name="packaging"
-                  value={formData.packaging}
-                  onChange={handleChange}
-                  className="listas-form-input"
-                  placeholder="Ej: Unidades, Caja x 12, Caja x 6..."
-                  list="packaging-list"
-                  required
-                />
-                <datalist id="packaging-list">
-                  <option value="Unidades" />
-                  <option value="Caja x 6" />
-                  <option value="Caja x 12" />
-                  <option value="Caja x 24" />
-                  <option value="Paquete" />
-                  <option value="Bolsa" />
-                  <option value="Botella" />
-                  <option value="Lata" />
-                </datalist>
-              </div>
-            </div>
-
-            <div className="listas-form-group">
-              <label htmlFor="category" className="listas-form-label">
-                Categoría *
-              </label>
-              <input
-                type="text"
-                id="category"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                className="listas-form-input"
-                placeholder="Ej: Lácteos, Panadería..."
-                list="categories-list"
-                required
-              />
-              <datalist id="categories-list">
-                {categories.map(cat => (
-                  <option key={cat} value={cat} />
-                ))}
-              </datalist>
-            </div>
-
-            <div className="listas-form-row">
-              <div className="listas-form-group">
-                <label htmlFor="store" className="listas-form-label">
-                  <StoreIcon className="listas-label-icon" />
-                  Sitio donde se compra *
-                </label>
-                <input
-                  type="text"
-                  id="store"
-                  name="store"
-                  value={formData.store}
-                  onChange={handleChange}
-                  className="listas-form-input"
-                  placeholder="Ej: Supermercado, Tienda, Farmacia..."
-                  list="stores-list"
-                  required
-                />
-                <datalist id="stores-list">
-                  {stores.map(store => (
-                    <option key={store} value={store} />
-                  ))}
-                </datalist>
-              </div>
-
-              <div className="listas-form-group">
-                <label htmlFor="price" className="listas-form-label">
-                  Precio de Compra
-                </label>
-                <input
-                  type="number"
-                  id="price"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleChange}
-                  className="listas-form-input"
-                  placeholder="0.00"
-                  min="0"
-                  step="0.01"
-                />
-              </div>
-            </div>
-
-            <div className="listas-form-actions">
-              {editingId && (
-                <button
-                  type="button"
-                  className="listas-form-button listas-form-button-secondary"
-                  onClick={handleCancelEdit}
-                >
-                  Cancelar
-                </button>
-              )}
+          {api.isTestUser() && (
+            <div className="listas-toolbar-menu-container" ref={menuRef}>
               <button
-                type="submit"
-                className="listas-form-button listas-form-button-primary"
+                className="listas-toolbar-button"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                aria-label="Opciones"
+                aria-expanded={isMenuOpen}
+                type="button"
               >
-                {editingId ? 'Actualizar' : 'Agregar'}
+                <MoreVertIcon className="listas-toolbar-icon" />
               </button>
-            </div>
-          </form>
-        </div>
-
-        {/* Lista de productos */}
-        {items.length > 0 && (
-          <div className="listas-items-section">
-            <div className="listas-section-header">
-              <h2 className="listas-section-title">
-                Productos ({checkedCount}/{totalItems})
-              </h2>
-              {items.some(item => item.price > 0) && (
-                <div className="listas-total">
-                  Total: ${items.reduce((sum, item) => sum + (item.price || 0), 0).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </div>
-              )}
-            </div>
-            <div className="listas-items-list">
-              {items.map(item => (
-                <div
-                  key={item.id}
-                  className={`listas-item ${item.checked ? 'checked' : ''}`}
-                >
+              {isMenuOpen && (
+                <div className="listas-menu">
                   <button
-                    className="listas-item-check"
-                    onClick={() => handleToggleChecked(item.id)}
-                    aria-label={item.checked ? 'Desmarcar' : 'Marcar como comprado'}
+                    className="listas-menu-item"
+                    onClick={() => {
+                      setIsMenuOpen(false)
+                      setIsDebugModalOpen(true)
+                    }}
                     type="button"
                   >
-                    {item.checked ? (
-                      <CheckCircleIcon className="listas-check-icon checked" />
-                    ) : (
-                      <RadioButtonUncheckedIcon className="listas-check-icon" />
-                    )}
+                    <span>🐛 Debug</span>
                   </button>
-                  <div className="listas-item-content">
-                    <div className="listas-item-header">
-                      <h3 className="listas-item-name">{item.name}</h3>
-                      <div className="listas-item-header-right">
-                        <span className="listas-item-quantity">
-                          {item.quantity} {item.packaging || 'Unidades'}
-                        </span>
-                        {item.price > 0 && (
-                          <span className="listas-item-price">
-                            ${item.price.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <h1 className="listas-page-title">
+          {listName && items.length > 0 ? listName : 'Listas de Mercado'}
+        </h1>
+        <p className="listas-page-subtitle">
+          {listName && items.length > 0
+            ? 'Gestiona los productos de tu lista de compras'
+            : 'Crea y gestiona tus listas de compras con productos, cantidades y categorías'}
+        </p>
+
+        {/* Resumen rápido */}
+        {items.length > 0 && (
+          <div className="listas-summary">
+            <div className="listas-summary-item">
+              <span className="listas-summary-label">Total</span>
+              <span className="listas-summary-value">{totalItems}</span>
+            </div>
+            <div className="listas-summary-separator"></div>
+            <div className="listas-summary-item">
+              <span className="listas-summary-label">Pendientes</span>
+              <span className="listas-summary-value listas-summary-pending">{pendingCount}</span>
+            </div>
+            <div className="listas-summary-separator"></div>
+            <div className="listas-summary-item">
+              <span className="listas-summary-label">Comprados</span>
+              <span className="listas-summary-value listas-summary-checked">{checkedCount}</span>
+            </div>
+            {totalPrice > 0 && (
+              <>
+                <div className="listas-summary-separator"></div>
+                <div className="listas-summary-item">
+                  <span className="listas-summary-label">Total</span>
+                  <span className="listas-summary-value listas-summary-price">
+                    ${totalPrice.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Botón flotante para agregar producto */}
+        <button
+          className="listas-fab"
+          onClick={() => {
+            setEditingId(null)
+            setFormData({
+              name: '',
+              quantity: '1',
+              category: '',
+              store: '',
+              packaging: 'Unidades',
+              price: '',
+            })
+            setIsFormModalOpen(true)
+          }}
+          aria-label="Agregar producto"
+          type="button"
+        >
+          <AddIcon />
+        </button>
+
+        {/* Lista de productos organizados por categoría */}
+        {items.length > 0 && (
+          <div className="listas-items-section">
+            {sortedCategories.map(category => {
+              const categoryItems = itemsByCategory[category]
+              const categoryPending = categoryItems.filter(item => !item.checked).length
+              const categoryChecked = categoryItems.filter(item => item.checked).length
+              const categoryPrice = categoryItems.reduce((sum, item) => sum + (item.price || 0), 0)
+
+              return (
+                <div key={category} className="listas-category-group">
+                  <div className="listas-category-header">
+                    <h3 className="listas-category-title">{category}</h3>
+                    <div className="listas-category-stats">
+                      <span className="listas-category-count">
+                        {categoryPending > 0 && (
+                          <span className="listas-category-pending">{categoryPending} pendientes</span>
                         )}
-                      </div>
-                    </div>
-                    <div className="listas-item-meta">
-                      <span className="listas-item-category">{item.category}</span>
-                      <span className="listas-item-separator">•</span>
-                      <span className="listas-item-store">
-                        <StoreIcon className="listas-item-store-icon" />
-                        {item.store}
+                        {categoryChecked > 0 && (
+                          <>
+                            {categoryPending > 0 && ' • '}
+                            <span className="listas-category-checked">{categoryChecked} comprados</span>
+                          </>
+                        )}
                       </span>
+                      {categoryPrice > 0 && (
+                        <span className="listas-category-price">
+                          ${categoryPrice.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      )}
                     </div>
                   </div>
-                  <div className="listas-item-actions">
-                    <button
-                      className="listas-item-action-button"
-                      onClick={() => handleEdit(item)}
-                      aria-label="Editar"
-                      type="button"
-                    >
-                      <EditIcon />
-                    </button>
-                    <button
-                      className="listas-item-action-button listas-item-action-button-delete"
-                      onClick={() => handleDelete(item.id)}
-                      aria-label="Eliminar"
-                      type="button"
-                    >
-                      <DeleteIcon />
-                    </button>
+                  <div className="listas-items-list">
+                    {categoryItems.map(item => (
+                      <div
+                        key={item.id}
+                        className={`listas-item ${item.checked ? 'checked' : ''}`}
+                      >
+                        <button
+                          className="listas-item-check"
+                          onClick={() => handleToggleChecked(item.id)}
+                          aria-label={item.checked ? 'Desmarcar' : 'Marcar como comprado'}
+                          type="button"
+                        >
+                          {item.checked ? (
+                            <CheckCircleIcon className="listas-check-icon checked" />
+                          ) : (
+                            <RadioButtonUncheckedIcon className="listas-check-icon" />
+                          )}
+                        </button>
+                        <div className="listas-item-content">
+                          <div className="listas-item-header">
+                            <h3 className="listas-item-name">{item.name}</h3>
+                            <div className="listas-item-header-right">
+                              <span className="listas-item-quantity">
+                                {item.quantity} {item.packaging || 'Unidades'}
+                              </span>
+                              {item.price > 0 && (
+                                <span className="listas-item-price">
+                                  ${item.price.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="listas-item-meta">
+                            <span className="listas-item-store">
+                              <StoreIcon className="listas-item-store-icon" />
+                              {item.store}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="listas-item-actions">
+                          <button
+                            className="listas-item-action-button"
+                            onClick={() => handleEdit(item)}
+                            aria-label="Editar"
+                            type="button"
+                          >
+                            <EditIcon />
+                          </button>
+                          <button
+                            className="listas-item-action-button listas-item-action-button-delete"
+                            onClick={() => handleDelete(item.id)}
+                            aria-label="Eliminar"
+                            type="button"
+                          >
+                            <DeleteIcon />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
+              )
+            })}
           </div>
         )}
 
         {/* Guardar lista */}
         {items.length > 0 && (
           <div className="listas-save-section">
-            <h2 className="listas-section-title">Guardar Lista</h2>
             <div className="listas-save-form">
               <input
                 type="text"
@@ -594,15 +654,17 @@ function ListasMercado() {
           </div>
         )}
 
-        {/* Modal de Listas */}
-        {showListsModal && (
-          <div className="listas-modal-overlay" onClick={() => setShowListsModal(false)}>
-            <div className="listas-modal" onClick={e => e.stopPropagation()}>
+        {/* Formulario en modal */}
+        {isFormModalOpen && (
+          <div className="listas-modal-overlay" onClick={() => handleCancelEdit()}>
+            <div className="listas-modal listas-modal-large" onClick={e => e.stopPropagation()}>
               <div className="listas-modal-header">
-                <h2 className="listas-modal-title">Listas Guardadas</h2>
+                <h2 className="listas-modal-title">
+                  {editingId ? 'Editar Producto' : 'Agregar Producto'}
+                </h2>
                 <button
                   className="listas-modal-close"
-                  onClick={() => setShowListsModal(false)}
+                  onClick={() => handleCancelEdit()}
                   aria-label="Cerrar"
                   type="button"
                 >
@@ -610,60 +672,271 @@ function ListasMercado() {
                 </button>
               </div>
               <div className="listas-modal-content">
-                {isLoadingLists ? (
-                  <div className="listas-loading">
-                    <p>Cargando listas...</p>
+                <form onSubmit={handleSubmit} className="listas-form">
+                  <div className="listas-form-group">
+                    <label htmlFor="name" className="listas-form-label">
+                      Nombre del Producto *
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      className="listas-form-input"
+                      placeholder="Ej: Leche, Pan, Huevos..."
+                      required
+                    />
                   </div>
-                ) : lists.length === 0 ? (
-                  <div className="listas-empty-state">
-                    <p className="listas-empty-text">No hay listas guardadas</p>
+
+                  <div className="listas-form-row">
+                    <div className="listas-form-group">
+                      <label htmlFor="quantity" className="listas-form-label">
+                        Cantidad *
+                      </label>
+                      <input
+                        type="number"
+                        id="quantity"
+                        name="quantity"
+                        value={formData.quantity}
+                        onChange={handleChange}
+                        className="listas-form-input"
+                        placeholder="1"
+                        min="1"
+                        step="1"
+                        required
+                      />
+                    </div>
+
+                    <div className="listas-form-group">
+                      <label htmlFor="packaging" className="listas-form-label">
+                        Embalaje *
+                      </label>
+                      <input
+                        type="text"
+                        id="packaging"
+                        name="packaging"
+                        value={formData.packaging}
+                        onChange={handleChange}
+                        className="listas-form-input"
+                        placeholder="Ej: Unidades, Caja x 12, Caja x 6..."
+                        list="packaging-list"
+                        required
+                      />
+                      <datalist id="packaging-list">
+                        <option value="Unidades" />
+                        <option value="Caja x 6" />
+                        <option value="Caja x 12" />
+                        <option value="Caja x 24" />
+                        <option value="Paquete" />
+                        <option value="Bolsa" />
+                        <option value="Botella" />
+                        <option value="Lata" />
+                      </datalist>
+                    </div>
                   </div>
-                ) : (
-                  <div className="listas-lists-list">
-                    {lists.map(list => (
-                      <div key={list.id} className="listas-list-item">
-                        <div
-                          className="listas-list-content"
-                          onClick={() => handleLoadList(list)}
-                        >
-                          <h3 className="listas-list-name">{list.name}</h3>
-                          <div className="listas-list-info">
-                            {list.data.items && (
-                              <span className="listas-list-meta">
-                                {list.data.items.length} {list.data.items.length === 1 ? 'producto' : 'productos'}
-                              </span>
-                            )}
-                            {list.data.items && (
-                              <>
-                                <span className="listas-list-separator">•</span>
-                                <span className="listas-list-meta">
-                                  {list.data.items.filter((i: any) => i.checked).length} comprados
-                                </span>
-                              </>
-                            )}
-                          </div>
-                          {list.created_at && (
-                            <p className="listas-list-date">
-                              Creada: {new Date(list.created_at).toLocaleDateString('es-ES', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                              })}
-                            </p>
-                          )}
-                        </div>
-                        <button
-                          className="listas-list-delete"
-                          onClick={() => handleDeleteList(list.id, list.name)}
-                          aria-label="Eliminar lista"
-                          type="button"
-                        >
-                          <DeleteIcon />
-                        </button>
+
+                  <div className="listas-form-group">
+                    <label htmlFor="category" className="listas-form-label">
+                      Categoría *
+                    </label>
+                    <input
+                      type="text"
+                      id="category"
+                      name="category"
+                      value={formData.category}
+                      onChange={handleChange}
+                      className="listas-form-input"
+                      placeholder="Ej: Lácteos, Panadería..."
+                      list="categories-list"
+                      required
+                    />
+                    <datalist id="categories-list">
+                      {categories.map(cat => (
+                        <option key={cat} value={cat} />
+                      ))}
+                    </datalist>
+                  </div>
+
+                  <div className="listas-form-row">
+                    <div className="listas-form-group">
+                      <label htmlFor="store" className="listas-form-label">
+                        <StoreIcon className="listas-label-icon" />
+                        Sitio donde se compra *
+                      </label>
+                      <input
+                        type="text"
+                        id="store"
+                        name="store"
+                        value={formData.store}
+                        onChange={handleChange}
+                        className="listas-form-input"
+                        placeholder="Ej: Supermercado, Tienda, Farmacia..."
+                        list="stores-list"
+                        required
+                      />
+                      <datalist id="stores-list">
+                        {stores.map(store => (
+                          <option key={store} value={store} />
+                        ))}
+                      </datalist>
+                    </div>
+
+                    <div className="listas-form-group">
+                      <label htmlFor="price" className="listas-form-label">
+                        Precio de Compra
+                      </label>
+                      <input
+                        type="number"
+                        id="price"
+                        name="price"
+                        value={formData.price}
+                        onChange={handleChange}
+                        className="listas-form-input"
+                        placeholder="0.00"
+                        min="0"
+                        step="0.01"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="listas-form-actions">
+                    <button
+                      type="button"
+                      className="listas-form-button listas-form-button-secondary"
+                      onClick={() => handleCancelEdit()}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      className="listas-form-button listas-form-button-primary"
+                    >
+                      {editingId ? 'Actualizar' : 'Agregar'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+
+        {/* Listas Guardadas */}
+        {lists.length > 0 && (
+          <div className="listas-saved-section">
+            <div className="listas-section-header">
+              <h2 className="listas-section-title">Listas Guardadas ({lists.length})</h2>
+              <button
+                className="listas-refresh-button"
+                onClick={loadLists}
+                aria-label="Actualizar listas"
+                type="button"
+                disabled={isLoadingLists}
+              >
+                <RefreshIcon className="listas-refresh-icon" />
+              </button>
+            </div>
+            {isLoadingLists ? (
+              <div className="listas-loading">
+                <p>Cargando listas...</p>
+              </div>
+            ) : (
+              <div className="listas-saved-list">
+                {lists.map(list => (
+                  <div key={list.id} className="listas-saved-item">
+                    <div
+                      className="listas-saved-content"
+                      onClick={() => handleLoadList(list)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <h3 className="listas-saved-name">{list.name}</h3>
+                      <div className="listas-saved-info">
+                        {list.data.items && (
+                          <span className="listas-saved-meta">
+                            {list.data.items.length} {list.data.items.length === 1 ? 'producto' : 'productos'}
+                          </span>
+                        )}
+                        {list.data.items && (
+                          <>
+                            <span className="listas-saved-separator">•</span>
+                            <span className="listas-saved-meta">
+                              {list.data.items.filter((i: any) => i.checked).length} comprados
+                            </span>
+                          </>
+                        )}
                       </div>
-                    ))}
+                      {list.created_at && (
+                        <p className="listas-saved-date">
+                          Creada: {new Date(list.created_at).toLocaleDateString('es-ES', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      className="listas-saved-delete"
+                      onClick={() => handleDeleteList(list.id, list.name)}
+                      aria-label="Eliminar lista"
+                      type="button"
+                    >
+                      <DeleteIcon />
+                    </button>
                   </div>
-                )}
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Modal de Debug */}
+        {isDebugModalOpen && (
+          <div className="listas-modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
+            <div className="listas-modal" onClick={e => e.stopPropagation()}>
+              <div className="listas-modal-header">
+                <h2 className="listas-modal-title">🐛 Debug - Listas de Mercado</h2>
+                <button
+                  className="listas-modal-close"
+                  onClick={() => setIsDebugModalOpen(false)}
+                  aria-label="Cerrar"
+                  type="button"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="listas-modal-content">
+                <div className="debug-options">
+                  <button
+                    className="debug-option-button"
+                    onClick={handleDebugCreateLists}
+                    disabled={isDebugLoading}
+                    type="button"
+                  >
+                    <span className="debug-option-icon">📦</span>
+                    <div className="debug-option-info">
+                      <h3 className="debug-option-title">Crear Listas Demo</h3>
+                      <p className="debug-option-description">
+                        Crea 3 listas de ejemplo con productos predefinidos
+                      </p>
+                    </div>
+                  </button>
+                  <button
+                    className="debug-option-button debug-option-button-danger"
+                    onClick={handleDebugDeleteAll}
+                    disabled={isDebugLoading}
+                    type="button"
+                  >
+                    <span className="debug-option-icon">🗑️</span>
+                    <div className="debug-option-info">
+                      <h3 className="debug-option-title">Eliminar Todas las Listas</h3>
+                      <p className="debug-option-description">
+                        Elimina permanentemente todas las listas guardadas
+                      </p>
+                    </div>
+                  </button>
+                </div>
               </div>
             </div>
           </div>

@@ -58,7 +58,10 @@ class PocketsAPI {
       endpoint.startsWith('/shopping-lists') ||
       endpoint.startsWith('/employees') ||
       endpoint.startsWith('/vehicles') ||
-      endpoint.startsWith('/patrimony')
+      endpoint.startsWith('/patrimony') ||
+      endpoint.startsWith('/crypto-vendors') ||
+      endpoint.startsWith('/contracts') ||
+      endpoint.startsWith('/client-activities')
     ) {
       return 'lifestyle'
     }
@@ -1377,9 +1380,35 @@ class PocketsAPI {
 
     try {
       const response = await fetch(url, config)
-      const data = await response.json()
+      
+      // Intentar parsear JSON, pero manejar errores si no es JSON válido
+      let data: any
+      const contentType = response.headers.get('content-type')
+      if (contentType && contentType.includes('application/json')) {
+        try {
+          data = await response.json()
+        } catch (jsonError) {
+          const text = await response.text()
+          console.error('Error al parsear JSON de respuesta:', jsonError)
+          console.error('Respuesta del servidor:', text)
+          throw {
+            response,
+            data: { error: 'Error al procesar la respuesta del servidor', details: { message: text } },
+          }
+        }
+      } else {
+        const text = await response.text()
+        console.error('Respuesta no es JSON. Content-Type:', contentType)
+        console.error('Respuesta del servidor:', text)
+        data = { error: text || 'Error desconocido del servidor' }
+      }
 
       if (!response.ok) {
+        console.error('Error en respuesta:', {
+          status: response.status,
+          statusText: response.statusText,
+          data,
+        })
         if (response.status === 401) {
           this.logout()
           throw { response, data, isUnauthorized: true }
@@ -1389,10 +1418,14 @@ class PocketsAPI {
 
       return data
     } catch (error: unknown) {
+      // Si ya es un error formateado, re-lanzarlo
       if (error && typeof error === 'object' && 'response' in error) {
+        console.error('Error de API:', error)
         throw error
       }
+      // Error de red u otro error
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('Error de conexión o red:', errorMessage)
       throw {
         response: null,
         data: { error: 'Error de conexión', details: { message: errorMessage } },
@@ -1635,6 +1668,128 @@ class PocketsAPI {
 
   async deleteAllPatrimony() {
     return this.request('/patrimony', {
+      method: 'DELETE',
+    })
+  }
+
+  // Crypto Vendors
+  async createCryptoVendor(data: {
+    name: string
+    data: any // JSON object
+  }) {
+    return this.request('/crypto-vendors', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getCryptoVendors(vendorId: string | null = null) {
+    const endpoint = vendorId ? `/crypto-vendors?id=${vendorId}` : '/crypto-vendors'
+    return this.request(endpoint, {
+      method: 'GET',
+    })
+  }
+
+  async updateCryptoVendor(vendorId: string, data: {
+    name?: string
+    data?: any // JSON object
+  }) {
+    return this.request(`/crypto-vendors/${vendorId}`, {
+      method: 'PUT',
+      body: data,
+    })
+  }
+
+  async deleteCryptoVendor(vendorId: string) {
+    return this.request(`/crypto-vendors/${vendorId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllCryptoVendors() {
+    return this.request('/crypto-vendors', {
+      method: 'DELETE',
+    })
+  }
+
+  // Contracts (Contratos)
+  async createContract(data: {
+    name: string
+    data: any // JSON object
+  }) {
+    return this.request('/contracts', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getContracts(contractId: string | null = null) {
+    const endpoint = contractId ? `/contracts?id=${contractId}` : '/contracts'
+    return this.request(endpoint)
+  }
+
+  async updateContract(
+    contractId: string,
+    updates: {
+      name?: string
+      data?: any
+    }
+  ) {
+    return this.request(`/contracts/${contractId}`, {
+      method: 'PUT',
+      body: updates,
+    })
+  }
+
+  async deleteContract(contractId: string) {
+    return this.request(`/contracts/${contractId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllContracts() {
+    return this.request('/contracts', {
+      method: 'DELETE',
+    })
+  }
+
+  // Client Activities (Actividades de Clientes)
+  async createClientActivity(data: {
+    name: string
+    data: any // JSON object
+  }) {
+    return this.request('/client-activities', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getClientActivities(activityId: string | null = null) {
+    const endpoint = activityId ? `/client-activities?id=${activityId}` : '/client-activities'
+    return this.request(endpoint)
+  }
+
+  async updateClientActivity(
+    activityId: string,
+    updates: {
+      name?: string
+      data?: any
+    }
+  ) {
+    return this.request(`/client-activities/${activityId}`, {
+      method: 'PUT',
+      body: updates,
+    })
+  }
+
+  async deleteClientActivity(activityId: string) {
+    return this.request(`/client-activities/${activityId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllClientActivities() {
+    return this.request('/client-activities', {
       method: 'DELETE',
     })
   }

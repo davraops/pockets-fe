@@ -1,17 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
-import SaveIcon from '@mui/icons-material/Save'
-import FolderIcon from '@mui/icons-material/Folder'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar'
 import BuildIcon from '@mui/icons-material/Build'
 import LocalGasStationIcon from '@mui/icons-material/LocalGasStation'
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import DescriptionIcon from '@mui/icons-material/Description'
 import SecurityIcon from '@mui/icons-material/Security'
+import InfoIcon from '@mui/icons-material/Info'
+import ReportProblemIcon from '@mui/icons-material/ReportProblem'
 import { api } from '../services/api'
 import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
@@ -53,6 +54,16 @@ interface Vehicle {
       }
     }
     notes?: string
+    events?: Array<{
+      type: string
+      date: string
+      description?: string
+      location?: string // Ubicación del daño en el vehículo
+      cost?: number
+      repairShop?: string // Sitio/taller donde se hizo el arreglo
+      purchasePlace?: string // Sitio donde se compró (repuesto, servicio, etc.)
+      notes?: string
+    }>
   }
   created_at?: string
   updated_at?: string
@@ -97,10 +108,27 @@ function Vehiculos() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [records, setRecords] = useState<VehicleRecord[]>([])
-  const [isLoadingRecords, setIsLoadingRecords] = useState(false)
-  const [showRecordsModal, setShowRecordsModal] = useState(false)
-  const [listName, setListName] = useState('')
-  const [showSaveModal, setShowSaveModal] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [showFormModal, setShowFormModal] = useState(false)
+  const [showDetailModal, setShowDetailModal] = useState(false)
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
+  const [isDebugLoading, setIsDebugLoading] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  
+  // Estados para el formulario de eventos
+  const [eventForm, setEventForm] = useState({
+    type: '',
+    date: '',
+    description: '',
+    location: '', // Ubicación del daño en el vehículo
+    cost: '',
+    repairShop: '', // Sitio/taller donde se hizo el arreglo
+    purchasePlace: '', // Sitio donde se compró
+    notes: '',
+  })
 
   useEffect(() => {
     loadRecords()
@@ -108,15 +136,37 @@ function Vehiculos() {
 
   const loadRecords = async () => {
     try {
-      setIsLoadingRecords(true)
+      setIsLoading(true)
+      setError(null)
       const response = await api.getVehicles()
       if (response.vehicles && Array.isArray(response.vehicles)) {
         setRecords(response.vehicles)
+        
+        // Mapear cada vehículo individual a la lista
+        const mappedVehicles: Vehicle[] = response.vehicles.map((record: VehicleRecord) => ({
+          id: record.id,
+          name: record.name,
+          data: record.data,
+          created_at: record.created_at,
+          updated_at: record.updated_at,
+        }))
+        setVehicles(mappedVehicles)
+      } else {
+        setRecords([])
+        setVehicles([])
       }
     } catch (err: any) {
-      console.error('Error al cargar registros de vehículos:', err)
+      console.error('Error al cargar vehículos:', err)
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al cargar vehículos. Por favor, intenta de nuevo.'
+      )
+      setError(errorMessage)
+      setRecords([])
+      setVehicles([])
+      showNotification(errorMessage, 'error')
     } finally {
-      setIsLoadingRecords(false)
+      setIsLoading(false)
     }
   }
 
@@ -128,7 +178,7 @@ function Vehiculos() {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!formData.name.trim()) {
@@ -136,114 +186,125 @@ function Vehiculos() {
       return
     }
 
-    const vehicleData: Vehicle['data'] = {
-      type: formData.type.trim() || undefined,
-      brand: formData.brand.trim() || undefined,
-      model: formData.model.trim() || undefined,
-      year: formData.year ? parseInt(formData.year) : undefined,
-      plate: formData.plate.trim() || undefined,
-      color: formData.color.trim() || undefined,
-      vin: formData.vin.trim() || undefined,
-      mileage: formData.mileage ? parseFloat(formData.mileage) : undefined,
-      fuelType: formData.fuelType.trim() || undefined,
-      insurance:
-        formData.insuranceCompany.trim() ||
-        formData.insurancePolicyNumber.trim() ||
-        formData.insuranceExpirationDate.trim() ||
-        formData.insuranceCoverage.trim()
-          ? {
-              company: formData.insuranceCompany.trim() || undefined,
-              policyNumber: formData.insurancePolicyNumber.trim() || undefined,
-              expirationDate: formData.insuranceExpirationDate || undefined,
-              coverage: formData.insuranceCoverage.trim() || undefined,
-            }
-          : undefined,
-      maintenance:
-        formData.maintenanceLastService.trim() ||
-        formData.maintenanceNextService.trim() ||
-        formData.maintenanceServiceInterval.trim()
-          ? {
-              lastService: formData.maintenanceLastService || undefined,
-              nextService: formData.maintenanceNextService || undefined,
-              serviceInterval: formData.maintenanceServiceInterval
-                ? parseInt(formData.maintenanceServiceInterval)
-                : undefined,
-            }
-          : undefined,
-      documents:
-        formData.soatNumber.trim() ||
-        formData.soatExpiration.trim() ||
-        formData.technicalReviewNumber.trim() ||
-        formData.technicalReviewExpiration.trim()
-          ? {
-              soat:
-                formData.soatNumber.trim() || formData.soatExpiration.trim()
-                  ? {
-                      number: formData.soatNumber.trim() || undefined,
-                      expiration: formData.soatExpiration || undefined,
-                    }
-                  : undefined,
-              technicalReview:
-                formData.technicalReviewNumber.trim() ||
-                formData.technicalReviewExpiration.trim()
-                  ? {
-                      number: formData.technicalReviewNumber.trim() || undefined,
-                      expiration: formData.technicalReviewExpiration || undefined,
-                    }
-                  : undefined,
-            }
-          : undefined,
-      notes: formData.notes.trim() || undefined,
-    }
+    try {
+      setIsSaving(true)
 
-    if (editingId) {
-      // Editar vehículo existente
-      const updatedVehicle: Vehicle = {
-        id: editingId,
+      const vehicleData: Vehicle['data'] = {
+        type: formData.type.trim() || undefined,
+        brand: formData.brand.trim() || undefined,
+        model: formData.model.trim() || undefined,
+        year: formData.year ? parseInt(formData.year) : undefined,
+        plate: formData.plate.trim() || undefined,
+        color: formData.color.trim() || undefined,
+        vin: formData.vin.trim() || undefined,
+        mileage: formData.mileage ? parseFloat(formData.mileage) : undefined,
+        fuelType: formData.fuelType.trim() || undefined,
+        insurance:
+          formData.insuranceCompany.trim() ||
+          formData.insurancePolicyNumber.trim() ||
+          formData.insuranceExpirationDate.trim() ||
+          formData.insuranceCoverage.trim()
+            ? {
+                company: formData.insuranceCompany.trim() || undefined,
+                policyNumber: formData.insurancePolicyNumber.trim() || undefined,
+                expirationDate: formData.insuranceExpirationDate || undefined,
+                coverage: formData.insuranceCoverage.trim() || undefined,
+                }
+              : undefined,
+        maintenance:
+          formData.maintenanceLastService.trim() ||
+          formData.maintenanceNextService.trim() ||
+          formData.maintenanceServiceInterval.trim()
+            ? {
+                lastService: formData.maintenanceLastService || undefined,
+                nextService: formData.maintenanceNextService || undefined,
+                serviceInterval: formData.maintenanceServiceInterval
+                  ? parseInt(formData.maintenanceServiceInterval)
+                  : undefined,
+              }
+            : undefined,
+        documents:
+          formData.soatNumber.trim() ||
+          formData.soatExpiration.trim() ||
+          formData.technicalReviewNumber.trim() ||
+          formData.technicalReviewExpiration.trim()
+            ? {
+                soat:
+                  formData.soatNumber.trim() || formData.soatExpiration.trim()
+                    ? {
+                        number: formData.soatNumber.trim() || undefined,
+                        expiration: formData.soatExpiration || undefined,
+                }
+              : undefined,
+                technicalReview:
+                  formData.technicalReviewNumber.trim() ||
+                  formData.technicalReviewExpiration.trim()
+                    ? {
+                        number: formData.technicalReviewNumber.trim() || undefined,
+                        expiration: formData.technicalReviewExpiration || undefined,
+                      }
+                    : undefined,
+              }
+            : undefined,
+        notes: formData.notes.trim() || undefined,
+      }
+
+      const vehiclePayload = {
         name: formData.name.trim(),
         data: vehicleData,
       }
-      setVehicles(prev =>
-        prev.map(veh => (veh.id === editingId ? updatedVehicle : veh))
+
+      if (editingId) {
+        // Editar vehículo existente
+        await api.updateVehicle(editingId, vehiclePayload)
+        showNotification('Vehículo actualizado exitosamente', 'success')
+    setEditingId(null)
+      } else {
+        // Agregar nuevo vehículo
+        await api.createVehicle(vehiclePayload)
+        showNotification('Vehículo agregado exitosamente', 'success')
+      }
+
+      // Recargar vehículos desde la API
+      await loadRecords()
+
+      // Limpiar formulario y cerrar modal
+      setFormData({
+        name: '',
+        type: '',
+        brand: '',
+        model: '',
+        year: '',
+        plate: '',
+        color: '',
+        vin: '',
+        mileage: '',
+        fuelType: '',
+        insuranceCompany: '',
+        insurancePolicyNumber: '',
+        insuranceExpirationDate: '',
+        insuranceCoverage: '',
+        maintenanceLastService: '',
+        maintenanceNextService: '',
+        maintenanceServiceInterval: '',
+        soatNumber: '',
+        soatExpiration: '',
+        technicalReviewNumber: '',
+        technicalReviewExpiration: '',
+        notes: '',
+      })
+      setShowFormModal(false)
+    } catch (err: any) {
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        editingId
+          ? 'Error al actualizar el vehículo. Por favor, intenta de nuevo.'
+          : 'Error al agregar el vehículo. Por favor, intenta de nuevo.'
       )
-      setEditingId(null)
-      showNotification('Vehículo actualizado', 'success')
-    } else {
-      // Agregar nuevo vehículo
-      const newVehicle: Vehicle = {
-        id: Date.now().toString(),
-        name: formData.name.trim(),
-        data: vehicleData,
-      }
-      setVehicles(prev => [...prev, newVehicle])
-      showNotification('Vehículo agregado', 'success')
+      showNotification(errorMessage, 'error')
+    } finally {
+      setIsSaving(false)
     }
-
-    // Limpiar formulario
-    setFormData({
-      name: '',
-      type: '',
-      brand: '',
-      model: '',
-      year: '',
-      plate: '',
-      color: '',
-      vin: '',
-      mileage: '',
-      fuelType: '',
-      insuranceCompany: '',
-      insurancePolicyNumber: '',
-      insuranceExpirationDate: '',
-      insuranceCoverage: '',
-      maintenanceLastService: '',
-      maintenanceNextService: '',
-      maintenanceServiceInterval: '',
-      soatNumber: '',
-      soatExpiration: '',
-      technicalReviewNumber: '',
-      technicalReviewExpiration: '',
-      notes: '',
-    })
   }
 
   const handleEdit = (vehicle: Vehicle) => {
@@ -274,6 +335,7 @@ function Vehiculos() {
       notes: vehicle.data.notes || '',
     })
     setEditingId(vehicle.id)
+    setShowFormModal(true)
   }
 
   const handleCancelEdit = () => {
@@ -302,126 +364,22 @@ function Vehiculos() {
       technicalReviewExpiration: '',
       notes: '',
     })
+    setShowFormModal(false)
   }
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este vehículo?')) {
-      setVehicles(prev => prev.filter(veh => veh.id !== id))
-      showNotification('Vehículo eliminado', 'success')
-    }
-  }
-
-  const handleSaveClick = () => {
-    if (vehicles.length === 0) {
-      showNotification('Debes agregar al menos un vehículo antes de guardar', 'error')
-      return
-    }
-    setShowSaveModal(true)
-  }
-
-  const handleSaveRecord = async () => {
-    if (!listName.trim()) {
-      showNotification('El nombre de la lista es requerido', 'error')
-      return
-    }
-
-    if (vehicles.length === 0) {
-      showNotification('Debes agregar al menos un empleado antes de guardar', 'error')
+  const handleDelete = async (id: string, name: string) => {
+    if (!window.confirm(`¿Estás seguro de que quieres eliminar el vehículo "${name}"?`)) {
       return
     }
 
     try {
-      setIsSaving(true)
-
-      // Guardar toda la lista de vehiculos en un solo registro
-      const employeeListData = {
-        name: listName.trim(),
-        data: {
-          vehicles: vehicles.map(emp => ({
-            name: emp.name,
-            data: emp.data,
-          })),
-          created_at: new Date().toISOString(),
-        },
-      }
-
-      await api.createVehicle(employeeListData)
-
-      showNotification('Lista de vehiculos guardada exitosamente', 'success')
-
-      // Recargar lista de registros
-      await loadRecords()
-
-      // Cerrar modal y limpiar
-      setShowSaveModal(false)
-      setListName('')
-      // Limpiar después de guardar (opcional)
-      // setVehicles([])
-    } catch (err: any) {
-      const errorMessage = getTranslatedErrorMessage(
-        err,
-        'Error al guardar la lista. Por favor, intenta de nuevo.'
-      )
-      showNotification(errorMessage, 'error')
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  const handleLoadRecord = async (record: VehicleRecord) => {
-    try {
-      const response = await api.getVehicles(record.id)
-      if (response.vehicles && response.vehicles.length > 0) {
-        const vehicleRecord = response.vehicles[0]
-        
-        // Verificar si el registro tiene una lista de vehículos
-        if (vehicleRecord.data && vehicleRecord.data.vehicles && Array.isArray(vehicleRecord.data.vehicles)) {
-          // Cargar la lista completa de vehículos
-          const loadedVehicles: Vehicle[] = vehicleRecord.data.vehicles.map((veh: any, index: number) => ({
-            id: Date.now().toString() + index.toString(),
-            name: veh.name || '',
-            data: veh.data || {},
-          }))
-          setVehicles(loadedVehicles)
-          setListName(vehicleRecord.name)
-        } else {
-          // Formato antiguo: un solo vehículo
-          const loadedVehicle: Vehicle = {
-            id: vehicleRecord.id,
-            name: vehicleRecord.name,
-            data: vehicleRecord.data || {},
-          }
-          setVehicles([loadedVehicle])
-          setListName(vehicleRecord.name)
-        }
-        
-        setShowRecordsModal(false)
-        showNotification(`Lista "${record.name}" cargada`, 'success')
-      } else {
-        showNotification('El registro no tiene datos válidos', 'error')
-      }
-    } catch (err: any) {
-      const errorMessage = getTranslatedErrorMessage(
-        err,
-        'Error al cargar el registro. Por favor, intenta de nuevo.'
-      )
-      showNotification(errorMessage, 'error')
-    }
-  }
-
-  const handleDeleteRecord = async (recordId: string, recordName: string) => {
-    if (!window.confirm(`¿Estás seguro de que quieres eliminar el registro "${recordName}"?`)) {
-      return
-    }
-
-    try {
-      await api.deleteVehicle(recordId)
-      showNotification('Registro eliminado', 'success')
+      await api.deleteVehicle(id)
+      showNotification('Vehículo eliminado exitosamente', 'success')
       await loadRecords()
     } catch (err: any) {
       const errorMessage = getTranslatedErrorMessage(
         err,
-        'Error al eliminar el registro. Por favor, intenta de nuevo.'
+        'Error al eliminar el vehículo. Por favor, intenta de nuevo.'
       )
       showNotification(errorMessage, 'error')
     }
@@ -440,17 +398,44 @@ function Vehiculos() {
           >
             <ArrowBackIcon className="vehiculos-toolbar-icon" />
           </button>
+          <div className="vehiculos-toolbar-menu-container" ref={menuRef}>
           <button
-            className="vehiculos-toolbar-button"
+              className="vehiculos-toolbar-button"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="Opciones"
+              aria-expanded={isMenuOpen}
+              type="button"
+            >
+              <MoreVertIcon className="vehiculos-toolbar-icon" />
+            </button>
+            {isMenuOpen && (
+              <div className="vehiculos-menu">
+                <button
+                  className="vehiculos-menu-item"
             onClick={() => {
-              loadRecords()
-              setShowRecordsModal(true)
+                    setIsMenuOpen(false)
+                    setShowFormModal(true)
             }}
-            aria-label="Ver registros guardados"
             type="button"
           >
-            <FolderIcon className="vehiculos-toolbar-icon" />
+                  <AddIcon className="vehiculos-menu-icon" />
+                  <span>Agregar Vehículo</span>
           </button>
+                {process.env.NODE_ENV === 'development' && (
+                  <button
+                    className="vehiculos-menu-item"
+                    onClick={() => {
+                      setIsMenuOpen(false)
+                      setIsDebugModalOpen(true)
+                    }}
+                    type="button"
+                  >
+                    <span>🐛 Debug</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         <h1 className="vehiculos-page-title">Vehículos</h1>
@@ -458,12 +443,25 @@ function Vehiculos() {
           Gestiona la información de tus vehículos: marca, modelo, placa, año, mantenimientos, seguros y más
         </p>
 
-        {/* Formulario para agregar vehiculos */}
-        <div className="vehiculos-form-section">
-          <h2 className="vehiculos-section-title">
-            {editingId ? 'Editar Vehículo' : 'Agregar Vehículo'}
+        {/* Modal de Formulario */}
+        {showFormModal && (
+          <div className="vehiculos-modal-overlay" onClick={() => handleCancelEdit()}>
+            <div className="vehiculos-modal vehiculos-modal-large" onClick={e => e.stopPropagation()}>
+              <div className="vehiculos-modal-header">
+                <h2 className="vehiculos-modal-title">
+                  {editingId ? 'Editar Vehículo' : 'Agregar Vehículo'}
           </h2>
-          <form onSubmit={handleSubmit} className="vehiculos-form">
+                <button
+                  className="vehiculos-modal-close"
+                  onClick={() => handleCancelEdit()}
+                  aria-label="Cerrar"
+                  type="button"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="vehiculos-modal-content">
+                <form onSubmit={handleSubmit} className="vehiculos-form">
             <div className="vehiculos-form-group">
               <label htmlFor="name" className="vehiculos-form-label">
                 <DirectionsCarIcon className="vehiculos-label-icon" />
@@ -517,7 +515,7 @@ function Vehiculos() {
                   placeholder="Ej: Toyota"
                 />
               </div>
-            </div>
+              </div>
 
             <div className="vehiculos-form-row">
               <div className="vehiculos-form-group">
@@ -722,16 +720,16 @@ function Vehiculos() {
               <div className="vehiculos-form-group">
                 <label htmlFor="maintenanceLastService" className="vehiculos-form-label">
                   Último Servicio
-                </label>
-                <input
+              </label>
+              <input
                   type="date"
                   id="maintenanceLastService"
                   name="maintenanceLastService"
                   value={formData.maintenanceLastService}
-                  onChange={handleChange}
+                onChange={handleChange}
                   className="vehiculos-form-input"
-                />
-              </div>
+              />
+            </div>
 
               <div className="vehiculos-form-group">
                 <label htmlFor="maintenanceNextService" className="vehiculos-form-label">
@@ -801,7 +799,7 @@ function Vehiculos() {
                   className="vehiculos-form-input"
                 />
               </div>
-            </div>
+              </div>
 
             <div className="vehiculos-form-row">
               <div className="vehiculos-form-group">
@@ -868,27 +866,40 @@ function Vehiculos() {
             </div>
           </form>
         </div>
-
-        {/* Lista de vehiculos */}
-        {vehicles.length > 0 && (
-          <div className="vehiculos-list-section">
-            <div className="vehiculos-section-header">
-              <h2 className="vehiculos-section-title">
-                Vehículos ({vehicles.length})
-              </h2>
-              <button
-                className="vehiculos-save-button"
-                onClick={handleSaveClick}
-                disabled={isSaving}
-                type="button"
-              >
-                <SaveIcon className="vehiculos-save-icon" />
-                {isSaving ? 'Guardando...' : 'Guardar Lista'}
-              </button>
             </div>
+          </div>
+        )}
+
+        {/* Estado de carga */}
+        {isLoading ? (
+          <div className="vehiculos-empty-state">
+            <p className="vehiculos-empty-text">Cargando vehículos...</p>
+            </div>
+        ) : error ? (
+          <div className="vehiculos-empty-state">
+            <p className="vehiculos-empty-text">{error}</p>
+          </div>
+        ) : vehicles.length === 0 ? (
+          <div className="vehiculos-empty-state">
+            <p className="vehiculos-empty-text">No hay vehículos agregados</p>
+            <p className="vehiculos-empty-text">Agrega tu primer vehículo usando el botón del menú</p>
+          </div>
+        ) : (
+          <div className="vehiculos-list-section">
+            <h2 className="vehiculos-section-title">
+              Vehículos ({vehicles.length})
+              </h2>
             <div className="vehiculos-list">
               {vehicles.map(vehicle => (
-                <div key={vehicle.id} className="vehiculos-item">
+                <div 
+                  key={vehicle.id} 
+                  className="vehiculos-item"
+                  onClick={() => {
+                    setSelectedVehicle(vehicle)
+                    setShowDetailModal(true)
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div className="vehiculos-item-content">
                     <div className="vehiculos-item-header">
                       <h3 className="vehiculos-item-name">{vehicle.name}</h3>
@@ -950,14 +961,17 @@ function Vehiculos() {
                         <div className="vehiculos-item-detail">
                           <BuildIcon className="vehiculos-item-detail-icon" />
                           <span>Próximo servicio: {new Date(vehicle.data.maintenance.nextService).toLocaleDateString('es-CO')}</span>
-                        </div>
-                      )}
                     </div>
+                      )}
                   </div>
-                  <div className="vehiculos-item-actions">
+                  </div>
+                  <div className="vehiculos-item-actions" onClick={(e) => e.stopPropagation()}>
                     <button
                       className="vehiculos-item-action-button"
-                      onClick={() => handleEdit(vehicle)}
+                      onClick={() => {
+                        handleEdit(vehicle)
+                        setShowDetailModal(false)
+                      }}
                       aria-label="Editar"
                       type="button"
                     >
@@ -965,7 +979,7 @@ function Vehiculos() {
                     </button>
                     <button
                       className="vehiculos-item-action-button vehiculos-item-action-button-delete"
-                      onClick={() => handleDelete(vehicle.id)}
+                      onClick={() => handleDelete(vehicle.id, vehicle.name)}
                       aria-label="Eliminar"
                       type="button"
                     >
@@ -978,18 +992,15 @@ function Vehiculos() {
           </div>
         )}
 
-        {/* Modal para guardar lista */}
-        {showSaveModal && (
-          <div className="vehiculos-modal-overlay" onClick={() => setShowSaveModal(false)}>
-            <div className="vehiculos-modal" onClick={e => e.stopPropagation()}>
+        {/* Modal de Detalle */}
+        {showDetailModal && selectedVehicle && (
+          <div className="vehiculos-modal-overlay" onClick={() => setShowDetailModal(false)}>
+            <div className="vehiculos-modal vehiculos-modal-large" onClick={e => e.stopPropagation()}>
               <div className="vehiculos-modal-header">
-                <h2 className="vehiculos-modal-title">Guardar Lista de Vehículos</h2>
+                <h2 className="vehiculos-modal-title">Detalle del Vehículo</h2>
                 <button
                   className="vehiculos-modal-close"
-                  onClick={() => {
-                    setShowSaveModal(false)
-                    setListName('')
-                  }}
+                  onClick={() => setShowDetailModal(false)}
                   aria-label="Cerrar"
                   type="button"
                 >
@@ -997,60 +1008,288 @@ function Vehiculos() {
                 </button>
               </div>
               <div className="vehiculos-modal-content">
-                <div className="vehiculos-form-group">
-                  <label htmlFor="listName" className="vehiculos-form-label">
-                    Nombre de la Lista *
-                  </label>
+                {/* Información Básica */}
+                <div className="vehiculos-detail-section">
+                  <h3 className="vehiculos-detail-section-title">Información Básica</h3>
+                  <div className="vehiculos-detail-grid">
+                    <div className="vehiculos-detail-item">
+                      <span className="vehiculos-detail-label">Nombre:</span>
+                      <span className="vehiculos-detail-value">{selectedVehicle.name}</span>
+                    </div>
+                    {selectedVehicle.data.brand && selectedVehicle.data.model && (
+                      <div className="vehiculos-detail-item">
+                        <span className="vehiculos-detail-label">Marca y Modelo:</span>
+                        <span className="vehiculos-detail-value">{selectedVehicle.data.brand} {selectedVehicle.data.model}</span>
+                      </div>
+                    )}
+                    {selectedVehicle.data.year && (
+                      <div className="vehiculos-detail-item">
+                        <span className="vehiculos-detail-label">Año:</span>
+                        <span className="vehiculos-detail-value">{selectedVehicle.data.year}</span>
+                      </div>
+                    )}
+                    {selectedVehicle.data.plate && (
+                      <div className="vehiculos-detail-item">
+                        <span className="vehiculos-detail-label">Placa:</span>
+                        <span className="vehiculos-detail-value">{selectedVehicle.data.plate}</span>
+                      </div>
+                    )}
+                    {selectedVehicle.data.type && (
+                      <div className="vehiculos-detail-item">
+                        <span className="vehiculos-detail-label">Tipo:</span>
+                        <span className="vehiculos-detail-value">{selectedVehicle.data.type}</span>
+                      </div>
+                    )}
+                    {selectedVehicle.data.color && (
+                      <div className="vehiculos-detail-item">
+                        <span className="vehiculos-detail-label">Color:</span>
+                        <span className="vehiculos-detail-value">{selectedVehicle.data.color}</span>
+                      </div>
+                    )}
+                    {selectedVehicle.data.mileage && (
+                      <div className="vehiculos-detail-item">
+                        <span className="vehiculos-detail-label">Kilometraje:</span>
+                        <span className="vehiculos-detail-value">{selectedVehicle.data.mileage.toLocaleString('es-CO')} km</span>
+                      </div>
+                    )}
+                    {selectedVehicle.data.fuelType && (
+                      <div className="vehiculos-detail-item">
+                        <span className="vehiculos-detail-label">Combustible:</span>
+                        <span className="vehiculos-detail-value">{selectedVehicle.data.fuelType}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Eventos */}
+                <div className="vehiculos-detail-section">
+                  <h3 className="vehiculos-detail-section-title">
+                    <ReportProblemIcon className="vehiculos-detail-section-icon" />
+                    Eventos
+                  </h3>
+                  <div className="vehiculos-detail-form-group">
+                    <div className="vehiculos-form-row">
+                      <div className="vehiculos-form-group">
+                        <label className="vehiculos-form-label">Tipo de Evento *</label>
+                        <select
+                          value={eventForm.type}
+                          onChange={(e) => setEventForm(prev => ({ ...prev, type: e.target.value }))}
+                          className="vehiculos-form-input"
+                        >
+                          <option value="">Seleccionar...</option>
+                          <option value="Rayón">Rayón</option>
+                          <option value="Golpe">Golpe</option>
+                          <option value="Pinchazo">Pinchazo</option>
+                          <option value="Choque">Choque</option>
+                          <option value="Vandalismo">Vandalismo</option>
+                          <option value="Robo">Robo</option>
+                          <option value="Accidente">Accidente</option>
+                          <option value="Otro">Otro</option>
+                        </select>
+                      </div>
+                      <div className="vehiculos-form-group">
+                        <label className="vehiculos-form-label">Fecha *</label>
+                        <input
+                          type="date"
+                          value={eventForm.date}
+                          onChange={(e) => setEventForm(prev => ({ ...prev, date: e.target.value }))}
+                          className="vehiculos-form-input"
+                        />
+                      </div>
+                    </div>
+                    <div className="vehiculos-form-group">
+                      <label className="vehiculos-form-label">Descripción</label>
                   <input
                     type="text"
-                    id="listName"
-                    name="listName"
-                    value={listName}
-                    onChange={(e) => setListName(e.target.value)}
-                    className="vehiculos-form-input"
-                    placeholder="Ej: Vehículos 2024, Personal de Oficina..."
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleSaveRecord()
-                      }
-                    }}
+                        value={eventForm.description}
+                        onChange={(e) => setEventForm(prev => ({ ...prev, description: e.target.value }))}
+                        className="vehiculos-form-input"
+                        placeholder="Ej: Rayón en puerta delantera derecha"
                   />
                 </div>
-                <div className="vehiculos-form-actions">
+                    <div className="vehiculos-form-group">
+                      <label className="vehiculos-form-label">Ubicación del Daño en el Vehículo</label>
+                      <input
+                        type="text"
+                        value={eventForm.location}
+                        onChange={(e) => setEventForm(prev => ({ ...prev, location: e.target.value }))}
+                        className="vehiculos-form-input"
+                        placeholder="Ej: Puerta delantera derecha, Parabrisas, Llanta trasera izquierda, etc."
+                      />
+                    </div>
+                    <div className="vehiculos-form-row">
+                      <div className="vehiculos-form-group">
+                        <label className="vehiculos-form-label">Precio del Arreglo/Compra (COP)</label>
+                        <input
+                          type="number"
+                          value={eventForm.cost}
+                          onChange={(e) => setEventForm(prev => ({ ...prev, cost: e.target.value }))}
+                          className="vehiculos-form-input"
+                          min="0"
+                          step="1000"
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="vehiculos-form-group">
+                        <label className="vehiculos-form-label">Taller/Sitio del Arreglo</label>
+                        <input
+                          type="text"
+                          value={eventForm.repairShop}
+                          onChange={(e) => setEventForm(prev => ({ ...prev, repairShop: e.target.value }))}
+                          className="vehiculos-form-input"
+                          placeholder="Ej: Taller ABC, Autopartes XYZ, etc."
+                        />
+                      </div>
+                    </div>
+                    <div className="vehiculos-form-group">
+                      <label className="vehiculos-form-label">Sitio de Compra (si aplica)</label>
+                      <input
+                        type="text"
+                        value={eventForm.purchasePlace}
+                        onChange={(e) => setEventForm(prev => ({ ...prev, purchasePlace: e.target.value }))}
+                        className="vehiculos-form-input"
+                        placeholder="Ej: Repuestos ABC, Tienda XYZ, Online, etc."
+                      />
+                    </div>
+                    <div className="vehiculos-form-group">
+                      <label className="vehiculos-form-label">Notas</label>
+                      <input
+                        type="text"
+                        value={eventForm.notes}
+                        onChange={(e) => setEventForm(prev => ({ ...prev, notes: e.target.value }))}
+                        className="vehiculos-form-input"
+                        placeholder="Notas adicionales"
+                      />
+                    </div>
                   <button
                     type="button"
-                    className="vehiculos-form-button vehiculos-form-button-secondary"
-                    onClick={() => {
-                      setShowSaveModal(false)
-                      setListName('')
-                    }}
-                  >
-                    Cancelar
+                      className="vehiculos-form-button vehiculos-form-button-primary"
+                      onClick={async () => {
+                        if (!eventForm.type || !eventForm.date) {
+                          showNotification('Debes ingresar tipo y fecha del evento', 'error')
+                          return
+                        }
+                        try {
+                          const events = selectedVehicle.data.events || []
+                          const newEvents = [...events, {
+                            type: eventForm.type,
+                            date: eventForm.date,
+                            description: eventForm.description || undefined,
+                            location: eventForm.location || undefined,
+                            cost: eventForm.cost ? parseFloat(eventForm.cost) : undefined,
+                            repairShop: eventForm.repairShop || undefined,
+                            purchasePlace: eventForm.purchasePlace || undefined,
+                            notes: eventForm.notes || undefined,
+                          }]
+
+                          await api.updateVehicle(selectedVehicle.id, {
+                            data: {
+                              ...selectedVehicle.data,
+                              events: newEvents,
+                            },
+                          })
+                          showNotification('Evento registrado exitosamente', 'success')
+                          setEventForm({ type: '', date: '', description: '', location: '', cost: '', repairShop: '', purchasePlace: '', notes: '' })
+                          await loadRecords()
+                          const updated = vehicles.find(v => v.id === selectedVehicle.id)
+                          if (updated) {
+                            setSelectedVehicle(updated)
+                          }
+                        } catch (err: any) {
+                          const errorMessage = getTranslatedErrorMessage(
+                            err,
+                            'Error al registrar el evento. Por favor, intenta de nuevo.'
+                          )
+                          showNotification(errorMessage, 'error')
+                        }
+                      }}
+                    >
+                      Agregar Evento
                   </button>
+                  </div>
+                  {selectedVehicle.data.events && selectedVehicle.data.events.length > 0 && (
+                    <div className="vehiculos-detail-list">
+                      {selectedVehicle.data.events.map((event, index) => (
+                        <div key={index} className="vehiculos-detail-list-item">
+                          <div className="vehiculos-detail-list-item-content">
+                            <ReportProblemIcon className="vehiculos-detail-list-item-icon" />
+                            <div>
+                              <span className="vehiculos-detail-list-item-date">
+                                {new Date(event.date).toLocaleDateString('es-CO')}
+                              </span>
+                              <span className="vehiculos-detail-list-item-type">{event.type}</span>
+                              {event.description && (
+                                <span className="vehiculos-detail-list-item-reason">{event.description}</span>
+                              )}
+                              {event.location && (
+                                <span className="vehiculos-detail-list-item-notes">Ubicación del daño: {event.location}</span>
+                              )}
+                              {event.cost && (
+                                <span className="vehiculos-detail-list-item-hours">
+                                  Precio: ${event.cost.toLocaleString('es-CO')}
+                                </span>
+                              )}
+                              {event.repairShop && (
+                                <span className="vehiculos-detail-list-item-notes">Taller: {event.repairShop}</span>
+                              )}
+                              {event.purchasePlace && (
+                                <span className="vehiculos-detail-list-item-notes">Sitio de compra: {event.purchasePlace}</span>
+                              )}
+                              {event.notes && (
+                                <span className="vehiculos-detail-list-item-notes">{event.notes}</span>
+                              )}
+                            </div>
+                          </div>
                   <button
                     type="button"
-                    className="vehiculos-form-button vehiculos-form-button-primary"
-                    onClick={handleSaveRecord}
-                    disabled={isSaving || !listName.trim()}
-                  >
-                    {isSaving ? 'Guardando...' : 'Guardar'}
+                            className="vehiculos-detail-list-item-delete"
+                            onClick={async () => {
+                              try {
+                                const events = selectedVehicle.data.events || []
+                                const updatedEvents = events.filter((_, i) => i !== index)
+
+                                await api.updateVehicle(selectedVehicle.id, {
+                                  data: {
+                                    ...selectedVehicle.data,
+                                    events: updatedEvents,
+                                  },
+                                })
+                                showNotification('Evento eliminado', 'success')
+                                await loadRecords()
+                                const updated = vehicles.find(v => v.id === selectedVehicle.id)
+                                if (updated) {
+                                  setSelectedVehicle(updated)
+                                }
+                              } catch (err: any) {
+                                const errorMessage = getTranslatedErrorMessage(
+                                  err,
+                                  'Error al eliminar el evento. Por favor, intenta de nuevo.'
+                                )
+                                showNotification(errorMessage, 'error')
+                              }
+                            }}
+                          >
+                            <DeleteIcon />
                   </button>
+                </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Modal de registros guardados */}
-        {showRecordsModal && (
-          <div className="vehiculos-modal-overlay" onClick={() => setShowRecordsModal(false)}>
+        {/* Modal de Debug */}
+        {isDebugModalOpen && (
+          <div className="vehiculos-modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
             <div className="vehiculos-modal" onClick={e => e.stopPropagation()}>
               <div className="vehiculos-modal-header">
-                <h2 className="vehiculos-modal-title">Registros Guardados</h2>
+                <h2 className="vehiculos-modal-title">🐛 Debug - Vehículos</h2>
                 <button
                   className="vehiculos-modal-close"
-                  onClick={() => setShowRecordsModal(false)}
+                  onClick={() => setIsDebugModalOpen(false)}
                   aria-label="Cerrar"
                   type="button"
                 >
@@ -1058,51 +1297,190 @@ function Vehiculos() {
                 </button>
               </div>
               <div className="vehiculos-modal-content">
-                {isLoadingRecords ? (
-                  <div className="vehiculos-modal-loading">Cargando...</div>
-                ) : records.length === 0 ? (
-                  <div className="vehiculos-modal-empty">No hay registros guardados</div>
-                ) : (
-                  <div className="vehiculos-records-list">
-                    {records.map(record => (
-                      <div key={record.id} className="vehiculos-record-item">
-                        <div className="vehiculos-record-content">
-                          <h3 className="vehiculos-record-name">{record.name}</h3>
-                          <div className="vehiculos-record-meta">
-                            {record.data && record.data.vehicles && Array.isArray(record.data.vehicles) ? (
-                              <span>{record.data.vehicles.length} empleado{record.data.vehicles.length !== 1 ? 's' : ''}</span>
-                            ) : (
-                              <span>1 empleado</span>
-                            )}
-                          </div>
-                          {record.created_at && (
-                            <div className="vehiculos-record-date">
-                              Creado:{' '}
-                              {new Date(record.created_at).toLocaleDateString('es-CO')}
-                            </div>
-                          )}
-                        </div>
-                        <div className="vehiculos-record-actions">
+                <div className="debug-options">
                           <button
-                            className="vehiculos-record-action-button"
-                            onClick={() => handleLoadRecord(record)}
+                    className="debug-option-button create-demo"
+                    onClick={async () => {
+                      try {
+                        setIsDebugLoading(true)
+                        const demoVehicles = [
+                          {
+                            name: 'Toyota Corolla 2020',
+                            data: {
+                              type: 'Automóvil',
+                              brand: 'Toyota',
+                              model: 'Corolla',
+                              year: 2020,
+                              plate: 'ABC123',
+                              color: 'Blanco',
+                              vin: '1HGBH41JXMN109186',
+                              mileage: 45000,
+                              fuelType: 'Gasolina',
+                              insurance: {
+                                company: 'Seguros XYZ',
+                                policyNumber: 'POL-123456',
+                                expirationDate: '2023-12-31', // Vencido
+                                coverage: 'Todo Riesgo',
+                              },
+                              maintenance: {
+                                lastService: '2024-01-15',
+                                nextService: '2024-07-15',
+                                serviceInterval: 10000,
+                              },
+                              documents: {
+                                soat: {
+                                  number: 'SOAT-789012',
+                                  expiration: '2024-12-31',
+                                },
+                                technicalReview: {
+                                  number: 'RT-345678',
+                                  expiration: '2023-06-30', // Vencido
+                                },
+                              },
+                              notes: 'Vehículo en excelente estado - Seguro y revisión técnica vencidos',
+                            },
+                          },
+                          {
+                            name: 'Honda CB650R',
+                            data: {
+                              type: 'Moto',
+                              brand: 'Honda',
+                              model: 'CB650R',
+                              year: 2022,
+                              plate: 'XYZ789',
+                              color: 'Negro',
+                              vin: 'JH2SC5900CK200001',
+                              mileage: 12000,
+                              fuelType: 'Gasolina',
+                              insurance: {
+                                company: 'Seguros ABC',
+                                policyNumber: 'POL-789012',
+                                expirationDate: '2024-11-30',
+                                coverage: 'Responsabilidad Civil',
+                              },
+                              maintenance: {
+                                lastService: '2024-03-20',
+                                nextService: '2024-09-20',
+                                serviceInterval: 6000,
+                              },
+                              documents: {
+                                soat: {
+                                  number: 'SOAT-345678',
+                                  expiration: '2024-11-30',
+                                },
+                              },
+                            },
+                          },
+                          {
+                            name: 'Ford Ranger 2021',
+                            data: {
+                              type: 'Camioneta',
+                              brand: 'Ford',
+                              model: 'Ranger',
+                              year: 2021,
+                              plate: 'DEF456',
+                              color: 'Gris',
+                              vin: '1FTFW1ET5MFA12345',
+                              mileage: 35000,
+                              fuelType: 'Diesel',
+                              insurance: {
+                                company: 'Seguros DEF',
+                                policyNumber: 'POL-456789',
+                                expirationDate: '2025-01-15',
+                                coverage: 'Todo Riesgo',
+                              },
+                              maintenance: {
+                                lastService: '2024-02-10',
+                                nextService: '2024-08-10',
+                                serviceInterval: 15000,
+                              },
+                              documents: {
+                                soat: {
+                                  number: 'SOAT-901234',
+                                  expiration: '2025-01-15',
+                                },
+                                technicalReview: {
+                                  number: 'RT-567890',
+                                  expiration: '2025-03-31',
+                                },
+                              },
+                            },
+                          },
+                        ]
+
+                        // Guardar cada vehículo en la API
+                        for (const veh of demoVehicles) {
+                          await api.createVehicle({
+                            name: veh.name,
+                            data: veh.data,
+                          })
+                        }
+
+                        showNotification(`${demoVehicles.length} vehículos demo creados exitosamente`, 'success')
+                        await loadRecords()
+                        setIsDebugModalOpen(false)
+                      } catch (err: any) {
+                        const errorMessage = getTranslatedErrorMessage(
+                          err,
+                          'Error al crear los vehículos demo. Por favor, intenta de nuevo.'
+                        )
+                        showNotification(errorMessage, 'error')
+                      } finally {
+                        setIsDebugLoading(false)
+                      }
+                    }}
+                    disabled={isDebugLoading}
                             type="button"
                           >
-                            Cargar
+                    <span className="debug-option-icon">📦</span>
+                    <div className="debug-option-info">
+                      <h3 className="debug-option-title">Crear Vehículos Demo</h3>
+                      <p className="debug-option-description">
+                        Crea 3 vehículos de ejemplo con diferentes configuraciones
+                      </p>
+                    </div>
                           </button>
                           <button
-                            className="vehiculos-record-action-button vehiculos-record-action-button-delete"
-                            onClick={() => handleDeleteRecord(record.id, record.name)}
+                    className="debug-option-button delete-all"
+                    onClick={async () => {
+                      if (
+                        !window.confirm(
+                          '¿Estás seguro de que quieres eliminar TODOS los registros de vehículos? Esta acción es irreversible.'
+                        )
+                      ) {
+                        return
+                      }
+
+                      try {
+                        setIsDebugLoading(true)
+                        await api.deleteAllVehicles()
+                        showNotification('Todos los registros de vehículos han sido eliminados', 'success')
+                        await loadRecords()
+                        setVehicles([])
+                        setIsDebugModalOpen(false)
+                      } catch (err: any) {
+                        const errorMessage = getTranslatedErrorMessage(
+                          err,
+                          'Error al eliminar los registros. Por favor, intenta de nuevo.'
+                        )
+                        showNotification(errorMessage, 'error')
+                      } finally {
+                        setIsDebugLoading(false)
+                      }
+                    }}
+                    disabled={isDebugLoading}
                             type="button"
                           >
-                            Eliminar
+                    <span className="debug-option-icon">🗑️</span>
+                    <div className="debug-option-info">
+                      <h3 className="debug-option-title">Eliminar Todos los Registros</h3>
+                      <p className="debug-option-description">
+                        Elimina todos los registros de vehículos guardados (irreversible)
+                      </p>
+              </div>
                           </button>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
             </div>
           </div>
         )}

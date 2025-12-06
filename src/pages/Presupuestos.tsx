@@ -741,6 +741,17 @@ function Presupuestos() {
                         <AddIcon className="presupuestos-menu-icon" />
                         <span>Agregar Presupuesto</span>
                       </button>
+                      <button
+                        className="presupuestos-menu-item"
+                        onClick={() => {
+                          setIsMenuOpen(false)
+                          handleOpenDeletedBudgetsModal()
+                        }}
+                        type="button"
+                      >
+                        <ArchiveIcon className="presupuestos-menu-icon" />
+                        <span>Ver Presupuestos Eliminados</span>
+                      </button>
                       {api.isTestUser() && (
                         <button
                           className="presupuestos-menu-item"
@@ -787,12 +798,6 @@ function Presupuestos() {
                     <CalculateIcon className="empty-icon" />
                     <p className="empty-text">No hay presupuestos agregados</p>
                     <p className="empty-subtext">Agrega tu primer presupuesto</p>
-                  </div>
-                  <div className="deleted-budgets-button-container">
-                    <button className="view-deleted-button" onClick={handleOpenDeletedBudgetsModal}>
-                      <ArchiveIcon />
-                      <span>Ver Presupuestos Eliminados</span>
-                    </button>
                   </div>
                 </>
               ) : (
@@ -875,12 +880,6 @@ function Presupuestos() {
                           )
                         })}
                     </div>
-                  </div>
-                  <div className="deleted-budgets-button-container">
-                    <button className="view-deleted-button" onClick={handleOpenDeletedBudgetsModal}>
-                      <ArchiveIcon />
-                      <span>Ver Presupuestos Eliminados</span>
-                    </button>
                   </div>
                 </>
               )}

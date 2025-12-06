@@ -407,20 +407,237 @@
   font-size: 1.5rem;
 }
 
-/* Transactions List */
+/* Transactions List - Matching Cuentas design */
 .transactions-list {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  width: 100%;
 }
 
-.transaction-item {
+.transactions-group {
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-glass);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Transaction Row - Compact List Item (matching account-row) */
+.transaction-row {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
   padding: var(--spacing-md) var(--spacing-lg);
   min-height: 72px; /* HIG: Adequate touch target */
+  background: transparent;
+  border: none;
+  border-left: 3px solid rgba(10, 132, 255, 0.5);
+  border-bottom: 1px solid var(--border-glass-light);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+  width: 100%;
+  font-family: var(--font-family);
+  position: relative;
+}
+
+.transaction-row:last-child {
+  border-bottom: none;
+}
+
+.transaction-row.income {
+  border-left-color: rgba(52, 199, 89, 0.5);
+}
+
+.transaction-row.expense {
+  border-left-color: rgba(255, 149, 0, 0.5);
+}
+
+.transaction-row.savings {
+  border-left-color: rgba(0, 199, 190, 0.5);
+}
+
+.transaction-row:hover:not(:disabled) {
+  background: var(--bg-glass-light);
+  box-shadow: 0 4px 16px 0 rgba(10, 132, 255, 0.2), var(--shadow-sm);
+}
+
+.transaction-row.income:hover:not(:disabled) {
+  border-left-color: rgba(52, 199, 89, 0.8);
+  box-shadow: 0 4px 16px 0 rgba(52, 199, 89, 0.2), var(--shadow-sm);
+}
+
+.transaction-row.expense:hover:not(:disabled) {
+  border-left-color: rgba(255, 149, 0, 0.8);
+  box-shadow: 0 4px 16px 0 rgba(255, 149, 0, 0.2), var(--shadow-sm);
+}
+
+.transaction-row.savings:hover:not(:disabled) {
+  border-left-color: rgba(0, 199, 190, 0.8);
+  box-shadow: 0 4px 16px 0 rgba(0, 199, 190, 0.2), var(--shadow-sm);
+}
+
+.transaction-row:active:not(:disabled) {
+  background: var(--bg-glass-hover);
+  transition: background-color var(--transition-fast);
+}
+
+.transaction-row:focus-visible {
+  outline: 2px solid var(--accent-primary-border);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+.transaction-row:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Transaction Row Content */
+.transaction-row-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.transaction-row-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+.transaction-row-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: 1.4;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+[data-theme='light'] .transaction-row-title {
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.transaction-row-amount {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: 1.4;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.transaction-row-amount.income {
+  color: #34c759;
+}
+
+[data-theme='light'] .transaction-row-amount.income {
+  color: #28a745;
+}
+
+.transaction-row-amount.expense {
+  color: #ff9500;
+}
+
+[data-theme='light'] .transaction-row-amount.expense {
+  color: #fd7e14;
+}
+
+.transaction-row-amount.savings {
+  color: #00c7be;
+}
+
+[data-theme='light'] .transaction-row-amount.savings {
+  color: #17a2b8;
+}
+
+[data-theme='light'] .transaction-row-amount {
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.transaction-row-secondary {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.transaction-row-category {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: 1.4;
+}
+
+[data-theme='light'] .transaction-row-category {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.transaction-row-separator {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  opacity: 0.5;
+}
+
+.transaction-row-date {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: 1.4;
+}
+
+[data-theme='light'] .transaction-row-date {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.transaction-row-account {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: 1.4;
+}
+
+[data-theme='light'] .transaction-row-account {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+/* Transaction Row Chevron */
+.transaction-row-chevron {
+  color: var(--text-tertiary);
+  font-size: 1.25rem !important;
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+  flex-shrink: 0;
+  margin-left: var(--spacing-xs);
+}
+
+[data-theme='light'] .transaction-row-chevron {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+/* Legacy styles - keeping for backward compatibility but not used */
+.transaction-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  min-height: 72px;
   width: 100%;
   background: var(--bg-glass);
   backdrop-filter: var(--backdrop-blur);
@@ -438,79 +655,6 @@
   cursor: pointer;
   text-align: left;
   outline: none;
-}
-
-.transaction-item:focus-visible {
-  outline: 2px solid var(--accent-primary-border);
-  outline-offset: 2px;
-}
-
-.transaction-item::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: var(--transaction-color, #007aff);
-  opacity: 0.8;
-  border-radius: 20px 0 0 20px;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.transaction-item.income::before {
-  background: rgba(52, 199, 89, 0.8);
-}
-
-.transaction-item.income {
-  border-left-color: rgba(52, 199, 89, 0.5);
-}
-
-.transaction-item.expense::before {
-  background: rgba(255, 149, 0, 0.8);
-}
-
-.transaction-item.expense {
-  border-left-color: rgba(255, 149, 0, 0.5);
-}
-
-.transaction-item.savings::before {
-  background: rgba(0, 199, 190, 0.8);
-}
-
-.transaction-item.savings {
-  border-left-color: rgba(0, 199, 190, 0.5);
-}
-
-.transaction-item:hover {
-  background: var(--bg-glass-light);
-  transform: translateX(2px);
-  box-shadow: var(--shadow-md);
-  border-top-color: var(--border-glass-hover);
-  border-right-color: var(--border-glass-hover);
-  border-bottom-color: var(--border-glass-hover);
-}
-
-.transaction-item.income:hover {
-  border-left-color: rgba(52, 199, 89, 0.8);
-  box-shadow:
-    0 4px 16px 0 rgba(52, 199, 89, 0.2),
-    var(--shadow-md);
-}
-
-.transaction-item.expense:hover {
-  border-left-color: rgba(255, 149, 0, 0.8);
-  box-shadow:
-    0 4px 16px 0 rgba(255, 149, 0, 0.2),
-    var(--shadow-md);
-}
-
-.transaction-item.savings:hover {
-  border-left-color: rgba(0, 199, 190, 0.8);
-  box-shadow:
-    0 4px 16px 0 rgba(0, 199, 190, 0.2),
-    var(--shadow-md);
 }
 
 .transaction-content {

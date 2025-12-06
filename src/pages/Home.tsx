@@ -4,6 +4,7 @@ import BuildIcon from '@mui/icons-material/Build'
 import SpaIcon from '@mui/icons-material/Spa'
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive'
 import GavelIcon from '@mui/icons-material/Gavel'
+import WorkIcon from '@mui/icons-material/Work'
 import LogoutIcon from '@mui/icons-material/Logout'
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
@@ -58,6 +59,14 @@ const apps: App[] = [
     Icon: GavelIcon,
     color: '#5856D6',
     path: '/justicia',
+  },
+  {
+    id: '6',
+    name: 'Trabajo',
+    hasIcon: true,
+    Icon: WorkIcon,
+    color: '#FF9500',
+    path: '/trabajo',
   },
   { id: 'logout', name: 'Salir', hasIcon: true, Icon: LogoutIcon, color: '#FF3B30', path: '' },
 ]

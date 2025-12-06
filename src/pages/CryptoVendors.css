@@ -1,5 +1,5 @@
-/* Empleados Page Styles */
-.vehiculos-content {
+/* Crypto Vendors Page Styles */
+.cryptovendors-content {
   flex-direction: column;
   gap: 0.75rem;
   align-items: stretch;
@@ -8,8 +8,8 @@
   margin: 0 auto;
 }
 
-/* Toolbar */
-.vehiculos-toolbar {
+/* Toolbar - inherits from .app-toolbar */
+.cryptovendors-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -20,13 +20,14 @@
 }
 
 @media (max-width: 768px) {
-  .vehiculos-toolbar {
+  .cryptovendors-toolbar {
     margin-top: var(--spacing-xl);
     margin-bottom: var(--spacing-sm);
   }
 }
 
-.vehiculos-toolbar-button {
+/* Toolbar Button - inherits from .app-toolbar-button */
+.cryptovendors-toolbar-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -43,124 +44,87 @@
   transition: all var(--transition-base);
   padding: 0;
   box-shadow: var(--shadow-sm);
-}
-
-.vehiculos-toolbar-button:hover {
-  transform: scale(1.05);
-  box-shadow: var(--shadow-md);
-}
-
-.vehiculos-toolbar-button:active {
-  transform: scale(0.95);
-}
-
-.vehiculos-toolbar-icon {
-  width: 24px;
-  height: 24px;
   color: var(--text-primary);
 }
 
-[data-theme='light'] .vehiculos-toolbar-button {
+.cryptovendors-toolbar-button:hover:not(:disabled) {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-glass-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.cryptovendors-toolbar-button:active:not(:disabled) {
+  transform: translateY(0);
+  transition: transform var(--transition-fast);
+}
+
+.cryptovendors-toolbar-button:focus-visible {
+  outline: 2px solid var(--accent-primary-border);
+  outline-offset: 2px;
+}
+
+.cryptovendors-toolbar-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cryptovendors-toolbar-icon {
+  font-size: 1.5rem !important;
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  color: var(--text-primary);
+}
+
+[data-theme='light'] .cryptovendors-toolbar-button {
   background: var(--bg-glass);
   border-color: var(--border-glass);
 }
 
-[data-theme='light'] .vehiculos-toolbar-button:hover {
+[data-theme='light'] .cryptovendors-toolbar-button:hover:not(:disabled) {
   background: var(--bg-glass-hover);
   border-color: var(--border-glass-hover);
 }
 
-.vehiculos-toolbar-menu-container {
-  position: relative;
-}
-
-/* Menu - HIG: Actions Menu */
-.vehiculos-menu {
-  position: absolute;
-  top: calc(100% + var(--spacing-xs));
-  right: 0;
-  background: var(--bg-glass);
-  backdrop-filter: var(--backdrop-blur);
-  -webkit-backdrop-filter: var(--backdrop-blur);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  padding: var(--spacing-xs);
-  min-width: 200px;
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-[data-theme='light'] .vehiculos-menu {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-.vehiculos-menu-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: transparent;
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  color: var(--text-primary);
-  font-size: var(--font-size-base);
-  text-align: left;
-  width: 100%;
-}
-
-.vehiculos-menu-item:hover {
-  background: var(--bg-glass-hover);
-}
-
-[data-theme='light'] .vehiculos-menu-item:hover {
-  background: rgba(0, 0, 0, 0.05);
-}
-
-.vehiculos-menu-icon {
-  width: 20px;
-  height: 20px;
-  color: var(--text-secondary);
-  flex-shrink: 0;
-}
-
-/* Page Title */
-.vehiculos-page-title {
+/* Page Title - inherits from .app-page-title */
+.cryptovendors-page-title {
   font-size: var(--font-size-2xl);
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   margin: 0;
   margin-bottom: var(--spacing-xs);
+  letter-spacing: var(--letter-spacing-tight);
+  font-family: var(--font-family);
+  line-height: 1.2;
 }
 
-[data-theme='light'] .vehiculos-page-title {
+[data-theme='light'] .cryptovendors-page-title {
   color: rgba(0, 0, 0, 0.95);
 }
 
-.vehiculos-page-subtitle {
+.cryptovendors-page-subtitle {
   font-size: var(--font-size-base);
   color: var(--text-secondary);
   margin: 0;
   margin-bottom: var(--spacing-lg);
+  letter-spacing: var(--letter-spacing-tight);
+  font-family: var(--font-family);
+  line-height: 1.5;
 }
 
-[data-theme='light'] .vehiculos-page-subtitle {
+[data-theme='light'] .cryptovendors-page-subtitle {
   color: rgba(0, 0, 0, 0.6);
 }
 
 /* Section */
-.vehiculos-form-section,
-.vehiculos-items-section,
-.vehiculos-save-section {
+.cryptovendors-form-section,
+.cryptovendors-items-section,
+.cryptovendors-save-section {
   margin-bottom: var(--spacing-xl);
+  width: 100%;
 }
 
-.vehiculos-section-title {
+.cryptovendors-section-title {
   font-size: var(--font-size-xl);
   font-weight: 600;
   color: var(--text-primary);
@@ -168,11 +132,11 @@
   margin-bottom: var(--spacing-md);
 }
 
-[data-theme='light'] .vehiculos-section-title {
+[data-theme='light'] .cryptovendors-section-title {
   color: rgba(0, 0, 0, 0.9);
 }
 
-.vehiculos-section-header {
+.cryptovendors-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -181,7 +145,7 @@
   gap: var(--spacing-sm);
 }
 
-.vehiculos-total {
+.cryptovendors-total {
   font-size: var(--font-size-lg);
   font-weight: 700;
   color: var(--accent-success);
@@ -193,20 +157,21 @@
   -webkit-backdrop-filter: var(--backdrop-blur);
 }
 
-[data-theme='light'] .vehiculos-total {
+[data-theme='light'] .cryptovendors-total {
   color: #34C759;
   background: rgba(52, 199, 89, 0.1);
   border-color: rgba(52, 199, 89, 0.2);
 }
 
-[data-theme='dark'] .vehiculos-total {
+[data-theme='dark'] .cryptovendors-total {
   color: #30D158;
   background: rgba(48, 209, 88, 0.15);
   border-color: rgba(48, 209, 88, 0.3);
 }
 
 /* Form */
-.vehiculos-form {
+.cryptovendors-form {
+  width: 100%;
   background: var(--bg-glass);
   backdrop-filter: var(--backdrop-blur);
   -webkit-backdrop-filter: var(--backdrop-blur);
@@ -214,34 +179,35 @@
   border-radius: var(--radius-lg);
   padding: var(--spacing-lg);
   box-shadow: var(--shadow-sm);
+  box-sizing: border-box;
 }
 
-[data-theme='light'] .vehiculos-form {
+[data-theme='light'] .cryptovendors-form {
   background: rgba(255, 255, 255, 0.9);
   border-color: rgba(0, 0, 0, 0.1);
 }
 
-.vehiculos-form-group {
+.cryptovendors-form-group {
   margin-bottom: var(--spacing-md);
 }
 
-.vehiculos-form-group:last-of-type {
+.cryptovendors-form-group:last-of-type {
   margin-bottom: 0;
 }
 
-.vehiculos-form-row {
+.cryptovendors-form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--spacing-md);
 }
 
 @media (max-width: 768px) {
-  .vehiculos-form-row {
+  .cryptovendors-form-row {
     grid-template-columns: 1fr;
   }
 }
 
-.vehiculos-form-label {
+.cryptovendors-form-label {
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
@@ -251,17 +217,17 @@
   margin-bottom: var(--spacing-xs);
 }
 
-[data-theme='light'] .vehiculos-form-label {
+[data-theme='light'] .cryptovendors-form-label {
   color: rgba(0, 0, 0, 0.85);
 }
 
-.vehiculos-label-icon {
+.cryptovendors-label-icon {
   width: 18px;
   height: 18px;
   color: var(--accent-primary);
 }
 
-.vehiculos-form-input {
+.cryptovendors-form-input {
   width: 100%;
   padding: var(--spacing-sm) var(--spacing-md);
   background: var(--bg-secondary);
@@ -273,52 +239,32 @@
   transition: all var(--transition-base);
 }
 
-.vehiculos-form-input:focus {
+.cryptovendors-form-input:focus {
   outline: none;
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
 }
 
-[data-theme='light'] .vehiculos-form-input {
+[data-theme='light'] .cryptovendors-form-input {
   background: rgba(255, 255, 255, 0.9);
   border-color: rgba(0, 0, 0, 0.1);
   color: rgba(0, 0, 0, 0.9);
 }
 
-[data-theme='light'] .vehiculos-form-input:focus {
+[data-theme='light'] .cryptovendors-form-input:focus {
   background: rgba(255, 255, 255, 1);
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
 }
 
-.vehiculos-form-section-divider {
-  margin: var(--spacing-lg) 0 var(--spacing-md) 0;
-  padding-top: var(--spacing-md);
-  border-top: 1px solid var(--border-glass);
-}
-
-.vehiculos-form-subsection-title {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-size: var(--font-size-base);
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-md) 0;
-}
-
-[data-theme='light'] .vehiculos-form-subsection-title {
-  color: rgba(0, 0, 0, 0.85);
-}
-
-.vehiculos-form-actions {
+.cryptovendors-form-actions {
   display: flex;
   gap: var(--spacing-sm);
   margin-top: var(--spacing-md);
   justify-content: flex-end;
 }
 
-.vehiculos-form-button {
+.cryptovendors-form-button {
   padding: var(--spacing-sm) var(--spacing-lg);
   border-radius: var(--radius-md);
   font-size: var(--font-size-base);
@@ -329,69 +275,69 @@
   border: none;
 }
 
-.vehiculos-form-button-primary {
+.cryptovendors-form-button-primary {
   background: var(--accent-primary);
   color: white;
 }
 
-.vehiculos-form-button-primary:hover {
+.cryptovendors-form-button-primary:hover {
   background: var(--accent-primary-hover);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
 
-[data-theme='light'] .vehiculos-form-button-primary {
+[data-theme='light'] .cryptovendors-form-button-primary {
   background: #007AFF;
   color: white;
   box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
 }
 
-[data-theme='light'] .vehiculos-form-button-primary:hover {
+[data-theme='light'] .cryptovendors-form-button-primary:hover {
   background: #0051D5;
   box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4);
 }
 
-.vehiculos-form-button-secondary {
+.cryptovendors-form-button-secondary {
   background: var(--bg-glass);
   color: var(--text-primary);
   border: 1px solid var(--border-glass);
 }
 
-.vehiculos-form-button-secondary:hover {
+.cryptovendors-form-button-secondary:hover {
   background: var(--bg-glass-hover);
 }
 
-[data-theme='light'] .vehiculos-form-button-secondary {
+[data-theme='light'] .cryptovendors-form-button-secondary {
   background: rgba(255, 255, 255, 0.95);
   border: 2px solid rgba(0, 0, 0, 0.2);
   color: rgba(0, 0, 0, 0.95);
 }
 
-[data-theme='light'] .vehiculos-form-button-secondary:hover {
+[data-theme='light'] .cryptovendors-form-button-secondary:hover {
   background: rgba(0, 0, 0, 0.05);
   border-color: rgba(0, 0, 0, 0.3);
   color: rgba(0, 0, 0, 1);
 }
 
-[data-theme='dark'] .vehiculos-form-button-secondary {
+[data-theme='dark'] .cryptovendors-form-button-secondary {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.2);
   color: rgba(255, 255, 255, 0.95);
 }
 
-[data-theme='dark'] .vehiculos-form-button-secondary:hover {
+[data-theme='dark'] .cryptovendors-form-button-secondary:hover {
   background: rgba(255, 255, 255, 0.15);
   border-color: rgba(255, 255, 255, 0.3);
 }
 
 /* Items List */
-.vehiculos-items-list {
+.cryptovendors-items-list {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
 }
 
-.vehiculos-item {
+.cryptovendors-item {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
@@ -405,27 +351,28 @@
   transition: all var(--transition-base);
 }
 
-[data-theme='light'] .vehiculos-item {
+[data-theme='light'] .cryptovendors-item {
   background: rgba(255, 255, 255, 0.9);
   border-color: rgba(0, 0, 0, 0.1);
 }
 
-.vehiculos-item:hover {
+
+.cryptovendors-item:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }
 
-[data-theme='light'] .vehiculos-item:hover {
+[data-theme='light'] .cryptovendors-item:hover {
   background: rgba(255, 255, 255, 1);
   border-color: rgba(0, 0, 0, 0.15);
 }
 
-.vehiculos-item-content {
+.cryptovendors-item-content {
   flex: 1;
   min-width: 0;
 }
 
-.vehiculos-item-header {
+.cryptovendors-item-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -433,14 +380,14 @@
   margin-bottom: var(--spacing-xs);
 }
 
-.vehiculos-item-header-right {
+.cryptovendors-item-header-right {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
   flex-wrap: wrap;
 }
 
-.vehiculos-item-name {
+.cryptovendors-item-name {
   font-size: var(--font-size-lg);
   font-weight: 600;
   color: var(--text-primary);
@@ -449,86 +396,68 @@
   min-width: 0;
 }
 
-[data-theme='light'] .vehiculos-item-name {
+[data-theme='light'] .cryptovendors-item-name {
   color: rgba(0, 0, 0, 0.9);
 }
 
 
-.vehiculos-item-meta {
+.cryptovendors-item-price {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--accent-success);
+  background: var(--bg-glass);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-glass);
+}
+
+[data-theme='light'] .cryptovendors-item-price {
+  color: #34C759;
+  background: rgba(52, 199, 89, 0.1);
+  border-color: rgba(52, 199, 89, 0.2);
+}
+
+[data-theme='dark'] .cryptovendors-item-price {
+  color: #30D158;
+  background: rgba(48, 209, 88, 0.15);
+  border-color: rgba(48, 209, 88, 0.3);
+}
+
+
+.cryptovendors-item-meta {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
   flex-wrap: wrap;
-  margin-bottom: var(--spacing-xs);
 }
 
-.vehiculos-item-meta-item {
+.cryptovendors-item-category {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
+  background: var(--bg-secondary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
 }
 
-[data-theme='light'] .vehiculos-item-meta-item {
+[data-theme='light'] .cryptovendors-item-category {
+  background: rgba(0, 0, 0, 0.05);
   color: rgba(0, 0, 0, 0.7);
 }
 
-.vehiculos-item-separator {
+.cryptovendors-item-separator {
   font-size: var(--font-size-sm);
   color: var(--text-tertiary);
   opacity: 0.5;
 }
 
-.vehiculos-item-year {
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  color: var(--accent-primary);
-  background: var(--bg-glass);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-glass);
-}
-
-[data-theme='light'] .vehiculos-item-year {
-  color: #007AFF;
-  background: rgba(0, 122, 255, 0.1);
-  border-color: rgba(0, 122, 255, 0.2);
-}
-
-[data-theme='dark'] .vehiculos-item-year {
-  color: #0A84FF;
-  background: rgba(10, 132, 255, 0.15);
-  border-color: rgba(10, 132, 255, 0.3);
-}
-
-.vehiculos-item-year {
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  color: var(--accent-primary);
-  background: var(--bg-glass);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-glass);
-}
-
-[data-theme='light'] .vehiculos-item-year {
-  color: #007AFF;
-  background: rgba(0, 122, 255, 0.1);
-  border-color: rgba(0, 122, 255, 0.2);
-}
-
-[data-theme='dark'] .vehiculos-item-year {
-  color: #0A84FF;
-  background: rgba(10, 132, 255, 0.15);
-  border-color: rgba(10, 132, 255, 0.3);
-}
-
-.vehiculos-item-details {
+.cryptovendors-item-details {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
   margin-top: var(--spacing-sm);
 }
 
-.vehiculos-item-detail {
+.cryptovendors-item-detail {
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
@@ -536,22 +465,128 @@
   color: var(--text-secondary);
 }
 
-[data-theme='light'] .vehiculos-item-detail {
+[data-theme='light'] .cryptovendors-item-detail {
   color: rgba(0, 0, 0, 0.7);
 }
 
-.vehiculos-item-detail-icon {
+.cryptovendors-item-detail-icon {
   width: 16px;
   height: 16px;
   color: var(--accent-primary);
 }
 
-.vehiculos-item-actions {
+.cryptovendors-form-section-divider {
+  margin: var(--spacing-lg) 0 var(--spacing-md) 0;
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border-glass);
+}
+
+.cryptovendors-form-subsection-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+[data-theme='light'] .cryptovendors-form-subsection-title {
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.cryptovendors-crypto-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-xs);
+}
+
+@media (min-width: 600px) {
+  .cryptovendors-crypto-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .cryptovendors-crypto-grid {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.cryptovendors-crypto-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  font-size: var(--font-size-sm);
+  min-height: 40px;
+}
+
+.cryptovendors-crypto-checkbox input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.cryptovendors-crypto-checkbox span {
+  flex: 1;
+  text-align: left;
+}
+
+.cryptovendors-crypto-checkbox:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-glass-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.cryptovendors-crypto-checkbox input[type="checkbox"]:checked + span {
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.cryptovendors-crypto-checkbox:has(input[type="checkbox"]:checked) {
+  background: rgba(0, 122, 255, 0.1);
+  border-color: var(--accent-primary);
+}
+
+[data-theme='light'] .cryptovendors-crypto-checkbox {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='light'] .cryptovendors-crypto-checkbox:hover {
+  background: rgba(255, 255, 255, 1);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme='light'] .cryptovendors-crypto-checkbox:has(input[type="checkbox"]:checked) {
+  background: rgba(0, 122, 255, 0.15);
+  border-color: #007AFF;
+}
+
+[data-theme='dark'] .cryptovendors-crypto-checkbox:has(input[type="checkbox"]:checked) {
+  background: rgba(10, 132, 255, 0.15);
+  border-color: #0A84FF;
+}
+
+.cryptovendors-item-actions {
   display: flex;
   gap: var(--spacing-xs);
 }
 
-.vehiculos-item-action-button {
+.cryptovendors-item-action-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -565,41 +600,41 @@
   color: var(--text-secondary);
 }
 
-.vehiculos-item-action-button:hover {
+.cryptovendors-item-action-button:hover {
   background: var(--bg-glass-hover);
   color: var(--text-primary);
   border-color: var(--border-glass-hover);
 }
 
-.vehiculos-item-action-button-delete:hover {
+.cryptovendors-item-action-button-delete:hover {
   background: rgba(255, 59, 48, 0.1);
   border-color: #FF3B30;
   color: #FF3B30;
 }
 
-[data-theme='light'] .vehiculos-item-action-button {
+[data-theme='light'] .cryptovendors-item-action-button {
   border-color: rgba(0, 0, 0, 0.15);
   color: rgba(0, 0, 0, 0.6);
 }
 
-[data-theme='light'] .vehiculos-item-action-button:hover {
+[data-theme='light'] .cryptovendors-item-action-button:hover {
   background: rgba(0, 0, 0, 0.05);
   border-color: rgba(0, 0, 0, 0.2);
   color: rgba(0, 0, 0, 0.9);
 }
 
 /* Save Section */
-.vehiculos-save-form {
+.cryptovendors-save-form {
   display: flex;
   gap: var(--spacing-md);
   align-items: flex-end;
 }
 
-.vehiculos-save-form .vehiculos-form-input {
+.cryptovendors-save-form .cryptovendors-form-input {
   flex: 1;
 }
 
-.vehiculos-save-button {
+.cryptovendors-save-button {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
@@ -616,44 +651,44 @@
   white-space: nowrap;
 }
 
-.vehiculos-save-button:hover:not(:disabled) {
+.cryptovendors-save-button:hover:not(:disabled) {
   background: var(--accent-primary-hover);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
 
-.vehiculos-save-button:disabled {
+.cryptovendors-save-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-[data-theme='light'] .vehiculos-save-button {
+[data-theme='light'] .cryptovendors-save-button {
   background: #007AFF;
   color: white;
   box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
 }
 
-[data-theme='light'] .vehiculos-save-button:hover:not(:disabled) {
+[data-theme='light'] .cryptovendors-save-button:hover:not(:disabled) {
   background: #0051D5;
   box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4);
 }
 
-[data-theme='dark'] .vehiculos-save-button {
+[data-theme='dark'] .cryptovendors-save-button {
   background: #0A84FF;
   color: white;
 }
 
-[data-theme='dark'] .vehiculos-save-button:hover:not(:disabled) {
+[data-theme='dark'] .cryptovendors-save-button:hover:not(:disabled) {
   background: #409CFF;
 }
 
-.vehiculos-save-icon {
+.cryptovendors-save-icon {
   width: 20px;
   height: 20px;
 }
 
 /* Empty State */
-.vehiculos-empty-state {
+.cryptovendors-empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -668,301 +703,23 @@
   box-shadow: var(--shadow-sm);
 }
 
-[data-theme='light'] .vehiculos-empty-state {
+[data-theme='light'] .cryptovendors-empty-state {
   background: rgba(255, 255, 255, 0.9);
   border-color: rgba(0, 0, 0, 0.1);
 }
 
-.vehiculos-empty-text {
+.cryptovendors-empty-text {
   font-size: var(--font-size-lg);
   color: var(--text-secondary);
   margin: 0;
 }
 
-[data-theme='light'] .vehiculos-empty-text {
+[data-theme='light'] .cryptovendors-empty-text {
   color: rgba(0, 0, 0, 0.6);
-}
-
-/* Debug Modal Styles */
-.debug-options {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
-}
-
-.debug-option-button {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-lg);
-  background: var(--bg-glass);
-  backdrop-filter: var(--backdrop-blur);
-  -webkit-backdrop-filter: var(--backdrop-blur);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  text-align: left;
-}
-
-.debug-option-button:hover:not(:disabled) {
-  background: var(--bg-glass-hover);
-  border-color: var(--border-glass-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.debug-option-button:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.debug-option-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.debug-option-icon {
-  font-size: 2rem;
-  flex-shrink: 0;
-}
-
-.debug-option-info {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  flex: 1;
-}
-
-.debug-option-title {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.debug-option-description {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  margin: 0;
-  line-height: 1.4;
-}
-
-.debug-option-button.create-demo {
-  border-color: rgba(0, 122, 255, 0.3);
-}
-
-.debug-option-button.create-demo:hover:not(:disabled) {
-  border-color: rgba(0, 122, 255, 0.5);
-  background: rgba(0, 122, 255, 0.05);
-}
-
-.debug-option-button.delete-all {
-  border-color: rgba(255, 59, 48, 0.3);
-}
-
-.debug-option-button.delete-all:hover:not(:disabled) {
-  border-color: rgba(255, 59, 48, 0.5);
-  background: rgba(255, 59, 48, 0.05);
-}
-
-[data-theme='light'] .debug-option-button {
-  background: var(--bg-glass);
-  border-color: var(--border-glass);
-}
-
-[data-theme='light'] .debug-option-button:hover:not(:disabled) {
-  background: var(--bg-glass-hover);
-  border-color: var(--border-glass-hover);
-}
-
-[data-theme='light'] .debug-option-title {
-  color: rgba(0, 0, 0, 0.9);
-}
-
-[data-theme='light'] .debug-option-description {
-  color: rgba(0, 0, 0, 0.6);
-}
-
-/* Vista de Detalle */
-.vehiculos-detail-section {
-  margin-bottom: var(--spacing-xl);
-  padding-bottom: var(--spacing-lg);
-  border-bottom: 1px solid var(--border-glass-light);
-}
-
-.vehiculos-detail-section:last-child {
-  border-bottom: none;
-}
-
-.vehiculos-detail-section-title {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-md) 0;
-}
-
-.vehiculos-detail-section-icon {
-  width: 20px;
-  height: 20px;
-  color: var(--accent-primary);
-}
-
-[data-theme='light'] .vehiculos-detail-section-title {
-  color: rgba(0, 0, 0, 0.9);
-}
-
-.vehiculos-detail-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
-}
-
-.vehiculos-detail-item {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-.vehiculos-detail-label {
-  font-size: var(--font-size-xs);
-  font-weight: 500;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.vehiculos-detail-value {
-  font-size: var(--font-size-base);
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-[data-theme='light'] .vehiculos-detail-label {
-  color: rgba(0, 0, 0, 0.6);
-}
-
-[data-theme='light'] .vehiculos-detail-value {
-  color: rgba(0, 0, 0, 0.9);
-}
-
-.vehiculos-detail-form-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
-}
-
-.vehiculos-detail-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-md);
-}
-
-.vehiculos-detail-list-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-md);
-  background: var(--bg-glass);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-md);
-  gap: var(--spacing-md);
-}
-
-[data-theme='light'] .vehiculos-detail-list-item {
-  background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-.vehiculos-detail-list-item-content {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  flex: 1;
-}
-
-.vehiculos-detail-list-item-icon {
-  width: 18px;
-  height: 18px;
-  color: var(--accent-primary);
-  flex-shrink: 0;
-}
-
-.vehiculos-detail-list-item-content > div {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.vehiculos-detail-list-item-date {
-  font-size: var(--font-size-base);
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.vehiculos-detail-list-item-type {
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.vehiculos-detail-list-item-reason {
-  font-size: var(--font-size-sm);
-  color: var(--text-primary);
-}
-
-.vehiculos-detail-list-item-hours {
-  font-size: var(--font-size-sm);
-  color: var(--accent-primary);
-  font-weight: 500;
-}
-
-.vehiculos-detail-list-item-notes {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  font-style: italic;
-}
-
-.vehiculos-detail-list-item-delete {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: transparent;
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  color: var(--text-secondary);
-  padding: 0;
-}
-
-.vehiculos-detail-list-item-delete:hover {
-  background: var(--accent-danger);
-  border-color: var(--accent-danger);
-  color: white;
-}
-
-[data-theme='light'] .vehiculos-detail-list-item-delete {
-  border-color: rgba(0, 0, 0, 0.2);
-}
-
-[data-theme='light'] .vehiculos-detail-list-item-delete:hover {
-  background: #FF3B30;
-  border-color: #FF3B30;
-  color: white;
 }
 
 /* Modal */
-.vehiculos-modal-overlay {
+.cryptovendors-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -987,7 +744,7 @@
   }
 }
 
-.vehiculos-modal {
+.cryptovendors-modal {
   background: var(--bg-glass);
   backdrop-filter: var(--backdrop-blur);
   -webkit-backdrop-filter: var(--backdrop-blur);
@@ -1003,12 +760,6 @@
   animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.vehiculos-modal-large {
-  max-width: 800px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
 @keyframes slideUp {
   from {
     transform: translateY(20px);
@@ -1020,12 +771,12 @@
   }
 }
 
-[data-theme='light'] .vehiculos-modal {
+[data-theme='light'] .cryptovendors-modal {
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(0, 0, 0, 0.15);
 }
 
-.vehiculos-modal-header {
+.cryptovendors-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1033,18 +784,18 @@
   border-bottom: 1px solid var(--border-glass-light);
 }
 
-.vehiculos-modal-title {
+.cryptovendors-modal-title {
   font-size: var(--font-size-xl);
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
 }
 
-[data-theme='light'] .vehiculos-modal-title {
+[data-theme='light'] .cryptovendors-modal-title {
   color: rgba(0, 0, 0, 0.95);
 }
 
-.vehiculos-modal-close {
+.cryptovendors-modal-close {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1060,65 +811,65 @@
   line-height: 1;
 }
 
-.vehiculos-modal-close:hover {
+.cryptovendors-modal-close:hover {
   background: var(--bg-glass-light);
   color: var(--text-primary);
 }
 
-[data-theme='light'] .vehiculos-modal-close {
+[data-theme='light'] .cryptovendors-modal-close {
   color: rgba(0, 0, 0, 0.6);
 }
 
-[data-theme='light'] .vehiculos-modal-close:hover {
+[data-theme='light'] .cryptovendors-modal-close:hover {
   background: rgba(0, 0, 0, 0.05);
   color: rgba(0, 0, 0, 0.9);
 }
 
-.vehiculos-modal-content {
+.cryptovendors-modal-content {
   padding: var(--spacing-lg);
   overflow-y: auto;
   flex: 1;
 }
 
-.vehiculos-loading,
-.vehiculos-modal-loading {
+.cryptovendors-loading,
+.cryptovendors-modal-loading {
   text-align: center;
   padding: var(--spacing-xl);
   color: var(--text-secondary);
 }
 
-[data-theme='light'] .vehiculos-loading,
-[data-theme='light'] .vehiculos-modal-loading {
+[data-theme='light'] .cryptovendors-loading,
+[data-theme='light'] .cryptovendors-modal-loading {
   color: rgba(0, 0, 0, 0.6);
 }
 
-.vehiculos-modal-empty {
+.cryptovendors-modal-empty {
   text-align: center;
   padding: var(--spacing-xl);
   color: var(--text-secondary);
 }
 
-[data-theme='light'] .vehiculos-modal-empty {
+[data-theme='light'] .cryptovendors-modal-empty {
   color: rgba(0, 0, 0, 0.6);
 }
 
-.vehiculos-list-section {
+.cryptovendors-list-section {
   margin-bottom: var(--spacing-xl);
 }
 
-.vehiculos-list {
+.cryptovendors-list {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
 }
 
-.vehiculos-records-list {
+.cryptovendors-records-list {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
 }
 
-.vehiculos-record-item {
+.cryptovendors-record-item {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
@@ -1129,39 +880,39 @@
   transition: all var(--transition-base);
 }
 
-[data-theme='light'] .vehiculos-record-item {
+[data-theme='light'] .cryptovendors-record-item {
   background: rgba(255, 255, 255, 0.8);
   border-color: rgba(0, 0, 0, 0.1);
 }
 
-.vehiculos-record-item:hover {
+.cryptovendors-record-item:hover {
   background: var(--bg-glass-hover);
   border-color: var(--border-glass-hover);
   box-shadow: var(--shadow-sm);
 }
 
-[data-theme='light'] .vehiculos-record-item:hover {
+[data-theme='light'] .cryptovendors-record-item:hover {
   background: rgba(255, 255, 255, 1);
   border-color: rgba(0, 0, 0, 0.15);
 }
 
-.vehiculos-record-content {
+.cryptovendors-record-content {
   flex: 1;
   min-width: 0;
 }
 
-.vehiculos-record-name {
+.cryptovendors-record-name {
   font-size: var(--font-size-lg);
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 var(--spacing-xs) 0;
 }
 
-[data-theme='light'] .vehiculos-record-name {
+[data-theme='light'] .cryptovendors-record-name {
   color: rgba(0, 0, 0, 0.9);
 }
 
-.vehiculos-record-meta {
+.cryptovendors-record-meta {
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
@@ -1171,26 +922,26 @@
   color: var(--text-secondary);
 }
 
-[data-theme='light'] .vehiculos-record-meta {
+[data-theme='light'] .cryptovendors-record-meta {
   color: rgba(0, 0, 0, 0.6);
 }
 
-.vehiculos-record-date {
+.cryptovendors-record-date {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   margin: 0;
 }
 
-[data-theme='light'] .vehiculos-record-date {
+[data-theme='light'] .cryptovendors-record-date {
   color: rgba(0, 0, 0, 0.5);
 }
 
-.vehiculos-record-actions {
+.cryptovendors-record-actions {
   display: flex;
   gap: var(--spacing-xs);
 }
 
-.vehiculos-record-action-button {
+.cryptovendors-record-action-button {
   padding: var(--spacing-xs) var(--spacing-sm);
   background: var(--bg-glass);
   color: var(--text-primary);
@@ -1202,41 +953,41 @@
   transition: all var(--transition-base);
 }
 
-.vehiculos-record-action-button:hover {
+.cryptovendors-record-action-button:hover {
   background: var(--bg-glass-hover);
   border-color: var(--border-glass-hover);
 }
 
-[data-theme='light'] .vehiculos-record-action-button {
+[data-theme='light'] .cryptovendors-record-action-button {
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(0, 0, 0, 0.2);
   color: rgba(0, 0, 0, 0.95);
 }
 
-[data-theme='light'] .vehiculos-record-action-button:hover {
+[data-theme='light'] .cryptovendors-record-action-button:hover {
   background: rgba(0, 0, 0, 0.05);
   border-color: rgba(0, 0, 0, 0.3);
 }
 
-.vehiculos-record-action-button-delete:hover {
+.cryptovendors-record-action-button-delete:hover {
   background: rgba(255, 59, 48, 0.1);
   border-color: #FF3B30;
   color: #FF3B30;
 }
 
-[data-theme='light'] .vehiculos-record-action-button-delete:hover {
+[data-theme='light'] .cryptovendors-record-action-button-delete:hover {
   background: rgba(255, 59, 48, 0.15);
   border-color: #FF3B30;
   color: #FF3B30;
 }
 
-.vehiculos-lists-list {
+.cryptovendors-lists-list {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
 }
 
-.vehiculos-list-item {
+.cryptovendors-list-item {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
@@ -1247,40 +998,40 @@
   transition: all var(--transition-base);
 }
 
-[data-theme='light'] .vehiculos-list-item {
+[data-theme='light'] .cryptovendors-list-item {
   background: rgba(255, 255, 255, 0.8);
   border-color: rgba(0, 0, 0, 0.1);
 }
 
-.vehiculos-list-item:hover {
+.cryptovendors-list-item:hover {
   background: var(--bg-glass-hover);
   border-color: var(--border-glass-hover);
   box-shadow: var(--shadow-sm);
 }
 
-[data-theme='light'] .vehiculos-list-item:hover {
+[data-theme='light'] .cryptovendors-list-item:hover {
   background: rgba(255, 255, 255, 1);
   border-color: rgba(0, 0, 0, 0.15);
 }
 
-.vehiculos-list-content {
+.cryptovendors-list-content {
   flex: 1;
   cursor: pointer;
   min-width: 0;
 }
 
-.vehiculos-list-name {
+.cryptovendors-list-name {
   font-size: var(--font-size-lg);
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 var(--spacing-xs) 0;
 }
 
-[data-theme='light'] .vehiculos-list-name {
+[data-theme='light'] .cryptovendors-list-name {
   color: rgba(0, 0, 0, 0.9);
 }
 
-.vehiculos-list-info {
+.cryptovendors-list-info {
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
@@ -1288,32 +1039,32 @@
   margin-bottom: var(--spacing-xs);
 }
 
-.vehiculos-list-meta {
+.cryptovendors-list-meta {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
 }
 
-[data-theme='light'] .vehiculos-list-meta {
+[data-theme='light'] .cryptovendors-list-meta {
   color: rgba(0, 0, 0, 0.6);
 }
 
-.vehiculos-list-separator {
+.cryptovendors-list-separator {
   font-size: var(--font-size-sm);
   color: var(--text-tertiary);
   opacity: 0.5;
 }
 
-.vehiculos-list-date {
+.cryptovendors-list-date {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   margin: 0;
 }
 
-[data-theme='light'] .vehiculos-list-date {
+[data-theme='light'] .cryptovendors-list-date {
   color: rgba(0, 0, 0, 0.5);
 }
 
-.vehiculos-list-delete {
+.cryptovendors-list-delete {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1328,65 +1079,65 @@
   flex-shrink: 0;
 }
 
-.vehiculos-list-delete:hover {
+.cryptovendors-list-delete:hover {
   background: rgba(255, 59, 48, 0.1);
   border-color: #FF3B30;
   color: #FF3B30;
 }
 
-[data-theme='light'] .vehiculos-list-delete {
+[data-theme='light'] .cryptovendors-list-delete {
   border-color: rgba(0, 0, 0, 0.15);
   color: rgba(0, 0, 0, 0.6);
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .vehiculos-page-title {
+  .cryptovendors-page-title {
     font-size: var(--font-size-xl);
   }
 
-  .vehiculos-form {
+  .cryptovendors-form {
     padding: var(--spacing-md);
   }
 
-  .vehiculos-item {
+  .cryptovendors-item {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .vehiculos-item-actions {
+  .cryptovendors-item-actions {
     justify-content: flex-end;
     margin-top: var(--spacing-sm);
   }
 
-  .vehiculos-item-header {
+  .cryptovendors-item-header {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--spacing-xs);
   }
 
-  .vehiculos-save-form {
+  .cryptovendors-save-form {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .vehiculos-modal {
+  .cryptovendors-modal {
     max-width: 100%;
     max-height: 100vh;
     border-radius: 0;
     margin: 0;
   }
 
-  .vehiculos-modal-overlay {
+  .cryptovendors-modal-overlay {
     padding: 0;
   }
 
-  .vehiculos-list-item {
+  .cryptovendors-list-item {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .vehiculos-list-delete {
+  .cryptovendors-list-delete {
     align-self: flex-end;
     margin-top: var(--spacing-sm);
   }

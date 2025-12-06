@@ -7,6 +7,8 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment'
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import { api } from '../services/api'
 import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
@@ -37,10 +39,130 @@ function MiDiario() {
     content: '',
   })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+  const [currentStreak, setCurrentStreak] = useState(0)
+  const [longestStreak, setLongestStreak] = useState(0)
 
   useEffect(() => {
     loadEntries()
   }, [])
+
+  // Calcular racha cuando cambian las entradas
+  useEffect(() => {
+    if (entries.length > 0) {
+      calculateStreaks()
+    } else {
+      setCurrentStreak(0)
+      setLongestStreak(0)
+    }
+  }, [entries])
+
+  const calculateStreaks = () => {
+    // Obtener todas las fechas únicas de las entradas
+    const entryDates = new Set<string>()
+    entries.forEach(entry => {
+      const dateStr = entry.entry_date.split('T')[0] // Asegurar formato YYYY-MM-DD
+      entryDates.add(dateStr)
+    })
+
+    // Convertir a array y ordenar
+    const sortedDates = Array.from(entryDates)
+      .map(dateStr => new Date(dateStr + 'T00:00:00'))
+      .sort((a, b) => b.getTime() - a.getTime()) // Más recientes primero
+
+    if (sortedDates.length === 0) {
+      setCurrentStreak(0)
+      setLongestStreak(0)
+      return
+    }
+
+    // Calcular racha actual (desde hoy o ayer hacia atrás)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+
+    // Verificar si hay entrada hoy o ayer
+    const hasToday = sortedDates.some(date => {
+      const dateStr = date.toISOString().split('T')[0]
+      const todayStr = today.toISOString().split('T')[0]
+      return dateStr === todayStr
+    })
+
+    const hasYesterday = sortedDates.some(date => {
+      const dateStr = date.toISOString().split('T')[0]
+      const yesterdayStr = yesterday.toISOString().split('T')[0]
+      return dateStr === yesterdayStr
+    })
+
+    let startDate: Date
+    if (hasToday) {
+      startDate = new Date(today)
+    } else if (hasYesterday) {
+      startDate = new Date(yesterday)
+    } else {
+      // No hay entrada hoy ni ayer, racha = 0
+      setCurrentStreak(0)
+      // Calcular racha más larga
+      calculateLongestStreak(sortedDates)
+      return
+    }
+
+    // Contar días consecutivos desde startDate hacia atrás
+    let streak = 0
+    let checkDate = new Date(startDate)
+
+    while (true) {
+      const checkDateStr = checkDate.toISOString().split('T')[0]
+      const hasEntry = sortedDates.some(date => {
+        const dateStr = date.toISOString().split('T')[0]
+        return dateStr === checkDateStr
+      })
+
+      if (hasEntry) {
+        streak++
+        checkDate.setDate(checkDate.getDate() - 1)
+      } else {
+        break
+      }
+    }
+
+    setCurrentStreak(streak)
+    calculateLongestStreak(sortedDates)
+  }
+
+  const calculateLongestStreak = (sortedDates: Date[]) => {
+    if (sortedDates.length === 0) {
+      setLongestStreak(0)
+      return
+    }
+
+    // Ordenar de más antiguo a más reciente para calcular racha más larga
+    const datesAsc = [...sortedDates].sort((a, b) => a.getTime() - b.getTime())
+    
+    let longestStreakCount = 1
+    let currentStreakCount = 1
+
+    for (let i = 1; i < datesAsc.length; i++) {
+      const prevDate = new Date(datesAsc[i - 1])
+      const currDate = new Date(datesAsc[i])
+      
+      // Calcular diferencia en días
+      const diffTime = currDate.getTime() - prevDate.getTime()
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+
+      if (diffDays === 1) {
+        // Días consecutivos
+        currentStreakCount++
+        longestStreakCount = Math.max(longestStreakCount, currentStreakCount)
+      } else {
+        // Rompió la racha
+        currentStreakCount = 1
+      }
+    }
+
+    setLongestStreak(longestStreakCount)
+  }
 
   // Cerrar menú al hacer clic fuera
   useEffect(() => {
@@ -327,6 +449,31 @@ function MiDiario() {
 
           <h1 className="midiario-page-title">Mi Diario</h1>
           <p className="midiario-page-subtitle">Reflexiona sobre tus días</p>
+
+          {/* Streak Highlight */}
+          {(currentStreak > 0 || longestStreak > 0) && (
+            <div className="midiario-streak-container">
+              <div className="midiario-streak-item">
+                <LocalFireDepartmentIcon className="midiario-streak-icon" />
+                <div className="midiario-streak-info">
+                  <span className="midiario-streak-label">Racha Actual</span>
+                  <span className="midiario-streak-value">{currentStreak} {currentStreak === 1 ? 'día' : 'días'}</span>
+                </div>
+              </div>
+              {longestStreak > 0 && (
+                <>
+                  <div className="midiario-streak-divider"></div>
+                  <div className="midiario-streak-item">
+                    <EmojiEventsIcon className="midiario-streak-icon" />
+                    <div className="midiario-streak-info">
+                      <span className="midiario-streak-label">Racha Más Larga</span>
+                      <span className="midiario-streak-value">{longestStreak} {longestStreak === 1 ? 'día' : 'días'}</span>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
 
           {/* Lista de Entradas */}
           {isLoading ? (

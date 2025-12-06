@@ -477,6 +477,27 @@ function Finanzas() {
                     </div>
                     <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
                   </button>
+                  <button
+                    className="settings-row"
+                    onClick={() => navigate('/finanzas/crypto-vendors')}
+                    aria-label="Ir a Vendedores de Cripto"
+                    type="button"
+                  >
+                    <div
+                      className="settings-row-icon"
+                      style={{ backgroundColor: '#F7931A' }}
+                      aria-hidden="true"
+                    >
+                      <CurrencyBitcoinIcon />
+                    </div>
+                    <div className="settings-row-content">
+                      <span className="settings-row-title">Vendedores de Cripto</span>
+                      <span className="settings-row-subtitle">
+                        Vendedores que aceptan criptomonedas
+                      </span>
+                    </div>
+                    <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+                  </button>
                 </div>
               </div>
 
