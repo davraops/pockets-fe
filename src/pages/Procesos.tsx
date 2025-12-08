@@ -81,7 +81,9 @@ function Procesos() {
   const [actuaciones, setActuaciones] = useState<Actuacion[]>([])
   const [isLoadingActuaciones, setIsLoadingActuaciones] = useState(false)
   const [nombreCompleto, setNombreCompleto] = useState<string>('')
-  const [trackingMap, setTrackingMap] = useState<Map<number, { id: string; is_active: boolean }>>(new Map())
+  const [trackingMap, setTrackingMap] = useState<Map<number, { id: string; is_active: boolean }>>(
+    new Map()
+  )
   const [isLoadingTracking, setIsLoadingTracking] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -97,7 +99,7 @@ function Procesos() {
     try {
       setIsLoadingTracking(true)
       const response = await api.getProcessTracking(true) // Solo activos
-      
+
       if (response.tracking && Array.isArray(response.tracking)) {
         const map = new Map<number, { id: string; is_active: boolean }>()
         response.tracking.forEach((track: any) => {
@@ -129,7 +131,7 @@ function Procesos() {
       // Por ahora usamos un valor por defecto, pero debería venir del perfil del usuario
       // TODO: Obtener nombre completo desde el perfil del usuario
       const nombre = nombreCompleto || 'Rafael Augusto Avella Pena'
-      
+
       if (!nombre || nombre.trim() === '') {
         setError('No se ha configurado el nombre completo del usuario')
         setIsLoading(false)
@@ -175,37 +177,35 @@ function Procesos() {
             let badge: 'Negado' | 'Rechazado' | null = null
             try {
               const actuacionesResponse = await api.getProcessActuaciones(idProceso, 1)
-              if (actuacionesResponse.actuaciones && Array.isArray(actuacionesResponse.actuaciones)) {
+              if (
+                actuacionesResponse.actuaciones &&
+                Array.isArray(actuacionesResponse.actuaciones)
+              ) {
                 // Buscar en todas las actuaciones
                 for (const act of actuacionesResponse.actuaciones) {
-                  const actuacionText = `${act.actuacion || ''} ${act.anotacion || ''}`.toLowerCase()
-                  
+                  const actuacionText =
+                    `${act.actuacion || ''} ${act.anotacion || ''}`.toLowerCase()
+
                   // Priorizar "AUTO RECHAZA DEMANDA" primero
                   if (
                     actuacionText.includes('auto rechaza demanda') ||
                     actuacionText.includes('auto rechaza') ||
-                    (act.actuacion?.toLowerCase().includes('auto') && 
-                     act.actuacion?.toLowerCase().includes('rechaza') &&
-                     act.actuacion?.toLowerCase().includes('demanda'))
+                    (act.actuacion?.toLowerCase().includes('auto') &&
+                      act.actuacion?.toLowerCase().includes('rechaza') &&
+                      act.actuacion?.toLowerCase().includes('demanda'))
                   ) {
                     badge = 'Rechazado'
                     break // Prioridad máxima, salir del loop
                   }
-                  
+
                   // Luego buscar otras variantes de rechazo
-                  if (
-                    actuacionText.includes('rechaza') ||
-                    actuacionText.includes('rechazo')
-                  ) {
+                  if (actuacionText.includes('rechaza') || actuacionText.includes('rechazo')) {
                     badge = 'Rechazado'
                     // No hacer break aquí, seguir buscando por si hay "auto rechaza demanda"
                   }
-                  
+
                   // Buscar negaciones
-                  if (
-                    actuacionText.includes('niega') ||
-                    actuacionText.includes('deneg')
-                  ) {
+                  if (actuacionText.includes('niega') || actuacionText.includes('deneg')) {
                     // Solo asignar "Negado" si no hay rechazo previo
                     if (!badge) {
                       badge = 'Negado'
@@ -220,7 +220,7 @@ function Procesos() {
 
             // Verificar si está en seguimiento
             const tracking = currentTrackingMap.get(idProceso)
-            
+
             return {
               id: idProceso.toString(),
               idProceso: idProceso,
@@ -240,7 +240,9 @@ function Procesos() {
 
         // Ordenar por fecha de última actuación (más recientes primero)
         procesosMapeados.sort((a, b) => {
-          return new Date(b.fechaUltimaActuacion).getTime() - new Date(a.fechaUltimaActuacion).getTime()
+          return (
+            new Date(b.fechaUltimaActuacion).getTime() - new Date(a.fechaUltimaActuacion).getTime()
+          )
         })
 
         setProcesos(procesosMapeados)
@@ -319,7 +321,7 @@ function Procesos() {
 
     try {
       const response = await api.getProcessActuaciones(Number(idProceso), 1)
-      
+
       if (response.actuaciones && Array.isArray(response.actuaciones)) {
         const actuacionesMapeadas: Actuacion[] = response.actuaciones.map((act: ActuacionAPI) => ({
           id: act.idRegActuacion,
@@ -361,19 +363,21 @@ function Procesos() {
         // Remover del seguimiento
         await api.removeProcessTracking(proceso.trackingId)
         showNotification('Proceso removido del seguimiento', 'success')
-        
+
         // Actualizar tracking map
         const newMap = new Map(trackingMap)
         newMap.delete(proceso.idProceso)
         setTrackingMap(newMap)
-        
+
         // Actualizar proceso en la lista
-        setProcesos(prev => prev.map(p => 
-          p.idProceso === proceso.idProceso 
-            ? { ...p, isTracked: false, trackingId: undefined }
-            : p
-        ))
-        
+        setProcesos(prev =>
+          prev.map(p =>
+            p.idProceso === proceso.idProceso
+              ? { ...p, isTracked: false, trackingId: undefined }
+              : p
+          )
+        )
+
         // Actualizar proceso seleccionado si es el mismo
         if (selectedProceso?.idProceso === proceso.idProceso) {
           setSelectedProceso({
@@ -392,9 +396,12 @@ function Procesos() {
           despacho: proceso.despacho,
           departamento: proceso.departamento,
         })
-        
-        showNotification('Proceso agregado al seguimiento. Recibirás notificaciones de nuevas actuaciones.', 'success')
-        
+
+        showNotification(
+          'Proceso agregado al seguimiento. Recibirás notificaciones de nuevas actuaciones.',
+          'success'
+        )
+
         // Actualizar tracking map
         const newMap = new Map(trackingMap)
         if (response.tracking?.id) {
@@ -404,14 +411,16 @@ function Procesos() {
           })
         }
         setTrackingMap(newMap)
-        
+
         // Actualizar proceso en la lista
-        setProcesos(prev => prev.map(p => 
-          p.idProceso === proceso.idProceso 
-            ? { ...p, isTracked: true, trackingId: response.tracking?.id }
-            : p
-        ))
-        
+        setProcesos(prev =>
+          prev.map(p =>
+            p.idProceso === proceso.idProceso
+              ? { ...p, isTracked: true, trackingId: response.tracking?.id }
+              : p
+          )
+        )
+
         // Actualizar proceso seleccionado si es el mismo
         if (selectedProceso?.idProceso === proceso.idProceso) {
           setSelectedProceso({
@@ -511,8 +520,8 @@ function Procesos() {
                           <div className="procesos-item-title-row">
                             <h3 className="procesos-item-title">{proceso.numero}</h3>
                             {proceso.isTracked && (
-                              <NotificationsActiveIcon 
-                                className="procesos-item-tracking-icon" 
+                              <NotificationsActiveIcon
+                                className="procesos-item-tracking-icon"
                                 titleAccess="En seguimiento"
                               />
                             )}
@@ -639,7 +648,8 @@ function Procesos() {
                   </button>
                   {selectedProceso.isTracked && (
                     <p className="procesos-tracking-note">
-                      Recibirás notificaciones automáticas cuando haya nuevas actuaciones en este proceso.
+                      Recibirás notificaciones automáticas cuando haya nuevas actuaciones en este
+                      proceso.
                     </p>
                   )}
                 </div>
@@ -689,4 +699,3 @@ function Procesos() {
 }
 
 export default Procesos
-

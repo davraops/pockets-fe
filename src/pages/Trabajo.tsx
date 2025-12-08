@@ -116,4 +116,3 @@ function Trabajo() {
 }
 
 export default Trabajo
-

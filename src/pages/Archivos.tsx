@@ -144,7 +144,10 @@ function Archivos() {
       ]
 
       if (!allowedTypes.includes(file.type)) {
-        showNotification('Tipo de archivo no permitido. Solo se permiten PDFs, documentos, imágenes y archivos de texto.', 'error')
+        showNotification(
+          'Tipo de archivo no permitido. Solo se permiten PDFs, documentos, imágenes y archivos de texto.',
+          'error'
+        )
         return
       }
 
@@ -203,10 +206,10 @@ function Archivos() {
         status: err?.response?.status,
         statusText: err?.response?.statusText,
       })
-      
+
       // Extraer mensaje de error más específico
       let errorMessage = 'Error al subir el archivo. Por favor, intenta de nuevo.'
-      
+
       if (err?.data?.error) {
         errorMessage = err.data.error
       } else if (err?.data?.message) {
@@ -218,12 +221,12 @@ function Archivos() {
       } else {
         errorMessage = getTranslatedErrorMessage(err, errorMessage)
       }
-      
+
       // Agregar información del status si está disponible
       if (err?.response?.status) {
         errorMessage += ` (Error ${err.response.status})`
       }
-      
+
       showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
@@ -391,7 +394,9 @@ function Archivos() {
                     <div className="archivos-row-content">
                       <div className="archivos-row-header">
                         <div className="archivos-row-title-section">
-                          <span className="archivos-row-icon-emoji">{getFileIcon(file.mime_type)}</span>
+                          <span className="archivos-row-icon-emoji">
+                            {getFileIcon(file.mime_type)}
+                          </span>
                           <h3 className="archivos-row-title">{file.title}</h3>
                         </div>
                         <ChevronRightIcon className="archivos-row-chevron" />
@@ -402,7 +407,9 @@ function Archivos() {
                       <div className="archivos-row-meta">
                         <span className="archivos-row-file-name">{file.file_name}</span>
                         <span className="archivos-row-separator">•</span>
-                        <span className="archivos-row-file-size">{formatFileSize(file.file_size)}</span>
+                        <span className="archivos-row-file-size">
+                          {formatFileSize(file.file_size)}
+                        </span>
                         <span className="archivos-row-separator">•</span>
                         <span className="archivos-row-date">{formatDate(file.created_at)}</span>
                       </div>
@@ -448,15 +455,22 @@ function Archivos() {
                 />
                 {selectedFileForUpload && (
                   <div className="archivos-file-selected">
-                    <span className="archivos-file-selected-icon">{getFileIcon(selectedFileForUpload.type)}</span>
+                    <span className="archivos-file-selected-icon">
+                      {getFileIcon(selectedFileForUpload.type)}
+                    </span>
                     <div className="archivos-file-selected-info">
-                      <span className="archivos-file-selected-name">{selectedFileForUpload.name}</span>
-                      <span className="archivos-file-selected-size">{formatFileSize(selectedFileForUpload.size)}</span>
+                      <span className="archivos-file-selected-name">
+                        {selectedFileForUpload.name}
+                      </span>
+                      <span className="archivos-file-selected-size">
+                        {formatFileSize(selectedFileForUpload.size)}
+                      </span>
                     </div>
                   </div>
                 )}
                 <p className="archivos-form-hint">
-                  Tamaño máximo: 25MB. Formatos permitidos: PDF, Word, Excel, PowerPoint, texto, CSV, imágenes
+                  Tamaño máximo: 25MB. Formatos permitidos: PDF, Word, Excel, PowerPoint, texto,
+                  CSV, imágenes
                 </p>
               </div>
 
@@ -557,7 +571,9 @@ function Archivos() {
                 </div>
                 <div className="archivos-detail-info-item">
                   <span className="archivos-detail-label">Tamaño:</span>
-                  <span className="archivos-detail-value">{formatFileSize(selectedFile.file_size)}</span>
+                  <span className="archivos-detail-value">
+                    {formatFileSize(selectedFile.file_size)}
+                  </span>
                 </div>
                 <div className="archivos-detail-info-item">
                   <span className="archivos-detail-label">Tipo:</span>
@@ -571,7 +587,9 @@ function Archivos() {
                 )}
                 <div className="archivos-detail-info-item">
                   <span className="archivos-detail-label">Subido:</span>
-                  <span className="archivos-detail-value">{formatDate(selectedFile.created_at)}</span>
+                  <span className="archivos-detail-value">
+                    {formatDate(selectedFile.created_at)}
+                  </span>
                 </div>
               </div>
 
@@ -604,5 +622,3 @@ function Archivos() {
 }
 
 export default Archivos
-
-

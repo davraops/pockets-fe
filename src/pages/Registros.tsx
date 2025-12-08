@@ -158,7 +158,9 @@ function Registros() {
                 </div>
                 <div className="settings-row-content">
                   <span className="settings-row-title">Patrimonio</span>
-                  <span className="settings-row-subtitle">Gestiona inventario de items valiosos</span>
+                  <span className="settings-row-subtitle">
+                    Gestiona inventario de items valiosos
+                  </span>
                 </div>
                 <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
               </button>
@@ -216,4 +218,3 @@ function Registros() {
 }
 
 export default Registros
-

@@ -176,7 +176,12 @@ function Transacciones() {
               id: acc.id,
               nombre: acc.account_name,
               currency: acc.currency || 'COP',
-              balance: parseFloat(acc.balance?.original?.amount || acc.balance?.amount || acc.balance?.cop?.amount || '0'),
+              balance: parseFloat(
+                acc.balance?.original?.amount ||
+                  acc.balance?.amount ||
+                  acc.balance?.cop?.amount ||
+                  '0'
+              ),
             })
           })
         }
@@ -285,7 +290,10 @@ function Transacciones() {
         }
       } catch (err: any) {
         console.error('Error al cargar datos:', err)
-        const errorMessage = getTranslatedErrorMessage(err, 'Error al cargar las transacciones. Por favor, intenta de nuevo.')
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al cargar las transacciones. Por favor, intenta de nuevo.'
+        )
         setError(errorMessage)
         setTransactions([])
       } finally {
@@ -443,7 +451,10 @@ function Transacciones() {
           tx = transactionResponse.transactions[0]
         } catch (err: any) {
           console.error('Error al obtener transacción:', err)
-          const errorMessage = getTranslatedErrorMessage(err, 'Error al obtener la transacción. Por favor, intenta de nuevo.')
+          const errorMessage = getTranslatedErrorMessage(
+            err,
+            'Error al obtener la transacción. Por favor, intenta de nuevo.'
+          )
           throw new Error(errorMessage)
         }
 
@@ -789,7 +800,10 @@ function Transacciones() {
         console.error('Error data:', err.data)
         console.error('Error message:', err.message)
 
-        let errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar la transacción. Por favor, intenta de nuevo.')
+        let errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al eliminar la transacción. Por favor, intenta de nuevo.'
+        )
         if (err.response?.status) {
           errorMessage = `Error ${err.response.status} - ${err.response.statusText || 'Error desconocido'}`
         } else if (typeof err === 'string') {
@@ -1508,7 +1522,10 @@ function Transacciones() {
             )
           }
 
-          const errorMessage = getTranslatedErrorMessage(err, 'Error al guardar la transacción. Por favor, intenta de nuevo.')
+          const errorMessage = getTranslatedErrorMessage(
+            err,
+            'Error al guardar la transacción. Por favor, intenta de nuevo.'
+          )
           showError(errorMessage)
         } finally {
           setIsLoading(false)
@@ -1517,7 +1534,10 @@ function Transacciones() {
       }
     } catch (err: any) {
       console.error('Error al guardar transacción:', err)
-      const errorMessage = getTranslatedErrorMessage(err, 'Error al guardar la transacción. Por favor, intenta de nuevo.')
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al guardar la transacción. Por favor, intenta de nuevo.'
+      )
       showError(errorMessage)
       setIsLoading(false)
       setIsSubmitting(false)
@@ -1768,7 +1788,10 @@ function Transacciones() {
         showNotification('Todas las transacciones han sido eliminadas exitosamente.', 'success')
       } catch (err: any) {
         console.error('Error al eliminar todas las transacciones:', err)
-        const errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar todas las transacciones. Por favor, intenta de nuevo.')
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al eliminar todas las transacciones. Por favor, intenta de nuevo.'
+        )
         showNotification(errorMessage, 'error')
       } finally {
         setIsLoading(false)
@@ -1778,7 +1801,10 @@ function Transacciones() {
 
   const handleCreateDemoIncomes = async () => {
     if (accounts.length === 0) {
-      showNotification('No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.', 'warning')
+      showNotification(
+        'No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.',
+        'warning'
+      )
       return
     }
 
@@ -1850,7 +1876,10 @@ function Transacciones() {
       showNotification(`${demoIncomes.length} ingresos demo creados exitosamente.`, 'success')
     } catch (err: any) {
       console.error('Error al crear ingresos demo:', err)
-      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear los ingresos demo. Por favor, intenta de nuevo.')
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al crear los ingresos demo. Por favor, intenta de nuevo.'
+      )
       showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
@@ -1859,7 +1888,10 @@ function Transacciones() {
 
   const handleCreateDemoExpenses = async () => {
     if (accounts.length === 0) {
-      showNotification('No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.', 'warning')
+      showNotification(
+        'No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.',
+        'warning'
+      )
       return
     }
 
@@ -1931,7 +1963,10 @@ function Transacciones() {
       showNotification(`${demoExpenses.length} egresos demo creados exitosamente.`, 'success')
     } catch (err: any) {
       console.error('Error al crear egresos demo:', err)
-      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear los egresos demo. Por favor, intenta de nuevo.')
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al crear los egresos demo. Por favor, intenta de nuevo.'
+      )
       showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
@@ -1940,11 +1975,17 @@ function Transacciones() {
 
   const handleCreateDemoCreditCardPayments = async () => {
     if (accounts.length === 0) {
-      showNotification('No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.', 'warning')
+      showNotification(
+        'No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.',
+        'warning'
+      )
       return
     }
     if (creditCards.length === 0) {
-      showNotification('No hay tarjetas de crédito disponibles. Crea al menos una tarjeta primero.', 'warning')
+      showNotification(
+        'No hay tarjetas de crédito disponibles. Crea al menos una tarjeta primero.',
+        'warning'
+      )
       return
     }
 
@@ -2027,7 +2068,10 @@ function Transacciones() {
       )
     } catch (err: any) {
       console.error('Error al crear egresos con tarjeta demo:', err)
-      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear los egresos con tarjeta demo. Por favor, intenta de nuevo.')
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al crear los egresos con tarjeta demo. Por favor, intenta de nuevo.'
+      )
       showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
@@ -2036,7 +2080,10 @@ function Transacciones() {
 
   const handleCreateDemoDebtPayments = async () => {
     if (accounts.length === 0) {
-      showNotification('No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.', 'warning')
+      showNotification(
+        'No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.',
+        'warning'
+      )
       return
     }
     if (debts.length === 0) {
@@ -2108,7 +2155,10 @@ function Transacciones() {
       )
     } catch (err: any) {
       console.error('Error al crear egresos con deuda demo:', err)
-      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear los egresos con deuda demo. Por favor, intenta de nuevo.')
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al crear los egresos con deuda demo. Por favor, intenta de nuevo.'
+      )
       showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
@@ -2117,11 +2167,17 @@ function Transacciones() {
 
   const handleCreateDemoSavings = async () => {
     if (accounts.length === 0) {
-      showNotification('No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.', 'warning')
+      showNotification(
+        'No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.',
+        'warning'
+      )
       return
     }
     if (projectBudgets.length === 0) {
-      showNotification('No hay presupuestos asociados a proyectos. Crea al menos un proyecto primero.', 'warning')
+      showNotification(
+        'No hay presupuestos asociados a proyectos. Crea al menos un proyecto primero.',
+        'warning'
+      )
       return
     }
 
@@ -2204,7 +2260,10 @@ function Transacciones() {
       showNotification(`${demoSavings.length} ahorros demo creados exitosamente.`, 'success')
     } catch (err: any) {
       console.error('Error al crear ahorros demo:', err)
-      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear los ahorros demo. Por favor, intenta de nuevo.')
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al crear los ahorros demo. Por favor, intenta de nuevo.'
+      )
       showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)

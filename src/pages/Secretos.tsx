@@ -185,7 +185,10 @@ function Secretos() {
         showNotification('Secreto eliminado exitosamente', 'success')
       } catch (err: any) {
         console.error('Error al eliminar secreto:', err)
-        const errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar el secreto. Por favor, intenta de nuevo.')
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al eliminar el secreto. Por favor, intenta de nuevo.'
+        )
         showNotification(errorMessage, 'error')
       } finally {
         setIsLoading(false)
@@ -219,7 +222,10 @@ function Secretos() {
       }
     } catch (err: any) {
       console.error('Error al desencriptar secreto:', err)
-      const errorMessage = getTranslatedErrorMessage(err, 'Error al desencriptar el secreto. Verifica tu contraseña.')
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al desencriptar el secreto. Verifica tu contraseña.'
+      )
       showNotification(errorMessage, 'error')
       setDecryptedValue(null)
       setShowDecryptedValue(false)
@@ -322,7 +328,10 @@ function Secretos() {
       }
     } catch (err: any) {
       console.error('Error al guardar secreto:', err)
-      const errorMessage = getTranslatedErrorMessage(err, 'Error al guardar el secreto. Por favor, intenta de nuevo.')
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al guardar el secreto. Por favor, intenta de nuevo.'
+      )
       showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
@@ -392,27 +401,37 @@ function Secretos() {
       }
       setIsDebugModalOpen(false)
       showNotification('Secretos demo creados exitosamente', 'success')
-      } catch (err: any) {
-        console.error('Error al crear secretos demo:', err)
-        const errorMessage = getTranslatedErrorMessage(err, 'Error al crear los secretos demo. Por favor, intenta de nuevo.')
-        showNotification(errorMessage, 'error')
+    } catch (err: any) {
+      console.error('Error al crear secretos demo:', err)
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al crear los secretos demo. Por favor, intenta de nuevo.'
+      )
+      showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
     }
   }
 
   const handleDeleteAllSecrets = async () => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar TODOS los secretos? Esta acción es irreversible.')) {
+    if (
+      window.confirm(
+        '¿Estás seguro de que quieres eliminar TODOS los secretos? Esta acción es irreversible.'
+      )
+    ) {
       try {
         setIsLoading(true)
         await api.deleteAllSecrets()
         setSecrets([])
         setIsDebugModalOpen(false)
         showNotification('Todos los secretos han sido eliminados', 'success')
-        } catch (err: any) {
-          console.error('Error al eliminar todos los secretos:', err)
-          const errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar los secretos. Por favor, intenta de nuevo.')
-          showNotification(errorMessage, 'error')
+      } catch (err: any) {
+        console.error('Error al eliminar todos los secretos:', err)
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al eliminar los secretos. Por favor, intenta de nuevo.'
+        )
+        showNotification(errorMessage, 'error')
       } finally {
         setIsLoading(false)
       }
@@ -474,7 +493,9 @@ function Secretos() {
           </div>
 
           <h1 className="secretos-page-title">Secretos</h1>
-          <p className="secretos-page-subtitle">Almacena información confidencial de forma segura</p>
+          <p className="secretos-page-subtitle">
+            Almacena información confidencial de forma segura
+          </p>
 
           {/* Lista de Secretos */}
           <div className="secretos-list">
@@ -519,7 +540,12 @@ function Secretos() {
 
           {/* Botón flotante para agregar */}
           {secrets.length > 0 && (
-            <button className="secretos-fab" onClick={handleOpenModal} aria-label="Agregar Secreto" type="button">
+            <button
+              className="secretos-fab"
+              onClick={handleOpenModal}
+              aria-label="Agregar Secreto"
+              type="button"
+            >
               <AddIcon />
             </button>
           )}
@@ -583,7 +609,8 @@ function Secretos() {
                   </span>
                 )}
                 <p className="form-hint">
-                  ⚠️ El valor se hasheará automáticamente y no podrá recuperarse después de guardarlo.
+                  ⚠️ El valor se hasheará automáticamente y no podrá recuperarse después de
+                  guardarlo.
                 </p>
               </div>
 
@@ -636,10 +663,11 @@ function Secretos() {
               {selectedSecret.fechaCreacion !== selectedSecret.fechaActualizacion && (
                 <div className="detail-row">
                   <span className="detail-label">Última Actualización</span>
-                  <span className="detail-value">{formatDate(selectedSecret.fechaActualizacion)}</span>
+                  <span className="detail-value">
+                    {formatDate(selectedSecret.fechaActualizacion)}
+                  </span>
                 </div>
               )}
-
             </div>
 
             <div className="detail-actions">
@@ -756,7 +784,11 @@ function Secretos() {
             </div>
 
             <div className="modal-actions">
-              <button type="button" className="modal-button secondary" onClick={handleCloseDetailModal}>
+              <button
+                type="button"
+                className="modal-button secondary"
+                onClick={handleCloseDetailModal}
+              >
                 Cerrar
               </button>
               {!decryptedValue ? (
@@ -842,13 +874,17 @@ function Secretos() {
                   </span>
                 )}
                 <p className="form-hint">
-                  ⚠️ Si proporcionas un nuevo valor, se hasheará y reemplazará el anterior. Deja vacío para mantener
-                  el valor actual.
+                  ⚠️ Si proporcionas un nuevo valor, se hasheará y reemplazará el anterior. Deja
+                  vacío para mantener el valor actual.
                 </p>
               </div>
 
               <div className="modal-actions">
-                <button type="button" className="modal-button secondary" onClick={handleCloseDetailModal}>
+                <button
+                  type="button"
+                  className="modal-button secondary"
+                  onClick={handleCloseDetailModal}
+                >
                   Cancelar
                 </button>
                 <button type="submit" className="modal-button primary" disabled={isLoading}>
@@ -886,7 +922,9 @@ function Secretos() {
                   <span className="debug-option-icon">📦</span>
                   <div className="debug-option-info">
                     <h3 className="debug-option-title">Crear Secretos Demo</h3>
-                    <p className="debug-option-description">Crea 5 secretos de ejemplo para pruebas</p>
+                    <p className="debug-option-description">
+                      Crea 5 secretos de ejemplo para pruebas
+                    </p>
                   </div>
                 </button>
                 <button
@@ -898,7 +936,9 @@ function Secretos() {
                   <span className="debug-option-icon">🗑️</span>
                   <div className="debug-option-info">
                     <h3 className="debug-option-title">Eliminar Todos los Secretos</h3>
-                    <p className="debug-option-description">⚠️ PELIGROSO: Elimina todos los secretos (IRREVERSIBLE)</p>
+                    <p className="debug-option-description">
+                      ⚠️ PELIGROSO: Elimina todos los secretos (IRREVERSIBLE)
+                    </p>
                   </div>
                 </button>
               </div>

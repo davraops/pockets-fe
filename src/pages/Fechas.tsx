@@ -656,11 +656,11 @@ function Fechas() {
         <div className="fechas-inspiration-message">
           <div className="fechas-inspiration-content">
             <p className="fechas-inspiration-badge">✨ Respira tranquilo</p>
-            <p className="fechas-inspiration-main">
-              Este es un espacio libre de trabajo
-            </p>
+            <p className="fechas-inspiration-main">Este es un espacio libre de trabajo</p>
             <p className="fechas-inspiration-text">
-              Cuando todos los engaños fallen y cuando las cosas se pongan difíciles, te vas a necesitar a ti y a tu familia real. Este espacio es para las fechas y compromisos contigo y los tuyos.
+              Cuando todos los engaños fallen y cuando las cosas se pongan difíciles, te vas a
+              necesitar a ti y a tu familia real. Este espacio es para las fechas y compromisos
+              contigo y los tuyos.
             </p>
           </div>
         </div>
@@ -675,7 +675,9 @@ function Fechas() {
                 const today = new Date()
                 today.setHours(0, 0, 0, 0)
                 eventDate.setHours(0, 0, 0, 0)
-                const daysUntil = Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+                const daysUntil = Math.ceil(
+                  (eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+                )
                 const isToday = daysUntil === 0
                 const isTomorrow = daysUntil === 1
 
@@ -697,22 +699,22 @@ function Fechas() {
                       <div className="fechas-upcoming-item-header">
                         <h3 className="fechas-upcoming-item-title">{event.titulo}</h3>
                         <span className="fechas-upcoming-item-badge">
-                          {isToday
-                            ? 'Hoy'
-                            : isTomorrow
-                              ? 'Mañana'
-                              : `En ${daysUntil} días`}
+                          {isToday ? 'Hoy' : isTomorrow ? 'Mañana' : `En ${daysUntil} días`}
                         </span>
                       </div>
                       <div className="fechas-upcoming-item-meta">
                         {event.hora && !event.esTodoElDia && (
-                          <span className="fechas-upcoming-item-time">{formatTime(event.hora)}</span>
+                          <span className="fechas-upcoming-item-time">
+                            {formatTime(event.hora)}
+                          </span>
                         )}
                         {event.esTodoElDia && (
                           <span className="fechas-upcoming-item-all-day">Todo el día</span>
                         )}
                         {event.ubicacion && (
-                          <span className="fechas-upcoming-item-location">📍 {event.ubicacion}</span>
+                          <span className="fechas-upcoming-item-location">
+                            📍 {event.ubicacion}
+                          </span>
                         )}
                       </div>
                       {event.descripcion && (
@@ -766,10 +768,8 @@ function Fechas() {
                 events={getCalendarEvents()}
                 startAccessor="start"
                 endAccessor="end"
-                style={{ 
-                  height: calendarView === 'agenda' 
-                    ? 'auto' 
-                    : (isMobile ? 400 : 600) 
+                style={{
+                  height: calendarView === 'agenda' ? 'auto' : isMobile ? 400 : 600,
                 }}
                 view={calendarView}
                 onView={setCalendarView}
@@ -799,54 +799,54 @@ function Fechas() {
         {viewMode === 'list' && (
           <>
             {isLoading ? (
-          <div className="fechas-empty-state">
-            <p>Cargando eventos...</p>
-          </div>
-        ) : error ? (
-          <div className="fechas-empty-state">
-            <p>{error}</p>
-          </div>
-        ) : events.length === 0 ? (
-          <div className="fechas-empty-state">
-            <CalendarTodayIcon className="empty-state-icon" />
-            <p className="empty-state-text">No hay eventos registrados aún.</p>
-            <button className="empty-state-button" onClick={handleOpenModal} type="button">
-              Agregar Evento
-            </button>
-          </div>
-        ) : (
-          <div className="fechas-list">
-            {events.map(event => (
-              <div
-                key={event.id}
-                className="fechas-item"
-                onClick={() => handleOpenDetailModal(event)}
-              >
-                <div className="fechas-item-content">
-                  <div className="fechas-item-header">
-                    <h3 className="fechas-item-title">{event.titulo}</h3>
-                    <ChevronRightIcon className="fechas-item-chevron" />
-                  </div>
-                  <div className="fechas-item-meta">
-                    <span className="fechas-item-date">{formatDate(event.fecha)}</span>
-                    {event.hora && !event.esTodoElDia && (
-                      <span className="fechas-item-time">{formatTime(event.hora)}</span>
-                    )}
-                    {event.esTodoElDia && (
-                      <span className="fechas-item-all-day">Todo el día</span>
-                    )}
-                  </div>
-                  {event.descripcion && (
-                    <p className="fechas-item-description">{event.descripcion}</p>
-                  )}
-                  {event.ubicacion && (
-                    <p className="fechas-item-location">📍 {event.ubicacion}</p>
-                  )}
-                </div>
+              <div className="fechas-empty-state">
+                <p>Cargando eventos...</p>
               </div>
-            ))}
-          </div>
-        )}
+            ) : error ? (
+              <div className="fechas-empty-state">
+                <p>{error}</p>
+              </div>
+            ) : events.length === 0 ? (
+              <div className="fechas-empty-state">
+                <CalendarTodayIcon className="empty-state-icon" />
+                <p className="empty-state-text">No hay eventos registrados aún.</p>
+                <button className="empty-state-button" onClick={handleOpenModal} type="button">
+                  Agregar Evento
+                </button>
+              </div>
+            ) : (
+              <div className="fechas-list">
+                {events.map(event => (
+                  <div
+                    key={event.id}
+                    className="fechas-item"
+                    onClick={() => handleOpenDetailModal(event)}
+                  >
+                    <div className="fechas-item-content">
+                      <div className="fechas-item-header">
+                        <h3 className="fechas-item-title">{event.titulo}</h3>
+                        <ChevronRightIcon className="fechas-item-chevron" />
+                      </div>
+                      <div className="fechas-item-meta">
+                        <span className="fechas-item-date">{formatDate(event.fecha)}</span>
+                        {event.hora && !event.esTodoElDia && (
+                          <span className="fechas-item-time">{formatTime(event.hora)}</span>
+                        )}
+                        {event.esTodoElDia && (
+                          <span className="fechas-item-all-day">Todo el día</span>
+                        )}
+                      </div>
+                      {event.descripcion && (
+                        <p className="fechas-item-description">{event.descripcion}</p>
+                      )}
+                      {event.ubicacion && (
+                        <p className="fechas-item-location">📍 {event.ubicacion}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         )}
 
@@ -873,7 +873,8 @@ function Fechas() {
                 <div className="fechas-form-notice">
                   <span className="fechas-form-notice-icon">🚫</span>
                   <span className="fechas-form-notice-text">
-                    Prohibido agregar eventos laborales aquí. Este espacio es solo para fechas y compromisos contigo y los tuyos.
+                    Prohibido agregar eventos laborales aquí. Este espacio es solo para fechas y
+                    compromisos contigo y los tuyos.
                   </span>
                 </div>
 
@@ -1012,7 +1013,8 @@ function Fechas() {
                   <div className="fechas-form-notice">
                     <span className="fechas-form-notice-icon">🚫</span>
                     <span className="fechas-form-notice-text">
-                      Prohibido agregar eventos laborales aquí. Este espacio es solo para fechas y compromisos contigo y los tuyos.
+                      Prohibido agregar eventos laborales aquí. Este espacio es solo para fechas y
+                      compromisos contigo y los tuyos.
                     </span>
                   </div>
 

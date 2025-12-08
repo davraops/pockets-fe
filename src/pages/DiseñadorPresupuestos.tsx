@@ -309,7 +309,11 @@ function DiseñadorPresupuestos() {
   }
 
   const handleDebugDeleteAll = async () => {
-    if (!window.confirm('¿Estás seguro de que quieres eliminar TODOS los borradores? Esta acción es irreversible.')) {
+    if (
+      !window.confirm(
+        '¿Estás seguro de que quieres eliminar TODOS los borradores? Esta acción es irreversible.'
+      )
+    ) {
       return
     }
 
@@ -361,10 +365,10 @@ function DiseñadorPresupuestos() {
 
       await api.createBudgetDraft(draftData)
       showNotification('Borrador guardado exitosamente', 'success')
-      
+
       // Recargar lista de borradores
       await loadDrafts()
-      
+
       // Limpiar después de guardar (opcional - comentado para que el usuario pueda seguir editando)
       // setItems([])
       // setDraftName('')
@@ -444,9 +448,7 @@ function DiseñadorPresupuestos() {
 
         {/* Formulario para agregar items */}
         <div className="diseñador-form-section">
-          <h2 className="diseñador-section-title">
-            {editingId ? 'Editar Item' : 'Agregar Item'}
-          </h2>
+          <h2 className="diseñador-section-title">{editingId ? 'Editar Item' : 'Agregar Item'}</h2>
           <form onSubmit={handleSubmit} className="diseñador-form">
             <div className="diseñador-form-group">
               <label htmlFor="name" className="diseñador-form-label">
@@ -514,10 +516,7 @@ function DiseñadorPresupuestos() {
                   Cancelar
                 </button>
               )}
-              <button
-                type="submit"
-                className="diseñador-form-button diseñador-form-button-primary"
-              >
+              <button type="submit" className="diseñador-form-button diseñador-form-button-primary">
                 {editingId ? 'Actualizar' : 'Agregar'}
               </button>
             </div>
@@ -573,9 +572,7 @@ function DiseñadorPresupuestos() {
                 <div key={catTotal.category} className="diseñador-total-item">
                   <div className="diseñador-total-header">
                     <h3 className="diseñador-total-category">{catTotal.category}</h3>
-                    <span className="diseñador-total-value">
-                      {formatCurrency(catTotal.total)}
-                    </span>
+                    <span className="diseñador-total-value">{formatCurrency(catTotal.total)}</span>
                   </div>
                   <p className="diseñador-total-items">
                     {catTotal.items.length} {catTotal.items.length === 1 ? 'item' : 'items'}
@@ -622,7 +619,8 @@ function DiseñadorPresupuestos() {
                       <div className="diseñador-draft-info">
                         {draft.data.items && (
                           <span className="diseñador-draft-meta">
-                            {draft.data.items.length} {draft.data.items.length === 1 ? 'item' : 'items'}
+                            {draft.data.items.length}{' '}
+                            {draft.data.items.length === 1 ? 'item' : 'items'}
                           </span>
                         )}
                         {draft.data.total && (
@@ -637,14 +635,16 @@ function DiseñadorPresupuestos() {
                           <>
                             <span className="diseñador-draft-separator">•</span>
                             <span className="diseñador-draft-meta">
-                              {draft.data.categories.length} {draft.data.categories.length === 1 ? 'categoría' : 'categorías'}
+                              {draft.data.categories.length}{' '}
+                              {draft.data.categories.length === 1 ? 'categoría' : 'categorías'}
                             </span>
                           </>
                         )}
                       </div>
                       {draft.created_at && (
                         <p className="diseñador-draft-date">
-                          Creado: {new Date(draft.created_at).toLocaleDateString('es-ES', {
+                          Creado:{' '}
+                          {new Date(draft.created_at).toLocaleDateString('es-ES', {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric',
@@ -654,7 +654,7 @@ function DiseñadorPresupuestos() {
                     </div>
                     <button
                       className="diseñador-draft-delete"
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation()
                         handleDeleteDraft(draft.id, draft.name)
                       }}
@@ -760,4 +760,3 @@ function DiseñadorPresupuestos() {
 }
 
 export default DiseñadorPresupuestos
-

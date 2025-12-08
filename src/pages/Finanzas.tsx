@@ -101,20 +101,6 @@ const financeItems: FinanceItem[] = [
     color: '#5AC8FA',
     path: '/finanzas/me-deben',
   },
-  {
-    id: '10',
-    title: 'Cripto Wallet',
-    Icon: CurrencyBitcoinIcon,
-    color: '#F7931A',
-    path: '/finanzas/cripto-wallet',
-  },
-  {
-    id: '11',
-    title: 'Mi Cripto',
-    Icon: CurrencyBitcoinIcon,
-    color: '#FF9500',
-    path: '/finanzas/cripto-transacciones',
-  },
 ]
 
 function Finanzas() {
@@ -421,9 +407,7 @@ function Finanzas() {
                     </div>
                     <div className="settings-row-content">
                       <span className="settings-row-title">Diseñador de Presupuestos</span>
-                      <span className="settings-row-subtitle">
-                        Diseña tus presupuestos
-                      </span>
+                      <span className="settings-row-subtitle">Diseña tus presupuestos</span>
                     </div>
                     <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
                   </button>
@@ -471,30 +455,7 @@ function Finanzas() {
                     </div>
                     <div className="settings-row-content">
                       <span className="settings-row-title">Listas de Mercado</span>
-                      <span className="settings-row-subtitle">
-                        Gestiona tus compras
-                      </span>
-                    </div>
-                    <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
-                  </button>
-                  <button
-                    className="settings-row"
-                    onClick={() => navigate('/finanzas/crypto-vendors')}
-                    aria-label="Ir a Vendedores de Cripto"
-                    type="button"
-                  >
-                    <div
-                      className="settings-row-icon"
-                      style={{ backgroundColor: '#F7931A' }}
-                      aria-hidden="true"
-                    >
-                      <CurrencyBitcoinIcon />
-                    </div>
-                    <div className="settings-row-content">
-                      <span className="settings-row-title">Vendedores de Cripto</span>
-                      <span className="settings-row-subtitle">
-                        Vendedores que aceptan criptomonedas
-                      </span>
+                      <span className="settings-row-subtitle">Gestiona tus compras</span>
                     </div>
                     <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
                   </button>
@@ -671,7 +632,7 @@ function Finanzas() {
                       <CurrencyBitcoinIcon />
                     </div>
                     <div className="settings-row-content">
-                      <span className="settings-row-title">Cripto Wallet</span>
+                      <span className="settings-row-title">Mis Wallets</span>
                       <span className="settings-row-subtitle">Gestiona tus wallets</span>
                     </div>
                     <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
@@ -694,6 +655,28 @@ function Finanzas() {
                       <span className="settings-row-title">Mi Cripto</span>
                       <span className="settings-row-subtitle">
                         Registra compras y ventas de criptomonedas
+                      </span>
+                    </div>
+                    <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+                  </button>
+
+                  <button
+                    className="settings-row"
+                    onClick={() => navigate('/finanzas/crypto-vendors')}
+                    aria-label="Ir a Vendedores de Cripto"
+                    type="button"
+                  >
+                    <div
+                      className="settings-row-icon"
+                      style={{ backgroundColor: '#F7931A' }}
+                      aria-hidden="true"
+                    >
+                      <CurrencyBitcoinIcon />
+                    </div>
+                    <div className="settings-row-content">
+                      <span className="settings-row-title">Vendedores de Cripto</span>
+                      <span className="settings-row-subtitle">
+                        Vendedores que aceptan criptomonedas
                       </span>
                     </div>
                     <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />

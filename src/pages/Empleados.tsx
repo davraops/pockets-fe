@@ -102,7 +102,7 @@ function Empleados() {
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [isDebugLoading, setIsDebugLoading] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  
+
   // Estados para el formulario de vacaciones/permisos/retrasos
   const [vacationForm, setVacationForm] = useState({
     startDate: '',
@@ -134,7 +134,7 @@ function Empleados() {
       const response = await api.getEmployees()
       if (response.employees && Array.isArray(response.employees)) {
         setRecords(response.employees)
-        
+
         // Mapear cada empleado individual a la lista
         const mappedEmployees: Employee[] = response.employees.map((record: EmployeeRecord) => ({
           id: record.id,
@@ -314,7 +314,6 @@ function Empleados() {
     }
   }
 
-
   return (
     <div className="app-page-container">
       <div className="app-page-content empleados-content">
@@ -370,7 +369,8 @@ function Empleados() {
 
         <h1 className="empleados-page-title">Empleados</h1>
         <p className="empleados-page-subtitle">
-          Gestiona la información de tus empleados: salario, tipo de contrato, fecha de contratación y más
+          Gestiona la información de tus empleados: salario, tipo de contrato, fecha de contratación
+          y más
         </p>
 
         {/* Estado de carga */}
@@ -385,17 +385,17 @@ function Empleados() {
         ) : employees.length === 0 ? (
           <div className="empleados-empty-state">
             <p className="empty-state-text">No hay empleados agregados</p>
-            <p className="empty-state-subtext">Agrega tu primer empleado usando el botón del menú</p>
+            <p className="empty-state-subtext">
+              Agrega tu primer empleado usando el botón del menú
+            </p>
           </div>
         ) : (
           <div className="empleados-list-section">
-            <h2 className="empleados-section-title">
-              Empleados ({employees.length})
-            </h2>
+            <h2 className="empleados-section-title">Empleados ({employees.length})</h2>
             <div className="empleados-list">
               {employees.map(employee => (
-                <div 
-                  key={employee.id} 
+                <div
+                  key={employee.id}
                   className="empleados-item"
                   onClick={() => {
                     setSelectedEmployee(employee)
@@ -422,7 +422,9 @@ function Empleados() {
                       )}
                       {employee.data.position && (
                         <>
-                          {employee.data.identification && <span className="empleados-item-separator">•</span>}
+                          {employee.data.identification && (
+                            <span className="empleados-item-separator">•</span>
+                          )}
                           <span className="empleados-item-meta-item">
                             <WorkIcon className="empleados-item-meta-icon" />
                             {employee.data.position}
@@ -462,17 +464,23 @@ function Empleados() {
                       {employee.data.startDate && (
                         <div className="empleados-item-detail">
                           <CalendarTodayIcon className="empleados-item-detail-icon" />
-                          <span>Contratado: {new Date(employee.data.startDate).toLocaleDateString('es-CO')}</span>
+                          <span>
+                            Contratado:{' '}
+                            {new Date(employee.data.startDate).toLocaleDateString('es-CO')}
+                          </span>
                         </div>
                       )}
-                      {employee.data.vacationDaysAvailable !== undefined && employee.data.vacationDaysAvailable !== null && (
-                        <div className="empleados-item-detail">
-                          <EventAvailableIcon className="empleados-item-detail-icon" />
-                          <span>{employee.data.vacationDaysAvailable} días de vacaciones disponibles</span>
-                        </div>
-                      )}
+                      {employee.data.vacationDaysAvailable !== undefined &&
+                        employee.data.vacationDaysAvailable !== null && (
+                          <div className="empleados-item-detail">
+                            <EventAvailableIcon className="empleados-item-detail-icon" />
+                            <span>
+                              {employee.data.vacationDaysAvailable} días de vacaciones disponibles
+                            </span>
+                          </div>
+                        )}
                     </div>
-                    <div className="empleados-item-actions" onClick={(e) => e.stopPropagation()}>
+                    <div className="empleados-item-actions" onClick={e => e.stopPropagation()}>
                       <button
                         onClick={() => handleEdit(employee)}
                         className="empleados-item-action-button"
@@ -500,7 +508,10 @@ function Empleados() {
         {/* Modal de Formulario */}
         {showFormModal && (
           <div className="empleados-modal-overlay" onClick={() => handleCancelEdit()}>
-            <div className="empleados-modal empleados-modal-large" onClick={e => e.stopPropagation()}>
+            <div
+              className="empleados-modal empleados-modal-large"
+              onClick={e => e.stopPropagation()}
+            >
               <div className="empleados-modal-header">
                 <h2 className="empleados-modal-title">
                   {editingId ? 'Editar Empleado' : 'Agregar Empleado'}
@@ -516,232 +527,235 @@ function Empleados() {
               </div>
               <div className="empleados-modal-content">
                 <form onSubmit={handleSubmit} className="empleados-form">
-            <div className="empleados-form-group">
-              <label htmlFor="name" className="empleados-form-label">
-                <PersonIcon className="empleados-label-icon" />
-                Nombre Completo *
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="empleados-form-input"
-                placeholder="Ej: Juan Pérez"
-                required
-              />
-            </div>
+                  <div className="empleados-form-group">
+                    <label htmlFor="name" className="empleados-form-label">
+                      <PersonIcon className="empleados-label-icon" />
+                      Nombre Completo *
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      className="empleados-form-input"
+                      placeholder="Ej: Juan Pérez"
+                      required
+                    />
+                  </div>
 
-            <div className="empleados-form-row">
-              <div className="empleados-form-group">
-                <label htmlFor="identification" className="empleados-form-label">
-                  Documento de Identidad *
-                </label>
-                <input
-                  type="text"
-                  id="identification"
-                  name="identification"
-                  value={formData.identification}
-                  onChange={handleChange}
-                  className="empleados-form-input"
-                  placeholder="Ej: 1234567890"
-                  required
-                />
-              </div>
+                  <div className="empleados-form-row">
+                    <div className="empleados-form-group">
+                      <label htmlFor="identification" className="empleados-form-label">
+                        Documento de Identidad *
+                      </label>
+                      <input
+                        type="text"
+                        id="identification"
+                        name="identification"
+                        value={formData.identification}
+                        onChange={handleChange}
+                        className="empleados-form-input"
+                        placeholder="Ej: 1234567890"
+                        required
+                      />
+                    </div>
 
-              <div className="empleados-form-group">
-                <label htmlFor="contractType" className="empleados-form-label">
-                  Tipo de Contrato
-                </label>
-                <select
-                  id="contractType"
-                  name="contractType"
-                  value={formData.contractType}
-                  onChange={handleChange}
-                  className="empleados-form-input"
-                >
-                  <option value="">Seleccionar...</option>
-                  <option value="Indefinido">Indefinido</option>
-                  <option value="Término Fijo">Término Fijo</option>
-                  <option value="Término Fijo a Prueba">Término Fijo a Prueba</option>
-                  <option value="Obra o Labor">Obra o Labor</option>
-                  <option value="Prestación de Servicios">Prestación de Servicios</option>
-                  <option value="Aprendizaje">Aprendizaje</option>
-                </select>
-              </div>
-            </div>
+                    <div className="empleados-form-group">
+                      <label htmlFor="contractType" className="empleados-form-label">
+                        Tipo de Contrato
+                      </label>
+                      <select
+                        id="contractType"
+                        name="contractType"
+                        value={formData.contractType}
+                        onChange={handleChange}
+                        className="empleados-form-input"
+                      >
+                        <option value="">Seleccionar...</option>
+                        <option value="Indefinido">Indefinido</option>
+                        <option value="Término Fijo">Término Fijo</option>
+                        <option value="Término Fijo a Prueba">Término Fijo a Prueba</option>
+                        <option value="Obra o Labor">Obra o Labor</option>
+                        <option value="Prestación de Servicios">Prestación de Servicios</option>
+                        <option value="Aprendizaje">Aprendizaje</option>
+                      </select>
+                    </div>
+                  </div>
 
-            <div className="empleados-form-row">
-              <div className="empleados-form-group">
-                <label htmlFor="startDate" className="empleados-form-label">
-                  Fecha de Contratación
-                </label>
-                <input
-                  type="date"
-                  id="startDate"
-                  name="startDate"
-                  value={formData.startDate}
-                  onChange={handleChange}
-                  className="empleados-form-input"
-                />
-              </div>
+                  <div className="empleados-form-row">
+                    <div className="empleados-form-group">
+                      <label htmlFor="startDate" className="empleados-form-label">
+                        Fecha de Contratación
+                      </label>
+                      <input
+                        type="date"
+                        id="startDate"
+                        name="startDate"
+                        value={formData.startDate}
+                        onChange={handleChange}
+                        className="empleados-form-input"
+                      />
+                    </div>
 
-              <div className="empleados-form-group">
-                <label htmlFor="salary" className="empleados-form-label">
-                  <AttachMoneyIcon className="empleados-label-icon" />
-                  Salario
-                </label>
-                <input
-                  type="number"
-                  id="salary"
-                  name="salary"
-                  value={formData.salary}
-                  onChange={handleChange}
-                  className="empleados-form-input"
-                  placeholder="0"
-                  min="0"
-                  step="1000"
-                />
-              </div>
-            </div>
+                    <div className="empleados-form-group">
+                      <label htmlFor="salary" className="empleados-form-label">
+                        <AttachMoneyIcon className="empleados-label-icon" />
+                        Salario
+                      </label>
+                      <input
+                        type="number"
+                        id="salary"
+                        name="salary"
+                        value={formData.salary}
+                        onChange={handleChange}
+                        className="empleados-form-input"
+                        placeholder="0"
+                        min="0"
+                        step="1000"
+                      />
+                    </div>
+                  </div>
 
-            <div className="empleados-form-row">
-              <div className="empleados-form-group">
-                <label htmlFor="position" className="empleados-form-label">
-                  <WorkIcon className="empleados-label-icon" />
-                  Cargo/Posición
-                </label>
-                <input
-                  type="text"
-                  id="position"
-                  name="position"
-                  value={formData.position}
-                  onChange={handleChange}
-                  className="empleados-form-input"
-                  placeholder="Ej: Desarrollador Senior"
-                />
-              </div>
+                  <div className="empleados-form-row">
+                    <div className="empleados-form-group">
+                      <label htmlFor="position" className="empleados-form-label">
+                        <WorkIcon className="empleados-label-icon" />
+                        Cargo/Posición
+                      </label>
+                      <input
+                        type="text"
+                        id="position"
+                        name="position"
+                        value={formData.position}
+                        onChange={handleChange}
+                        className="empleados-form-input"
+                        placeholder="Ej: Desarrollador Senior"
+                      />
+                    </div>
 
-              <div className="empleados-form-group">
-                <label htmlFor="department" className="empleados-form-label">
-                  Departamento
-                </label>
-                <input
-                  type="text"
-                  id="department"
-                  name="department"
-                  value={formData.department}
-                  onChange={handleChange}
-                  className="empleados-form-input"
-                  placeholder="Ej: Tecnología"
-                />
-              </div>
-            </div>
+                    <div className="empleados-form-group">
+                      <label htmlFor="department" className="empleados-form-label">
+                        Departamento
+                      </label>
+                      <input
+                        type="text"
+                        id="department"
+                        name="department"
+                        value={formData.department}
+                        onChange={handleChange}
+                        className="empleados-form-input"
+                        placeholder="Ej: Tecnología"
+                      />
+                    </div>
+                  </div>
 
-            <div className="empleados-form-row">
-              <div className="empleados-form-group">
-                <label htmlFor="email" className="empleados-form-label">
-                  <EmailIcon className="empleados-label-icon" />
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="empleados-form-input"
-                  placeholder="ejemplo@empresa.com"
-                />
-              </div>
+                  <div className="empleados-form-row">
+                    <div className="empleados-form-group">
+                      <label htmlFor="email" className="empleados-form-label">
+                        <EmailIcon className="empleados-label-icon" />
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        className="empleados-form-input"
+                        placeholder="ejemplo@empresa.com"
+                      />
+                    </div>
 
-              <div className="empleados-form-group">
-                <label htmlFor="phone" className="empleados-form-label">
-                  <PhoneIcon className="empleados-label-icon" />
-                  Teléfono
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="empleados-form-input"
-                  placeholder="+57 300 123 4567"
-                />
-              </div>
-            </div>
+                    <div className="empleados-form-group">
+                      <label htmlFor="phone" className="empleados-form-label">
+                        <PhoneIcon className="empleados-label-icon" />
+                        Teléfono
+                      </label>
+                      <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        className="empleados-form-input"
+                        placeholder="+57 300 123 4567"
+                      />
+                    </div>
+                  </div>
 
-            <div className="empleados-form-group">
-              <label htmlFor="address" className="empleados-form-label">
-                <HomeIcon className="empleados-label-icon" />
-                Dirección
-              </label>
-              <input
-                type="text"
-                id="address"
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                className="empleados-form-input"
-                placeholder="Ej: Calle 123 #45-67"
-              />
-            </div>
+                  <div className="empleados-form-group">
+                    <label htmlFor="address" className="empleados-form-label">
+                      <HomeIcon className="empleados-label-icon" />
+                      Dirección
+                    </label>
+                    <input
+                      type="text"
+                      id="address"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      className="empleados-form-input"
+                      placeholder="Ej: Calle 123 #45-67"
+                    />
+                  </div>
 
-            <div className="empleados-form-section-divider">
-              <h3 className="empleados-form-subsection-title">
-                <ContactEmergencyIcon className="empleados-label-icon" />
-                Contacto de Emergencia
-              </h3>
-            </div>
+                  <div className="empleados-form-section-divider">
+                    <h3 className="empleados-form-subsection-title">
+                      <ContactEmergencyIcon className="empleados-label-icon" />
+                      Contacto de Emergencia
+                    </h3>
+                  </div>
 
-            <div className="empleados-form-row">
-              <div className="empleados-form-group">
-                <label htmlFor="emergencyContactName" className="empleados-form-label">
-                  Nombre
-                </label>
-                <input
-                  type="text"
-                  id="emergencyContactName"
-                  name="emergencyContactName"
-                  value={formData.emergencyContactName}
-                  onChange={handleChange}
-                  className="empleados-form-input"
-                  placeholder="Ej: María Pérez"
-                />
-              </div>
+                  <div className="empleados-form-row">
+                    <div className="empleados-form-group">
+                      <label htmlFor="emergencyContactName" className="empleados-form-label">
+                        Nombre
+                      </label>
+                      <input
+                        type="text"
+                        id="emergencyContactName"
+                        name="emergencyContactName"
+                        value={formData.emergencyContactName}
+                        onChange={handleChange}
+                        className="empleados-form-input"
+                        placeholder="Ej: María Pérez"
+                      />
+                    </div>
 
-              <div className="empleados-form-group">
-                <label htmlFor="emergencyContactPhone" className="empleados-form-label">
-                  Teléfono
-                </label>
-                <input
-                  type="tel"
-                  id="emergencyContactPhone"
-                  name="emergencyContactPhone"
-                  value={formData.emergencyContactPhone}
-                  onChange={handleChange}
-                  className="empleados-form-input"
-                  placeholder="+57 300 987 6543"
-                />
-              </div>
+                    <div className="empleados-form-group">
+                      <label htmlFor="emergencyContactPhone" className="empleados-form-label">
+                        Teléfono
+                      </label>
+                      <input
+                        type="tel"
+                        id="emergencyContactPhone"
+                        name="emergencyContactPhone"
+                        value={formData.emergencyContactPhone}
+                        onChange={handleChange}
+                        className="empleados-form-input"
+                        placeholder="+57 300 987 6543"
+                      />
+                    </div>
 
-              <div className="empleados-form-group">
-                <label htmlFor="emergencyContactRelationship" className="empleados-form-label">
-                  Relación
-                </label>
-                <input
-                  type="text"
-                  id="emergencyContactRelationship"
-                  name="emergencyContactRelationship"
-                  value={formData.emergencyContactRelationship}
-                  onChange={handleChange}
-                  className="empleados-form-input"
-                  placeholder="Ej: Esposa, Padre, etc."
-                />
-              </div>
-            </div>
+                    <div className="empleados-form-group">
+                      <label
+                        htmlFor="emergencyContactRelationship"
+                        className="empleados-form-label"
+                      >
+                        Relación
+                      </label>
+                      <input
+                        type="text"
+                        id="emergencyContactRelationship"
+                        name="emergencyContactRelationship"
+                        value={formData.emergencyContactRelationship}
+                        onChange={handleChange}
+                        className="empleados-form-input"
+                        placeholder="Ej: Esposa, Padre, etc."
+                      />
+                    </div>
+                  </div>
 
                   <div className="empleados-form-actions">
                     <button
@@ -767,7 +781,10 @@ function Empleados() {
         {/* Modal de Detalle */}
         {showDetailModal && selectedEmployee && (
           <div className="empleados-modal-overlay" onClick={() => setShowDetailModal(false)}>
-            <div className="empleados-modal empleados-modal-large" onClick={e => e.stopPropagation()}>
+            <div
+              className="empleados-modal empleados-modal-large"
+              onClick={e => e.stopPropagation()}
+            >
               <div className="empleados-modal-header">
                 <h2 className="empleados-modal-title">Detalle del Empleado</h2>
                 <button
@@ -791,25 +808,33 @@ function Empleados() {
                     {selectedEmployee.data.identification && (
                       <div className="empleados-detail-item">
                         <span className="empleados-detail-label">Documento:</span>
-                        <span className="empleados-detail-value">{selectedEmployee.data.identification}</span>
+                        <span className="empleados-detail-value">
+                          {selectedEmployee.data.identification}
+                        </span>
                       </div>
                     )}
                     {selectedEmployee.data.position && (
                       <div className="empleados-detail-item">
                         <span className="empleados-detail-label">Cargo:</span>
-                        <span className="empleados-detail-value">{selectedEmployee.data.position}</span>
+                        <span className="empleados-detail-value">
+                          {selectedEmployee.data.position}
+                        </span>
                       </div>
                     )}
                     {selectedEmployee.data.department && (
                       <div className="empleados-detail-item">
                         <span className="empleados-detail-label">Departamento:</span>
-                        <span className="empleados-detail-value">{selectedEmployee.data.department}</span>
+                        <span className="empleados-detail-value">
+                          {selectedEmployee.data.department}
+                        </span>
                       </div>
                     )}
                     {selectedEmployee.data.contractType && (
                       <div className="empleados-detail-item">
                         <span className="empleados-detail-label">Tipo de Contrato:</span>
-                        <span className="empleados-detail-value">{selectedEmployee.data.contractType}</span>
+                        <span className="empleados-detail-value">
+                          {selectedEmployee.data.contractType}
+                        </span>
                       </div>
                     )}
                     {selectedEmployee.data.salary && (
@@ -831,19 +856,25 @@ function Empleados() {
                     {selectedEmployee.data.email && (
                       <div className="empleados-detail-item">
                         <span className="empleados-detail-label">Email:</span>
-                        <span className="empleados-detail-value">{selectedEmployee.data.email}</span>
+                        <span className="empleados-detail-value">
+                          {selectedEmployee.data.email}
+                        </span>
                       </div>
                     )}
                     {selectedEmployee.data.phone && (
                       <div className="empleados-detail-item">
                         <span className="empleados-detail-label">Teléfono:</span>
-                        <span className="empleados-detail-value">{selectedEmployee.data.phone}</span>
+                        <span className="empleados-detail-value">
+                          {selectedEmployee.data.phone}
+                        </span>
                       </div>
                     )}
                     {selectedEmployee.data.address && (
                       <div className="empleados-detail-item">
                         <span className="empleados-detail-label">Dirección:</span>
-                        <span className="empleados-detail-value">{selectedEmployee.data.address}</span>
+                        <span className="empleados-detail-value">
+                          {selectedEmployee.data.address}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -856,13 +887,11 @@ function Empleados() {
                     Vacaciones Disponibles
                   </h3>
                   <div className="empleados-detail-form-group">
-                    <label className="empleados-form-label">
-                      Días Disponibles
-                    </label>
+                    <label className="empleados-form-label">Días Disponibles</label>
                     <input
                       type="number"
                       value={vacationDaysAvailable}
-                      onChange={(e) => setVacationDaysAvailable(e.target.value)}
+                      onChange={e => setVacationDaysAvailable(e.target.value)}
                       className="empleados-form-input"
                       min="0"
                       placeholder="0"
@@ -875,7 +904,9 @@ function Empleados() {
                           await api.updateEmployee(selectedEmployee.id, {
                             data: {
                               ...selectedEmployee.data,
-                              vacationDaysAvailable: vacationDaysAvailable ? parseInt(vacationDaysAvailable) : undefined,
+                              vacationDaysAvailable: vacationDaysAvailable
+                                ? parseInt(vacationDaysAvailable)
+                                : undefined,
                             },
                           })
                           showNotification('Vacaciones disponibles actualizadas', 'success')
@@ -883,7 +914,9 @@ function Empleados() {
                           const updated = employees.find(e => e.id === selectedEmployee.id)
                           if (updated) {
                             setSelectedEmployee(updated)
-                            setVacationDaysAvailable(updated.data.vacationDaysAvailable?.toString() || '')
+                            setVacationDaysAvailable(
+                              updated.data.vacationDaysAvailable?.toString() || ''
+                            )
                           }
                         } catch (err: any) {
                           const errorMessage = getTranslatedErrorMessage(
@@ -912,7 +945,9 @@ function Empleados() {
                         <input
                           type="date"
                           value={vacationForm.startDate}
-                          onChange={(e) => setVacationForm(prev => ({ ...prev, startDate: e.target.value }))}
+                          onChange={e =>
+                            setVacationForm(prev => ({ ...prev, startDate: e.target.value }))
+                          }
                           className="empleados-form-input"
                         />
                       </div>
@@ -921,7 +956,9 @@ function Empleados() {
                         <input
                           type="date"
                           value={vacationForm.endDate}
-                          onChange={(e) => setVacationForm(prev => ({ ...prev, endDate: e.target.value }))}
+                          onChange={e =>
+                            setVacationForm(prev => ({ ...prev, endDate: e.target.value }))
+                          }
                           className="empleados-form-input"
                         />
                       </div>
@@ -931,7 +968,9 @@ function Empleados() {
                       <input
                         type="text"
                         value={vacationForm.notes}
-                        onChange={(e) => setVacationForm(prev => ({ ...prev, notes: e.target.value }))}
+                        onChange={e =>
+                          setVacationForm(prev => ({ ...prev, notes: e.target.value }))
+                        }
                         className="empleados-form-input"
                         placeholder="Notas opcionales"
                       />
@@ -947,21 +986,26 @@ function Empleados() {
                         try {
                           const start = new Date(vacationForm.startDate)
                           const end = new Date(vacationForm.endDate)
-                          const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
-                          
+                          const days =
+                            Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
+
                           const vacations = selectedEmployee.data.vacations || []
-                          const newVacations = [...vacations, {
-                            startDate: vacationForm.startDate,
-                            endDate: vacationForm.endDate,
-                            days,
-                            notes: vacationForm.notes || undefined,
-                          }]
+                          const newVacations = [
+                            ...vacations,
+                            {
+                              startDate: vacationForm.startDate,
+                              endDate: vacationForm.endDate,
+                              days,
+                              notes: vacationForm.notes || undefined,
+                            },
+                          ]
 
                           await api.updateEmployee(selectedEmployee.id, {
                             data: {
                               ...selectedEmployee.data,
                               vacations: newVacations,
-                              vacationDaysAvailable: (selectedEmployee.data.vacationDaysAvailable || 0) - days,
+                              vacationDaysAvailable:
+                                (selectedEmployee.data.vacationDaysAvailable || 0) - days,
                             },
                           })
                           showNotification('Vacaciones registradas exitosamente', 'success')
@@ -970,7 +1014,9 @@ function Empleados() {
                           const updated = employees.find(e => e.id === selectedEmployee.id)
                           if (updated) {
                             setSelectedEmployee(updated)
-                            setVacationDaysAvailable(updated.data.vacationDaysAvailable?.toString() || '')
+                            setVacationDaysAvailable(
+                              updated.data.vacationDaysAvailable?.toString() || ''
+                            )
                           }
                         } catch (err: any) {
                           const errorMessage = getTranslatedErrorMessage(
@@ -984,60 +1030,70 @@ function Empleados() {
                       Agregar Vacaciones
                     </button>
                   </div>
-                  {selectedEmployee.data.vacations && selectedEmployee.data.vacations.length > 0 && (
-                    <div className="empleados-detail-list">
-                      {selectedEmployee.data.vacations.map((vacation, index) => (
-                        <div key={index} className="empleados-detail-list-item">
-                          <div className="empleados-detail-list-item-content">
-                            <CalendarTodayIcon className="empleados-detail-list-item-icon" />
-                            <div>
-                              <span className="empleados-detail-list-item-date">
-                                {new Date(vacation.startDate).toLocaleDateString('es-CO')} - {new Date(vacation.endDate).toLocaleDateString('es-CO')}
-                              </span>
-                              <span className="empleados-detail-list-item-days">{vacation.days} días</span>
-                              {vacation.notes && (
-                                <span className="empleados-detail-list-item-notes">{vacation.notes}</span>
-                              )}
+                  {selectedEmployee.data.vacations &&
+                    selectedEmployee.data.vacations.length > 0 && (
+                      <div className="empleados-detail-list">
+                        {selectedEmployee.data.vacations.map((vacation, index) => (
+                          <div key={index} className="empleados-detail-list-item">
+                            <div className="empleados-detail-list-item-content">
+                              <CalendarTodayIcon className="empleados-detail-list-item-icon" />
+                              <div>
+                                <span className="empleados-detail-list-item-date">
+                                  {new Date(vacation.startDate).toLocaleDateString('es-CO')} -{' '}
+                                  {new Date(vacation.endDate).toLocaleDateString('es-CO')}
+                                </span>
+                                <span className="empleados-detail-list-item-days">
+                                  {vacation.days} días
+                                </span>
+                                {vacation.notes && (
+                                  <span className="empleados-detail-list-item-notes">
+                                    {vacation.notes}
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                          <button
-                            type="button"
-                            className="empleados-detail-list-item-delete"
-                            onClick={async () => {
-                              try {
-                                const vacations = selectedEmployee.data.vacations || []
-                                const updatedVacations = vacations.filter((_, i) => i !== index)
-                                const daysToRestore = vacation.days
+                            <button
+                              type="button"
+                              className="empleados-detail-list-item-delete"
+                              onClick={async () => {
+                                try {
+                                  const vacations = selectedEmployee.data.vacations || []
+                                  const updatedVacations = vacations.filter((_, i) => i !== index)
+                                  const daysToRestore = vacation.days
 
-                                await api.updateEmployee(selectedEmployee.id, {
-                                  data: {
-                                    ...selectedEmployee.data,
-                                    vacations: updatedVacations,
-                                    vacationDaysAvailable: (selectedEmployee.data.vacationDaysAvailable || 0) + daysToRestore,
-                                  },
-                                })
-                                showNotification('Vacaciones eliminadas', 'success')
-                                await loadRecords()
-                                const updated = employees.find(e => e.id === selectedEmployee.id)
-                                if (updated) {
-                                  setSelectedEmployee(updated)
-                                  setVacationDaysAvailable(updated.data.vacationDaysAvailable?.toString() || '')
+                                  await api.updateEmployee(selectedEmployee.id, {
+                                    data: {
+                                      ...selectedEmployee.data,
+                                      vacations: updatedVacations,
+                                      vacationDaysAvailable:
+                                        (selectedEmployee.data.vacationDaysAvailable || 0) +
+                                        daysToRestore,
+                                    },
+                                  })
+                                  showNotification('Vacaciones eliminadas', 'success')
+                                  await loadRecords()
+                                  const updated = employees.find(e => e.id === selectedEmployee.id)
+                                  if (updated) {
+                                    setSelectedEmployee(updated)
+                                    setVacationDaysAvailable(
+                                      updated.data.vacationDaysAvailable?.toString() || ''
+                                    )
+                                  }
+                                } catch (err: any) {
+                                  const errorMessage = getTranslatedErrorMessage(
+                                    err,
+                                    'Error al eliminar vacaciones. Por favor, intenta de nuevo.'
+                                  )
+                                  showNotification(errorMessage, 'error')
                                 }
-                              } catch (err: any) {
-                                const errorMessage = getTranslatedErrorMessage(
-                                  err,
-                                  'Error al eliminar vacaciones. Por favor, intenta de nuevo.'
-                                )
-                                showNotification(errorMessage, 'error')
-                              }
-                            }}
-                          >
-                            <DeleteIcon />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                              }}
+                            >
+                              <DeleteIcon />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                 </div>
 
                 {/* Permisos */}
@@ -1053,7 +1109,9 @@ function Empleados() {
                         <input
                           type="date"
                           value={permissionForm.date}
-                          onChange={(e) => setPermissionForm(prev => ({ ...prev, date: e.target.value }))}
+                          onChange={e =>
+                            setPermissionForm(prev => ({ ...prev, date: e.target.value }))
+                          }
                           className="empleados-form-input"
                         />
                       </div>
@@ -1062,7 +1120,9 @@ function Empleados() {
                         <input
                           type="number"
                           value={permissionForm.hours}
-                          onChange={(e) => setPermissionForm(prev => ({ ...prev, hours: e.target.value }))}
+                          onChange={e =>
+                            setPermissionForm(prev => ({ ...prev, hours: e.target.value }))
+                          }
                           className="empleados-form-input"
                           min="0"
                           step="0.5"
@@ -1075,7 +1135,9 @@ function Empleados() {
                       <input
                         type="text"
                         value={permissionForm.reason}
-                        onChange={(e) => setPermissionForm(prev => ({ ...prev, reason: e.target.value }))}
+                        onChange={e =>
+                          setPermissionForm(prev => ({ ...prev, reason: e.target.value }))
+                        }
                         className="empleados-form-input"
                         placeholder="Razón del permiso"
                       />
@@ -1085,7 +1147,9 @@ function Empleados() {
                       <input
                         type="text"
                         value={permissionForm.notes}
-                        onChange={(e) => setPermissionForm(prev => ({ ...prev, notes: e.target.value }))}
+                        onChange={e =>
+                          setPermissionForm(prev => ({ ...prev, notes: e.target.value }))
+                        }
                         className="empleados-form-input"
                         placeholder="Notas opcionales"
                       />
@@ -1100,12 +1164,17 @@ function Empleados() {
                         }
                         try {
                           const permissions = selectedEmployee.data.permissions || []
-                          const newPermissions = [...permissions, {
-                            date: permissionForm.date,
-                            reason: permissionForm.reason,
-                            hours: permissionForm.hours ? parseFloat(permissionForm.hours) : undefined,
-                            notes: permissionForm.notes || undefined,
-                          }]
+                          const newPermissions = [
+                            ...permissions,
+                            {
+                              date: permissionForm.date,
+                              reason: permissionForm.reason,
+                              hours: permissionForm.hours
+                                ? parseFloat(permissionForm.hours)
+                                : undefined,
+                              notes: permissionForm.notes || undefined,
+                            },
+                          ]
 
                           await api.updateEmployee(selectedEmployee.id, {
                             data: {
@@ -1132,60 +1201,69 @@ function Empleados() {
                       Agregar Permiso
                     </button>
                   </div>
-                  {selectedEmployee.data.permissions && selectedEmployee.data.permissions.length > 0 && (
-                    <div className="empleados-detail-list">
-                      {selectedEmployee.data.permissions.map((permission, index) => (
-                        <div key={index} className="empleados-detail-list-item">
-                          <div className="empleados-detail-list-item-content">
-                            <CalendarTodayIcon className="empleados-detail-list-item-icon" />
-                            <div>
-                              <span className="empleados-detail-list-item-date">
-                                {new Date(permission.date).toLocaleDateString('es-CO')}
-                              </span>
-                              <span className="empleados-detail-list-item-reason">{permission.reason}</span>
-                              {permission.hours && (
-                                <span className="empleados-detail-list-item-hours">{permission.hours} horas</span>
-                              )}
-                              {permission.notes && (
-                                <span className="empleados-detail-list-item-notes">{permission.notes}</span>
-                              )}
+                  {selectedEmployee.data.permissions &&
+                    selectedEmployee.data.permissions.length > 0 && (
+                      <div className="empleados-detail-list">
+                        {selectedEmployee.data.permissions.map((permission, index) => (
+                          <div key={index} className="empleados-detail-list-item">
+                            <div className="empleados-detail-list-item-content">
+                              <CalendarTodayIcon className="empleados-detail-list-item-icon" />
+                              <div>
+                                <span className="empleados-detail-list-item-date">
+                                  {new Date(permission.date).toLocaleDateString('es-CO')}
+                                </span>
+                                <span className="empleados-detail-list-item-reason">
+                                  {permission.reason}
+                                </span>
+                                {permission.hours && (
+                                  <span className="empleados-detail-list-item-hours">
+                                    {permission.hours} horas
+                                  </span>
+                                )}
+                                {permission.notes && (
+                                  <span className="empleados-detail-list-item-notes">
+                                    {permission.notes}
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                          <button
-                            type="button"
-                            className="empleados-detail-list-item-delete"
-                            onClick={async () => {
-                              try {
-                                const permissions = selectedEmployee.data.permissions || []
-                                const updatedPermissions = permissions.filter((_, i) => i !== index)
+                            <button
+                              type="button"
+                              className="empleados-detail-list-item-delete"
+                              onClick={async () => {
+                                try {
+                                  const permissions = selectedEmployee.data.permissions || []
+                                  const updatedPermissions = permissions.filter(
+                                    (_, i) => i !== index
+                                  )
 
-                                await api.updateEmployee(selectedEmployee.id, {
-                                  data: {
-                                    ...selectedEmployee.data,
-                                    permissions: updatedPermissions,
-                                  },
-                                })
-                                showNotification('Permiso eliminado', 'success')
-                                await loadRecords()
-                                const updated = employees.find(e => e.id === selectedEmployee.id)
-                                if (updated) {
-                                  setSelectedEmployee(updated)
+                                  await api.updateEmployee(selectedEmployee.id, {
+                                    data: {
+                                      ...selectedEmployee.data,
+                                      permissions: updatedPermissions,
+                                    },
+                                  })
+                                  showNotification('Permiso eliminado', 'success')
+                                  await loadRecords()
+                                  const updated = employees.find(e => e.id === selectedEmployee.id)
+                                  if (updated) {
+                                    setSelectedEmployee(updated)
+                                  }
+                                } catch (err: any) {
+                                  const errorMessage = getTranslatedErrorMessage(
+                                    err,
+                                    'Error al eliminar permiso. Por favor, intenta de nuevo.'
+                                  )
+                                  showNotification(errorMessage, 'error')
                                 }
-                              } catch (err: any) {
-                                const errorMessage = getTranslatedErrorMessage(
-                                  err,
-                                  'Error al eliminar permiso. Por favor, intenta de nuevo.'
-                                )
-                                showNotification(errorMessage, 'error')
-                              }
-                            }}
-                          >
-                            <DeleteIcon />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                              }}
+                            >
+                              <DeleteIcon />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                 </div>
 
                 {/* Retrasos */}
@@ -1201,7 +1279,7 @@ function Empleados() {
                         <input
                           type="date"
                           value={delayForm.date}
-                          onChange={(e) => setDelayForm(prev => ({ ...prev, date: e.target.value }))}
+                          onChange={e => setDelayForm(prev => ({ ...prev, date: e.target.value }))}
                           className="empleados-form-input"
                         />
                       </div>
@@ -1210,7 +1288,9 @@ function Empleados() {
                         <input
                           type="number"
                           value={delayForm.minutes}
-                          onChange={(e) => setDelayForm(prev => ({ ...prev, minutes: e.target.value }))}
+                          onChange={e =>
+                            setDelayForm(prev => ({ ...prev, minutes: e.target.value }))
+                          }
                           className="empleados-form-input"
                           min="1"
                           placeholder="0"
@@ -1222,7 +1302,7 @@ function Empleados() {
                       <input
                         type="text"
                         value={delayForm.reason}
-                        onChange={(e) => setDelayForm(prev => ({ ...prev, reason: e.target.value }))}
+                        onChange={e => setDelayForm(prev => ({ ...prev, reason: e.target.value }))}
                         className="empleados-form-input"
                         placeholder="Razón del retraso"
                       />
@@ -1232,7 +1312,7 @@ function Empleados() {
                       <input
                         type="text"
                         value={delayForm.notes}
-                        onChange={(e) => setDelayForm(prev => ({ ...prev, notes: e.target.value }))}
+                        onChange={e => setDelayForm(prev => ({ ...prev, notes: e.target.value }))}
                         className="empleados-form-input"
                         placeholder="Notas opcionales"
                       />
@@ -1247,12 +1327,15 @@ function Empleados() {
                         }
                         try {
                           const delays = selectedEmployee.data.delays || []
-                          const newDelays = [...delays, {
-                            date: delayForm.date,
-                            minutes: parseInt(delayForm.minutes),
-                            reason: delayForm.reason || undefined,
-                            notes: delayForm.notes || undefined,
-                          }]
+                          const newDelays = [
+                            ...delays,
+                            {
+                              date: delayForm.date,
+                              minutes: parseInt(delayForm.minutes),
+                              reason: delayForm.reason || undefined,
+                              notes: delayForm.notes || undefined,
+                            },
+                          ]
 
                           await api.updateEmployee(selectedEmployee.id, {
                             data: {
@@ -1289,12 +1372,18 @@ function Empleados() {
                               <span className="empleados-detail-list-item-date">
                                 {new Date(delay.date).toLocaleDateString('es-CO')}
                               </span>
-                              <span className="empleados-detail-list-item-hours">{delay.minutes} minutos</span>
+                              <span className="empleados-detail-list-item-hours">
+                                {delay.minutes} minutos
+                              </span>
                               {delay.reason && (
-                                <span className="empleados-detail-list-item-reason">{delay.reason}</span>
+                                <span className="empleados-detail-list-item-reason">
+                                  {delay.reason}
+                                </span>
                               )}
                               {delay.notes && (
-                                <span className="empleados-detail-list-item-notes">{delay.notes}</span>
+                                <span className="empleados-detail-list-item-notes">
+                                  {delay.notes}
+                                </span>
                               )}
                             </div>
                           </div>
@@ -1501,7 +1590,10 @@ function Empleados() {
                           })
                         }
 
-                        showNotification(`${demoEmployees.length} empleados demo creados exitosamente`, 'success')
+                        showNotification(
+                          `${demoEmployees.length} empleados demo creados exitosamente`,
+                          'success'
+                        )
                         await loadRecords()
                         setIsDebugModalOpen(false)
                       } catch (err: any) {
@@ -1539,7 +1631,10 @@ function Empleados() {
                       try {
                         setIsDebugLoading(true)
                         await api.deleteAllEmployees()
-                        showNotification('Todos los registros de empleados han sido eliminados', 'success')
+                        showNotification(
+                          'Todos los registros de empleados han sido eliminados',
+                          'success'
+                        )
                         await loadRecords()
                         setEmployees([])
                         setIsDebugModalOpen(false)
@@ -1569,11 +1664,9 @@ function Empleados() {
             </div>
           </div>
         )}
-
       </div>
     </div>
   )
 }
 
 export default Empleados
-

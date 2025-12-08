@@ -37,6 +37,8 @@
   padding: 0;
   box-shadow: var(--shadow-sm);
   color: var(--text-primary);
+  position: relative;
+  z-index: 1001;
 }
 
 .finanzas-toolbar-button:hover:not(:disabled) {

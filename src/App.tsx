@@ -334,38 +334,38 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-          <Route
-            path="/justicia/procesos"
-            element={
-              <ProtectedRoute>
-                <Procesos />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/trabajo"
-            element={
-              <ProtectedRoute>
-                <Trabajo />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/trabajo/contratos"
-            element={
-              <ProtectedRoute>
-                <Contratos />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/trabajo/actividades"
-            element={
-              <ProtectedRoute>
-                <Actividades />
-              </ProtectedRoute>
-            }
-          />
+        <Route
+          path="/justicia/procesos"
+          element={
+            <ProtectedRoute>
+              <Procesos />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/trabajo"
+          element={
+            <ProtectedRoute>
+              <Trabajo />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/trabajo/contratos"
+          element={
+            <ProtectedRoute>
+              <Contratos />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/trabajo/actividades"
+          element={
+            <ProtectedRoute>
+              <Actividades />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/blank-2" element={<AppPage title="" />} />
         <Route path="/blank-3" element={<AppPage title="" />} />
         <Route path="/blank-4" element={<AppPage title="" />} />

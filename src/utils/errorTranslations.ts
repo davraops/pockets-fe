@@ -13,8 +13,8 @@ export function translateError(errorMessage: string | undefined | null): string 
     // Errores de autenticación
     'invalid password': 'Contraseña incorrecta',
     'invalid credentials': 'Credenciales incorrectas',
-    'unauthorized': 'No autorizado. Por favor, inicia sesión nuevamente.',
-    'forbidden': 'No tienes permiso para realizar esta acción.',
+    unauthorized: 'No autorizado. Por favor, inicia sesión nuevamente.',
+    forbidden: 'No tienes permiso para realizar esta acción.',
     'token expired': 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.',
     'token invalid': 'Token inválido. Por favor, inicia sesión nuevamente.',
 
@@ -48,7 +48,7 @@ export function translateError(errorMessage: string | undefined | null): string 
     // Errores de conexión
     'connection error': 'Error de conexión. Por favor, verifica tu conexión a internet.',
     'network error': 'Error de red. Por favor, verifica tu conexión a internet.',
-    'timeout': 'Tiempo de espera agotado. Por favor, intenta de nuevo.',
+    timeout: 'Tiempo de espera agotado. Por favor, intenta de nuevo.',
 
     // Errores específicos de secretos
     'password required': 'Contraseña requerida para desencriptar el secreto.',
@@ -57,7 +57,7 @@ export function translateError(errorMessage: string | undefined | null): string 
     'secret access denied': 'Acceso denegado al secreto.',
 
     // Errores genéricos
-    'error': 'Ha ocurrido un error. Por favor, intenta de nuevo.',
+    error: 'Ha ocurrido un error. Por favor, intenta de nuevo.',
     'unknown error': 'Error desconocido. Por favor, intenta de nuevo.',
     'error desconocido': 'Error desconocido. Por favor, intenta de nuevo.',
     'something went wrong': 'Algo salió mal. Por favor, intenta de nuevo.',
@@ -87,4 +87,3 @@ export function getTranslatedErrorMessage(err: any, fallback: string): string {
   const errorMessage = err?.data?.error || err?.data?.message || err?.message || fallback
   return translateError(errorMessage)
 }
-

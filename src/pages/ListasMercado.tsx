@@ -223,9 +223,7 @@ function ListasMercado() {
 
   const handleToggleChecked = (id: string) => {
     setItems(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, checked: !item.checked } : item
-      )
+      prev.map(item => (item.id === id ? { ...item, checked: !item.checked } : item))
     )
   }
 
@@ -276,9 +274,33 @@ function ListasMercado() {
           name: 'Lista Semanal',
           data: {
             items: [
-              { name: 'Leche', quantity: 2, category: 'Lácteos', store: 'Supermercado', packaging: 'Botella', price: 3500, checked: false },
-              { name: 'Pan', quantity: 3, category: 'Panadería', store: 'Panadería', packaging: 'Unidades', price: 1200, checked: true },
-              { name: 'Huevos', quantity: 1, category: 'Lácteos', store: 'Supermercado', packaging: 'Caja x 12', price: 8500, checked: false },
+              {
+                name: 'Leche',
+                quantity: 2,
+                category: 'Lácteos',
+                store: 'Supermercado',
+                packaging: 'Botella',
+                price: 3500,
+                checked: false,
+              },
+              {
+                name: 'Pan',
+                quantity: 3,
+                category: 'Panadería',
+                store: 'Panadería',
+                packaging: 'Unidades',
+                price: 1200,
+                checked: true,
+              },
+              {
+                name: 'Huevos',
+                quantity: 1,
+                category: 'Lácteos',
+                store: 'Supermercado',
+                packaging: 'Caja x 12',
+                price: 8500,
+                checked: false,
+              },
             ],
           },
         },
@@ -286,9 +308,33 @@ function ListasMercado() {
           name: 'Lista Mensual',
           data: {
             items: [
-              { name: 'Arroz', quantity: 2, category: 'Granos', store: 'Supermercado', packaging: 'Bolsa', price: 12000, checked: false },
-              { name: 'Aceite', quantity: 1, category: 'Aceites', store: 'Supermercado', packaging: 'Botella', price: 8500, checked: false },
-              { name: 'Azúcar', quantity: 1, category: 'Endulzantes', store: 'Supermercado', packaging: 'Bolsa', price: 4500, checked: true },
+              {
+                name: 'Arroz',
+                quantity: 2,
+                category: 'Granos',
+                store: 'Supermercado',
+                packaging: 'Bolsa',
+                price: 12000,
+                checked: false,
+              },
+              {
+                name: 'Aceite',
+                quantity: 1,
+                category: 'Aceites',
+                store: 'Supermercado',
+                packaging: 'Botella',
+                price: 8500,
+                checked: false,
+              },
+              {
+                name: 'Azúcar',
+                quantity: 1,
+                category: 'Endulzantes',
+                store: 'Supermercado',
+                packaging: 'Bolsa',
+                price: 4500,
+                checked: true,
+              },
             ],
           },
         },
@@ -296,8 +342,24 @@ function ListasMercado() {
           name: 'Lista Farmacia',
           data: {
             items: [
-              { name: 'Acetaminofén', quantity: 1, category: 'Medicamentos', store: 'Farmacia', packaging: 'Caja', price: 15000, checked: false },
-              { name: 'Alcohol', quantity: 2, category: 'Medicamentos', store: 'Farmacia', packaging: 'Botella', price: 3500, checked: false },
+              {
+                name: 'Acetaminofén',
+                quantity: 1,
+                category: 'Medicamentos',
+                store: 'Farmacia',
+                packaging: 'Caja',
+                price: 15000,
+                checked: false,
+              },
+              {
+                name: 'Alcohol',
+                quantity: 2,
+                category: 'Medicamentos',
+                store: 'Farmacia',
+                packaging: 'Botella',
+                price: 3500,
+                checked: false,
+              },
             ],
           },
         },
@@ -322,7 +384,11 @@ function ListasMercado() {
   }
 
   const handleDebugDeleteAll = async () => {
-    if (!window.confirm('¿Estás seguro de que quieres eliminar TODAS las listas? Esta acción es irreversible.')) {
+    if (
+      !window.confirm(
+        '¿Estás seguro de que quieres eliminar TODAS las listas? Esta acción es irreversible.'
+      )
+    ) {
       return
     }
 
@@ -376,10 +442,10 @@ function ListasMercado() {
 
       await api.createShoppingList(listData)
       showNotification('Lista guardada exitosamente', 'success')
-      
+
       // Recargar lista de listas
       await loadLists()
-      
+
       // Limpiar después de guardar (opcional)
       // setItems([])
       // setListName('')
@@ -400,14 +466,17 @@ function ListasMercado() {
   const totalPrice = items.reduce((sum, item) => sum + (item.price || 0), 0)
 
   // Organizar productos por categoría
-  const itemsByCategory = items.reduce((acc, item) => {
-    const category = item.category || 'Sin categoría'
-    if (!acc[category]) {
-      acc[category] = []
-    }
-    acc[category].push(item)
-    return acc
-  }, {} as Record<string, ShoppingItem[]>)
+  const itemsByCategory = items.reduce(
+    (acc, item) => {
+      const category = item.category || 'Sin categoría'
+      if (!acc[category]) {
+        acc[category] = []
+      }
+      acc[category].push(item)
+      return acc
+    },
+    {} as Record<string, ShoppingItem[]>
+  )
 
   // Ordenar categorías y productos dentro de cada categoría (pendientes primero)
   const sortedCategories = Object.keys(itemsByCategory).sort()
@@ -494,7 +563,11 @@ function ListasMercado() {
                 <div className="listas-summary-item">
                   <span className="listas-summary-label">Total</span>
                   <span className="listas-summary-value listas-summary-price">
-                    ${totalPrice.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    $
+                    {totalPrice.toLocaleString('es-CO', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </span>
                 </div>
               </>
@@ -539,28 +612,33 @@ function ListasMercado() {
                     <div className="listas-category-stats">
                       <span className="listas-category-count">
                         {categoryPending > 0 && (
-                          <span className="listas-category-pending">{categoryPending} pendientes</span>
+                          <span className="listas-category-pending">
+                            {categoryPending} pendientes
+                          </span>
                         )}
                         {categoryChecked > 0 && (
                           <>
                             {categoryPending > 0 && ' • '}
-                            <span className="listas-category-checked">{categoryChecked} comprados</span>
+                            <span className="listas-category-checked">
+                              {categoryChecked} comprados
+                            </span>
                           </>
                         )}
                       </span>
                       {categoryPrice > 0 && (
                         <span className="listas-category-price">
-                          ${categoryPrice.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          $
+                          {categoryPrice.toLocaleString('es-CO', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
                         </span>
                       )}
                     </div>
                   </div>
                   <div className="listas-items-list">
                     {categoryItems.map(item => (
-                      <div
-                        key={item.id}
-                        className={`listas-item ${item.checked ? 'checked' : ''}`}
-                      >
+                      <div key={item.id} className={`listas-item ${item.checked ? 'checked' : ''}`}>
                         <button
                           className="listas-item-check"
                           onClick={() => handleToggleChecked(item.id)}
@@ -582,7 +660,11 @@ function ListasMercado() {
                               </span>
                               {item.price > 0 && (
                                 <span className="listas-item-price">
-                                  ${item.price.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                  $
+                                  {item.price.toLocaleString('es-CO', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
                                 </span>
                               )}
                             </div>
@@ -648,9 +730,7 @@ function ListasMercado() {
         {/* Empty state */}
         {items.length === 0 && (
           <div className="listas-empty-state">
-            <p className="listas-empty-text">
-              Agrega productos para comenzar tu lista de mercado
-            </p>
+            <p className="listas-empty-text">Agrega productos para comenzar tu lista de mercado</p>
           </div>
         )}
 
@@ -808,10 +888,7 @@ function ListasMercado() {
                     >
                       Cancelar
                     </button>
-                    <button
-                      type="submit"
-                      className="listas-form-button listas-form-button-primary"
-                    >
+                    <button type="submit" className="listas-form-button listas-form-button-primary">
                       {editingId ? 'Actualizar' : 'Agregar'}
                     </button>
                   </div>
@@ -820,7 +897,6 @@ function ListasMercado() {
             </div>
           </div>
         )}
-
 
         {/* Listas Guardadas */}
         {lists.length > 0 && (
@@ -854,7 +930,8 @@ function ListasMercado() {
                       <div className="listas-saved-info">
                         {list.data.items && (
                           <span className="listas-saved-meta">
-                            {list.data.items.length} {list.data.items.length === 1 ? 'producto' : 'productos'}
+                            {list.data.items.length}{' '}
+                            {list.data.items.length === 1 ? 'producto' : 'productos'}
                           </span>
                         )}
                         {list.data.items && (
@@ -868,7 +945,8 @@ function ListasMercado() {
                       </div>
                       {list.created_at && (
                         <p className="listas-saved-date">
-                          Creada: {new Date(list.created_at).toLocaleDateString('es-ES', {
+                          Creada:{' '}
+                          {new Date(list.created_at).toLocaleDateString('es-ES', {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric',
@@ -947,4 +1025,3 @@ function ListasMercado() {
 }
 
 export default ListasMercado
-

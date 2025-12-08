@@ -124,11 +124,13 @@ function Actividades() {
       setRecords([])
       showNotification(errorMessage, 'error')
     } finally {
-        setIsLoading(false)
+      setIsLoading(false)
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
@@ -269,12 +271,12 @@ function Actividades() {
   const formatDate = (dateString: string | undefined) => {
     if (!dateString) return 'N/A'
     try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
+      const date = new Date(dateString)
+      return date.toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
     } catch {
       return dateString
     }
@@ -333,13 +335,9 @@ function Actividades() {
 
     // Filtrar por tab
     if (activeTab === 'active') {
-      filtered = filtered.filter(
-        a => a.data.status !== 'done' && a.data.status !== 'wont_do'
-      )
+      filtered = filtered.filter(a => a.data.status !== 'done' && a.data.status !== 'wont_do')
     } else {
-      filtered = filtered.filter(
-        a => a.data.status === 'done' || a.data.status === 'wont_do'
-      )
+      filtered = filtered.filter(a => a.data.status === 'done' || a.data.status === 'wont_do')
     }
 
     // Filtrar por cliente
@@ -352,7 +350,7 @@ function Actividades() {
       // Primero por prioridad
       const priorityA = getPriorityValue(a.data.priority)
       const priorityB = getPriorityValue(b.data.priority)
-      
+
       if (priorityA !== priorityB) {
         return priorityA - priorityB
       }
@@ -360,7 +358,7 @@ function Actividades() {
       // Si tienen la misma prioridad, ordenar por fecha de creación (más antiguos primero)
       const dateA = a.created_at ? new Date(a.created_at).getTime() : 0
       const dateB = b.created_at ? new Date(b.created_at).getTime() : 0
-      
+
       return dateA - dateB
     })
 
@@ -501,15 +499,21 @@ function Actividades() {
                 <div className="actividades-total-stats-details">
                   <div className="actividades-total-stats-detail">
                     <span className="actividades-total-stats-detail-label">Alta</span>
-                    <span className="actividades-total-stats-detail-value actividades-priority-alta">{stats.alta}</span>
+                    <span className="actividades-total-stats-detail-value actividades-priority-alta">
+                      {stats.alta}
+                    </span>
                   </div>
                   <div className="actividades-total-stats-detail">
                     <span className="actividades-total-stats-detail-label">Media</span>
-                    <span className="actividades-total-stats-detail-value actividades-priority-media">{stats.media}</span>
+                    <span className="actividades-total-stats-detail-value actividades-priority-media">
+                      {stats.media}
+                    </span>
                   </div>
                   <div className="actividades-total-stats-detail">
                     <span className="actividades-total-stats-detail-label">Baja</span>
-                    <span className="actividades-total-stats-detail-value actividades-priority-baja">{stats.baja}</span>
+                    <span className="actividades-total-stats-detail-value actividades-priority-baja">
+                      {stats.baja}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -538,7 +542,7 @@ function Actividades() {
                   <select
                     className="actividades-filter-select"
                     value={clientFilter}
-                    onChange={(e) => setClientFilter(e.target.value)}
+                    onChange={e => setClientFilter(e.target.value)}
                   >
                     <option value="">Todos los clientes</option>
                     {uniqueClients.map(client => (
@@ -553,10 +557,10 @@ function Actividades() {
 
             {/* Lista de Actividades */}
             {filteredActivities.length === 0 ? (
-          <div className="actividades-empty-state">
+              <div className="actividades-empty-state">
                 <p className="empty-state-text">
-                  {activeTab === 'active' 
-                    ? 'No hay actividades activas' 
+                  {activeTab === 'active'
+                    ? 'No hay actividades activas'
                     : 'No hay actividades completadas'}
                 </p>
                 <p className="empty-state-subtext">
@@ -564,9 +568,9 @@ function Actividades() {
                     ? 'Crea tu primera actividad usando el botón del menú'
                     : 'Las actividades completadas o descartadas aparecerán aquí'}
                 </p>
-          </div>
-        ) : (
-          <div className="actividades-list">
+              </div>
+            ) : (
+              <div className="actividades-list">
                 <h2 className="actividades-list-title">
                   {activeTab === 'active' ? 'Actividades Activas' : 'Actividades Completadas'}
                 </h2>
@@ -576,16 +580,18 @@ function Actividades() {
                       <div className="actividades-item-header">
                         <h3 className="actividades-item-name">{activity.name}</h3>
                         <div className="actividades-item-actions">
-                          {activeTab === 'active' && activity.data.status !== 'done' && activity.data.status !== 'wont_do' && (
-                <button
-                              onClick={() => handleComplete(activity)}
-                              className="actividades-item-action-button actividades-item-action-button-complete"
-                              aria-label="Completar actividad"
-                  type="button"
-                >
-                              <CheckCircleIcon className="actividades-item-action-icon" />
-                            </button>
-                          )}
+                          {activeTab === 'active' &&
+                            activity.data.status !== 'done' &&
+                            activity.data.status !== 'wont_do' && (
+                              <button
+                                onClick={() => handleComplete(activity)}
+                                className="actividades-item-action-button actividades-item-action-button-complete"
+                                aria-label="Completar actividad"
+                                type="button"
+                              >
+                                <CheckCircleIcon className="actividades-item-action-icon" />
+                              </button>
+                            )}
                           <button
                             onClick={() => handleEdit(activity)}
                             className="actividades-item-action-button"
@@ -605,10 +611,10 @@ function Actividades() {
                         </div>
                       </div>
 
-                  <div className="actividades-item-content">
+                      <div className="actividades-item-content">
                         {/* Estado y Prioridad - Badges Destacados */}
                         <div className="actividades-item-main-info">
-                              <span
+                          <span
                             className="actividades-item-status-badge"
                             style={{
                               backgroundColor: `${getStatusColor(activity.data.status)}20`,
@@ -619,13 +625,13 @@ function Actividades() {
                             {getStatusLabel(activity.data.status)}
                           </span>
                           {activity.data.priority && (
-                              <span
+                            <span
                               className={`actividades-item-priority-badge actividades-priority-${activity.data.priority.toLowerCase()}`}
                             >
                               <PriorityHighIcon className="actividades-item-priority-badge-icon" />
                               {activity.data.priority}
-                              </span>
-                            )}
+                            </span>
+                          )}
                           {activity.data.assignmentDate && (
                             <div className="actividades-item-date-badge">
                               <CalendarTodayIcon className="actividades-item-date-icon" />
@@ -638,31 +644,33 @@ function Actividades() {
                                   if (daysSince !== null) {
                                     return (
                                       <span className="actividades-item-date-days">
-                                        {daysSince === 0 
-                                          ? 'Hoy' 
-                                          : daysSince === 1 
-                                          ? 'Hace 1 día' 
-                                          : `Hace ${daysSince} días`}
+                                        {daysSince === 0
+                                          ? 'Hoy'
+                                          : daysSince === 1
+                                            ? 'Hace 1 día'
+                                            : `Hace ${daysSince} días`}
                                       </span>
                                     )
                                   }
                                   return null
                                 })()}
-                          </div>
-                        </div>
+                              </div>
+                            </div>
                           )}
                           {activity.data.completedDate && (
                             <div className="actividades-item-completed-badge">
                               <CheckCircleIcon className="actividades-item-completed-icon" />
                               <div className="actividades-item-completed-content">
-                                <span className="actividades-item-completed-label">Completada:</span>
+                                <span className="actividades-item-completed-label">
+                                  Completada:
+                                </span>
                                 <span className="actividades-item-completed-value">
                                   {formatDate(activity.data.completedDate)}
                                 </span>
-                      </div>
-                    </div>
+                              </div>
+                            </div>
                           )}
-                    </div>
+                        </div>
 
                         {/* Información Básica - Grid */}
                         <div className="actividades-item-info-grid">
@@ -671,9 +679,11 @@ function Actividades() {
                               <PersonIcon className="actividades-item-info-icon" />
                               <div className="actividades-item-info-content">
                                 <span className="actividades-item-info-label">Cliente</span>
-                                <span className="actividades-item-info-value">{activity.data.client}</span>
-                    </div>
-                  </div>
+                                <span className="actividades-item-info-value">
+                                  {activity.data.client}
+                                </span>
+                              </div>
+                            </div>
                           )}
 
                           {activity.data.ticket && (
@@ -681,11 +691,13 @@ function Actividades() {
                               <ConfirmationNumberIcon className="actividades-item-info-icon" />
                               <div className="actividades-item-info-content">
                                 <span className="actividades-item-info-label">Ticket</span>
-                                <span className="actividades-item-info-value">{activity.data.ticket}</span>
-                    </div>
-                    </div>
+                                <span className="actividades-item-info-value">
+                                  {activity.data.ticket}
+                                </span>
+                              </div>
+                            </div>
                           )}
-                  </div>
+                        </div>
 
                         {/* Descripción de la Actividad */}
                         {activity.data.activity && (
@@ -694,29 +706,39 @@ function Actividades() {
                               <AssignmentIcon className="actividades-item-additional-icon" />
                               <div className="actividades-item-additional-content">
                                 <span className="actividades-item-additional-label">Actividad</span>
-                                <p className="actividades-item-additional-text">{activity.data.activity}</p>
+                                <p className="actividades-item-additional-text">
+                                  {activity.data.activity}
+                                </p>
                               </div>
                             </div>
                           </div>
                         )}
                       </div>
                     </div>
-              ))}
-            </div>
-          </div>
+                  ))}
+                </div>
+              </div>
             )}
           </>
         )}
 
         {/* Modal de Formulario */}
         {showFormModal && (
-          <div className="actividades-modal-overlay" onClick={() => {
-            setShowFormModal(false)
-            handleCancelEdit()
-          }}>
-            <div className="actividades-modal actividades-modal-large" onClick={e => e.stopPropagation()}>
+          <div
+            className="actividades-modal-overlay"
+            onClick={() => {
+              setShowFormModal(false)
+              handleCancelEdit()
+            }}
+          >
+            <div
+              className="actividades-modal actividades-modal-large"
+              onClick={e => e.stopPropagation()}
+            >
               <div className="actividades-modal-header">
-                <h2 className="actividades-modal-title">{editingId ? 'Editar Actividad' : 'Crear Actividad'}</h2>
+                <h2 className="actividades-modal-title">
+                  {editingId ? 'Editar Actividad' : 'Crear Actividad'}
+                </h2>
                 <button
                   className="actividades-modal-close"
                   onClick={() => {
@@ -748,7 +770,7 @@ function Actividades() {
                         placeholder="Ej: Revisión de código - Cliente XYZ"
                         required
                       />
-                </div>
+                    </div>
 
                     <div className="actividades-form-group">
                       <label htmlFor="client" className="actividades-form-label">
@@ -765,7 +787,7 @@ function Actividades() {
                         placeholder="Nombre del cliente"
                         required
                       />
-                </div>
+                    </div>
 
                     <div className="actividades-form-group">
                       <label htmlFor="activity" className="actividades-form-label">
@@ -781,7 +803,7 @@ function Actividades() {
                         className="actividades-form-input"
                         placeholder="Descripción de la actividad"
                       />
-                </div>
+                    </div>
 
                     <div className="actividades-form-group">
                       <label htmlFor="ticket" className="actividades-form-label">
@@ -797,7 +819,7 @@ function Actividades() {
                         className="actividades-form-input"
                         placeholder="Número o ID del ticket"
                       />
-                </div>
+                    </div>
 
                     <div className="actividades-form-group">
                       <label htmlFor="priority" className="actividades-form-label">
@@ -816,7 +838,7 @@ function Actividades() {
                         <option value="Media">Media</option>
                         <option value="Baja">Baja</option>
                       </select>
-                </div>
+                    </div>
 
                     <div className="actividades-form-group">
                       <label htmlFor="assignmentDate" className="actividades-form-label">
@@ -831,7 +853,7 @@ function Actividades() {
                         onChange={handleChange}
                         className="actividades-form-input"
                       />
-                </div>
+                    </div>
 
                     <div className="actividades-form-group">
                       <label htmlFor="status" className="actividades-form-label">
@@ -842,10 +864,17 @@ function Actividades() {
                         id="status"
                         name="status"
                         value={formData.status}
-                        onChange={(e) => setFormData(prev => ({
-                          ...prev,
-                          status: e.target.value as 'defined' | 'in_progress' | 'blocked' | 'done' | 'wont_do'
-                        }))}
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            status: e.target.value as
+                              | 'defined'
+                              | 'in_progress'
+                              | 'blocked'
+                              | 'done'
+                              | 'wont_do',
+                          }))
+                        }
                         className="actividades-form-input"
                       >
                         <option value="defined">Definida</option>
@@ -855,13 +884,13 @@ function Actividades() {
                         <option value="wont_do">No se hará</option>
                       </select>
                     </div>
-                </div>
+                  </div>
 
                   <div className="actividades-form-actions">
                     {editingId ? (
                       <>
-                  <button
-                    type="button"
+                        <button
+                          type="button"
                           onClick={() => {
                             setShowFormModal(false)
                             handleCancelEdit()
@@ -887,9 +916,9 @@ function Actividades() {
                       >
                         <SaveIcon className="actividades-form-button-icon" />
                         {isSaving ? 'Guardando...' : 'Guardar Actividad'}
-                  </button>
-                  )}
-                </div>
+                      </button>
+                    )}
+                  </div>
                 </form>
               </div>
             </div>
@@ -920,8 +949,10 @@ function Actividades() {
                       <div key={record.id} className="actividades-modal-item">
                         <div className="actividades-modal-item-info">
                           <h3 className="actividades-modal-item-name">{record.name}</h3>
-                          <p className="actividades-modal-item-meta">Cliente: {record.data.client || 'N/A'}</p>
-                          </div>
+                          <p className="actividades-modal-item-meta">
+                            Cliente: {record.data.client || 'N/A'}
+                          </p>
+                        </div>
                         <button
                           onClick={() => {
                             handleEdit({
@@ -938,10 +969,10 @@ function Actividades() {
                         >
                           Cargar
                         </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1006,7 +1037,10 @@ function Actividades() {
                           await api.createClientActivity(activity)
                         }
 
-                        showNotification(`${demoActivities.length} actividades demo creadas exitosamente`, 'success')
+                        showNotification(
+                          `${demoActivities.length} actividades demo creadas exitosamente`,
+                          'success'
+                        )
                         await loadRecords()
                         setIsDebugModalOpen(false)
                       } catch (err: any) {
@@ -1028,7 +1062,7 @@ function Actividades() {
                       <p className="debug-option-description">
                         Crea 3 actividades de ejemplo con diferentes configuraciones
                       </p>
-                </div>
+                    </div>
                   </button>
                   <button
                     className="debug-option-button delete-all"
@@ -1065,8 +1099,8 @@ function Actividades() {
                       <h3 className="debug-option-title">Eliminar Todas las Actividades</h3>
                       <p className="debug-option-description">
                         ⚠️ PELIGROSO: Elimina todas las actividades (IRREVERSIBLE)
-                  </p>
-                </div>
+                      </p>
+                    </div>
                   </button>
                 </div>
 

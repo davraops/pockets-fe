@@ -245,7 +245,10 @@ function Proyectos() {
         handleCloseDetailModal()
       } catch (err: any) {
         console.error('Error al completar proyecto:', err)
-        const errorMessage = getTranslatedErrorMessage(err, 'Error al completar el proyecto. Por favor, intenta de nuevo.')
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al completar el proyecto. Por favor, intenta de nuevo.'
+        )
         showNotification(errorMessage, 'error')
       } finally {
         setIsLoading(false)
@@ -275,7 +278,10 @@ function Proyectos() {
         handleCloseDetailModal()
       } catch (err: any) {
         console.error('Error al eliminar proyecto:', err)
-        const errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar el proyecto. Por favor, intenta de nuevo.')
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al eliminar el proyecto. Por favor, intenta de nuevo.'
+        )
         showNotification(errorMessage, 'error')
       } finally {
         setIsLoading(false)
@@ -644,7 +650,10 @@ function Proyectos() {
       )
     } catch (err: any) {
       console.error('Error al crear proyectos de prueba:', err)
-      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear los proyectos de prueba. Por favor, intenta de nuevo.')
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al crear los proyectos de prueba. Por favor, intenta de nuevo.'
+      )
       showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
@@ -671,7 +680,10 @@ function Proyectos() {
         showNotification('Todos los proyectos han sido eliminados exitosamente', 'success')
       } catch (err: any) {
         console.error('Error al eliminar todos los proyectos:', err)
-        const errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar los proyectos. Por favor, intenta de nuevo.')
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al eliminar los proyectos. Por favor, intenta de nuevo.'
+        )
         showNotification(errorMessage, 'error')
       } finally {
         setIsLoading(false)

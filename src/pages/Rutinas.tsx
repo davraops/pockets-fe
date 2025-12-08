@@ -95,7 +95,8 @@ function Rutinas() {
         // Normalizar is_active: asegurar que sea boolean
         const normalizedRoutines = response.routines.map(routine => ({
           ...routine,
-          is_active: routine.is_active === true || routine.is_active === 'true' || routine.is_active === 1
+          is_active:
+            routine.is_active === true || routine.is_active === 'true' || routine.is_active === 1,
         }))
         setRoutines(normalizedRoutines)
       } else {
@@ -164,7 +165,9 @@ function Rutinas() {
     setFormErrors({})
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value, type } = e.target
     const checked = (e.target as HTMLInputElement).checked
 
@@ -219,11 +222,17 @@ function Rutinas() {
       errors.title = 'El título es requerido'
     }
 
-    if (formData.frequency === 'weekly' && (!formData.days_of_week || formData.days_of_week.length === 0)) {
+    if (
+      formData.frequency === 'weekly' &&
+      (!formData.days_of_week || formData.days_of_week.length === 0)
+    ) {
       errors.days_of_week = 'Debes seleccionar al menos un día de la semana'
     }
 
-    if (formData.frequency === 'monthly' && (formData.day_of_month === null || formData.day_of_month === undefined)) {
+    if (
+      formData.frequency === 'monthly' &&
+      (formData.day_of_month === null || formData.day_of_month === undefined)
+    ) {
       errors.day_of_month = 'Debes seleccionar un día del mes'
     }
 
@@ -275,10 +284,10 @@ function Rutinas() {
       if (selectedRoutine) {
         // Modo edición
         const updateResponse = await api.updateRoutine(selectedRoutine.id, routineData)
-        
+
         // Recargar todas las rutinas
         await loadRoutines()
-        
+
         // Recargar la rutina específica para actualizar el modal
         const updatedRoutineResponse = await api.getRoutines(selectedRoutine.id)
         if (updatedRoutineResponse.routines && updatedRoutineResponse.routines.length > 0) {
@@ -291,7 +300,9 @@ function Rutinas() {
             frequency: updatedRoutine.frequency,
             days_of_week: updatedRoutine.days_of_week || [],
             day_of_month: updatedRoutine.day_of_month ?? null,
-            scheduled_time: updatedRoutine.scheduled_time ? updatedRoutine.scheduled_time.slice(0, 5) : '',
+            scheduled_time: updatedRoutine.scheduled_time
+              ? updatedRoutine.scheduled_time.slice(0, 5)
+              : '',
             color: updatedRoutine.color || '#007AFF',
             duration: updatedRoutine.duration ?? null,
           })
@@ -300,15 +311,15 @@ function Rutinas() {
       } else {
         // Modo creación
         const createResponse = await api.createRoutine(routineData)
-        
+
         // Recargar todas las rutinas
         await loadRoutines()
-        
+
         // Cerrar el modal
         handleCloseDetailModal()
         showNotification('Rutina creada exitosamente', 'success')
       }
-      
+
       setIsEditMode(false)
       showNotification('Rutina actualizada exitosamente', 'success')
     } catch (err: any) {
@@ -325,7 +336,11 @@ function Rutinas() {
   const handleDelete = async () => {
     if (!selectedRoutine) return
 
-    if (!window.confirm('¿Estás seguro de que quieres eliminar esta rutina? Esta acción es irreversible.')) {
+    if (
+      !window.confirm(
+        '¿Estás seguro de que quieres eliminar esta rutina? Esta acción es irreversible.'
+      )
+    ) {
       return
     }
 
@@ -361,7 +376,7 @@ function Rutinas() {
 
   const formatDaysOfWeek = (days: number[] | null | undefined): string => {
     if (!days || days.length === 0) return ''
-    
+
     const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
     const sortedDays = [...days].sort((a, b) => a - b)
     return sortedDays.map(day => dayNames[day]).join(', ')
@@ -472,7 +487,7 @@ function Rutinas() {
 
       const today = new Date()
       today.setHours(0, 0, 0, 0)
-      
+
       const getDateString = (daysAgo: number) => {
         const date = new Date(today)
         date.setDate(date.getDate() - daysAgo)
@@ -483,9 +498,14 @@ function Rutinas() {
         return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
       }
 
-      for (const { routine, current_streak, longest_streak, completionsCount } of routinesWithStreaks) {
+      for (const {
+        routine,
+        current_streak,
+        longest_streak,
+        completionsCount,
+      } of routinesWithStreaks) {
         const response = await api.createRoutine(routine)
-        
+
         if (response.routine && response.routine.id) {
           // Crear completados para generar historial
           if (completionsCount > 0) {
@@ -536,7 +556,7 @@ function Rutinas() {
               }
             }
           }
-          
+
           // Actualizar directamente las rachas con valores inventados
           const updateData = {
             title: routine.title, // Campo válido requerido
@@ -659,7 +679,7 @@ function Rutinas() {
             <p>{error}</p>
           </div>
         ) : routines.length === 0 ? (
-        <div className="rutinas-empty-state">
+          <div className="rutinas-empty-state">
             <RepeatIcon className="empty-state-icon" />
             <p className="empty-state-text">No hay rutinas registradas aún.</p>
           </div>
@@ -691,16 +711,20 @@ function Rutinas() {
                     <span className="rutinas-item-frequency">
                       {formatFrequency(routine.frequency)}
                     </span>
-                    {routine.frequency === 'weekly' && routine.days_of_week && routine.days_of_week.length > 0 && (
-                      <span className="rutinas-item-days">
-                        {formatDaysOfWeek(routine.days_of_week)}
-                      </span>
-                    )}
-                    {routine.frequency === 'monthly' && routine.day_of_month !== null && routine.day_of_month !== undefined && (
-                      <span className="rutinas-item-day-month">
-                        {formatDayOfMonth(routine.day_of_month)}
-                      </span>
-                    )}
+                    {routine.frequency === 'weekly' &&
+                      routine.days_of_week &&
+                      routine.days_of_week.length > 0 && (
+                        <span className="rutinas-item-days">
+                          {formatDaysOfWeek(routine.days_of_week)}
+                        </span>
+                      )}
+                    {routine.frequency === 'monthly' &&
+                      routine.day_of_month !== null &&
+                      routine.day_of_month !== undefined && (
+                        <span className="rutinas-item-day-month">
+                          {formatDayOfMonth(routine.day_of_month)}
+                        </span>
+                      )}
                     {routine.scheduled_time && (
                       <span className="rutinas-item-time">
                         <AccessTimeIcon className="rutinas-item-time-icon" />
@@ -708,13 +732,11 @@ function Rutinas() {
                       </span>
                     )}
                     {routine.duration !== null && routine.duration !== undefined && (
-                      <span className="rutinas-item-duration">
-                        {routine.duration} min
-                      </span>
+                      <span className="rutinas-item-duration">{routine.duration} min</span>
                     )}
                   </div>
-                  {(routine.current_streak !== undefined && routine.current_streak > 0) || 
-                   (routine.total_completions !== undefined && routine.total_completions > 0) ? (
+                  {(routine.current_streak !== undefined && routine.current_streak > 0) ||
+                  (routine.total_completions !== undefined && routine.total_completions > 0) ? (
                     <div className="rutinas-item-stats">
                       {routine.current_streak !== undefined && routine.current_streak > 0 && (
                         <span className="rutinas-item-streak">
@@ -742,10 +764,11 @@ function Rutinas() {
             <div className="rutinas-modal" onClick={e => e.stopPropagation()}>
               <div className="rutinas-modal-header">
                 <h2 className="rutinas-modal-title">
-                  {selectedRoutine 
-                    ? (isEditMode ? 'Editar Rutina' : selectedRoutine.title)
-                    : 'Crear Rutina'
-                  }
+                  {selectedRoutine
+                    ? isEditMode
+                      ? 'Editar Rutina'
+                      : selectedRoutine.title
+                    : 'Crear Rutina'}
                 </h2>
                 <div className="rutinas-modal-actions">
                   {selectedRoutine && !isEditMode && (
@@ -780,7 +803,7 @@ function Rutinas() {
                 </div>
               </div>
 
-              {(isEditMode || !selectedRoutine) ? (
+              {isEditMode || !selectedRoutine ? (
                 <form onSubmit={handleSubmit} className="rutinas-modal-form">
                   {/* Advertencia sobre cambios - Solo en modo edición */}
                   {selectedRoutine && isEditMode && (
@@ -789,8 +812,9 @@ function Rutinas() {
                       <div className="rutinas-warning-content">
                         <p className="rutinas-warning-title">Advertencia sobre cambios</p>
                         <p className="rutinas-warning-text">
-                          Modificar la frecuencia, días de la semana o día del mes de esta rutina puede afectar tus rachas existentes. 
-                          Recuerda que una rutina es un compromiso contigo mismo para cumplirla desde el principio.
+                          Modificar la frecuencia, días de la semana o día del mes de esta rutina
+                          puede afectar tus rachas existentes. Recuerda que una rutina es un
+                          compromiso contigo mismo para cumplirla desde el principio.
                         </p>
                       </div>
                     </div>
@@ -949,10 +973,13 @@ function Rutinas() {
                       className="rutinas-form-button rutinas-form-button-primary"
                       disabled={isLoading}
                     >
-                      {isLoading 
-                        ? (selectedRoutine ? 'Guardando...' : 'Creando...') 
-                        : (selectedRoutine ? 'Guardar Cambios' : 'Crear Rutina')
-                      }
+                      {isLoading
+                        ? selectedRoutine
+                          ? 'Guardando...'
+                          : 'Creando...'
+                        : selectedRoutine
+                          ? 'Guardar Cambios'
+                          : 'Crear Rutina'}
                     </button>
                   </div>
                 </form>
@@ -967,27 +994,37 @@ function Rutinas() {
 
                   <div className="rutinas-detail-section">
                     <h3 className="rutinas-detail-label">Frecuencia</h3>
-                    <p className="rutinas-detail-value">{formatFrequency(selectedRoutine.frequency)}</p>
+                    <p className="rutinas-detail-value">
+                      {formatFrequency(selectedRoutine.frequency)}
+                    </p>
                   </div>
 
-                  {selectedRoutine.frequency === 'weekly' && selectedRoutine.days_of_week && selectedRoutine.days_of_week.length > 0 && (
-                    <div className="rutinas-detail-section">
-                      <h3 className="rutinas-detail-label">Días de la semana</h3>
-                      <p className="rutinas-detail-value">{formatDaysOfWeek(selectedRoutine.days_of_week)}</p>
-                    </div>
-                  )}
+                  {selectedRoutine.frequency === 'weekly' &&
+                    selectedRoutine.days_of_week &&
+                    selectedRoutine.days_of_week.length > 0 && (
+                      <div className="rutinas-detail-section">
+                        <h3 className="rutinas-detail-label">Días de la semana</h3>
+                        <p className="rutinas-detail-value">
+                          {formatDaysOfWeek(selectedRoutine.days_of_week)}
+                        </p>
+                      </div>
+                    )}
 
-                  {selectedRoutine.frequency === 'monthly' && selectedRoutine.day_of_month !== null && selectedRoutine.day_of_month !== undefined && (
-                    <div className="rutinas-detail-section">
-                      <h3 className="rutinas-detail-label">Día del mes</h3>
-                      <p className="rutinas-detail-value">Día {selectedRoutine.day_of_month}</p>
-                    </div>
-                  )}
+                  {selectedRoutine.frequency === 'monthly' &&
+                    selectedRoutine.day_of_month !== null &&
+                    selectedRoutine.day_of_month !== undefined && (
+                      <div className="rutinas-detail-section">
+                        <h3 className="rutinas-detail-label">Día del mes</h3>
+                        <p className="rutinas-detail-value">Día {selectedRoutine.day_of_month}</p>
+                      </div>
+                    )}
 
                   {selectedRoutine.scheduled_time && (
                     <div className="rutinas-detail-section">
                       <h3 className="rutinas-detail-label">Hora programada</h3>
-                      <p className="rutinas-detail-value">{selectedRoutine.scheduled_time.slice(0, 5)}</p>
+                      <p className="rutinas-detail-value">
+                        {selectedRoutine.scheduled_time.slice(0, 5)}
+                      </p>
                     </div>
                   )}
 
@@ -1003,37 +1040,51 @@ function Rutinas() {
                       <h3 className="rutinas-detail-label">Racha actual</h3>
                       <p className="rutinas-detail-value rutinas-detail-streak">
                         <LocalFireDepartmentIcon className="rutinas-detail-streak-icon" />
-                        {selectedRoutine.current_streak !== undefined ? selectedRoutine.current_streak : 0} días
+                        {selectedRoutine.current_streak !== undefined
+                          ? selectedRoutine.current_streak
+                          : 0}{' '}
+                        días
                       </p>
                     </div>
                     <div className="rutinas-detail-stat">
                       <h3 className="rutinas-detail-label">Racha más larga</h3>
                       <p className="rutinas-detail-value">
-                        {selectedRoutine.longest_streak !== undefined ? selectedRoutine.longest_streak : 0} días
+                        {selectedRoutine.longest_streak !== undefined
+                          ? selectedRoutine.longest_streak
+                          : 0}{' '}
+                        días
                       </p>
                     </div>
                     <div className="rutinas-detail-stat">
                       <h3 className="rutinas-detail-label">Total completados</h3>
                       <p className="rutinas-detail-value rutinas-detail-completions">
                         <CheckCircleIcon className="rutinas-detail-completions-icon" />
-                        {selectedRoutine.total_completions !== undefined ? selectedRoutine.total_completions : 0}
+                        {selectedRoutine.total_completions !== undefined
+                          ? selectedRoutine.total_completions
+                          : 0}
                       </p>
                     </div>
-                    {selectedRoutine.completions_this_month !== undefined && selectedRoutine.completions_this_month > 0 && (
-                      <div className="rutinas-detail-stat">
-                        <h3 className="rutinas-detail-label">Completados este mes</h3>
-                        <p className="rutinas-detail-value">{selectedRoutine.completions_this_month}</p>
-                      </div>
-                    )}
+                    {selectedRoutine.completions_this_month !== undefined &&
+                      selectedRoutine.completions_this_month > 0 && (
+                        <div className="rutinas-detail-stat">
+                          <h3 className="rutinas-detail-label">Completados este mes</h3>
+                          <p className="rutinas-detail-value">
+                            {selectedRoutine.completions_this_month}
+                          </p>
+                        </div>
+                      )}
                     {selectedRoutine.last_completed_date && (
                       <div className="rutinas-detail-stat">
                         <h3 className="rutinas-detail-label">Último completado</h3>
                         <p className="rutinas-detail-value">
-                          {new Date(selectedRoutine.last_completed_date).toLocaleDateString('es-ES', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
+                          {new Date(selectedRoutine.last_completed_date).toLocaleDateString(
+                            'es-ES',
+                            {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            }
+                          )}
                         </p>
                       </div>
                     )}
@@ -1041,7 +1092,7 @@ function Rutinas() {
                 </div>
               )}
             </div>
-        </div>
+          </div>
         )}
 
         {/* Modal de Debug */}

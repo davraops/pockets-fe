@@ -260,7 +260,10 @@ function Subscripciones() {
         handleCloseDetailModal()
       } catch (err: any) {
         console.error('Error al eliminar subscripción:', err)
-        const errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar la subscripción. Por favor, intenta de nuevo.')
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al eliminar la subscripción. Por favor, intenta de nuevo.'
+        )
         showNotification(errorMessage, 'error')
       }
     }
@@ -531,10 +534,16 @@ function Subscripciones() {
       // Disparar evento para actualizar otros componentes
       window.dispatchEvent(new Event('subscriptionsUpdated'))
       setIsDebugModalOpen(false)
-      showNotification(`${testSubscriptions.length} subscripciones de prueba creadas exitosamente`, 'success')
+      showNotification(
+        `${testSubscriptions.length} subscripciones de prueba creadas exitosamente`,
+        'success'
+      )
     } catch (err: any) {
       console.error('Error al crear subscripciones de prueba:', err)
-      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear las subscripciones de prueba. Por favor, intenta de nuevo.')
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al crear las subscripciones de prueba. Por favor, intenta de nuevo.'
+      )
       showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
@@ -563,7 +572,10 @@ function Subscripciones() {
         showNotification('Todas las subscripciones han sido eliminadas exitosamente', 'success')
       } catch (err: any) {
         console.error('Error al eliminar todas las subscripciones:', err)
-        const errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar las subscripciones. Por favor, intenta de nuevo.')
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al eliminar las subscripciones. Por favor, intenta de nuevo.'
+        )
         showNotification(errorMessage, 'error')
       } finally {
         setIsLoading(false)

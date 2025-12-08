@@ -117,7 +117,7 @@ function Vehiculos() {
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [isDebugLoading, setIsDebugLoading] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  
+
   // Estados para el formulario de eventos
   const [eventForm, setEventForm] = useState({
     type: '',
@@ -141,7 +141,7 @@ function Vehiculos() {
       const response = await api.getVehicles()
       if (response.vehicles && Array.isArray(response.vehicles)) {
         setRecords(response.vehicles)
-        
+
         // Mapear cada vehículo individual a la lista
         const mappedVehicles: Vehicle[] = response.vehicles.map((record: VehicleRecord) => ({
           id: record.id,
@@ -209,8 +209,8 @@ function Vehiculos() {
                 policyNumber: formData.insurancePolicyNumber.trim() || undefined,
                 expirationDate: formData.insuranceExpirationDate || undefined,
                 coverage: formData.insuranceCoverage.trim() || undefined,
-                }
-              : undefined,
+              }
+            : undefined,
         maintenance:
           formData.maintenanceLastService.trim() ||
           formData.maintenanceNextService.trim() ||
@@ -234,11 +234,10 @@ function Vehiculos() {
                     ? {
                         number: formData.soatNumber.trim() || undefined,
                         expiration: formData.soatExpiration || undefined,
-                }
-              : undefined,
+                      }
+                    : undefined,
                 technicalReview:
-                  formData.technicalReviewNumber.trim() ||
-                  formData.technicalReviewExpiration.trim()
+                  formData.technicalReviewNumber.trim() || formData.technicalReviewExpiration.trim()
                     ? {
                         number: formData.technicalReviewNumber.trim() || undefined,
                         expiration: formData.technicalReviewExpiration || undefined,
@@ -258,7 +257,7 @@ function Vehiculos() {
         // Editar vehículo existente
         await api.updateVehicle(editingId, vehiclePayload)
         showNotification('Vehículo actualizado exitosamente', 'success')
-    setEditingId(null)
+        setEditingId(null)
       } else {
         // Agregar nuevo vehículo
         await api.createVehicle(vehiclePayload)
@@ -399,7 +398,7 @@ function Vehiculos() {
             <ArrowBackIcon className="vehiculos-toolbar-icon" />
           </button>
           <div className="vehiculos-toolbar-menu-container" ref={menuRef}>
-          <button
+            <button
               className="vehiculos-toolbar-button"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label="Opciones"
@@ -412,15 +411,15 @@ function Vehiculos() {
               <div className="vehiculos-menu">
                 <button
                   className="vehiculos-menu-item"
-            onClick={() => {
+                  onClick={() => {
                     setIsMenuOpen(false)
                     setShowFormModal(true)
-            }}
-            type="button"
-          >
+                  }}
+                  type="button"
+                >
                   <AddIcon className="vehiculos-menu-icon" />
                   <span>Agregar Vehículo</span>
-          </button>
+                </button>
                 {process.env.NODE_ENV === 'development' && (
                   <button
                     className="vehiculos-menu-item"
@@ -440,17 +439,21 @@ function Vehiculos() {
 
         <h1 className="vehiculos-page-title">Vehículos</h1>
         <p className="vehiculos-page-subtitle">
-          Gestiona la información de tus vehículos: marca, modelo, placa, año, mantenimientos, seguros y más
+          Gestiona la información de tus vehículos: marca, modelo, placa, año, mantenimientos,
+          seguros y más
         </p>
 
         {/* Modal de Formulario */}
         {showFormModal && (
           <div className="vehiculos-modal-overlay" onClick={() => handleCancelEdit()}>
-            <div className="vehiculos-modal vehiculos-modal-large" onClick={e => e.stopPropagation()}>
+            <div
+              className="vehiculos-modal vehiculos-modal-large"
+              onClick={e => e.stopPropagation()}
+            >
               <div className="vehiculos-modal-header">
                 <h2 className="vehiculos-modal-title">
                   {editingId ? 'Editar Vehículo' : 'Agregar Vehículo'}
-          </h2>
+                </h2>
                 <button
                   className="vehiculos-modal-close"
                   onClick={() => handleCancelEdit()}
@@ -462,410 +465,410 @@ function Vehiculos() {
               </div>
               <div className="vehiculos-modal-content">
                 <form onSubmit={handleSubmit} className="vehiculos-form">
-            <div className="vehiculos-form-group">
-              <label htmlFor="name" className="vehiculos-form-label">
-                <DirectionsCarIcon className="vehiculos-label-icon" />
-                Nombre del Vehículo *
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="vehiculos-form-input"
-                placeholder="Ej: Mi Carro Principal"
-                required
-              />
-            </div>
+                  <div className="vehiculos-form-group">
+                    <label htmlFor="name" className="vehiculos-form-label">
+                      <DirectionsCarIcon className="vehiculos-label-icon" />
+                      Nombre del Vehículo *
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      className="vehiculos-form-input"
+                      placeholder="Ej: Mi Carro Principal"
+                      required
+                    />
+                  </div>
 
-            <div className="vehiculos-form-row">
-              <div className="vehiculos-form-group">
-                <label htmlFor="type" className="vehiculos-form-label">
-                  Tipo de Vehículo
-                </label>
-                <select
-                  id="type"
-                  name="type"
-                  value={formData.type}
-                  onChange={handleChange}
-                  className="vehiculos-form-input"
-                >
-                  <option value="">Seleccionar...</option>
-                  <option value="Automóvil">Automóvil</option>
-                  <option value="Moto">Moto</option>
-                  <option value="Camioneta">Camioneta</option>
-                  <option value="Camión">Camión</option>
-                  <option value="Bus">Bus</option>
-                  <option value="Otro">Otro</option>
-                </select>
+                  <div className="vehiculos-form-row">
+                    <div className="vehiculos-form-group">
+                      <label htmlFor="type" className="vehiculos-form-label">
+                        Tipo de Vehículo
+                      </label>
+                      <select
+                        id="type"
+                        name="type"
+                        value={formData.type}
+                        onChange={handleChange}
+                        className="vehiculos-form-input"
+                      >
+                        <option value="">Seleccionar...</option>
+                        <option value="Automóvil">Automóvil</option>
+                        <option value="Moto">Moto</option>
+                        <option value="Camioneta">Camioneta</option>
+                        <option value="Camión">Camión</option>
+                        <option value="Bus">Bus</option>
+                        <option value="Otro">Otro</option>
+                      </select>
+                    </div>
+
+                    <div className="vehiculos-form-group">
+                      <label htmlFor="brand" className="vehiculos-form-label">
+                        Marca
+                      </label>
+                      <input
+                        type="text"
+                        id="brand"
+                        name="brand"
+                        value={formData.brand}
+                        onChange={handleChange}
+                        className="vehiculos-form-input"
+                        placeholder="Ej: Toyota"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="vehiculos-form-row">
+                    <div className="vehiculos-form-group">
+                      <label htmlFor="model" className="vehiculos-form-label">
+                        Modelo
+                      </label>
+                      <input
+                        type="text"
+                        id="model"
+                        name="model"
+                        value={formData.model}
+                        onChange={handleChange}
+                        className="vehiculos-form-input"
+                        placeholder="Ej: Corolla"
+                      />
+                    </div>
+
+                    <div className="vehiculos-form-group">
+                      <label htmlFor="year" className="vehiculos-form-label">
+                        Año
+                      </label>
+                      <input
+                        type="number"
+                        id="year"
+                        name="year"
+                        value={formData.year}
+                        onChange={handleChange}
+                        className="vehiculos-form-input"
+                        placeholder="2020"
+                        min="1900"
+                        max={new Date().getFullYear() + 1}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="vehiculos-form-row">
+                    <div className="vehiculos-form-group">
+                      <label htmlFor="plate" className="vehiculos-form-label">
+                        Placa
+                      </label>
+                      <input
+                        type="text"
+                        id="plate"
+                        name="plate"
+                        value={formData.plate}
+                        onChange={handleChange}
+                        className="vehiculos-form-input"
+                        placeholder="Ej: ABC123"
+                      />
+                    </div>
+
+                    <div className="vehiculos-form-group">
+                      <label htmlFor="color" className="vehiculos-form-label">
+                        Color
+                      </label>
+                      <input
+                        type="text"
+                        id="color"
+                        name="color"
+                        value={formData.color}
+                        onChange={handleChange}
+                        className="vehiculos-form-input"
+                        placeholder="Ej: Blanco"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="vehiculos-form-row">
+                    <div className="vehiculos-form-group">
+                      <label htmlFor="vin" className="vehiculos-form-label">
+                        VIN (Número de Chasis)
+                      </label>
+                      <input
+                        type="text"
+                        id="vin"
+                        name="vin"
+                        value={formData.vin}
+                        onChange={handleChange}
+                        className="vehiculos-form-input"
+                        placeholder="Ej: 1HGBH41JXMN109186"
+                      />
+                    </div>
+
+                    <div className="vehiculos-form-group">
+                      <label htmlFor="mileage" className="vehiculos-form-label">
+                        Kilometraje
+                      </label>
+                      <input
+                        type="number"
+                        id="mileage"
+                        name="mileage"
+                        value={formData.mileage}
+                        onChange={handleChange}
+                        className="vehiculos-form-input"
+                        placeholder="0"
+                        min="0"
+                        step="1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="vehiculos-form-group">
+                    <label htmlFor="fuelType" className="vehiculos-form-label">
+                      <LocalGasStationIcon className="vehiculos-label-icon" />
+                      Tipo de Combustible
+                    </label>
+                    <select
+                      id="fuelType"
+                      name="fuelType"
+                      value={formData.fuelType}
+                      onChange={handleChange}
+                      className="vehiculos-form-input"
+                    >
+                      <option value="">Seleccionar...</option>
+                      <option value="Gasolina">Gasolina</option>
+                      <option value="Diesel">Diesel</option>
+                      <option value="Eléctrico">Eléctrico</option>
+                      <option value="Híbrido">Híbrido</option>
+                      <option value="Gas Natural">Gas Natural</option>
+                      <option value="Otro">Otro</option>
+                    </select>
+                  </div>
+
+                  <div className="vehiculos-form-section-divider">
+                    <h3 className="vehiculos-form-subsection-title">
+                      <SecurityIcon className="vehiculos-label-icon" />
+                      Seguro
+                    </h3>
+                  </div>
+
+                  <div className="vehiculos-form-row">
+                    <div className="vehiculos-form-group">
+                      <label htmlFor="insuranceCompany" className="vehiculos-form-label">
+                        Compañía de Seguros
+                      </label>
+                      <input
+                        type="text"
+                        id="insuranceCompany"
+                        name="insuranceCompany"
+                        value={formData.insuranceCompany}
+                        onChange={handleChange}
+                        className="vehiculos-form-input"
+                        placeholder="Ej: Seguros XYZ"
+                      />
+                    </div>
+
+                    <div className="vehiculos-form-group">
+                      <label htmlFor="insurancePolicyNumber" className="vehiculos-form-label">
+                        Número de Póliza
+                      </label>
+                      <input
+                        type="text"
+                        id="insurancePolicyNumber"
+                        name="insurancePolicyNumber"
+                        value={formData.insurancePolicyNumber}
+                        onChange={handleChange}
+                        className="vehiculos-form-input"
+                        placeholder="Ej: POL-123456"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="vehiculos-form-row">
+                    <div className="vehiculos-form-group">
+                      <label htmlFor="insuranceExpirationDate" className="vehiculos-form-label">
+                        Fecha de Expiración
+                      </label>
+                      <input
+                        type="date"
+                        id="insuranceExpirationDate"
+                        name="insuranceExpirationDate"
+                        value={formData.insuranceExpirationDate}
+                        onChange={handleChange}
+                        className="vehiculos-form-input"
+                      />
+                    </div>
+
+                    <div className="vehiculos-form-group">
+                      <label htmlFor="insuranceCoverage" className="vehiculos-form-label">
+                        Cobertura
+                      </label>
+                      <input
+                        type="text"
+                        id="insuranceCoverage"
+                        name="insuranceCoverage"
+                        value={formData.insuranceCoverage}
+                        onChange={handleChange}
+                        className="vehiculos-form-input"
+                        placeholder="Ej: Todo Riesgo"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="vehiculos-form-section-divider">
+                    <h3 className="vehiculos-form-subsection-title">
+                      <BuildIcon className="vehiculos-label-icon" />
+                      Mantenimiento
+                    </h3>
+                  </div>
+
+                  <div className="vehiculos-form-row">
+                    <div className="vehiculos-form-group">
+                      <label htmlFor="maintenanceLastService" className="vehiculos-form-label">
+                        Último Servicio
+                      </label>
+                      <input
+                        type="date"
+                        id="maintenanceLastService"
+                        name="maintenanceLastService"
+                        value={formData.maintenanceLastService}
+                        onChange={handleChange}
+                        className="vehiculos-form-input"
+                      />
+                    </div>
+
+                    <div className="vehiculos-form-group">
+                      <label htmlFor="maintenanceNextService" className="vehiculos-form-label">
+                        Próximo Servicio
+                      </label>
+                      <input
+                        type="date"
+                        id="maintenanceNextService"
+                        name="maintenanceNextService"
+                        value={formData.maintenanceNextService}
+                        onChange={handleChange}
+                        className="vehiculos-form-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="vehiculos-form-group">
+                    <label htmlFor="maintenanceServiceInterval" className="vehiculos-form-label">
+                      Intervalo de Servicio (km)
+                    </label>
+                    <input
+                      type="number"
+                      id="maintenanceServiceInterval"
+                      name="maintenanceServiceInterval"
+                      value={formData.maintenanceServiceInterval}
+                      onChange={handleChange}
+                      className="vehiculos-form-input"
+                      placeholder="Ej: 10000"
+                      min="0"
+                      step="1000"
+                    />
+                  </div>
+
+                  <div className="vehiculos-form-section-divider">
+                    <h3 className="vehiculos-form-subsection-title">
+                      <DescriptionIcon className="vehiculos-label-icon" />
+                      Documentos
+                    </h3>
+                  </div>
+
+                  <div className="vehiculos-form-row">
+                    <div className="vehiculos-form-group">
+                      <label htmlFor="soatNumber" className="vehiculos-form-label">
+                        SOAT - Número
+                      </label>
+                      <input
+                        type="text"
+                        id="soatNumber"
+                        name="soatNumber"
+                        value={formData.soatNumber}
+                        onChange={handleChange}
+                        className="vehiculos-form-input"
+                        placeholder="Ej: SOAT-789012"
+                      />
+                    </div>
+
+                    <div className="vehiculos-form-group">
+                      <label htmlFor="soatExpiration" className="vehiculos-form-label">
+                        SOAT - Expiración
+                      </label>
+                      <input
+                        type="date"
+                        id="soatExpiration"
+                        name="soatExpiration"
+                        value={formData.soatExpiration}
+                        onChange={handleChange}
+                        className="vehiculos-form-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="vehiculos-form-row">
+                    <div className="vehiculos-form-group">
+                      <label htmlFor="technicalReviewNumber" className="vehiculos-form-label">
+                        Revisión Técnica - Número
+                      </label>
+                      <input
+                        type="text"
+                        id="technicalReviewNumber"
+                        name="technicalReviewNumber"
+                        value={formData.technicalReviewNumber}
+                        onChange={handleChange}
+                        className="vehiculos-form-input"
+                        placeholder="Ej: RT-345678"
+                      />
+                    </div>
+
+                    <div className="vehiculos-form-group">
+                      <label htmlFor="technicalReviewExpiration" className="vehiculos-form-label">
+                        Revisión Técnica - Expiración
+                      </label>
+                      <input
+                        type="date"
+                        id="technicalReviewExpiration"
+                        name="technicalReviewExpiration"
+                        value={formData.technicalReviewExpiration}
+                        onChange={handleChange}
+                        className="vehiculos-form-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="vehiculos-form-group">
+                    <label htmlFor="notes" className="vehiculos-form-label">
+                      Notas
+                    </label>
+                    <input
+                      type="text"
+                      id="notes"
+                      name="notes"
+                      value={formData.notes}
+                      onChange={handleChange}
+                      className="vehiculos-form-input"
+                      placeholder="Ej: Vehículo en buen estado, mantenimiento al día"
+                    />
+                  </div>
+
+                  <div className="vehiculos-form-actions">
+                    {editingId && (
+                      <button
+                        type="button"
+                        className="vehiculos-form-button vehiculos-form-button-secondary"
+                        onClick={handleCancelEdit}
+                      >
+                        Cancelar
+                      </button>
+                    )}
+                    <button
+                      type="submit"
+                      className="vehiculos-form-button vehiculos-form-button-primary"
+                    >
+                      {editingId ? 'Actualizar' : 'Agregar'}
+                    </button>
+                  </div>
+                </form>
               </div>
-
-              <div className="vehiculos-form-group">
-                <label htmlFor="brand" className="vehiculos-form-label">
-                  Marca
-                </label>
-                <input
-                  type="text"
-                  id="brand"
-                  name="brand"
-                  value={formData.brand}
-                  onChange={handleChange}
-                  className="vehiculos-form-input"
-                  placeholder="Ej: Toyota"
-                />
-              </div>
-              </div>
-
-            <div className="vehiculos-form-row">
-              <div className="vehiculos-form-group">
-                <label htmlFor="model" className="vehiculos-form-label">
-                  Modelo
-                </label>
-                <input
-                  type="text"
-                  id="model"
-                  name="model"
-                  value={formData.model}
-                  onChange={handleChange}
-                  className="vehiculos-form-input"
-                  placeholder="Ej: Corolla"
-                />
-              </div>
-
-              <div className="vehiculos-form-group">
-                <label htmlFor="year" className="vehiculos-form-label">
-                  Año
-                </label>
-                <input
-                  type="number"
-                  id="year"
-                  name="year"
-                  value={formData.year}
-                  onChange={handleChange}
-                  className="vehiculos-form-input"
-                  placeholder="2020"
-                  min="1900"
-                  max={new Date().getFullYear() + 1}
-                />
-              </div>
-            </div>
-
-            <div className="vehiculos-form-row">
-              <div className="vehiculos-form-group">
-                <label htmlFor="plate" className="vehiculos-form-label">
-                  Placa
-                </label>
-                <input
-                  type="text"
-                  id="plate"
-                  name="plate"
-                  value={formData.plate}
-                  onChange={handleChange}
-                  className="vehiculos-form-input"
-                  placeholder="Ej: ABC123"
-                />
-              </div>
-
-              <div className="vehiculos-form-group">
-                <label htmlFor="color" className="vehiculos-form-label">
-                  Color
-                </label>
-                <input
-                  type="text"
-                  id="color"
-                  name="color"
-                  value={formData.color}
-                  onChange={handleChange}
-                  className="vehiculos-form-input"
-                  placeholder="Ej: Blanco"
-                />
-              </div>
-            </div>
-
-            <div className="vehiculos-form-row">
-              <div className="vehiculos-form-group">
-                <label htmlFor="vin" className="vehiculos-form-label">
-                  VIN (Número de Chasis)
-                </label>
-                <input
-                  type="text"
-                  id="vin"
-                  name="vin"
-                  value={formData.vin}
-                  onChange={handleChange}
-                  className="vehiculos-form-input"
-                  placeholder="Ej: 1HGBH41JXMN109186"
-                />
-              </div>
-
-              <div className="vehiculos-form-group">
-                <label htmlFor="mileage" className="vehiculos-form-label">
-                  Kilometraje
-                </label>
-                <input
-                  type="number"
-                  id="mileage"
-                  name="mileage"
-                  value={formData.mileage}
-                  onChange={handleChange}
-                  className="vehiculos-form-input"
-                  placeholder="0"
-                  min="0"
-                  step="1"
-                />
-              </div>
-            </div>
-
-            <div className="vehiculos-form-group">
-              <label htmlFor="fuelType" className="vehiculos-form-label">
-                <LocalGasStationIcon className="vehiculos-label-icon" />
-                Tipo de Combustible
-              </label>
-              <select
-                id="fuelType"
-                name="fuelType"
-                value={formData.fuelType}
-                onChange={handleChange}
-                className="vehiculos-form-input"
-              >
-                <option value="">Seleccionar...</option>
-                <option value="Gasolina">Gasolina</option>
-                <option value="Diesel">Diesel</option>
-                <option value="Eléctrico">Eléctrico</option>
-                <option value="Híbrido">Híbrido</option>
-                <option value="Gas Natural">Gas Natural</option>
-                <option value="Otro">Otro</option>
-              </select>
-            </div>
-
-            <div className="vehiculos-form-section-divider">
-              <h3 className="vehiculos-form-subsection-title">
-                <SecurityIcon className="vehiculos-label-icon" />
-                Seguro
-              </h3>
-            </div>
-
-            <div className="vehiculos-form-row">
-              <div className="vehiculos-form-group">
-                <label htmlFor="insuranceCompany" className="vehiculos-form-label">
-                  Compañía de Seguros
-                </label>
-                <input
-                  type="text"
-                  id="insuranceCompany"
-                  name="insuranceCompany"
-                  value={formData.insuranceCompany}
-                  onChange={handleChange}
-                  className="vehiculos-form-input"
-                  placeholder="Ej: Seguros XYZ"
-                />
-              </div>
-
-              <div className="vehiculos-form-group">
-                <label htmlFor="insurancePolicyNumber" className="vehiculos-form-label">
-                  Número de Póliza
-                </label>
-                <input
-                  type="text"
-                  id="insurancePolicyNumber"
-                  name="insurancePolicyNumber"
-                  value={formData.insurancePolicyNumber}
-                  onChange={handleChange}
-                  className="vehiculos-form-input"
-                  placeholder="Ej: POL-123456"
-                />
-              </div>
-            </div>
-
-            <div className="vehiculos-form-row">
-              <div className="vehiculos-form-group">
-                <label htmlFor="insuranceExpirationDate" className="vehiculos-form-label">
-                  Fecha de Expiración
-                </label>
-                <input
-                  type="date"
-                  id="insuranceExpirationDate"
-                  name="insuranceExpirationDate"
-                  value={formData.insuranceExpirationDate}
-                  onChange={handleChange}
-                  className="vehiculos-form-input"
-                />
-              </div>
-
-              <div className="vehiculos-form-group">
-                <label htmlFor="insuranceCoverage" className="vehiculos-form-label">
-                  Cobertura
-                </label>
-                <input
-                  type="text"
-                  id="insuranceCoverage"
-                  name="insuranceCoverage"
-                  value={formData.insuranceCoverage}
-                  onChange={handleChange}
-                  className="vehiculos-form-input"
-                  placeholder="Ej: Todo Riesgo"
-                />
-              </div>
-            </div>
-
-            <div className="vehiculos-form-section-divider">
-              <h3 className="vehiculos-form-subsection-title">
-                <BuildIcon className="vehiculos-label-icon" />
-                Mantenimiento
-              </h3>
-            </div>
-
-            <div className="vehiculos-form-row">
-              <div className="vehiculos-form-group">
-                <label htmlFor="maintenanceLastService" className="vehiculos-form-label">
-                  Último Servicio
-              </label>
-              <input
-                  type="date"
-                  id="maintenanceLastService"
-                  name="maintenanceLastService"
-                  value={formData.maintenanceLastService}
-                onChange={handleChange}
-                  className="vehiculos-form-input"
-              />
-            </div>
-
-              <div className="vehiculos-form-group">
-                <label htmlFor="maintenanceNextService" className="vehiculos-form-label">
-                  Próximo Servicio
-                </label>
-                <input
-                  type="date"
-                  id="maintenanceNextService"
-                  name="maintenanceNextService"
-                  value={formData.maintenanceNextService}
-                  onChange={handleChange}
-                  className="vehiculos-form-input"
-                />
-              </div>
-            </div>
-
-            <div className="vehiculos-form-group">
-              <label htmlFor="maintenanceServiceInterval" className="vehiculos-form-label">
-                Intervalo de Servicio (km)
-              </label>
-              <input
-                type="number"
-                id="maintenanceServiceInterval"
-                name="maintenanceServiceInterval"
-                value={formData.maintenanceServiceInterval}
-                onChange={handleChange}
-                className="vehiculos-form-input"
-                placeholder="Ej: 10000"
-                min="0"
-                step="1000"
-              />
-            </div>
-
-            <div className="vehiculos-form-section-divider">
-              <h3 className="vehiculos-form-subsection-title">
-                <DescriptionIcon className="vehiculos-label-icon" />
-                Documentos
-              </h3>
-            </div>
-
-            <div className="vehiculos-form-row">
-              <div className="vehiculos-form-group">
-                <label htmlFor="soatNumber" className="vehiculos-form-label">
-                  SOAT - Número
-                </label>
-                <input
-                  type="text"
-                  id="soatNumber"
-                  name="soatNumber"
-                  value={formData.soatNumber}
-                  onChange={handleChange}
-                  className="vehiculos-form-input"
-                  placeholder="Ej: SOAT-789012"
-                />
-              </div>
-
-              <div className="vehiculos-form-group">
-                <label htmlFor="soatExpiration" className="vehiculos-form-label">
-                  SOAT - Expiración
-                </label>
-                <input
-                  type="date"
-                  id="soatExpiration"
-                  name="soatExpiration"
-                  value={formData.soatExpiration}
-                  onChange={handleChange}
-                  className="vehiculos-form-input"
-                />
-              </div>
-              </div>
-
-            <div className="vehiculos-form-row">
-              <div className="vehiculos-form-group">
-                <label htmlFor="technicalReviewNumber" className="vehiculos-form-label">
-                  Revisión Técnica - Número
-                </label>
-                <input
-                  type="text"
-                  id="technicalReviewNumber"
-                  name="technicalReviewNumber"
-                  value={formData.technicalReviewNumber}
-                  onChange={handleChange}
-                  className="vehiculos-form-input"
-                  placeholder="Ej: RT-345678"
-                />
-              </div>
-
-              <div className="vehiculos-form-group">
-                <label htmlFor="technicalReviewExpiration" className="vehiculos-form-label">
-                  Revisión Técnica - Expiración
-                </label>
-                <input
-                  type="date"
-                  id="technicalReviewExpiration"
-                  name="technicalReviewExpiration"
-                  value={formData.technicalReviewExpiration}
-                  onChange={handleChange}
-                  className="vehiculos-form-input"
-                />
-              </div>
-            </div>
-
-            <div className="vehiculos-form-group">
-              <label htmlFor="notes" className="vehiculos-form-label">
-                Notas
-              </label>
-              <input
-                type="text"
-                id="notes"
-                name="notes"
-                value={formData.notes}
-                onChange={handleChange}
-                className="vehiculos-form-input"
-                placeholder="Ej: Vehículo en buen estado, mantenimiento al día"
-              />
-            </div>
-
-            <div className="vehiculos-form-actions">
-              {editingId && (
-                <button
-                  type="button"
-                  className="vehiculos-form-button vehiculos-form-button-secondary"
-                  onClick={handleCancelEdit}
-                >
-                  Cancelar
-                </button>
-              )}
-              <button
-                type="submit"
-                className="vehiculos-form-button vehiculos-form-button-primary"
-              >
-                {editingId ? 'Actualizar' : 'Agregar'}
-              </button>
-            </div>
-          </form>
-        </div>
             </div>
           </div>
         )}
@@ -874,7 +877,7 @@ function Vehiculos() {
         {isLoading ? (
           <div className="vehiculos-empty-state">
             <p className="vehiculos-empty-text">Cargando vehículos...</p>
-            </div>
+          </div>
         ) : error ? (
           <div className="vehiculos-empty-state">
             <p className="vehiculos-empty-text">{error}</p>
@@ -882,17 +885,17 @@ function Vehiculos() {
         ) : vehicles.length === 0 ? (
           <div className="vehiculos-empty-state">
             <p className="vehiculos-empty-text">No hay vehículos agregados</p>
-            <p className="vehiculos-empty-text">Agrega tu primer vehículo usando el botón del menú</p>
+            <p className="vehiculos-empty-text">
+              Agrega tu primer vehículo usando el botón del menú
+            </p>
           </div>
         ) : (
           <div className="vehiculos-list-section">
-            <h2 className="vehiculos-section-title">
-              Vehículos ({vehicles.length})
-              </h2>
+            <h2 className="vehiculos-section-title">Vehículos ({vehicles.length})</h2>
             <div className="vehiculos-list">
               {vehicles.map(vehicle => (
-                <div 
-                  key={vehicle.id} 
+                <div
+                  key={vehicle.id}
                   className="vehiculos-item"
                   onClick={() => {
                     setSelectedVehicle(vehicle)
@@ -904,16 +907,16 @@ function Vehiculos() {
                     <div className="vehiculos-item-header">
                       <h3 className="vehiculos-item-name">{vehicle.name}</h3>
                       {vehicle.data.year && (
-                        <span className="vehiculos-item-year">
-                          {vehicle.data.year}
-                        </span>
+                        <span className="vehiculos-item-year">{vehicle.data.year}</span>
                       )}
                     </div>
                     <div className="vehiculos-item-meta">
                       {vehicle.data.brand && vehicle.data.model && (
                         <>
                           <span className="vehiculos-item-meta-item">
-                            <strong>{vehicle.data.brand} {vehicle.data.model}</strong>
+                            <strong>
+                              {vehicle.data.brand} {vehicle.data.model}
+                            </strong>
                           </span>
                         </>
                       )}
@@ -937,7 +940,10 @@ function Vehiculos() {
                     <div className="vehiculos-item-details">
                       {vehicle.data.mileage && (
                         <div className="vehiculos-item-detail">
-                          <span><strong>Kilometraje:</strong> {vehicle.data.mileage.toLocaleString('es-CO')} km</span>
+                          <span>
+                            <strong>Kilometraje:</strong>{' '}
+                            {vehicle.data.mileage.toLocaleString('es-CO')} km
+                          </span>
                         </div>
                       )}
                       {vehicle.data.fuelType && (
@@ -948,24 +954,36 @@ function Vehiculos() {
                       )}
                       {vehicle.data.color && (
                         <div className="vehiculos-item-detail">
-                          <span><strong>Color:</strong> {vehicle.data.color}</span>
+                          <span>
+                            <strong>Color:</strong> {vehicle.data.color}
+                          </span>
                         </div>
                       )}
                       {vehicle.data.insurance?.expirationDate && (
                         <div className="vehiculos-item-detail">
                           <SecurityIcon className="vehiculos-item-detail-icon" />
-                          <span>Seguro vence: {new Date(vehicle.data.insurance.expirationDate).toLocaleDateString('es-CO')}</span>
+                          <span>
+                            Seguro vence:{' '}
+                            {new Date(vehicle.data.insurance.expirationDate).toLocaleDateString(
+                              'es-CO'
+                            )}
+                          </span>
                         </div>
                       )}
                       {vehicle.data.maintenance?.nextService && (
                         <div className="vehiculos-item-detail">
                           <BuildIcon className="vehiculos-item-detail-icon" />
-                          <span>Próximo servicio: {new Date(vehicle.data.maintenance.nextService).toLocaleDateString('es-CO')}</span>
-                    </div>
+                          <span>
+                            Próximo servicio:{' '}
+                            {new Date(vehicle.data.maintenance.nextService).toLocaleDateString(
+                              'es-CO'
+                            )}
+                          </span>
+                        </div>
                       )}
+                    </div>
                   </div>
-                  </div>
-                  <div className="vehiculos-item-actions" onClick={(e) => e.stopPropagation()}>
+                  <div className="vehiculos-item-actions" onClick={e => e.stopPropagation()}>
                     <button
                       className="vehiculos-item-action-button"
                       onClick={() => {
@@ -995,7 +1013,10 @@ function Vehiculos() {
         {/* Modal de Detalle */}
         {showDetailModal && selectedVehicle && (
           <div className="vehiculos-modal-overlay" onClick={() => setShowDetailModal(false)}>
-            <div className="vehiculos-modal vehiculos-modal-large" onClick={e => e.stopPropagation()}>
+            <div
+              className="vehiculos-modal vehiculos-modal-large"
+              onClick={e => e.stopPropagation()}
+            >
               <div className="vehiculos-modal-header">
                 <h2 className="vehiculos-modal-title">Detalle del Vehículo</h2>
                 <button
@@ -1019,7 +1040,9 @@ function Vehiculos() {
                     {selectedVehicle.data.brand && selectedVehicle.data.model && (
                       <div className="vehiculos-detail-item">
                         <span className="vehiculos-detail-label">Marca y Modelo:</span>
-                        <span className="vehiculos-detail-value">{selectedVehicle.data.brand} {selectedVehicle.data.model}</span>
+                        <span className="vehiculos-detail-value">
+                          {selectedVehicle.data.brand} {selectedVehicle.data.model}
+                        </span>
                       </div>
                     )}
                     {selectedVehicle.data.year && (
@@ -1049,13 +1072,17 @@ function Vehiculos() {
                     {selectedVehicle.data.mileage && (
                       <div className="vehiculos-detail-item">
                         <span className="vehiculos-detail-label">Kilometraje:</span>
-                        <span className="vehiculos-detail-value">{selectedVehicle.data.mileage.toLocaleString('es-CO')} km</span>
+                        <span className="vehiculos-detail-value">
+                          {selectedVehicle.data.mileage.toLocaleString('es-CO')} km
+                        </span>
                       </div>
                     )}
                     {selectedVehicle.data.fuelType && (
                       <div className="vehiculos-detail-item">
                         <span className="vehiculos-detail-label">Combustible:</span>
-                        <span className="vehiculos-detail-value">{selectedVehicle.data.fuelType}</span>
+                        <span className="vehiculos-detail-value">
+                          {selectedVehicle.data.fuelType}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -1073,7 +1100,7 @@ function Vehiculos() {
                         <label className="vehiculos-form-label">Tipo de Evento *</label>
                         <select
                           value={eventForm.type}
-                          onChange={(e) => setEventForm(prev => ({ ...prev, type: e.target.value }))}
+                          onChange={e => setEventForm(prev => ({ ...prev, type: e.target.value }))}
                           className="vehiculos-form-input"
                         >
                           <option value="">Seleccionar...</option>
@@ -1092,38 +1119,46 @@ function Vehiculos() {
                         <input
                           type="date"
                           value={eventForm.date}
-                          onChange={(e) => setEventForm(prev => ({ ...prev, date: e.target.value }))}
+                          onChange={e => setEventForm(prev => ({ ...prev, date: e.target.value }))}
                           className="vehiculos-form-input"
                         />
                       </div>
                     </div>
                     <div className="vehiculos-form-group">
                       <label className="vehiculos-form-label">Descripción</label>
-                  <input
-                    type="text"
+                      <input
+                        type="text"
                         value={eventForm.description}
-                        onChange={(e) => setEventForm(prev => ({ ...prev, description: e.target.value }))}
+                        onChange={e =>
+                          setEventForm(prev => ({ ...prev, description: e.target.value }))
+                        }
                         className="vehiculos-form-input"
                         placeholder="Ej: Rayón en puerta delantera derecha"
-                  />
-                </div>
+                      />
+                    </div>
                     <div className="vehiculos-form-group">
-                      <label className="vehiculos-form-label">Ubicación del Daño en el Vehículo</label>
+                      <label className="vehiculos-form-label">
+                        Ubicación del Daño en el Vehículo
+                      </label>
                       <input
                         type="text"
                         value={eventForm.location}
-                        onChange={(e) => setEventForm(prev => ({ ...prev, location: e.target.value }))}
+                        onChange={e =>
+                          setEventForm(prev => ({ ...prev, location: e.target.value }))
+                        }
                         className="vehiculos-form-input"
                         placeholder="Ej: Puerta delantera derecha, Parabrisas, Llanta trasera izquierda, etc."
                       />
                     </div>
                     <div className="vehiculos-form-row">
                       <div className="vehiculos-form-group">
-                        <label className="vehiculos-form-label">Precio del Arreglo/Compra (COP)</label>
+                        <label className="vehiculos-form-label">
+                          Precio del Arreglo/Compra (COP)
+                        </label>
                         <input
                           type="number"
                           value={eventForm.cost}
-                          onChange={(e) => setEventForm(prev => ({ ...prev, cost: e.target.value }))}
+                          onChange={e => setEventForm(prev => ({ ...prev, cost: e.target.value }))}
                           className="vehiculos-form-input"
                           min="0"
                           step="1000"
@@ -1135,7 +1170,9 @@ function Vehiculos() {
                         <input
                           type="text"
                           value={eventForm.repairShop}
-                          onChange={(e) => setEventForm(prev => ({ ...prev, repairShop: e.target.value }))}
+                          onChange={e =>
+                            setEventForm(prev => ({ ...prev, repairShop: e.target.value }))
+                          }
                           className="vehiculos-form-input"
                           placeholder="Ej: Taller ABC, Autopartes XYZ, etc."
                         />
@@ -1146,7 +1183,9 @@ function Vehiculos() {
                       <input
                         type="text"
                         value={eventForm.purchasePlace}
-                        onChange={(e) => setEventForm(prev => ({ ...prev, purchasePlace: e.target.value }))}
+                        onChange={e =>
+                          setEventForm(prev => ({ ...prev, purchasePlace: e.target.value }))
+                        }
                         className="vehiculos-form-input"
                         placeholder="Ej: Repuestos ABC, Tienda XYZ, Online, etc."
                       />
@@ -1156,13 +1195,13 @@ function Vehiculos() {
                       <input
                         type="text"
                         value={eventForm.notes}
-                        onChange={(e) => setEventForm(prev => ({ ...prev, notes: e.target.value }))}
+                        onChange={e => setEventForm(prev => ({ ...prev, notes: e.target.value }))}
                         className="vehiculos-form-input"
                         placeholder="Notas adicionales"
                       />
                     </div>
-                  <button
-                    type="button"
+                    <button
+                      type="button"
                       className="vehiculos-form-button vehiculos-form-button-primary"
                       onClick={async () => {
                         if (!eventForm.type || !eventForm.date) {
@@ -1171,16 +1210,19 @@ function Vehiculos() {
                         }
                         try {
                           const events = selectedVehicle.data.events || []
-                          const newEvents = [...events, {
-                            type: eventForm.type,
-                            date: eventForm.date,
-                            description: eventForm.description || undefined,
-                            location: eventForm.location || undefined,
-                            cost: eventForm.cost ? parseFloat(eventForm.cost) : undefined,
-                            repairShop: eventForm.repairShop || undefined,
-                            purchasePlace: eventForm.purchasePlace || undefined,
-                            notes: eventForm.notes || undefined,
-                          }]
+                          const newEvents = [
+                            ...events,
+                            {
+                              type: eventForm.type,
+                              date: eventForm.date,
+                              description: eventForm.description || undefined,
+                              location: eventForm.location || undefined,
+                              cost: eventForm.cost ? parseFloat(eventForm.cost) : undefined,
+                              repairShop: eventForm.repairShop || undefined,
+                              purchasePlace: eventForm.purchasePlace || undefined,
+                              notes: eventForm.notes || undefined,
+                            },
+                          ]
 
                           await api.updateVehicle(selectedVehicle.id, {
                             data: {
@@ -1189,7 +1231,16 @@ function Vehiculos() {
                             },
                           })
                           showNotification('Evento registrado exitosamente', 'success')
-                          setEventForm({ type: '', date: '', description: '', location: '', cost: '', repairShop: '', purchasePlace: '', notes: '' })
+                          setEventForm({
+                            type: '',
+                            date: '',
+                            description: '',
+                            location: '',
+                            cost: '',
+                            repairShop: '',
+                            purchasePlace: '',
+                            notes: '',
+                          })
                           await loadRecords()
                           const updated = vehicles.find(v => v.id === selectedVehicle.id)
                           if (updated) {
@@ -1205,7 +1256,7 @@ function Vehiculos() {
                       }}
                     >
                       Agregar Evento
-                  </button>
+                    </button>
                   </div>
                   {selectedVehicle.data.events && selectedVehicle.data.events.length > 0 && (
                     <div className="vehiculos-detail-list">
@@ -1219,10 +1270,14 @@ function Vehiculos() {
                               </span>
                               <span className="vehiculos-detail-list-item-type">{event.type}</span>
                               {event.description && (
-                                <span className="vehiculos-detail-list-item-reason">{event.description}</span>
+                                <span className="vehiculos-detail-list-item-reason">
+                                  {event.description}
+                                </span>
                               )}
                               {event.location && (
-                                <span className="vehiculos-detail-list-item-notes">Ubicación del daño: {event.location}</span>
+                                <span className="vehiculos-detail-list-item-notes">
+                                  Ubicación del daño: {event.location}
+                                </span>
                               )}
                               {event.cost && (
                                 <span className="vehiculos-detail-list-item-hours">
@@ -1230,18 +1285,24 @@ function Vehiculos() {
                                 </span>
                               )}
                               {event.repairShop && (
-                                <span className="vehiculos-detail-list-item-notes">Taller: {event.repairShop}</span>
+                                <span className="vehiculos-detail-list-item-notes">
+                                  Taller: {event.repairShop}
+                                </span>
                               )}
                               {event.purchasePlace && (
-                                <span className="vehiculos-detail-list-item-notes">Sitio de compra: {event.purchasePlace}</span>
+                                <span className="vehiculos-detail-list-item-notes">
+                                  Sitio de compra: {event.purchasePlace}
+                                </span>
                               )}
                               {event.notes && (
-                                <span className="vehiculos-detail-list-item-notes">{event.notes}</span>
+                                <span className="vehiculos-detail-list-item-notes">
+                                  {event.notes}
+                                </span>
                               )}
                             </div>
                           </div>
-                  <button
-                    type="button"
+                          <button
+                            type="button"
                             className="vehiculos-detail-list-item-delete"
                             onClick={async () => {
                               try {
@@ -1270,8 +1331,8 @@ function Vehiculos() {
                             }}
                           >
                             <DeleteIcon />
-                  </button>
-                </div>
+                          </button>
+                        </div>
                       ))}
                     </div>
                   )}
@@ -1298,7 +1359,7 @@ function Vehiculos() {
               </div>
               <div className="vehiculos-modal-content">
                 <div className="debug-options">
-                          <button
+                  <button
                     className="debug-option-button create-demo"
                     onClick={async () => {
                       try {
@@ -1337,7 +1398,8 @@ function Vehiculos() {
                                   expiration: '2023-06-30', // Vencido
                                 },
                               },
-                              notes: 'Vehículo en excelente estado - Seguro y revisión técnica vencidos',
+                              notes:
+                                'Vehículo en excelente estado - Seguro y revisión técnica vencidos',
                             },
                           },
                           {
@@ -1416,7 +1478,10 @@ function Vehiculos() {
                           })
                         }
 
-                        showNotification(`${demoVehicles.length} vehículos demo creados exitosamente`, 'success')
+                        showNotification(
+                          `${demoVehicles.length} vehículos demo creados exitosamente`,
+                          'success'
+                        )
                         await loadRecords()
                         setIsDebugModalOpen(false)
                       } catch (err: any) {
@@ -1430,8 +1495,8 @@ function Vehiculos() {
                       }
                     }}
                     disabled={isDebugLoading}
-                            type="button"
-                          >
+                    type="button"
+                  >
                     <span className="debug-option-icon">📦</span>
                     <div className="debug-option-info">
                       <h3 className="debug-option-title">Crear Vehículos Demo</h3>
@@ -1439,8 +1504,8 @@ function Vehiculos() {
                         Crea 3 vehículos de ejemplo con diferentes configuraciones
                       </p>
                     </div>
-                          </button>
-                          <button
+                  </button>
+                  <button
                     className="debug-option-button delete-all"
                     onClick={async () => {
                       if (
@@ -1454,7 +1519,10 @@ function Vehiculos() {
                       try {
                         setIsDebugLoading(true)
                         await api.deleteAllVehicles()
-                        showNotification('Todos los registros de vehículos han sido eliminados', 'success')
+                        showNotification(
+                          'Todos los registros de vehículos han sido eliminados',
+                          'success'
+                        )
                         await loadRecords()
                         setVehicles([])
                         setIsDebugModalOpen(false)
@@ -1469,18 +1537,18 @@ function Vehiculos() {
                       }
                     }}
                     disabled={isDebugLoading}
-                            type="button"
-                          >
+                    type="button"
+                  >
                     <span className="debug-option-icon">🗑️</span>
                     <div className="debug-option-info">
                       <h3 className="debug-option-title">Eliminar Todos los Registros</h3>
                       <p className="debug-option-description">
                         Elimina todos los registros de vehículos guardados (irreversible)
                       </p>
+                    </div>
+                  </button>
+                </div>
               </div>
-                          </button>
-                        </div>
-                      </div>
             </div>
           </div>
         )}
@@ -1490,4 +1558,3 @@ function Vehiculos() {
 }
 
 export default Vehiculos
-

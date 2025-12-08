@@ -78,7 +78,7 @@ function MiDiario() {
     // Calcular racha actual (desde hoy o ayer hacia atrás)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    
+
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
 
@@ -110,7 +110,7 @@ function MiDiario() {
 
     // Contar días consecutivos desde startDate hacia atrás
     let streak = 0
-    let checkDate = new Date(startDate)
+    const checkDate = new Date(startDate)
 
     while (true) {
       const checkDateStr = checkDate.toISOString().split('T')[0]
@@ -139,14 +139,14 @@ function MiDiario() {
 
     // Ordenar de más antiguo a más reciente para calcular racha más larga
     const datesAsc = [...sortedDates].sort((a, b) => a.getTime() - b.getTime())
-    
+
     let longestStreakCount = 1
     let currentStreakCount = 1
 
     for (let i = 1; i < datesAsc.length; i++) {
       const prevDate = new Date(datesAsc[i - 1])
       const currDate = new Date(datesAsc[i])
-      
+
       // Calcular diferencia en días
       const diffTime = currDate.getTime() - prevDate.getTime()
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
@@ -457,7 +457,9 @@ function MiDiario() {
                 <LocalFireDepartmentIcon className="midiario-streak-icon" />
                 <div className="midiario-streak-info">
                   <span className="midiario-streak-label">Racha Actual</span>
-                  <span className="midiario-streak-value">{currentStreak} {currentStreak === 1 ? 'día' : 'días'}</span>
+                  <span className="midiario-streak-value">
+                    {currentStreak} {currentStreak === 1 ? 'día' : 'días'}
+                  </span>
                 </div>
               </div>
               {longestStreak > 0 && (
@@ -467,7 +469,9 @@ function MiDiario() {
                     <EmojiEventsIcon className="midiario-streak-icon" />
                     <div className="midiario-streak-info">
                       <span className="midiario-streak-label">Racha Más Larga</span>
-                      <span className="midiario-streak-value">{longestStreak} {longestStreak === 1 ? 'día' : 'días'}</span>
+                      <span className="midiario-streak-value">
+                        {longestStreak} {longestStreak === 1 ? 'día' : 'días'}
+                      </span>
                     </div>
                   </div>
                 </>
@@ -521,7 +525,11 @@ function MiDiario() {
           <div className="midiario-modal" onClick={e => e.stopPropagation()}>
             <div className="midiario-modal-header">
               <h2 className="midiario-modal-title">
-                {selectedEntry ? (isEditMode ? 'Editar Entrada' : formatDate(selectedEntry.entry_date)) : 'Nueva Entrada'}
+                {selectedEntry
+                  ? isEditMode
+                    ? 'Editar Entrada'
+                    : formatDate(selectedEntry.entry_date)
+                  : 'Nueva Entrada'}
               </h2>
               <div className="midiario-modal-actions">
                 {selectedEntry && !isEditMode && (
@@ -564,7 +572,7 @@ function MiDiario() {
               </div>
             </div>
 
-            {(isEditMode || !selectedEntry) ? (
+            {isEditMode || !selectedEntry ? (
               <form onSubmit={handleSubmit} className="midiario-modal-form">
                 <div className="midiario-form-group">
                   <label htmlFor="entry_date" className="midiario-form-label">
@@ -618,9 +626,12 @@ function MiDiario() {
                     disabled={isLoading}
                   >
                     {isLoading
-                      ? (selectedEntry ? 'Guardando...' : 'Creando...')
-                      : (selectedEntry ? 'Guardar Cambios' : 'Crear Entrada')
-                    }
+                      ? selectedEntry
+                        ? 'Guardando...'
+                        : 'Creando...'
+                      : selectedEntry
+                        ? 'Guardar Cambios'
+                        : 'Crear Entrada'}
                   </button>
                 </div>
               </form>
@@ -639,4 +650,3 @@ function MiDiario() {
 }
 
 export default MiDiario
-

@@ -110,7 +110,7 @@ function Patrimonio() {
       const response = await api.getPatrimony()
       if (response.items && Array.isArray(response.items)) {
         setRecords(response.items)
-        
+
         // Mapear cada item individual a la lista
         const mappedItems: PatrimonyItem[] = response.items.map((record: PatrimonyItemRecord) => ({
           id: record.id,
@@ -139,7 +139,9 @@ function Patrimonio() {
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
@@ -177,7 +179,9 @@ function Patrimonio() {
             ? {
                 company: formData.insuranceCompany.trim() || undefined,
                 policyNumber: formData.insurancePolicyNumber.trim() || undefined,
-                coverage: formData.insuranceCoverage ? parseFloat(formData.insuranceCoverage) : undefined,
+                coverage: formData.insuranceCoverage
+                  ? parseFloat(formData.insuranceCoverage)
+                  : undefined,
               }
             : undefined,
         notes: formData.notes.trim() || undefined,
@@ -251,7 +255,9 @@ function Patrimonio() {
       location: item.data.location || '',
       insuranceCompany: item.data.insurance?.company || '',
       insurancePolicyNumber: item.data.insurance?.policyNumber || '',
-      insuranceCoverage: item.data.insurance?.coverage ? item.data.insurance.coverage.toString() : '',
+      insuranceCoverage: item.data.insurance?.coverage
+        ? item.data.insurance.coverage.toString()
+        : '',
       notes: item.data.notes || '',
     })
     setEditingId(item.id)
@@ -354,13 +360,17 @@ function Patrimonio() {
 
         <h1 className="patrimonio-page-title">Patrimonio</h1>
         <p className="patrimonio-page-subtitle">
-          Gestiona tu inventario de items valiosos: fecha de compra, valor, características, observaciones y más
+          Gestiona tu inventario de items valiosos: fecha de compra, valor, características,
+          observaciones y más
         </p>
 
         {/* Modal de Formulario */}
         {showFormModal && (
           <div className="patrimonio-modal-overlay" onClick={() => handleCancelEdit()}>
-            <div className="patrimonio-modal patrimonio-modal-large" onClick={e => e.stopPropagation()}>
+            <div
+              className="patrimonio-modal patrimonio-modal-large"
+              onClick={e => e.stopPropagation()}
+            >
               <div className="patrimonio-modal-header">
                 <h2 className="patrimonio-modal-title">
                   {editingId ? 'Editar Item de Patrimonio' : 'Agregar Item de Patrimonio'}
@@ -376,303 +386,303 @@ function Patrimonio() {
               </div>
               <div className="patrimonio-modal-content">
                 <form onSubmit={handleSubmit} className="patrimonio-form">
-            <div className="patrimonio-form-group">
-              <label htmlFor="name" className="patrimonio-form-label">
-                <InventoryIcon className="patrimonio-label-icon" />
-                Nombre del Item *
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="patrimonio-form-input"
-                placeholder="Ej: Reloj Rolex Submariner"
-                required
-              />
-            </div>
+                  <div className="patrimonio-form-group">
+                    <label htmlFor="name" className="patrimonio-form-label">
+                      <InventoryIcon className="patrimonio-label-icon" />
+                      Nombre del Item *
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      className="patrimonio-form-input"
+                      placeholder="Ej: Reloj Rolex Submariner"
+                      required
+                    />
+                  </div>
 
-            <div className="patrimonio-form-row">
-              <div className="patrimonio-form-group">
-                <label htmlFor="category" className="patrimonio-form-label">
-                  <CategoryIcon className="patrimonio-label-icon" />
-                  Categoría
-                </label>
-                <input
-                  type="text"
-                  id="category"
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  className="patrimonio-form-input"
-                  placeholder="Ej: Relojes, Joyas, Arte, etc."
-                />
-              </div>
+                  <div className="patrimonio-form-row">
+                    <div className="patrimonio-form-group">
+                      <label htmlFor="category" className="patrimonio-form-label">
+                        <CategoryIcon className="patrimonio-label-icon" />
+                        Categoría
+                      </label>
+                      <input
+                        type="text"
+                        id="category"
+                        name="category"
+                        value={formData.category}
+                        onChange={handleChange}
+                        className="patrimonio-form-input"
+                        placeholder="Ej: Relojes, Joyas, Arte, etc."
+                      />
+                    </div>
 
-              <div className="patrimonio-form-group">
-                <label htmlFor="purchaseDate" className="patrimonio-form-label">
-                  <CalendarTodayIcon className="patrimonio-label-icon" />
-                  Fecha de Compra
-                </label>
-                <input
-                  type="date"
-                  id="purchaseDate"
-                  name="purchaseDate"
-                  value={formData.purchaseDate}
-                  onChange={handleChange}
-                  className="patrimonio-form-input"
-                />
-              </div>
-            </div>
+                    <div className="patrimonio-form-group">
+                      <label htmlFor="purchaseDate" className="patrimonio-form-label">
+                        <CalendarTodayIcon className="patrimonio-label-icon" />
+                        Fecha de Compra
+                      </label>
+                      <input
+                        type="date"
+                        id="purchaseDate"
+                        name="purchaseDate"
+                        value={formData.purchaseDate}
+                        onChange={handleChange}
+                        className="patrimonio-form-input"
+                      />
+                    </div>
+                  </div>
 
-            <div className="patrimonio-form-row">
-              <div className="patrimonio-form-group">
-                <label htmlFor="purchaseValue" className="patrimonio-form-label">
-                  <AttachMoneyIcon className="patrimonio-label-icon" />
-                  Valor de Compra
-                </label>
-                <input
-                  type="number"
-                  id="purchaseValue"
-                  name="purchaseValue"
-                  value={formData.purchaseValue}
-                  onChange={handleChange}
-                  className="patrimonio-form-input"
-                  placeholder="0"
-                  min="0"
-                  step="1000"
-                />
-              </div>
+                  <div className="patrimonio-form-row">
+                    <div className="patrimonio-form-group">
+                      <label htmlFor="purchaseValue" className="patrimonio-form-label">
+                        <AttachMoneyIcon className="patrimonio-label-icon" />
+                        Valor de Compra
+                      </label>
+                      <input
+                        type="number"
+                        id="purchaseValue"
+                        name="purchaseValue"
+                        value={formData.purchaseValue}
+                        onChange={handleChange}
+                        className="patrimonio-form-input"
+                        placeholder="0"
+                        min="0"
+                        step="1000"
+                      />
+                    </div>
 
-              <div className="patrimonio-form-group">
-                <label htmlFor="currency" className="patrimonio-form-label">
-                  Moneda
-                </label>
-                <select
-                  id="currency"
-                  name="currency"
-                  value={formData.currency}
-                  onChange={handleChange}
-                  className="patrimonio-form-input"
-                >
-                  <option value="COP">COP</option>
-                  <option value="USD">USD</option>
-                  <option value="EUR">EUR</option>
-                  <option value="GBP">GBP</option>
-                </select>
-              </div>
-            </div>
+                    <div className="patrimonio-form-group">
+                      <label htmlFor="currency" className="patrimonio-form-label">
+                        Moneda
+                      </label>
+                      <select
+                        id="currency"
+                        name="currency"
+                        value={formData.currency}
+                        onChange={handleChange}
+                        className="patrimonio-form-input"
+                      >
+                        <option value="COP">COP</option>
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                      </select>
+                    </div>
+                  </div>
 
-            <div className="patrimonio-form-group">
-              <label htmlFor="description" className="patrimonio-form-label">
-                <DescriptionIcon className="patrimonio-label-icon" />
-                Descripción
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                className="patrimonio-form-input"
-                placeholder="Descripción detallada del item..."
-                rows={3}
-              />
-            </div>
+                  <div className="patrimonio-form-group">
+                    <label htmlFor="description" className="patrimonio-form-label">
+                      <DescriptionIcon className="patrimonio-label-icon" />
+                      Descripción
+                    </label>
+                    <textarea
+                      id="description"
+                      name="description"
+                      value={formData.description}
+                      onChange={handleChange}
+                      className="patrimonio-form-input"
+                      placeholder="Descripción detallada del item..."
+                      rows={3}
+                    />
+                  </div>
 
-            <div className="patrimonio-form-row">
-              <div className="patrimonio-form-group">
-                <label htmlFor="brand" className="patrimonio-form-label">
-                  Marca
-                </label>
-                <input
-                  type="text"
-                  id="brand"
-                  name="brand"
-                  value={formData.brand}
-                  onChange={handleChange}
-                  className="patrimonio-form-input"
-                  placeholder="Ej: Rolex"
-                />
-              </div>
+                  <div className="patrimonio-form-row">
+                    <div className="patrimonio-form-group">
+                      <label htmlFor="brand" className="patrimonio-form-label">
+                        Marca
+                      </label>
+                      <input
+                        type="text"
+                        id="brand"
+                        name="brand"
+                        value={formData.brand}
+                        onChange={handleChange}
+                        className="patrimonio-form-input"
+                        placeholder="Ej: Rolex"
+                      />
+                    </div>
 
-              <div className="patrimonio-form-group">
-                <label htmlFor="model" className="patrimonio-form-label">
-                  Modelo
-                </label>
-                <input
-                  type="text"
-                  id="model"
-                  name="model"
-                  value={formData.model}
-                  onChange={handleChange}
-                  className="patrimonio-form-input"
-                  placeholder="Ej: Submariner Date"
-                />
-              </div>
-            </div>
+                    <div className="patrimonio-form-group">
+                      <label htmlFor="model" className="patrimonio-form-label">
+                        Modelo
+                      </label>
+                      <input
+                        type="text"
+                        id="model"
+                        name="model"
+                        value={formData.model}
+                        onChange={handleChange}
+                        className="patrimonio-form-input"
+                        placeholder="Ej: Submariner Date"
+                      />
+                    </div>
+                  </div>
 
-            <div className="patrimonio-form-row">
-              <div className="patrimonio-form-group">
-                <label htmlFor="serialNumber" className="patrimonio-form-label">
-                  Número de Serie
-                </label>
-                <input
-                  type="text"
-                  id="serialNumber"
-                  name="serialNumber"
-                  value={formData.serialNumber}
-                  onChange={handleChange}
-                  className="patrimonio-form-input"
-                  placeholder="Ej: M126610LN-0001"
-                />
-              </div>
+                  <div className="patrimonio-form-row">
+                    <div className="patrimonio-form-group">
+                      <label htmlFor="serialNumber" className="patrimonio-form-label">
+                        Número de Serie
+                      </label>
+                      <input
+                        type="text"
+                        id="serialNumber"
+                        name="serialNumber"
+                        value={formData.serialNumber}
+                        onChange={handleChange}
+                        className="patrimonio-form-input"
+                        placeholder="Ej: M126610LN-0001"
+                      />
+                    </div>
 
-              <div className="patrimonio-form-group">
-                <label htmlFor="condition" className="patrimonio-form-label">
-                  Condición
-                </label>
-                <select
-                  id="condition"
-                  name="condition"
-                  value={formData.condition}
-                  onChange={handleChange}
-                  className="patrimonio-form-input"
-                >
-                  <option value="">Seleccionar...</option>
-                  <option value="Excelente">Excelente</option>
-                  <option value="Muy Buena">Muy Buena</option>
-                  <option value="Buena">Buena</option>
-                  <option value="Regular">Regular</option>
-                  <option value="Necesita Reparación">Necesita Reparación</option>
-                </select>
-              </div>
-            </div>
+                    <div className="patrimonio-form-group">
+                      <label htmlFor="condition" className="patrimonio-form-label">
+                        Condición
+                      </label>
+                      <select
+                        id="condition"
+                        name="condition"
+                        value={formData.condition}
+                        onChange={handleChange}
+                        className="patrimonio-form-input"
+                      >
+                        <option value="">Seleccionar...</option>
+                        <option value="Excelente">Excelente</option>
+                        <option value="Muy Buena">Muy Buena</option>
+                        <option value="Buena">Buena</option>
+                        <option value="Regular">Regular</option>
+                        <option value="Necesita Reparación">Necesita Reparación</option>
+                      </select>
+                    </div>
+                  </div>
 
-            <div className="patrimonio-form-row">
-              <div className="patrimonio-form-group">
-                <label htmlFor="currentValue" className="patrimonio-form-label">
-                  <AttachMoneyIcon className="patrimonio-label-icon" />
-                  Valor Actual (Estimado)
-                </label>
-                <input
-                  type="number"
-                  id="currentValue"
-                  name="currentValue"
-                  value={formData.currentValue}
-                  onChange={handleChange}
-                  className="patrimonio-form-input"
-                  placeholder="0"
-                  min="0"
-                  step="1000"
-                />
-              </div>
+                  <div className="patrimonio-form-row">
+                    <div className="patrimonio-form-group">
+                      <label htmlFor="currentValue" className="patrimonio-form-label">
+                        <AttachMoneyIcon className="patrimonio-label-icon" />
+                        Valor Actual (Estimado)
+                      </label>
+                      <input
+                        type="number"
+                        id="currentValue"
+                        name="currentValue"
+                        value={formData.currentValue}
+                        onChange={handleChange}
+                        className="patrimonio-form-input"
+                        placeholder="0"
+                        min="0"
+                        step="1000"
+                      />
+                    </div>
 
-              <div className="patrimonio-form-group">
-                <label htmlFor="location" className="patrimonio-form-label">
-                  <LocationOnIcon className="patrimonio-label-icon" />
-                  Ubicación
-                </label>
-                <input
-                  type="text"
-                  id="location"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  className="patrimonio-form-input"
-                  placeholder="Ej: Casa, Caja fuerte, Banco"
-                />
-              </div>
-            </div>
+                    <div className="patrimonio-form-group">
+                      <label htmlFor="location" className="patrimonio-form-label">
+                        <LocationOnIcon className="patrimonio-label-icon" />
+                        Ubicación
+                      </label>
+                      <input
+                        type="text"
+                        id="location"
+                        name="location"
+                        value={formData.location}
+                        onChange={handleChange}
+                        className="patrimonio-form-input"
+                        placeholder="Ej: Casa, Caja fuerte, Banco"
+                      />
+                    </div>
+                  </div>
 
-            <div className="patrimonio-form-section-divider">
-              <h3 className="patrimonio-form-subsection-title">
-                <SecurityIcon className="patrimonio-label-icon" />
-                Seguro
-              </h3>
-            </div>
+                  <div className="patrimonio-form-section-divider">
+                    <h3 className="patrimonio-form-subsection-title">
+                      <SecurityIcon className="patrimonio-label-icon" />
+                      Seguro
+                    </h3>
+                  </div>
 
-            <div className="patrimonio-form-row">
-              <div className="patrimonio-form-group">
-                <label htmlFor="insuranceCompany" className="patrimonio-form-label">
-                  Compañía de Seguros
-                </label>
-                <input
-                  type="text"
-                  id="insuranceCompany"
-                  name="insuranceCompany"
-                  value={formData.insuranceCompany}
-                  onChange={handleChange}
-                  className="patrimonio-form-input"
-                  placeholder="Ej: Seguros Premium"
-                />
-              </div>
+                  <div className="patrimonio-form-row">
+                    <div className="patrimonio-form-group">
+                      <label htmlFor="insuranceCompany" className="patrimonio-form-label">
+                        Compañía de Seguros
+                      </label>
+                      <input
+                        type="text"
+                        id="insuranceCompany"
+                        name="insuranceCompany"
+                        value={formData.insuranceCompany}
+                        onChange={handleChange}
+                        className="patrimonio-form-input"
+                        placeholder="Ej: Seguros Premium"
+                      />
+                    </div>
 
-              <div className="patrimonio-form-group">
-                <label htmlFor="insurancePolicyNumber" className="patrimonio-form-label">
-                  Número de Póliza
-                </label>
-                <input
-                  type="text"
-                  id="insurancePolicyNumber"
-                  name="insurancePolicyNumber"
-                  value={formData.insurancePolicyNumber}
-                  onChange={handleChange}
-                  className="patrimonio-form-input"
-                  placeholder="Ej: POL-123456"
-                />
-              </div>
-            </div>
+                    <div className="patrimonio-form-group">
+                      <label htmlFor="insurancePolicyNumber" className="patrimonio-form-label">
+                        Número de Póliza
+                      </label>
+                      <input
+                        type="text"
+                        id="insurancePolicyNumber"
+                        name="insurancePolicyNumber"
+                        value={formData.insurancePolicyNumber}
+                        onChange={handleChange}
+                        className="patrimonio-form-input"
+                        placeholder="Ej: POL-123456"
+                      />
+                    </div>
+                  </div>
 
-            <div className="patrimonio-form-group">
-              <label htmlFor="insuranceCoverage" className="patrimonio-form-label">
-                Cobertura (COP)
-              </label>
-              <input
-                type="number"
-                id="insuranceCoverage"
-                name="insuranceCoverage"
-                value={formData.insuranceCoverage}
-                onChange={handleChange}
-                className="patrimonio-form-input"
-                placeholder="0"
-                min="0"
-                step="1000"
-              />
-            </div>
+                  <div className="patrimonio-form-group">
+                    <label htmlFor="insuranceCoverage" className="patrimonio-form-label">
+                      Cobertura (COP)
+                    </label>
+                    <input
+                      type="number"
+                      id="insuranceCoverage"
+                      name="insuranceCoverage"
+                      value={formData.insuranceCoverage}
+                      onChange={handleChange}
+                      className="patrimonio-form-input"
+                      placeholder="0"
+                      min="0"
+                      step="1000"
+                    />
+                  </div>
 
-            <div className="patrimonio-form-group">
-              <label htmlFor="notes" className="patrimonio-form-label">
-                Notas
-              </label>
-              <input
-                type="text"
-                id="notes"
-                name="notes"
-                value={formData.notes}
-                onChange={handleChange}
-                className="patrimonio-form-input"
-                placeholder="Notas adicionales"
-              />
-            </div>
+                  <div className="patrimonio-form-group">
+                    <label htmlFor="notes" className="patrimonio-form-label">
+                      Notas
+                    </label>
+                    <input
+                      type="text"
+                      id="notes"
+                      name="notes"
+                      value={formData.notes}
+                      onChange={handleChange}
+                      className="patrimonio-form-input"
+                      placeholder="Notas adicionales"
+                    />
+                  </div>
 
-            <div className="patrimonio-form-actions">
-              {editingId && (
-                <button
-                  type="button"
-                  className="patrimonio-form-button patrimonio-form-button-secondary"
-                  onClick={handleCancelEdit}
-                >
-                  Cancelar
-                </button>
-              )}
-              <button
-                type="submit"
-                className="patrimonio-form-button patrimonio-form-button-primary"
-              >
-                {editingId ? 'Actualizar' : 'Agregar'}
-              </button>
-            </div>
+                  <div className="patrimonio-form-actions">
+                    {editingId && (
+                      <button
+                        type="button"
+                        className="patrimonio-form-button patrimonio-form-button-secondary"
+                        onClick={handleCancelEdit}
+                      >
+                        Cancelar
+                      </button>
+                    )}
+                    <button
+                      type="submit"
+                      className="patrimonio-form-button patrimonio-form-button-primary"
+                    >
+                      {editingId ? 'Actualizar' : 'Agregar'}
+                    </button>
+                  </div>
                 </form>
               </div>
             </div>
@@ -705,16 +715,16 @@ function Patrimonio() {
                     <div className="patrimonio-item-header">
                       <h3 className="patrimonio-item-name">{item.name}</h3>
                       {item.data.category && (
-                        <span className="patrimonio-item-category">
-                          {item.data.category}
-                        </span>
+                        <span className="patrimonio-item-category">{item.data.category}</span>
                       )}
                     </div>
                     <div className="patrimonio-item-meta">
                       {item.data.brand && item.data.model && (
                         <>
                           <span className="patrimonio-item-meta-item">
-                            <strong>{item.data.brand} {item.data.model}</strong>
+                            <strong>
+                              {item.data.brand} {item.data.model}
+                            </strong>
                           </span>
                         </>
                       )}
@@ -722,7 +732,9 @@ function Patrimonio() {
                         <>
                           <span className="patrimonio-item-separator">•</span>
                           <span className="patrimonio-item-meta-item patrimonio-item-price">
-                            <strong>Valor:</strong> {item.data.purchaseValue.toLocaleString('es-CO')} {item.data.currency || 'COP'}
+                            <strong>Valor:</strong>{' '}
+                            {item.data.purchaseValue.toLocaleString('es-CO')}{' '}
+                            {item.data.currency || 'COP'}
                           </span>
                         </>
                       )}
@@ -730,7 +742,9 @@ function Patrimonio() {
                         <>
                           <span className="patrimonio-item-separator">•</span>
                           <span className="patrimonio-item-meta-item patrimonio-item-price">
-                            <strong>Valor Actual:</strong> {item.data.currentValue.toLocaleString('es-CO')} {item.data.currency || 'COP'}
+                            <strong>Valor Actual:</strong>{' '}
+                            {item.data.currentValue.toLocaleString('es-CO')}{' '}
+                            {item.data.currency || 'COP'}
                           </span>
                         </>
                       )}
@@ -739,17 +753,23 @@ function Patrimonio() {
                       {item.data.purchaseDate && (
                         <div className="patrimonio-item-detail">
                           <CalendarTodayIcon className="patrimonio-item-detail-icon" />
-                          <span>Comprado: {new Date(item.data.purchaseDate).toLocaleDateString('es-CO')}</span>
+                          <span>
+                            Comprado: {new Date(item.data.purchaseDate).toLocaleDateString('es-CO')}
+                          </span>
                         </div>
                       )}
                       {item.data.serialNumber && (
                         <div className="patrimonio-item-detail">
-                          <span><strong>Serie:</strong> {item.data.serialNumber}</span>
+                          <span>
+                            <strong>Serie:</strong> {item.data.serialNumber}
+                          </span>
                         </div>
                       )}
                       {item.data.condition && (
                         <div className="patrimonio-item-detail">
-                          <span><strong>Condición:</strong> {item.data.condition}</span>
+                          <span>
+                            <strong>Condición:</strong> {item.data.condition}
+                          </span>
                         </div>
                       )}
                       {item.data.location && (
@@ -887,7 +907,10 @@ function Patrimonio() {
                           })
                         }
 
-                        showNotification(`${demoItems.length} items demo creados exitosamente`, 'success')
+                        showNotification(
+                          `${demoItems.length} items demo creados exitosamente`,
+                          'success'
+                        )
                         await loadRecords()
                         setIsDebugModalOpen(false)
                       } catch (err: any) {
@@ -925,7 +948,10 @@ function Patrimonio() {
                       try {
                         setIsDebugLoading(true)
                         await api.deleteAllPatrimony()
-                        showNotification('Todos los registros de patrimonio han sido eliminados', 'success')
+                        showNotification(
+                          'Todos los registros de patrimonio han sido eliminados',
+                          'success'
+                        )
                         await loadRecords()
                         setPatrimonyItems([])
                         setIsDebugModalOpen(false)
@@ -961,4 +987,3 @@ function Patrimonio() {
 }
 
 export default Patrimonio
-

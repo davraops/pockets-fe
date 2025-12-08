@@ -254,7 +254,10 @@ function TarjetasCredito() {
         handleCloseDetailModal()
       } catch (err: any) {
         console.error('Error al eliminar tarjeta:', err)
-        const errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar la tarjeta. Por favor, intenta de nuevo.')
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al eliminar la tarjeta. Por favor, intenta de nuevo.'
+        )
         showNotification(errorMessage, 'error')
       }
     }
@@ -747,7 +750,10 @@ function TarjetasCredito() {
       showNotification(message + debtMessage + errorMessage, 'success')
     } catch (err: any) {
       console.error('Error al crear tarjetas de prueba:', err)
-      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear las tarjetas de prueba. Por favor, intenta de nuevo.')
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al crear las tarjetas de prueba. Por favor, intenta de nuevo.'
+      )
       showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
@@ -837,7 +843,10 @@ function TarjetasCredito() {
       console.log('=== FIN DEBUG ===')
     } catch (err: any) {
       console.error('Error en debug logs:', err)
-      const errorMessage = getTranslatedErrorMessage(err, 'Error al obtener los logs de debug. Por favor, intenta de nuevo.')
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al obtener los logs de debug. Por favor, intenta de nuevo.'
+      )
       showNotification(errorMessage, 'error')
     }
   }
@@ -859,10 +868,16 @@ function TarjetasCredito() {
           setCards(mappedCards)
         }
         setIsDebugModalOpen(false)
-        showNotification('Todas las tarjetas de crédito han sido eliminadas exitosamente', 'success')
+        showNotification(
+          'Todas las tarjetas de crédito han sido eliminadas exitosamente',
+          'success'
+        )
       } catch (err: any) {
         console.error('Error al eliminar todas las tarjetas:', err)
-        const errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar las tarjetas. Por favor, intenta de nuevo.')
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al eliminar las tarjetas. Por favor, intenta de nuevo.'
+        )
         showNotification(errorMessage, 'error')
       } finally {
         setIsLoading(false)

@@ -463,3 +463,9 @@
     transform: none;
   }
 }
+
+/* Global z-index for toolbar buttons to be above StatusBar */
+[class*="-toolbar-button"] {
+  position: relative;
+  z-index: 1001;
+}

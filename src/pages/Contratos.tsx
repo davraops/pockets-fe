@@ -168,11 +168,13 @@ function Contratos() {
       setRecords([])
       showNotification(errorMessage, 'error')
     } finally {
-        setIsLoading(false)
+      setIsLoading(false)
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value, type } = e.target
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked
@@ -220,7 +222,10 @@ function Contratos() {
           ptos: formData.ptos ? parseInt(formData.ptos) : undefined,
           holidaysCountry: formData.holidaysCountry.trim() || undefined,
           hasAgency: formData.hasAgency,
-          agencyName: formData.hasAgency && formData.agencyName.trim() ? formData.agencyName.trim() : undefined,
+          agencyName:
+            formData.hasAgency && formData.agencyName.trim()
+              ? formData.agencyName.trim()
+              : undefined,
         },
       }
 
@@ -362,7 +367,12 @@ function Contratos() {
             contractType: 'Freelance',
             salary: 5000,
             currency: 'USD',
-            paymentAccountId: bankAccounts.length > 1 ? bankAccounts[1].id : bankAccounts.length > 0 ? bankAccounts[0].id : undefined,
+            paymentAccountId:
+              bankAccounts.length > 1
+                ? bankAccounts[1].id
+                : bankAccounts.length > 0
+                  ? bankAccounts[0].id
+                  : undefined,
             deductions: 'Impuestos según ley colombiana',
             benefits: 'Bonos por proyecto completado',
             exclusivity: false,
@@ -449,7 +459,11 @@ function Contratos() {
   }
 
   const handleDebugDeleteAll = async () => {
-    if (!window.confirm('¿Estás seguro de que quieres eliminar TODOS los contratos? Esta acción es irreversible.')) {
+    if (
+      !window.confirm(
+        '¿Estás seguro de que quieres eliminar TODOS los contratos? Esta acción es irreversible.'
+      )
+    ) {
       return
     }
 
@@ -582,7 +596,9 @@ function Contratos() {
                     <AttachMoneyIcon />
                   </div>
                   <div className="contratos-total-income-info">
-                    <span className="contratos-total-income-label">Total de Ingresos Mensuales</span>
+                    <span className="contratos-total-income-label">
+                      Total de Ingresos Mensuales
+                    </span>
                     <span className="contratos-total-income-value">
                       {formatBalance(calculateTotalIncomeCOP(), 'COP')}
                     </span>
@@ -601,7 +617,9 @@ function Contratos() {
             {contracts.length === 0 ? (
               <div className="contratos-empty-state">
                 <p className="empty-state-text">No hay contratos guardados</p>
-                <p className="empty-state-subtext">Crea tu primer contrato usando el botón del menú</p>
+                <p className="empty-state-subtext">
+                  Crea tu primer contrato usando el botón del menú
+                </p>
               </div>
             ) : (
               <div className="contratos-list">
@@ -633,7 +651,7 @@ function Contratos() {
                           </button>
                         </div>
                       </div>
-                      
+
                       <div className="contratos-item-content">
                         {/* Información Principal - Destacada */}
                         <div className="contratos-item-main-info">
@@ -668,7 +686,9 @@ function Contratos() {
                               <PersonIcon className="contratos-item-info-icon" />
                               <div className="contratos-item-info-content">
                                 <span className="contratos-item-info-label">Cliente</span>
-                                <span className="contratos-item-info-value">{contract.data.clientName}</span>
+                                <span className="contratos-item-info-value">
+                                  {contract.data.clientName}
+                                </span>
                               </div>
                             </div>
                           )}
@@ -678,7 +698,9 @@ function Contratos() {
                               <PublicIcon className="contratos-item-info-icon" />
                               <div className="contratos-item-info-content">
                                 <span className="contratos-item-info-label">País</span>
-                                <span className="contratos-item-info-value">{contract.data.country}</span>
+                                <span className="contratos-item-info-value">
+                                  {contract.data.country}
+                                </span>
                               </div>
                             </div>
                           )}
@@ -688,7 +710,9 @@ function Contratos() {
                               <AccessTimeIcon className="contratos-item-info-icon" />
                               <div className="contratos-item-info-content">
                                 <span className="contratos-item-info-label">Horario</span>
-                                <span className="contratos-item-info-value">{contract.data.workSchedule}</span>
+                                <span className="contratos-item-info-value">
+                                  {contract.data.workSchedule}
+                                </span>
                               </div>
                             </div>
                           )}
@@ -700,7 +724,9 @@ function Contratos() {
                                 <span className="contratos-item-info-label">Cuenta</span>
                                 <span className="contratos-item-info-value">
                                   {(() => {
-                                    const account = bankAccounts.find(acc => acc.id === contract.data.paymentAccountId)
+                                    const account = bankAccounts.find(
+                                      acc => acc.id === contract.data.paymentAccountId
+                                    )
                                     return account ? `${account.nombre} - ${account.banco}` : 'N/A'
                                   })()}
                                 </span>
@@ -713,7 +739,9 @@ function Contratos() {
                               <EventIcon className="contratos-item-info-icon" />
                               <div className="contratos-item-info-content">
                                 <span className="contratos-item-info-label">PTOs</span>
-                                <span className="contratos-item-info-value">{contract.data.ptos} días</span>
+                                <span className="contratos-item-info-value">
+                                  {contract.data.ptos} días
+                                </span>
                               </div>
                             </div>
                           )}
@@ -723,7 +751,9 @@ function Contratos() {
                               <PublicIcon className="contratos-item-info-icon" />
                               <div className="contratos-item-info-content">
                                 <span className="contratos-item-info-label">Holidays</span>
-                                <span className="contratos-item-info-value">{contract.data.holidaysCountry}</span>
+                                <span className="contratos-item-info-value">
+                                  {contract.data.holidaysCountry}
+                                </span>
                               </div>
                             </div>
                           )}
@@ -733,7 +763,9 @@ function Contratos() {
                               <BusinessIcon className="contratos-item-info-icon" />
                               <div className="contratos-item-info-content">
                                 <span className="contratos-item-info-label">Agencia</span>
-                                <span className="contratos-item-info-value">{contract.data.agencyName}</span>
+                                <span className="contratos-item-info-value">
+                                  {contract.data.agencyName}
+                                </span>
                               </div>
                             </div>
                           )}
@@ -746,8 +778,12 @@ function Contratos() {
                               <div className="contratos-item-additional-item">
                                 <CardGiftcardIcon className="contratos-item-additional-icon" />
                                 <div className="contratos-item-additional-content">
-                                  <span className="contratos-item-additional-label">Beneficios</span>
-                                  <p className="contratos-item-additional-text">{contract.data.benefits}</p>
+                                  <span className="contratos-item-additional-label">
+                                    Beneficios
+                                  </span>
+                                  <p className="contratos-item-additional-text">
+                                    {contract.data.benefits}
+                                  </p>
                                 </div>
                               </div>
                             )}
@@ -756,8 +792,12 @@ function Contratos() {
                               <div className="contratos-item-additional-item">
                                 <RemoveCircleIcon className="contratos-item-additional-icon" />
                                 <div className="contratos-item-additional-content">
-                                  <span className="contratos-item-additional-label">Deducciones</span>
-                                  <p className="contratos-item-additional-text">{contract.data.deductions}</p>
+                                  <span className="contratos-item-additional-label">
+                                    Deducciones
+                                  </span>
+                                  <p className="contratos-item-additional-text">
+                                    {contract.data.deductions}
+                                  </p>
                                 </div>
                               </div>
                             )}
@@ -774,13 +814,21 @@ function Contratos() {
 
         {/* Modal de Formulario */}
         {showFormModal && (
-          <div className="contratos-modal-overlay" onClick={() => {
-            setShowFormModal(false)
-            handleCancelEdit()
-          }}>
-            <div className="contratos-modal contratos-modal-large" onClick={e => e.stopPropagation()}>
+          <div
+            className="contratos-modal-overlay"
+            onClick={() => {
+              setShowFormModal(false)
+              handleCancelEdit()
+            }}
+          >
+            <div
+              className="contratos-modal contratos-modal-large"
+              onClick={e => e.stopPropagation()}
+            >
               <div className="contratos-modal-header">
-                <h2 className="contratos-modal-title">{editingId ? 'Editar Contrato' : 'Crear Contrato'}</h2>
+                <h2 className="contratos-modal-title">
+                  {editingId ? 'Editar Contrato' : 'Crear Contrato'}
+                </h2>
                 <button
                   className="contratos-modal-close"
                   onClick={() => {
@@ -797,7 +845,7 @@ function Contratos() {
                 <form className="contratos-form" onSubmit={handleSubmit}>
                   <div className="contratos-form-section">
                     <h3 className="contratos-form-section-title">Información Básica</h3>
-                    
+
                     <div className="contratos-form-group">
                       <label htmlFor="name" className="contratos-form-label">
                         Nombre del Contrato *
@@ -1108,15 +1156,15 @@ function Contratos() {
             <div className="contratos-modal" onClick={e => e.stopPropagation()}>
               <div className="contratos-modal-header">
                 <h2 className="contratos-modal-title">Contratos Guardados</h2>
-                  <button
+                <button
                   className="contratos-modal-close"
                   onClick={() => setShowRecordsModal(false)}
                   aria-label="Cerrar"
-                    type="button"
-                  >
+                  type="button"
+                >
                   ×
-                  </button>
-                </div>
+                </button>
+              </div>
               <div className="contratos-modal-content">
                 {isLoading ? (
                   <p>Cargando...</p>
@@ -1130,9 +1178,9 @@ function Contratos() {
                           <h3 className="contratos-modal-item-name">{record.name}</h3>
                           <p className="contratos-modal-item-meta">
                             Cliente: {record.data.clientName || 'N/A'}
-                  </p>
-                          </div>
-                  <button
+                          </p>
+                        </div>
+                        <button
                           onClick={() => {
                             handleEdit({
                               id: record.id,
@@ -1144,17 +1192,17 @@ function Contratos() {
                             setShowRecordsModal(false)
                           }}
                           className="contratos-modal-item-button"
-                    type="button"
-                  >
+                          type="button"
+                        >
                           Cargar
-                  </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                          </div>
-                </div>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Modal de Debug */}
@@ -1163,14 +1211,14 @@ function Contratos() {
             <div className="contratos-modal" onClick={e => e.stopPropagation()}>
               <div className="contratos-modal-header">
                 <h2 className="contratos-modal-title">🐛 Debug - Contratos</h2>
-                  <button
+                <button
                   className="contratos-modal-close"
                   onClick={() => setIsDebugModalOpen(false)}
                   aria-label="Cerrar"
-                    type="button"
-                  >
+                  type="button"
+                >
                   ×
-                  </button>
+                </button>
               </div>
               <div className="contratos-modal-content">
                 <div className="debug-options">
@@ -1186,7 +1234,7 @@ function Contratos() {
                       <p className="debug-option-description">
                         Crea 5 contratos de ejemplo con diferentes tipos y configuraciones
                       </p>
-                        </div>
+                    </div>
                   </button>
                   <button
                     className="debug-option-button delete-all"
@@ -1202,7 +1250,7 @@ function Contratos() {
                       </p>
                     </div>
                   </button>
-                    </div>
+                </div>
 
                 <div className="contratos-modal-form-actions">
                   <button

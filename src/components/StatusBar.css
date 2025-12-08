@@ -74,18 +74,220 @@
   flex-shrink: 0;
 }
 
-/* Responsive adjustments */
+/* Notification Button - HIG: Touch Target, Feedback */
+.status-bar-notification-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  padding: 0;
+  color: var(--text-primary);
+  z-index: 1001;
+}
+
+.status-bar-notification-button:hover:not(:disabled) {
+  background: var(--bg-glass-light);
+  transform: scale(1.1);
+}
+
+.status-bar-notification-button:active:not(:disabled) {
+  transform: scale(0.95);
+  transition: transform var(--transition-fast);
+}
+
+.status-bar-notification-button:focus-visible {
+  outline: 2px solid var(--accent-primary-border);
+  outline-offset: 2px;
+}
+
+.status-bar-notification-icon {
+  font-size: 1.5rem !important;
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  color: var(--text-primary);
+  opacity: 1;
+}
+
+/* Notification Badge */
+.status-bar-notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #FF3B30;
+  color: white;
+  font-size: 0.625rem;
+  font-weight: 700;
+  font-family: var(--font-family);
+  padding: 2px 5px;
+  border-radius: 10px;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  line-height: 1;
+  letter-spacing: 0;
+  border: 2px solid var(--bg-glass-light);
+}
+
+[data-theme='light'] .status-bar-notification-badge {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  border-color: var(--bg-body);
+}
+
+/* Hide notification button on mobile when not on home page */
+.status-bar-notification-mobile-hide {
+  display: flex;
+}
+
 @media (max-width: 768px) {
-  /* Hide StatusBar on mobile - content moves to Footer */
+  /* Hide notification button on mobile when not on home */
+  .status-bar-notification-mobile-hide {
+    display: none !important;
+  }
+  
+  /* Show only notification button on mobile, hide the bar background */
   .status-bar {
+    display: flex;
+    height: auto;
+    padding: 0;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: none;
+    justify-content: flex-end;
+    align-items: flex-start;
+    padding-top: 0.5rem;
+    padding-right: 1rem;
+  }
+  
+  .status-bar-left {
     display: none;
+  }
+  
+  .status-bar-right {
+    width: auto;
+    justify-content: flex-end;
+    gap: 0;
+    align-items: flex-start;
+  }
+  
+  .status-bar-time,
+  .status-bar-theme-wrapper {
+    display: none;
+  }
+  
+  /* Show notification button on mobile - larger for touch */
+  .status-bar-notification-button {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    background: var(--bg-glass);
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+    border: 1px solid var(--border-glass);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .status-bar-notification-button:hover:not(:disabled) {
+    background: var(--bg-glass-hover);
+    transform: scale(1.05);
+  }
+  
+  .status-bar-notification-icon {
+    font-size: 1.75rem !important;
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+  }
+  
+  .status-bar-notification-badge {
+    top: -2px;
+    right: -2px;
+    font-size: 0.7rem;
+    min-width: 18px;
+    height: 18px;
   }
 }
 
 @media (max-width: 480px) {
-  /* Hide StatusBar on mobile - content moves to Footer */
+  /* Hide notification button on small mobile when not on home */
+  .status-bar-notification-mobile-hide {
+    display: none !important;
+  }
+  
+  /* Show only notification button on small mobile, hide the bar background */
   .status-bar {
+    display: flex;
+    height: auto;
+    padding: 0;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: none;
+    justify-content: flex-end;
+    align-items: flex-start;
+    padding-top: 0.5rem;
+    padding-right: 1rem;
+  }
+  
+  .status-bar-left {
     display: none;
+  }
+  
+  .status-bar-right {
+    width: auto;
+    justify-content: flex-end;
+    gap: 0;
+    align-items: flex-start;
+  }
+  
+  .status-bar-time,
+  .status-bar-theme-wrapper {
+    display: none;
+  }
+  
+  /* Show notification button on small mobile - larger for touch */
+  .status-bar-notification-button {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+    background: var(--bg-glass);
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+    border: 1px solid var(--border-glass);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .status-bar-notification-button:hover:not(:disabled) {
+    background: var(--bg-glass-hover);
+    transform: scale(1.05);
+  }
+  
+  .status-bar-notification-icon {
+    font-size: 1.875rem !important;
+    width: 1.875rem !important;
+    height: 1.875rem !important;
+  }
+  
+  .status-bar-notification-badge {
+    top: -2px;
+    right: -2px;
+    font-size: 0.7rem;
+    min-width: 18px;
+    height: 18px;
   }
 }
 

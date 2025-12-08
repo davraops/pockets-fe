@@ -53,7 +53,23 @@ interface CryptoVendorRecord {
   updated_at: string
 }
 
-const CRYPTO_OPTIONS = ['BTC', 'ETH', 'USDT', 'USDC', 'BNB', 'ADA', 'SOL', 'XRP', 'DOGE', 'MATIC', 'DOT', 'LTC', 'AVAX', 'UNI', 'LINK']
+const CRYPTO_OPTIONS = [
+  'BTC',
+  'ETH',
+  'USDT',
+  'USDC',
+  'BNB',
+  'ADA',
+  'SOL',
+  'XRP',
+  'DOGE',
+  'MATIC',
+  'DOT',
+  'LTC',
+  'AVAX',
+  'UNI',
+  'LINK',
+]
 
 function CryptoVendors() {
   const navigate = useNavigate()
@@ -98,7 +114,9 @@ function CryptoVendors() {
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
@@ -149,15 +167,22 @@ function CryptoVendors() {
               address: formData.contactAddress.trim() || undefined,
             }
           : undefined,
-      acceptedCryptocurrencies: formData.acceptedCryptocurrencies.length > 0 ? formData.acceptedCryptocurrencies : undefined,
+      acceptedCryptocurrencies:
+        formData.acceptedCryptocurrencies.length > 0
+          ? formData.acceptedCryptocurrencies
+          : undefined,
       wallets: Object.keys(formData.wallets).length > 0 ? formData.wallets : undefined,
       businessType: formData.businessType.trim() || undefined,
       notes: formData.notes.trim() || undefined,
       discount:
         formData.discountPercentage.trim() || formData.discountMinAmount.trim()
           ? {
-              percentage: formData.discountPercentage ? parseFloat(formData.discountPercentage) : undefined,
-              minAmount: formData.discountMinAmount ? parseFloat(formData.discountMinAmount) : undefined,
+              percentage: formData.discountPercentage
+                ? parseFloat(formData.discountPercentage)
+                : undefined,
+              minAmount: formData.discountMinAmount
+                ? parseFloat(formData.discountMinAmount)
+                : undefined,
             }
           : undefined,
     }
@@ -297,11 +322,13 @@ function CryptoVendors() {
         const itemRecord = response.vendors[0]
 
         if (itemRecord.data && itemRecord.data.items && Array.isArray(itemRecord.data.items)) {
-          const loadedVendors: CryptoVendor[] = itemRecord.data.items.map((item: any, index: number) => ({
-            id: Date.now().toString() + index.toString(),
-            name: item.name || '',
-            data: item.data || {},
-          }))
+          const loadedVendors: CryptoVendor[] = itemRecord.data.items.map(
+            (item: any, index: number) => ({
+              id: Date.now().toString() + index.toString(),
+              name: item.name || '',
+              data: item.data || {},
+            })
+          )
           setVendors(loadedVendors)
           setListName(itemRecord.name)
         } else {
@@ -374,7 +401,8 @@ function CryptoVendors() {
 
         <h1 className="cryptovendors-page-title">Vendedores de Cripto</h1>
         <p className="cryptovendors-page-subtitle">
-          Gestiona los vendedores que aceptan pagos con criptomonedas: contacto, wallets, criptomonedas aceptadas y más
+          Gestiona los vendedores que aceptan pagos con criptomonedas: contacto, wallets,
+          criptomonedas aceptadas y más
         </p>
 
         {/* Formulario para agregar vendedor */}
@@ -482,7 +510,9 @@ function CryptoVendors() {
             </div>
 
             <div className="cryptovendors-form-group">
-              <label className="cryptovendors-form-label">Selecciona las criptomonedas aceptadas</label>
+              <label className="cryptovendors-form-label">
+                Selecciona las criptomonedas aceptadas
+              </label>
               <div className="cryptovendors-crypto-grid">
                 {CRYPTO_OPTIONS.map(crypto => (
                   <label key={crypto} className="cryptovendors-crypto-checkbox">
@@ -504,8 +534,16 @@ function CryptoVendors() {
                   Direcciones de Wallet
                 </label>
                 {formData.acceptedCryptocurrencies.map(crypto => (
-                  <div key={crypto} className="cryptovendors-form-group" style={{ marginTop: 'var(--spacing-sm)' }}>
-                    <label htmlFor={`wallet-${crypto}`} className="cryptovendors-form-label" style={{ fontSize: 'var(--font-size-sm)' }}>
+                  <div
+                    key={crypto}
+                    className="cryptovendors-form-group"
+                    style={{ marginTop: 'var(--spacing-sm)' }}
+                  >
+                    <label
+                      htmlFor={`wallet-${crypto}`}
+                      className="cryptovendors-form-label"
+                      style={{ fontSize: 'var(--font-size-sm)' }}
+                    >
                       {crypto}
                     </label>
                     <input
@@ -609,7 +647,10 @@ function CryptoVendors() {
                   Cancelar
                 </button>
               )}
-              <button type="submit" className="cryptovendors-form-button cryptovendors-form-button-primary">
+              <button
+                type="submit"
+                className="cryptovendors-form-button cryptovendors-form-button-primary"
+              >
                 {editingId ? 'Actualizar' : 'Agregar'}
               </button>
             </div>
@@ -619,9 +660,7 @@ function CryptoVendors() {
         {vendors.length > 0 && (
           <div className="cryptovendors-list-section">
             <div className="cryptovendors-section-header">
-              <h2 className="cryptovendors-section-title">
-                Vendedores ({vendors.length})
-              </h2>
+              <h2 className="cryptovendors-section-title">Vendedores ({vendors.length})</h2>
               <button
                 className="cryptovendors-save-button"
                 onClick={handleSaveClick}
@@ -652,15 +691,23 @@ function CryptoVendors() {
                           </span>
                         </>
                       )}
-                      {vendor.data.acceptedCryptocurrencies && vendor.data.acceptedCryptocurrencies.length > 0 && (
-                        <>
-                          <span className="cryptovendors-item-separator">•</span>
-                          <span className="cryptovendors-item-meta-item">
-                            <CurrencyBitcoinIcon style={{ width: 16, height: 16, verticalAlign: 'middle', marginRight: 4 }} />
-                            {vendor.data.acceptedCryptocurrencies.join(', ')}
-                          </span>
-                        </>
-                      )}
+                      {vendor.data.acceptedCryptocurrencies &&
+                        vendor.data.acceptedCryptocurrencies.length > 0 && (
+                          <>
+                            <span className="cryptovendors-item-separator">•</span>
+                            <span className="cryptovendors-item-meta-item">
+                              <CurrencyBitcoinIcon
+                                style={{
+                                  width: 16,
+                                  height: 16,
+                                  verticalAlign: 'middle',
+                                  marginRight: 4,
+                                }}
+                              />
+                              {vendor.data.acceptedCryptocurrencies.join(', ')}
+                            </span>
+                          </>
+                        )}
                     </div>
                     <div className="cryptovendors-item-details">
                       {vendor.data.contact?.email && (
@@ -685,8 +732,9 @@ function CryptoVendors() {
                         <div className="cryptovendors-item-detail">
                           <PercentIcon className="cryptovendors-item-detail-icon" />
                           <span>
-                            Descuento: {vendor.data.discount.percentage}% 
-                            {vendor.data.discount.minAmount && ` (mín. ${vendor.data.discount.minAmount.toLocaleString('es-CO')} COP)`}
+                            Descuento: {vendor.data.discount.percentage}%
+                            {vendor.data.discount.minAmount &&
+                              ` (mín. ${vendor.data.discount.minAmount.toLocaleString('es-CO')} COP)`}
                           </span>
                         </div>
                       )}

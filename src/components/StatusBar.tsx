@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
+import NotificationsIcon from '@mui/icons-material/Notifications'
 import ThemeToggle from './ThemeToggle'
+import { api } from '../services/api'
 import './StatusBar.css'
 
 const routeTitles: Record<string, string> = {
@@ -52,7 +54,9 @@ const routeTitles: Record<string, string> = {
 
 function StatusBar() {
   const [time, setTime] = useState(new Date())
+  const [unreadCount, setUnreadCount] = useState(0)
   const location = useLocation()
+  const navigate = useNavigate()
   const currentTitle = routeTitles[location.pathname] || ''
 
   // Actualizar el título del documento
@@ -74,6 +78,32 @@ function StatusBar() {
     }, 1000)
 
     return () => clearInterval(timer)
+  }, [])
+
+  // Cargar notificaciones no leídas
+  useEffect(() => {
+    const loadUnreadNotifications = async () => {
+      try {
+        const response = await api.getNotifications()
+        // Usar unread_count de la respuesta (total de no leídas del usuario)
+        if (response.unread_count !== undefined) {
+          setUnreadCount(response.unread_count)
+        } else if (response.notifications && Array.isArray(response.notifications)) {
+          // Fallback: calcular localmente si unread_count no está disponible
+          setUnreadCount(response.notifications.filter((n: any) => !n.is_read).length)
+        } else {
+          setUnreadCount(0)
+        }
+      } catch (err) {
+        // Silenciar errores, no es crítico si falla
+        setUnreadCount(0)
+      }
+    }
+
+    loadUnreadNotifications()
+    // Actualizar cada 30 segundos
+    const interval = setInterval(loadUnreadNotifications, 30000)
+    return () => clearInterval(interval)
   }, [])
 
   const formatTime = (date: Date) => {
@@ -114,7 +144,25 @@ function StatusBar() {
         )}
       </div>
       <div className="status-bar-right">
-        <ThemeToggle />
+        <button
+          className={`status-bar-notification-button ${!isHome ? 'status-bar-notification-mobile-hide' : ''}`}
+          onClick={() => navigate('/notificaciones')}
+          aria-label={`Notificaciones${unreadCount > 0 ? `. ${unreadCount} no leídas` : ''}`}
+          type="button"
+        >
+          <NotificationsIcon className="status-bar-notification-icon" />
+          {unreadCount > 0 && (
+            <span
+              className="status-bar-notification-badge"
+              aria-label={`${unreadCount} notificaciones no leídas`}
+            >
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </button>
+        <div className="status-bar-theme-wrapper">
+          <ThemeToggle />
+        </div>
         <span className="status-bar-time">{formatTime(time)}</span>
       </div>
     </div>

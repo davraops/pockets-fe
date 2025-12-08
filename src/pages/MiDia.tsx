@@ -93,7 +93,7 @@ function MiDia() {
         end_date: today,
       })
       const completions = completionsResponse.completions || []
-      
+
       // Filtrar solo completados que realmente sean de hoy (validación adicional)
       // Normalizar fechas para comparación (remover hora si existe)
       const todayCompletions = completions.filter((c: any) => {
@@ -103,10 +103,8 @@ function MiDia() {
         const normalizedDate = completionDate.split('T')[0]
         return normalizedDate === today
       })
-      
-      const completedRoutineIds = new Set(
-        todayCompletions.map((c: any) => c.routine_id)
-      )
+
+      const completedRoutineIds = new Set(todayCompletions.map((c: any) => c.routine_id))
 
       // Crear eventos de hoy
       const todayEvents: RoutineEvent[] = todayRoutinesData.map((routine: RoutineAPI) => {
@@ -123,7 +121,7 @@ function MiDia() {
       const sortByScheduledTime = (a: RoutineEvent, b: RoutineEvent) => {
         const timeA = a.routine.scheduled_time || ''
         const timeB = b.routine.scheduled_time || ''
-        
+
         // Si ambas tienen hora, comparar por hora
         if (timeA && timeB) {
           return timeA.localeCompare(timeB)
@@ -143,7 +141,9 @@ function MiDia() {
 
       // Crear eventos de la semana (excluir las de hoy)
       const weekEvents: RoutineEvent[] = weekRoutinesData
-        .filter((routine: RoutineAPI) => !todayRoutinesData.some((tr: RoutineAPI) => tr.id === routine.id))
+        .filter(
+          (routine: RoutineAPI) => !todayRoutinesData.some((tr: RoutineAPI) => tr.id === routine.id)
+        )
         .map((routine: RoutineAPI) => ({
           routine,
           isCompleted: false,
@@ -192,7 +192,7 @@ function MiDia() {
       const sortByScheduledTime = (a: RoutineEvent, b: RoutineEvent) => {
         const timeA = a.routine.scheduled_time || ''
         const timeB = b.routine.scheduled_time || ''
-        
+
         // Si ambas tienen hora, comparar por hora
         if (timeA && timeB) {
           return timeA.localeCompare(timeB)
@@ -221,7 +221,7 @@ function MiDia() {
           }
           return event
         })
-        
+
         // Reordenar: pendientes primero (ordenadas por hora), completadas al final (ordenadas por hora)
         const pending = updatedRoutines.filter(e => !e.isCompleted).sort(sortByScheduledTime)
         const completed = updatedRoutines.filter(e => e.isCompleted).sort(sortByScheduledTime)
@@ -238,7 +238,7 @@ function MiDia() {
             title: routine.title,
             current_streak: currentStreak,
             longest_streak: longestStreak,
-          })
+          }),
         ])
       } catch (backendErr: any) {
         // Si falla, revertir actualización optimista
@@ -282,7 +282,7 @@ function MiDia() {
 
   const formatDaysOfWeek = (days: number[] | null | undefined): string => {
     if (!days || days.length === 0) return ''
-    
+
     const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
     const sortedDays = [...days].sort((a, b) => a - b)
     return sortedDays.map(day => dayNames[day]).join(', ')
@@ -363,16 +363,20 @@ function MiDia() {
                       <span className="midia-routine-frequency">
                         {formatFrequency(event.routine.frequency)}
                       </span>
-                      {event.routine.frequency === 'weekly' && event.routine.days_of_week && event.routine.days_of_week.length > 0 && (
-                        <span className="midia-routine-days">
-                          {formatDaysOfWeek(event.routine.days_of_week)}
-                        </span>
-                      )}
-                      {event.routine.frequency === 'monthly' && event.routine.day_of_month !== null && event.routine.day_of_month !== undefined && (
-                        <span className="midia-routine-days">
-                          {formatDayOfMonth(event.routine.day_of_month)}
-                        </span>
-                      )}
+                      {event.routine.frequency === 'weekly' &&
+                        event.routine.days_of_week &&
+                        event.routine.days_of_week.length > 0 && (
+                          <span className="midia-routine-days">
+                            {formatDaysOfWeek(event.routine.days_of_week)}
+                          </span>
+                        )}
+                      {event.routine.frequency === 'monthly' &&
+                        event.routine.day_of_month !== null &&
+                        event.routine.day_of_month !== undefined && (
+                          <span className="midia-routine-days">
+                            {formatDayOfMonth(event.routine.day_of_month)}
+                          </span>
+                        )}
                       {event.routine.scheduled_time && (
                         <span className="midia-routine-time">
                           <AccessTimeIcon className="midia-routine-time-icon" />
@@ -380,22 +384,24 @@ function MiDia() {
                         </span>
                       )}
                       {event.routine.duration !== null && event.routine.duration !== undefined && (
-                        <span className="midia-routine-duration">
-                          {event.routine.duration} min
-                        </span>
+                        <span className="midia-routine-duration">{event.routine.duration} min</span>
                       )}
-                      {event.routine.current_streak !== undefined && event.routine.current_streak > 0 && (
-                        <span className="midia-routine-streak">
-                          <LocalFireDepartmentIcon className="midia-routine-streak-icon" />
-                          {event.routine.current_streak} {event.routine.current_streak === 1 ? 'día' : 'días'}
-                        </span>
-                      )}
-                      {event.routine.total_completions !== undefined && event.routine.total_completions > 0 && (
-                        <span className="midia-routine-completions">
-                          <CheckCircleIcon className="midia-routine-completions-icon" />
-                          {event.routine.total_completions} {event.routine.total_completions === 1 ? 'completado' : 'completados'}
-                        </span>
-                      )}
+                      {event.routine.current_streak !== undefined &&
+                        event.routine.current_streak > 0 && (
+                          <span className="midia-routine-streak">
+                            <LocalFireDepartmentIcon className="midia-routine-streak-icon" />
+                            {event.routine.current_streak}{' '}
+                            {event.routine.current_streak === 1 ? 'día' : 'días'}
+                          </span>
+                        )}
+                      {event.routine.total_completions !== undefined &&
+                        event.routine.total_completions > 0 && (
+                          <span className="midia-routine-completions">
+                            <CheckCircleIcon className="midia-routine-completions-icon" />
+                            {event.routine.total_completions}{' '}
+                            {event.routine.total_completions === 1 ? 'completado' : 'completados'}
+                          </span>
+                        )}
                     </div>
                   </div>
                 </div>
@@ -410,10 +416,7 @@ function MiDia() {
             <h2 className="midia-section-title">Esta Semana</h2>
             <div className="midia-routines-list">
               {weekRoutines.map(event => (
-                <div
-                  key={event.routine.id}
-                  className="midia-routine-item week"
-                >
+                <div key={event.routine.id} className="midia-routine-item week">
                   <div className="midia-routine-content">
                     <div className="midia-routine-header">
                       {event.routine.color && (
@@ -431,16 +434,20 @@ function MiDia() {
                       <span className="midia-routine-frequency">
                         {formatFrequency(event.routine.frequency)}
                       </span>
-                      {event.routine.frequency === 'weekly' && event.routine.days_of_week && event.routine.days_of_week.length > 0 && (
-                        <span className="midia-routine-days">
-                          {formatDaysOfWeek(event.routine.days_of_week)}
-                        </span>
-                      )}
-                      {event.routine.frequency === 'monthly' && event.routine.day_of_month !== null && event.routine.day_of_month !== undefined && (
-                        <span className="midia-routine-days">
-                          {formatDayOfMonth(event.routine.day_of_month)}
-                        </span>
-                      )}
+                      {event.routine.frequency === 'weekly' &&
+                        event.routine.days_of_week &&
+                        event.routine.days_of_week.length > 0 && (
+                          <span className="midia-routine-days">
+                            {formatDaysOfWeek(event.routine.days_of_week)}
+                          </span>
+                        )}
+                      {event.routine.frequency === 'monthly' &&
+                        event.routine.day_of_month !== null &&
+                        event.routine.day_of_month !== undefined && (
+                          <span className="midia-routine-days">
+                            {formatDayOfMonth(event.routine.day_of_month)}
+                          </span>
+                        )}
                       {event.routine.scheduled_time && (
                         <span className="midia-routine-time">
                           <AccessTimeIcon className="midia-routine-time-icon" />
@@ -448,9 +455,7 @@ function MiDia() {
                         </span>
                       )}
                       {event.routine.duration !== null && event.routine.duration !== undefined && (
-                        <span className="midia-routine-duration">
-                          {event.routine.duration} min
-                        </span>
+                        <span className="midia-routine-duration">{event.routine.duration} min</span>
                       )}
                     </div>
                   </div>
@@ -465,4 +470,3 @@ function MiDia() {
 }
 
 export default MiDia
-

@@ -108,6 +108,8 @@
   padding: 0;
   box-shadow: var(--shadow-sm);
   color: var(--text-primary);
+  position: relative;
+  z-index: 1001;
 }
 
 .app-toolbar-button:hover:not(:disabled) {

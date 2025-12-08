@@ -336,7 +336,10 @@ function TarjetasDebito() {
       }
     } catch (err: any) {
       console.error('Error al eliminar tarjeta:', err)
-      const errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar la tarjeta. Por favor, intenta de nuevo.')
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al eliminar la tarjeta. Por favor, intenta de nuevo.'
+      )
       showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
@@ -877,7 +880,10 @@ function TarjetasDebito() {
       showNotification(`${testCards.length} tarjetas de prueba creadas exitosamente`, 'success')
     } catch (err: any) {
       console.error('Error al crear tarjetas de prueba:', err)
-      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear las tarjetas de prueba. Por favor, intenta de nuevo.')
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al crear las tarjetas de prueba. Por favor, intenta de nuevo.'
+      )
       showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
@@ -906,7 +912,10 @@ function TarjetasDebito() {
         showNotification('Todas las tarjetas han sido eliminadas exitosamente', 'success')
       } catch (err: any) {
         console.error('Error al eliminar todas las tarjetas:', err)
-        const errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar las tarjetas. Por favor, intenta de nuevo.')
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al eliminar las tarjetas. Por favor, intenta de nuevo.'
+        )
         showNotification(errorMessage, 'error')
       } finally {
         setIsLoading(false)

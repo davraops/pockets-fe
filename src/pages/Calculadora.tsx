@@ -143,25 +143,25 @@ function Calculadora() {
 
         {/* Calculadora */}
         <div className="calculadora-container">
-        {/* Display */}
-        <div className="calculadora-display">
-          <div className="calculadora-display-content">
-            <div className="calculadora-display-value">{formatDisplay(display)}</div>
-            <button
-              className="calculadora-copy-button"
-              onClick={copyToClipboard}
-              aria-label="Copiar número"
-              type="button"
-              title="Copiar al portapapeles"
-            >
-              {copied ? (
-                <CheckIcon className="calculadora-copy-icon" />
-              ) : (
-                <ContentCopyIcon className="calculadora-copy-icon" />
-              )}
-            </button>
+          {/* Display */}
+          <div className="calculadora-display">
+            <div className="calculadora-display-content">
+              <div className="calculadora-display-value">{formatDisplay(display)}</div>
+              <button
+                className="calculadora-copy-button"
+                onClick={copyToClipboard}
+                aria-label="Copiar número"
+                type="button"
+                title="Copiar al portapapeles"
+              >
+                {copied ? (
+                  <CheckIcon className="calculadora-copy-icon" />
+                ) : (
+                  <ContentCopyIcon className="calculadora-copy-icon" />
+                )}
+              </button>
+            </div>
           </div>
-        </div>
 
           {/* Botones */}
           <div className="calculadora-buttons">
@@ -316,4 +316,3 @@ function Calculadora() {
 }
 
 export default Calculadora
-

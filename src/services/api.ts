@@ -2,11 +2,44 @@
 // Arquitectura de múltiples servicios: 3 servicios independientes
 // Para desarrollo local, configurar variables de entorno en el archivo .env
 
-// Configuración de APIs por servicio - URLs de producción
+// Configuración de APIs por servicio - URLs de producción (valores por defecto)
 const API_CONFIG = {
-  core: 'https://qe765aps3a.execute-api.us-east-1.amazonaws.com/dev',
-  financial: 'https://l1nfx233y1.execute-api.us-east-1.amazonaws.com/dev',
-  lifestyle: 'https://kstxcg0o0g.execute-api.us-east-1.amazonaws.com/dev'
+  core: {
+    production: 'https://qe765aps3a.execute-api.us-east-1.amazonaws.com/dev',
+    local: 'http://localhost:7000',
+  },
+  financial: {
+    production: 'https://l1nfx233y1.execute-api.us-east-1.amazonaws.com/dev',
+    local: 'http://localhost:7001',
+  },
+  lifestyle: {
+    production: 'https://kstxcg0o0g.execute-api.us-east-1.amazonaws.com/dev',
+    local: 'http://localhost:7002',
+  },
+}
+
+// Helper para obtener la URL según el entorno
+const getApiUrl = (service: 'core' | 'financial' | 'lifestyle'): string => {
+  // En Vite, import.meta.env.MODE es 'development' o 'production'
+  const isProduction = import.meta.env.MODE === 'production'
+
+  // Prioridad: variable de entorno > valor por defecto según entorno
+  if (service === 'core') {
+    return (
+      import.meta.env.VITE_API_CORE_URL ||
+      (isProduction ? API_CONFIG.core.production : API_CONFIG.core.local)
+    )
+  } else if (service === 'financial') {
+    return (
+      import.meta.env.VITE_API_FINANCIAL_URL ||
+      (isProduction ? API_CONFIG.financial.production : API_CONFIG.financial.local)
+    )
+  } else {
+    return (
+      import.meta.env.VITE_API_LIFESTYLE_URL ||
+      (isProduction ? API_CONFIG.lifestyle.production : API_CONFIG.lifestyle.local)
+    )
+  }
 }
 
 class PocketsAPI {
@@ -15,9 +48,9 @@ class PocketsAPI {
   private lifestyleURL: string
 
   constructor() {
-    this.coreURL = API_CONFIG.core
-    this.financialURL = API_CONFIG.financial
-    this.lifestyleURL = API_CONFIG.lifestyle
+    this.coreURL = getApiUrl('core')
+    this.financialURL = getApiUrl('financial')
+    this.lifestyleURL = getApiUrl('lifestyle')
   }
 
   /**
@@ -799,11 +832,7 @@ class PocketsAPI {
   }
 
   // Wallets (Crypto Wallets)
-  async createWallet(data: {
-    wallet_name: string
-    crypto_name: string
-    address: string
-  }) {
+  async createWallet(data: { wallet_name: string; crypto_name: string; address: string }) {
     return this.request('/wallets', {
       method: 'POST',
       body: data,
@@ -1066,11 +1095,7 @@ class PocketsAPI {
     })
   }
 
-  async getEvents(filters?: {
-    id?: string
-    start_date?: string
-    end_date?: string
-  }) {
+  async getEvents(filters?: { id?: string; start_date?: string; end_date?: string }) {
     const params = new URLSearchParams()
     if (filters?.id) params.append('id', filters.id)
     if (filters?.start_date) params.append('start_date', filters.start_date)
@@ -1248,7 +1273,9 @@ class PocketsAPI {
   }
 
   async deleteAllRoutineCompletions(routineId?: string) {
-    const endpoint = routineId ? `/routine-completions?routine_id=${routineId}` : '/routine-completions'
+    const endpoint = routineId
+      ? `/routine-completions?routine_id=${routineId}`
+      : '/routine-completions'
     return this.request(endpoint, {
       method: 'DELETE',
     })
@@ -1380,7 +1407,7 @@ class PocketsAPI {
 
     try {
       const response = await fetch(url, config)
-      
+
       // Intentar parsear JSON, pero manejar errores si no es JSON válido
       let data: any
       const contentType = response.headers.get('content-type')
@@ -1393,7 +1420,10 @@ class PocketsAPI {
           console.error('Respuesta del servidor:', text)
           throw {
             response,
-            data: { error: 'Error al procesar la respuesta del servidor', details: { message: text } },
+            data: {
+              error: 'Error al procesar la respuesta del servidor',
+              details: { message: text },
+            },
           }
         }
       } else {
@@ -1433,10 +1463,7 @@ class PocketsAPI {
     }
   }
 
-  async getFiles(filters?: {
-    id?: string
-    mime_type?: string
-  }) {
+  async getFiles(filters?: { id?: string; mime_type?: string }) {
     const params = new URLSearchParams()
     if (filters?.id) params.append('id', filters.id)
     if (filters?.mime_type) params.append('mime_type', filters.mime_type)
@@ -1463,7 +1490,12 @@ class PocketsAPI {
   // Judicial Processes (Procesos Judiciales) - Proxy endpoints en pockets-lifestyle
   // Estos endpoints actúan como proxy a la API externa de la Rama Judicial de Colombia
   // para evitar problemas de CORS y 403 Forbidden
-  async getJudicialProcesses(nombreCompleto: string, tipoPersona: 'nat' | 'jur' = 'nat', soloActivos: boolean = false, pagina: number = 1) {
+  async getJudicialProcesses(
+    nombreCompleto: string,
+    tipoPersona: 'nat' | 'jur' = 'nat',
+    soloActivos: boolean = false,
+    pagina: number = 1
+  ) {
     const params = new URLSearchParams({
       nombre: nombreCompleto,
       tipoPersona: tipoPersona,
@@ -1570,10 +1602,13 @@ class PocketsAPI {
     })
   }
 
-  async updateEmployee(employeeId: string, data: {
-    name?: string
-    data?: any // JSON object
-  }) {
+  async updateEmployee(
+    employeeId: string,
+    data: {
+      name?: string
+      data?: any // JSON object
+    }
+  ) {
     return this.request(`/employees/${employeeId}`, {
       method: 'PUT',
       body: data,
@@ -1610,10 +1645,13 @@ class PocketsAPI {
     })
   }
 
-  async updateVehicle(vehicleId: string, data: {
-    name?: string
-    data?: any // JSON object
-  }) {
+  async updateVehicle(
+    vehicleId: string,
+    data: {
+      name?: string
+      data?: any // JSON object
+    }
+  ) {
     return this.request(`/vehicles/${vehicleId}`, {
       method: 'PUT',
       body: data,
@@ -1650,10 +1688,13 @@ class PocketsAPI {
     })
   }
 
-  async updatePatrimonyItem(itemId: string, data: {
-    name?: string
-    data?: any // JSON object
-  }) {
+  async updatePatrimonyItem(
+    itemId: string,
+    data: {
+      name?: string
+      data?: any // JSON object
+    }
+  ) {
     return this.request(`/patrimony/${itemId}`, {
       method: 'PUT',
       body: data,
@@ -1690,10 +1731,13 @@ class PocketsAPI {
     })
   }
 
-  async updateCryptoVendor(vendorId: string, data: {
-    name?: string
-    data?: any // JSON object
-  }) {
+  async updateCryptoVendor(
+    vendorId: string,
+    data: {
+      name?: string
+      data?: any // JSON object
+    }
+  ) {
     return this.request(`/crypto-vendors/${vendorId}`, {
       method: 'PUT',
       body: data,

@@ -475,7 +475,9 @@ function Notificaciones() {
                         <button
                           className="notificaciones-item-action-button"
                           onClick={() => handleMarkAsRead(notification.id, !notification.is_read)}
-                          aria-label={notification.is_read ? 'Marcar como no leída' : 'Marcar como leída'}
+                          aria-label={
+                            notification.is_read ? 'Marcar como no leída' : 'Marcar como leída'
+                          }
                           type="button"
                           disabled={isLoading}
                         >
@@ -498,7 +500,9 @@ function Notificaciones() {
                     </div>
                     <p className="notificaciones-item-message">{notification.message}</p>
                     <div className="notificaciones-item-meta">
-                      <span className="notificaciones-item-time">{formatDate(notification.created_at)}</span>
+                      <span className="notificaciones-item-time">
+                        {formatDate(notification.created_at)}
+                      </span>
                       {notification.type && (
                         <span className="notificaciones-item-type">{notification.type}</span>
                       )}
@@ -577,4 +581,3 @@ function Notificaciones() {
 }
 
 export default Notificaciones
-
