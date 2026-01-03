@@ -39,6 +39,7 @@ const routeTitles: Record<string, string> = {
   '/trabajo': 'Trabajo',
   '/trabajo/contratos': 'Contratos',
   '/trabajo/actividades': 'Actividades',
+  '/trabajo/procesos': 'Procesos',
   '/blank-2': '',
   '/blank-3': '',
   '/blank-4': '',

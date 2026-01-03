@@ -6,6 +6,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import AssignmentIcon from '@mui/icons-material/Assignment'
 import WorkIcon from '@mui/icons-material/Work'
+import PersonSearchIcon from '@mui/icons-material/PersonSearch'
 import type { SvgIconProps } from '@mui/material'
 
 interface TrabajoItem {
@@ -33,6 +34,14 @@ const trabajoItems: TrabajoItem[] = [
     Icon: WorkIcon,
     color: '#FF9500',
     path: '/trabajo/actividades',
+  },
+  {
+    id: '3',
+    title: 'Procesos',
+    subtitle: 'Procesos de contratación abiertos',
+    Icon: PersonSearchIcon,
+    color: '#34C759',
+    path: '/trabajo/procesos',
   },
 ]
 

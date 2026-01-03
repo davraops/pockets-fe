@@ -94,7 +94,8 @@ class PocketsAPI {
       endpoint.startsWith('/patrimony') ||
       endpoint.startsWith('/crypto-vendors') ||
       endpoint.startsWith('/contracts') ||
-      endpoint.startsWith('/client-activities')
+      endpoint.startsWith('/client-activities') ||
+      endpoint.startsWith('/hiring-processes')
     ) {
       return 'lifestyle'
     }
@@ -1834,6 +1835,47 @@ class PocketsAPI {
 
   async deleteAllClientActivities() {
     return this.request('/client-activities', {
+      method: 'DELETE',
+    })
+  }
+
+  // Hiring Processes (Procesos de Contratación)
+  async createHiringProcess(data: {
+    name: string
+    data: any // JSON object
+  }) {
+    return this.request('/hiring-processes', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getHiringProcesses(processId: string | null = null) {
+    const endpoint = processId ? `/hiring-processes?id=${processId}` : '/hiring-processes'
+    return this.request(endpoint)
+  }
+
+  async updateHiringProcess(
+    processId: string,
+    updates: {
+      name?: string
+      data?: any
+    }
+  ) {
+    return this.request(`/hiring-processes/${processId}`, {
+      method: 'PUT',
+      body: updates,
+    })
+  }
+
+  async deleteHiringProcess(processId: string) {
+    return this.request(`/hiring-processes/${processId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllHiringProcesses() {
+    return this.request('/hiring-processes', {
       method: 'DELETE',
     })
   }

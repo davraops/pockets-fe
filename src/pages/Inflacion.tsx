@@ -934,14 +934,14 @@ function Inflacion() {
           <div className="inflacion-warning-content">
             <h2 className="inflacion-warning-title">El Monstruo de Jekyll Island</h2>
             <p className="inflacion-warning-text">
-              "La inflación es el impuesto más cruel, porque golpea a los que menos tienen. Es un
+              &ldquo;La inflación es el impuesto más cruel, porque golpea a los que menos tienen. Es un
               robo silencioso que destruye el poder adquisitivo de tu dinero mientras duermes. El
               sistema bancario centralizado crea dinero de la nada, devaluando tu trabajo y tus
-              ahorros día a día."
+              ahorros día a día.&rdquo;
             </p>
             <p className="inflacion-warning-quote">
-              "No dejes que el monstruo te devore. Tu libertad financiera depende de tu capacidad
-              para protegerte."
+              &ldquo;No dejes que el monstruo te devore. Tu libertad financiera depende de tu capacidad
+              para protegerte.&rdquo;
             </p>
           </div>
         </div>

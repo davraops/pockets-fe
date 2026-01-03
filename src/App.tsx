@@ -42,6 +42,7 @@ import Procesos from './pages/Procesos'
 import Trabajo from './pages/Trabajo'
 import Contratos from './pages/Contratos'
 import Actividades from './pages/Actividades'
+import ProcesosContratacion from './pages/ProcesosContratacion'
 import StatusBar from './components/StatusBar'
 import ProtectedRoute from './components/ProtectedRoute'
 import Footer from './components/Footer'
@@ -363,6 +364,14 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <Actividades />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/trabajo/procesos"
+          element={
+            <ProtectedRoute>
+              <ProcesosContratacion />
             </ProtectedRoute>
           }
         />

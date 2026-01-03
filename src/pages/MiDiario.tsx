@@ -112,6 +112,7 @@ function MiDiario() {
     let streak = 0
     const checkDate = new Date(startDate)
 
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       const checkDateStr = checkDate.toISOString().split('T')[0]
       const hasEntry = sortedDates.some(date => {

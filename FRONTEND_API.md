@@ -3280,66 +3280,54 @@ await deleteAllContracts();
 
 ---
 
-### Client Activities (Actividades de Clientes)
+### Hiring Processes (Procesos de Contratación Abiertos)
 **🟢 Servicio: pockets-lifestyle** | **URL Base:** `API_LIFESTYLE`
 
 > **Nota:** Estos endpoints están en el servicio `pockets-lifestyle`. Usa `API_LIFESTYLE` como URL base.
 
-Sistema simple para guardar información de actividades con clientes en formato JSON. Permite almacenar cualquier estructura JSON que represente interacciones y actividades con clientes (reuniones, llamadas, seguimientos, propuestas, etc.).
+Sistema simple para guardar información de procesos de contratación abiertos en formato JSON. Permite almacenar cualquier estructura JSON que represente procesos de contratación activos (empresa, posición, contacto, estado, fechas, etc.).
 
-#### POST /client-activities
-Crear una nueva actividad de cliente.
+#### POST /hiring-processes
+Crear un nuevo proceso de contratación.
 
-**URL:** `POST ${API_LIFESTYLE}/client-activities`
+**URL:** `POST ${API_LIFESTYLE}/hiring-processes`
 
 **Ejemplo JavaScript:**
 ```javascript
-const createClientActivity = async (activityData) => {
+const createHiringProcess = async (processData) => {
   const token = localStorage.getItem('authToken');
-  const response = await fetch(`${API_LIFESTYLE}/client-activities`, {
+  const response = await fetch(`${API_LIFESTYLE}/hiring-processes`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
     },
-    body: JSON.stringify(activityData)
+    body: JSON.stringify(processData)
   });
   return response.json();
 };
 
-// Crear una actividad de cliente
-await createClientActivity({
-  name: 'Reunión con Cliente ABC',
+// Crear un proceso de contratación
+await createHiringProcess({
+  name: 'Desarrollador Senior - Empresa XYZ',
   data: {
-    client: {
-      name: 'Empresa ABC S.A.S.',
-      contact: {
-        name: 'Juan Pérez',
-        email: 'juan.perez@empresaabc.com',
-        phone: '+57 300 123 4567'
-      }
+    company: 'Empresa XYZ',
+    position: 'Desarrollador Senior',
+    status: 'activo',
+    contact: {
+      name: 'Juan Pérez',
+      email: 'juan.perez@empresa.com',
+      phone: '+57 300 123 4567',
+      role: 'Recruiter'
     },
-    type: 'Reunión',
-    date: '2024-03-20',
-    time: '14:00',
-    duration: 60, // minutos
-    location: 'Oficina del cliente',
-    participants: ['Rafael Avella', 'Juan Pérez', 'María González'],
-    agenda: [
-      'Presentación de propuesta',
-      'Discusión de términos',
-      'Próximos pasos'
-    ],
-    outcome: {
-      status: 'Positivo',
-      nextSteps: [
-        'Enviar cotización formal',
-        'Seguimiento en 1 semana'
-      ],
-      probability: 70 // porcentaje
+    location: 'Bogotá, Colombia',
+    salary: {
+      min: 8000000,
+      max: 12000000,
+      currency: 'COP'
     },
-    notes: 'Cliente muy interesado, requiere cotización detallada',
-    attachments: ['propuesta.pdf', 'presentacion.pptx']
+    applicationDate: '2024-01-15',
+    notes: 'Proceso activo, esperando respuesta'
   }
 });
 ```
@@ -3347,85 +3335,61 @@ await createClientActivity({
 **Request Body:**
 ```json
 {
-  "name": "Reunión con Cliente ABC",
+  "name": "Desarrollador Senior - Empresa XYZ",
   "data": {
-    "client": {
-      "name": "Empresa ABC S.A.S.",
-      "contact": {
-        "name": "Juan Pérez",
-        "email": "juan.perez@empresaabc.com",
-        "phone": "+57 300 123 4567"
-      }
+    "company": "Empresa XYZ",
+    "position": "Desarrollador Senior",
+    "status": "activo",
+    "contact": {
+      "name": "Juan Pérez",
+      "email": "juan.perez@empresa.com",
+      "phone": "+57 300 123 4567",
+      "role": "Recruiter"
     },
-    "type": "Reunión",
-    "date": "2024-03-20",
-    "time": "14:00",
-    "duration": 60,
-    "location": "Oficina del cliente",
-    "participants": ["Rafael Avella", "Juan Pérez", "María González"],
-    "agenda": [
-      "Presentación de propuesta",
-      "Discusión de términos",
-      "Próximos pasos"
-    ],
-    "outcome": {
-      "status": "Positivo",
-      "nextSteps": [
-        "Enviar cotización formal",
-        "Seguimiento en 1 semana"
-      ],
-      "probability": 70
+    "location": "Bogotá, Colombia",
+    "salary": {
+      "min": 8000000,
+      "max": 12000000,
+      "currency": "COP"
     },
-    "notes": "Cliente muy interesado, requiere cotización detallada",
-    "attachments": ["propuesta.pdf", "presentacion.pptx"]
+    "applicationDate": "2024-01-15",
+    "notes": "Proceso activo, esperando respuesta"
   }
 }
 ```
 
 **Campos Requeridos:**
-- `name` (string) - Nombre/título de la actividad
-- `data` (object) - Objeto JSON con los datos de la actividad (cualquier estructura válida)
+- `name` (string) - Nombre/título del proceso de contratación
+- `data` (object) - Objeto JSON con los datos del proceso (cualquier estructura válida)
 
 **Response (201):**
 ```json
 {
-  "message": "Client activity created successfully",
-  "activity": {
+  "message": "Hiring process created successfully",
+  "hiring_process": {
     "id": "uuid-here",
-    "name": "Reunión con Cliente ABC",
+    "name": "Desarrollador Senior - Empresa XYZ",
     "data": {
-      "client": {
-        "name": "Empresa ABC S.A.S.",
-        "contact": {
-          "name": "Juan Pérez",
-          "email": "juan.perez@empresaabc.com",
-          "phone": "+57 300 123 4567"
-        }
+      "company": "Empresa XYZ",
+      "position": "Desarrollador Senior",
+      "status": "activo",
+      "contact": {
+        "name": "Juan Pérez",
+        "email": "juan.perez@empresa.com",
+        "phone": "+57 300 123 4567",
+        "role": "Recruiter"
       },
-      "type": "Reunión",
-      "date": "2024-03-20",
-      "time": "14:00",
-      "duration": 60,
-      "location": "Oficina del cliente",
-      "participants": ["Rafael Avella", "Juan Pérez", "María González"],
-      "agenda": [
-        "Presentación de propuesta",
-        "Discusión de términos",
-        "Próximos pasos"
-      ],
-      "outcome": {
-        "status": "Positivo",
-        "nextSteps": [
-          "Enviar cotización formal",
-          "Seguimiento en 1 semana"
-        ],
-        "probability": 70
+      "location": "Bogotá, Colombia",
+      "salary": {
+        "min": 8000000,
+        "max": 12000000,
+        "currency": "COP"
       },
-      "notes": "Cliente muy interesado, requiere cotización detallada",
-      "attachments": ["propuesta.pdf", "presentacion.pptx"]
+      "applicationDate": "2024-01-15",
+      "notes": "Proceso activo, esperando respuesta"
     },
-    "created_at": "2024-03-20T14:00:00Z",
-    "updated_at": "2024-03-20T14:00:00Z"
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T10:30:00Z"
   }
 }
 ```
@@ -3433,25 +3397,25 @@ await createClientActivity({
 **Errores:**
 - `400`: Campos requeridos faltantes, `name` vacío, `data` no es un objeto válido
 - `401`: Token de autenticación inválido o faltante
-- `500`: Error al crear la actividad
+- `500`: Error al crear el proceso de contratación
 
 ---
 
-#### GET /client-activities
-Obtener actividades de clientes del usuario.
+#### GET /hiring-processes
+Obtener procesos de contratación del usuario.
 
-**URL:** `GET ${API_LIFESTYLE}/client-activities`
+**URL:** `GET ${API_LIFESTYLE}/hiring-processes`
 
 **Query Parameters (opcionales):**
-- `id` (string) - Obtener actividad específica por ID
+- `id` (string) - Obtener proceso específico por ID
 
 **Ejemplo JavaScript:**
 ```javascript
-const getClientActivities = async (activityId = null) => {
+const getHiringProcesses = async (processId = null) => {
   const token = localStorage.getItem('authToken');
-  const url = activityId 
-    ? `${API_LIFESTYLE}/client-activities?id=${activityId}`
-    : `${API_LIFESTYLE}/client-activities`;
+  const url = processId 
+    ? `${API_LIFESTYLE}/hiring-processes?id=${processId}`
+    : `${API_LIFESTYLE}/hiring-processes`;
   
   const response = await fetch(url, {
     headers: {
@@ -3461,40 +3425,33 @@ const getClientActivities = async (activityId = null) => {
   return response.json();
 };
 
-// Obtener todas las actividades
-const allActivities = await getClientActivities();
+// Obtener todos los procesos
+const allProcesses = await getHiringProcesses();
 
-// Obtener actividad específica
-const activity = await getClientActivities('uuid-here');
+// Obtener proceso específico
+const process = await getHiringProcesses('uuid-here');
 ```
 
 **Response (200):**
 ```json
 {
   "count": 2,
-  "activities": [
+  "hiring_processes": [
     {
       "id": "uuid-here",
-      "name": "Reunión con Cliente ABC",
+      "name": "Desarrollador Senior - Empresa XYZ",
       "data": {
-        "client": {
-          "name": "Empresa ABC S.A.S.",
-          "contact": {
-            "name": "Juan Pérez",
-            "email": "juan.perez@empresaabc.com"
-          }
+        "company": "Empresa XYZ",
+        "position": "Desarrollador Senior",
+        "status": "activo",
+        "contact": {
+          "name": "Juan Pérez",
+          "email": "juan.perez@empresa.com"
         },
-        "type": "Reunión",
-        "date": "2024-03-20",
-        "time": "14:00",
-        "duration": 60,
-        "outcome": {
-          "status": "Positivo",
-          "probability": 70
-        }
+        "location": "Bogotá, Colombia"
       },
-      "created_at": "2024-03-20T14:00:00Z",
-      "updated_at": "2024-03-20T14:00:00Z"
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-15T10:30:00Z"
     }
   ]
 }
@@ -3502,16 +3459,16 @@ const activity = await getClientActivities('uuid-here');
 
 ---
 
-#### PUT /client-activities/{id}
-Actualizar una actividad de cliente existente.
+#### PUT /hiring-processes/{id}
+Actualizar un proceso de contratación existente.
 
-**URL:** `PUT ${API_LIFESTYLE}/client-activities/{id}`
+**URL:** `PUT ${API_LIFESTYLE}/hiring-processes/{id}`
 
 **Ejemplo JavaScript:**
 ```javascript
-const updateClientActivity = async (activityId, updates) => {
+const updateHiringProcess = async (processId, updates) => {
   const token = localStorage.getItem('authToken');
-  const response = await fetch(`${API_LIFESTYLE}/client-activities/${activityId}`, {
+  const response = await fetch(`${API_LIFESTYLE}/hiring-processes/${processId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -3523,39 +3480,29 @@ const updateClientActivity = async (activityId, updates) => {
 };
 
 // Actualizar solo el nombre
-await updateClientActivity('uuid-here', {
-  name: 'Reunión con Cliente ABC (Actualizada)'
+await updateHiringProcess('uuid-here', {
+  name: 'Desarrollador Senior - Empresa XYZ (Actualizado)'
 });
 
-// Actualizar solo los datos (ej: actualizar resultado)
-await updateClientActivity('uuid-here', {
+// Actualizar solo los datos (ej: cambiar estado)
+await updateHiringProcess('uuid-here', {
   data: {
-    client: {
-      name: 'Empresa ABC S.A.S.',
-      contact: {
-        name: 'Juan Pérez',
-        email: 'juan.perez@empresaabc.com'
-      }
-    },
-    type: 'Reunión',
-    date: '2024-03-20',
-    outcome: {
-      status: 'Cerrado',
-      nextSteps: ['Firmar contrato'],
-      probability: 90 // Actualizado
-    },
-    notes: 'Cliente aceptó propuesta, esperando firma'
+    company: 'Empresa XYZ',
+    position: 'Desarrollador Senior',
+    status: 'en_revision', // Cambiado
+    contact: {
+      name: 'Juan Pérez',
+      email: 'juan.perez@empresa.com'
+    }
   }
 });
 
 // Actualizar ambos
-await updateClientActivity('uuid-here', {
-  name: 'Reunión con Cliente ABC (Cerrada)',
+await updateHiringProcess('uuid-here', {
+  name: 'Desarrollador Senior - Empresa XYZ (Actualizado)',
   data: {
-    outcome: {
-      status: 'Cerrado',
-      probability: 90
-    }
+    status: 'en_revision',
+    notes: 'Actualizado: proceso en revisión'
   }
 });
 ```
@@ -3563,39 +3510,31 @@ await updateClientActivity('uuid-here', {
 **Request Body:**
 ```json
 {
-  "name": "Reunión con Cliente ABC (Cerrada)",
+  "name": "Desarrollador Senior - Empresa XYZ (Actualizado)",
   "data": {
-    "outcome": {
-      "status": "Cerrado",
-      "nextSteps": ["Firmar contrato"],
-      "probability": 90
-    },
-    "notes": "Cliente aceptó propuesta, esperando firma"
+    "status": "en_revision",
+    "notes": "Actualizado: proceso en revisión"
   }
 }
 ```
 
 **Campos Opcionales (puedes actualizar uno o ambos):**
-- `name` (string) - Nuevo nombre de la actividad
-- `data` (object) - Nuevos datos JSON de la actividad
+- `name` (string) - Nuevo nombre del proceso
+- `data` (object) - Nuevos datos JSON del proceso
 
 **Response (200):**
 ```json
 {
-  "message": "Client activity updated successfully",
-  "activity": {
+  "message": "Hiring process updated successfully",
+  "hiring_process": {
     "id": "uuid-here",
-    "name": "Reunión con Cliente ABC (Cerrada)",
+    "name": "Desarrollador Senior - Empresa XYZ (Actualizado)",
     "data": {
-      "outcome": {
-        "status": "Cerrado",
-        "nextSteps": ["Firmar contrato"],
-        "probability": 90
-      },
-      "notes": "Cliente aceptó propuesta, esperando firma"
+      "status": "en_revision",
+      "notes": "Actualizado: proceso en revisión"
     },
-    "created_at": "2024-03-20T14:00:00Z",
-    "updated_at": "2024-03-20T16:30:00Z"
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-20T15:45:00Z"
   }
 }
 ```
@@ -3603,21 +3542,21 @@ await updateClientActivity('uuid-here', {
 **Errores:**
 - `400`: ID faltante, `name` vacío, `data` no es un objeto válido, ningún campo para actualizar
 - `401`: Token de autenticación inválido o faltante
-- `404`: Actividad no encontrada o no pertenece al usuario
-- `500`: Error al actualizar la actividad
+- `404`: Proceso no encontrado o no pertenece al usuario
+- `500`: Error al actualizar el proceso
 
 ---
 
-#### DELETE /client-activities/{id}
-Eliminar una actividad de cliente específica.
+#### DELETE /hiring-processes/{id}
+Eliminar un proceso de contratación específico.
 
-**URL:** `DELETE ${API_LIFESTYLE}/client-activities/{id}`
+**URL:** `DELETE ${API_LIFESTYLE}/hiring-processes/{id}`
 
 **Ejemplo JavaScript:**
 ```javascript
-const deleteClientActivity = async (activityId) => {
+const deleteHiringProcess = async (processId) => {
   const token = localStorage.getItem('authToken');
-  const response = await fetch(`${API_LIFESTYLE}/client-activities/${activityId}`, {
+  const response = await fetch(`${API_LIFESTYLE}/hiring-processes/${processId}`, {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
@@ -3626,17 +3565,17 @@ const deleteClientActivity = async (activityId) => {
   return response.json();
 };
 
-// Eliminar actividad
-await deleteClientActivity('uuid-here');
+// Eliminar proceso
+await deleteHiringProcess('uuid-here');
 ```
 
 **Response (200):**
 ```json
 {
-  "message": "Client activity deleted successfully",
-  "deleted_activity": {
+  "message": "Hiring process deleted successfully",
+  "deleted_hiring_process": {
     "id": "uuid-here",
-    "name": "Reunión con Cliente ABC"
+    "name": "Desarrollador Senior - Empresa XYZ"
   }
 }
 ```
@@ -3645,16 +3584,16 @@ await deleteClientActivity('uuid-here');
 
 ---
 
-#### DELETE /client-activities
-Eliminar todas las actividades de clientes del usuario.
+#### DELETE /hiring-processes
+Eliminar todos los procesos de contratación del usuario.
 
-**URL:** `DELETE ${API_LIFESTYLE}/client-activities`
+**URL:** `DELETE ${API_LIFESTYLE}/hiring-processes`
 
 **Ejemplo JavaScript:**
 ```javascript
-const deleteAllClientActivities = async () => {
+const deleteAllHiringProcesses = async () => {
   const token = localStorage.getItem('authToken');
-  const response = await fetch(`${API_LIFESTYLE}/client-activities`, {
+  const response = await fetch(`${API_LIFESTYLE}/hiring-processes`, {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}` // ⚠️ REQUERIDO
@@ -3663,19 +3602,19 @@ const deleteAllClientActivities = async () => {
   return response.json();
 };
 
-// Eliminar todas las actividades
-await deleteAllClientActivities();
+// Eliminar todos los procesos
+await deleteAllHiringProcesses();
 ```
 
 **Response (200):**
 ```json
 {
-  "message": "All client activities deleted successfully",
-  "deleted_count": 15
+  "message": "All hiring processes deleted successfully",
+  "deleted_count": 5
 }
 ```
 
-**⚠️ Advertencia:** Esta operación elimina todas las actividades de clientes del usuario y es irreversible.
+**⚠️ Advertencia:** Esta operación elimina todos los procesos de contratación del usuario y es irreversible.
 
 ---
 
