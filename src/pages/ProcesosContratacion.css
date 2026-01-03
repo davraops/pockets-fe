@@ -953,42 +953,180 @@
 /* Responsive */
 @media (max-width: 768px) {
   .procesos-contratacion-modal-overlay {
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
   }
 
   .procesos-contratacion-modal {
     max-width: 100%;
-    max-height: 95vh;
+    max-height: 100vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
 
   .procesos-contratacion-modal-header {
     padding: var(--spacing-md);
   }
 
+  .procesos-contratacion-modal-title {
+    font-size: var(--font-size-lg);
+  }
+
   .procesos-contratacion-modal-content {
     padding: var(--spacing-md);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .procesos-contratacion-form {
+    gap: var(--spacing-lg);
+  }
+
+  .procesos-contratacion-form-section {
+    gap: var(--spacing-sm);
+  }
+
+  .procesos-contratacion-form-section-title {
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .procesos-contratacion-form-group {
+    gap: var(--spacing-xs);
+  }
+
+  .procesos-contratacion-form-label {
+    font-size: var(--font-size-sm);
+  }
+
+  .procesos-contratacion-form-input {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 16px; /* Previene zoom en iOS */
+  }
+
+  .procesos-contratacion-form-textarea {
+    min-height: 80px;
+    font-size: 16px; /* Previene zoom en iOS */
+  }
+
+  /* Salary Section Mobile */
+  .procesos-contratacion-form-salary-container {
+    gap: var(--spacing-md);
+  }
+
+  .procesos-contratacion-form-salary-card {
+    padding: var(--spacing-sm);
   }
 
   .procesos-contratacion-form-salary-row {
     grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
   }
 
-  .procesos-contratacion-form-interview-input-group {
+  .procesos-contratacion-form-salary-input-group {
     flex-direction: column;
     align-items: stretch;
+    gap: var(--spacing-xs);
   }
 
+  .procesos-contratacion-form-salary-label {
+    font-size: var(--font-size-xs);
+  }
+
+  /* Array Inputs Mobile */
+  .procesos-contratacion-form-array-input,
+  .procesos-contratacion-form-interview-input-group,
+  .procesos-contratacion-form-interaction-input-group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-xs);
+  }
+
+  .procesos-contratacion-form-array-input input,
+  .procesos-contratacion-form-interaction-input-group input[type="text"] {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .procesos-contratacion-form-interaction-input-group input[type="date"] {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .procesos-contratacion-form-array-add-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .procesos-contratacion-form-array-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm);
+  }
+
+  .procesos-contratacion-form-array-remove-button {
+    align-self: flex-end;
+  }
+
+  .procesos-contratacion-form-interaction-item {
+    gap: var(--spacing-xs);
+  }
+
+  /* Checkboxes Mobile */
+  .procesos-contratacion-form-checkboxes {
+    gap: var(--spacing-xs);
+  }
+
+  .procesos-contratacion-form-checkbox-label {
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-xs);
+  }
+
+  .procesos-contratacion-form-hiring-step-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm);
+  }
+
+  .procesos-contratacion-form-hiring-step-item label {
+    width: 100%;
+  }
+
+  /* Form Actions Mobile */
   .procesos-contratacion-form-actions {
     flex-direction: column-reverse;
+    gap: var(--spacing-sm);
+    padding-top: var(--spacing-md);
+    position: sticky;
+    bottom: 0;
+    background: var(--bg-glass);
+    margin: var(--spacing-md) calc(-1 * var(--spacing-md)) calc(-1 * var(--spacing-md));
+    padding-left: var(--spacing-md);
+    padding-right: var(--spacing-md);
+    padding-bottom: var(--spacing-md);
+    border-top: 1px solid var(--border-glass-light);
   }
 
   .procesos-contratacion-form-button {
     width: 100%;
     justify-content: center;
+    padding: var(--spacing-md);
+    min-height: 48px; /* Touch target mínimo */
   }
 
+  /* Items Mobile */
   .procesos-contratacion-item-content {
     padding: var(--spacing-md);
+  }
+
+  .procesos-contratacion-item-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .procesos-contratacion-item-actions {
+    align-self: flex-end;
   }
 
   .procesos-contratacion-item-title {
@@ -1001,6 +1139,26 @@
 
   .procesos-contratacion-item-meta {
     font-size: var(--font-size-xs);
+    flex-wrap: wrap;
+  }
+
+  .procesos-contratacion-item-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+
+  .procesos-contratacion-item-stagnant-badge {
+    align-self: flex-start;
+  }
+
+  .procesos-contratacion-item-salary {
+    font-size: var(--font-size-sm);
+  }
+
+  .procesos-contratacion-item-leadingzen {
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-xs);
   }
 }
 
