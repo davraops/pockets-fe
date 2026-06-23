@@ -1,3 +1,5 @@
+@import './styles/shared.css';
+
 * {
   margin: 0;
   padding: 0;
@@ -28,6 +30,15 @@ button {
   --font-size-lg: 1.25rem; /* 20px */
   --font-size-xl: 1.5rem; /* 24px */
   --font-size-2xl: 1.875rem; /* 30px */
+  --font-size-md: 1.375rem; /* 22px - entre base y lg */
+  --font-size-xxl: 1.75rem; /* 28px */
+  --font-size-hero: 2rem; /* 32px - títulos home/login */
+  --font-size-3xl-sm: 2.25rem; /* 36px - page title tablet */
+  --font-size-3xl: 2.5rem; /* 40px - page title desktop */
+  --font-size-3xl-lg: 2.75rem; /* 44px - app launcher icons desktop */
+  --font-size-display-xs: 3rem; /* 48px - iconos empty state compactos */
+  --font-size-display-sm: 3.5rem; /* 56px */
+  --font-size-display: 4rem; /* 64px - iconos empty state */
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
@@ -41,6 +52,35 @@ button {
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
+
+  /* Layout */
+  --layout-max-width-hub: 800px;
+  --layout-max-width-wide: 1200px;
+  --layout-status-bar-height: 44px;
+  --layout-footer-height: 60px;
+  --layout-footer-height-mobile: 100px;
+  --layout-chrome-offset-top: calc(var(--spacing-xs) + var(--layout-status-bar-height));
+  --layout-chrome-offset-bottom: var(--layout-footer-height);
+  --layout-chrome-offset-bottom-mobile: var(--layout-footer-height-mobile);
+
+  /* Section accents — iOS system palette (solid, theme-independent) */
+  --section-finanzas: #34c759;
+  --section-utilidades: #007aff;
+  --section-blue: #007aff;
+  --section-lifestyle: #ff9500;
+  --section-notificaciones: #af52de;
+  --section-purple: #af52de;
+  --section-justicia: #5856d6;
+  --section-indigo: #5856d6;
+  --section-trabajo: #ff9500;
+  --section-danger: #ff3b30;
+  --section-muted: #8e8e93;
+  --section-pink: #ff2d55;
+  --section-teal: #00c7be;
+  --section-cyan: #5ac8fa;
+  --section-bitcoin: #f7931a;
+  --section-yellow: #ffcc00;
+  --section-success: #34c759;
 
   /* Border Radius */
   --radius-sm: 12px;
@@ -58,6 +98,22 @@ button {
   --transition-base: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
+  /* Focus & motion — structural (P16) */
+  --focus-outline-width: 2px;
+  --focus-outline-offset: 2px;
+  --focus-outline-offset-inset: -2px;
+  --focus-outline-offset-lg: 4px;
+  --focus-outline-width-contrast: 3px;
+  --touch-target-min: 44px;
+  --motion-lift-sm: -1px;
+  --motion-lift-md: -2px;
+  --motion-lift-lg: -4px;
+  --motion-dropdown-shift: -8px;
+  --motion-press-scale: 0.97;
+  --motion-hover-scale: 1.05;
+  --motion-fab-scale: 1.1;
+  --motion-shift-x: 2px;
+
   font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -73,9 +129,10 @@ button {
   --bg-glass-hover: rgba(0, 0, 0, 0.4);
   --bg-glass-light: rgba(0, 0, 0, 0.2);
   --bg-glass-lighter: rgba(0, 0, 0, 0.15);
+  --bg-secondary: var(--bg-glass-light);
   --bg-body: #2c2c2e;
   --bg-body-gradient-start: #1c1c1e;
-  --bg-body-gradient-end: #1c1c1e;
+  --bg-body-gradient-end: #2c2c2e;
 
   /* Colors - Borders */
   --border-glass: rgba(255, 255, 255, 0.1);
@@ -88,23 +145,254 @@ button {
   --text-tertiary: rgba(255, 255, 255, 0.5);
   --text-disabled: rgba(255, 255, 255, 0.3);
 
-  /* Colors - Accent */
-  --accent-primary: rgba(88, 86, 214, 0.3);
-  --accent-primary-hover: rgba(88, 86, 214, 0.4);
-  --accent-primary-border: rgba(88, 86, 214, 0.5);
-  --accent-success: rgba(52, 199, 89, 0.2);
-  --accent-success-hover: rgba(52, 199, 89, 0.3);
-  --accent-success-border: rgba(52, 199, 89, 0.3);
-  --accent-danger: rgba(255, 59, 48, 0.2);
-  --accent-danger-hover: rgba(255, 59, 48, 0.3);
-  --accent-danger-border: rgba(255, 59, 48, 0.3);
+  /* Colors - Accent (borders bumped for contrast on glass) */
+  --accent-primary: rgba(88, 86, 214, 0.35);
+  --accent-primary-hover: rgba(88, 86, 214, 0.45);
+  --accent-primary-border: rgba(88, 86, 214, 0.65);
+  --accent-primary-border-strong: rgba(88, 86, 214, 0.8);
+  --accent-primary-solid: #5856d6;
+  --accent-primary-text: #b8b6ff;
+  --accent-success: rgba(52, 199, 89, 0.25);
+  --accent-success-hover: rgba(52, 199, 89, 0.35);
+  --accent-success-border: rgba(52, 199, 89, 0.5);
+  --accent-success-text: #5ce883;
+  --accent-danger: rgba(255, 59, 48, 0.25);
+  --accent-danger-hover: rgba(255, 59, 48, 0.35);
+  --accent-danger-border: rgba(255, 59, 48, 0.5);
+  --color-danger-solid: #ff3b30;
+  --color-danger-text: rgba(255, 59, 48, 0.9);
+  --color-danger-text-strong: rgba(255, 59, 48, 0.95);
+  --color-danger-bg-soft: rgba(255, 59, 48, 0.1);
+  --color-danger-bg-soft-hover: rgba(255, 59, 48, 0.15);
+  --color-danger-bg-medium: rgba(255, 59, 48, 0.2);
+  --color-danger-border-soft: rgba(255, 59, 48, 0.3);
+  --color-danger-border-medium: rgba(255, 59, 48, 0.5);
+  --color-danger-focus-ring: rgba(255, 59, 48, 0.2);
+  --accent-warning: rgba(255, 149, 0, 0.25);
+  --accent-warning-border: rgba(255, 149, 0, 0.6);
+  --accent-warning-text: #ffb340;
+  --accent-info: rgba(0, 122, 255, 0.25);
+  --accent-info-border: rgba(0, 122, 255, 0.55);
+  --accent-info-subtle: rgba(0, 122, 255, 0.1);
+
+  /* Semantic financial amounts */
+  --color-income-text: #34c759;
+  --color-income-border: rgba(52, 199, 89, 0.55);
+  --color-expense-text: #ff9500;
+  --color-expense-border: rgba(255, 149, 0, 0.55);
+  --color-savings-text: #5ce8de;
+  --color-savings-border: rgba(0, 199, 190, 0.55);
+  --color-info-text: #5ac8fa;
+  --color-indigo-text: #a8a6ff;
+
+  /* Row accent borders (CRUD inset/card rows) */
+  --row-accent-default: rgba(10, 132, 255, 0.55);
+  --row-accent-default-hover: rgba(10, 132, 255, 0.85);
+  --row-accent-blue: rgba(10, 132, 255, 0.6);
+  --row-accent-blue-hover: rgba(10, 132, 255, 0.85);
+  --row-accent-files: rgba(0, 122, 255, 0.6);
+  --row-accent-files-hover: rgba(0, 122, 255, 0.85);
+  --row-accent-green: rgba(52, 199, 89, 0.6);
+  --row-accent-green-hover: rgba(52, 199, 89, 0.85);
+  --row-accent-purple: rgba(175, 82, 222, 0.6);
+  --row-accent-purple-hover: rgba(175, 82, 222, 0.85);
+  --row-accent-indigo: rgba(88, 86, 214, 0.6);
+  --row-accent-indigo-hover: rgba(88, 86, 214, 0.85);
+  --row-accent-orange: rgba(255, 149, 0, 0.6);
+  --row-accent-orange-hover: rgba(255, 149, 0, 0.85);
+  --row-accent-teal: rgba(0, 199, 190, 0.6);
+  --row-accent-teal-hover: rgba(0, 199, 190, 0.85);
+
+  /* Interactive surfaces */
+  --btn-secondary-bg: rgba(255, 255, 255, 0.1);
+  --btn-secondary-bg-hover: rgba(255, 255, 255, 0.15);
+  --text-on-accent: rgba(255, 255, 255, 0.95);
+  --spinner-track: rgba(255, 255, 255, 0.3);
+  --border-contrast-high: rgba(255, 255, 255, 0.3);
+  --detail-actions-bg: rgba(255, 255, 255, 0.04);
+
+  /* Glass depth, overlays & modal surfaces */
+  --glass-inset-highlight: rgba(255, 255, 255, 0.1);
+  --glass-inset-highlight-strong: rgba(255, 255, 255, 0.15);
+  --glass-inset-highlight-subtle: rgba(255, 255, 255, 0.08);
+  --surface-overlay: rgba(255, 255, 255, 0.05);
+  --overlay-scrim: rgba(0, 0, 0, 0.55);
+  --modal-surface: rgba(28, 28, 30, 0.88);
+  --modal-border-accent: rgba(10, 132, 255, 0.3);
+  --empty-icon: rgba(255, 255, 255, 0.35);
+
+  /* Semantic surfaces — priority, badges, tabs, forms */
+  --priority-high-bg: linear-gradient(135deg, var(--color-danger-bg-medium) 0%, var(--color-danger-bg-soft-hover) 100%);
+  --priority-high-border: var(--color-danger-border-medium);
+  --priority-high-text: var(--color-danger-solid);
+  --priority-medium-bg: linear-gradient(135deg, rgba(255, 149, 0, 0.2) 0%, rgba(255, 149, 0, 0.15) 100%);
+  --priority-medium-border: rgba(255, 149, 0, 0.5);
+  --priority-medium-text: #ff9500;
+  --priority-low-bg: linear-gradient(135deg, rgba(52, 199, 89, 0.2) 0%, rgba(48, 209, 88, 0.15) 100%);
+  --priority-low-border: rgba(52, 199, 89, 0.5);
+  --priority-low-text: #34c759;
+  --badge-success-bg: linear-gradient(135deg, rgba(52, 199, 89, 0.15) 0%, rgba(48, 209, 88, 0.1) 100%);
+  --badge-success-border: rgba(52, 199, 89, 0.4);
+  --badge-info-bg: rgba(0, 122, 255, 0.12);
+  --badge-info-border: rgba(0, 122, 255, 0.35);
+  --badge-warning-bg: rgba(255, 149, 0, 0.12);
+  --badge-warning-border: rgba(255, 149, 0, 0.35);
+  --surface-success-bg: linear-gradient(135deg, rgba(52, 199, 89, 0.2) 0%, rgba(48, 209, 88, 0.15) 100%);
+  --surface-success-bg-strong: linear-gradient(135deg, rgba(52, 199, 89, 0.35) 0%, rgba(48, 209, 88, 0.3) 100%);
+  --surface-success-border: rgba(52, 199, 89, 0.5);
+  --surface-success-border-strong: rgba(52, 199, 89, 0.6);
+  --surface-success-shadow: 0 4px 16px rgba(52, 199, 89, 0.25);
+  --surface-success-shadow-sm: 0 2px 8px rgba(52, 199, 89, 0.3);
+  --surface-success-text-shadow: 0 2px 4px rgba(40, 167, 69, 0.25);
+  --surface-success-text-shadow-sm: 0 1px 2px rgba(40, 167, 69, 0.2);
+  --surface-success-divider: rgba(52, 199, 89, 0.3);
+  --highlight-success-text: #30d158;
+  --highlight-success-bg: rgba(48, 209, 88, 0.15);
+  --highlight-success-border: rgba(48, 209, 88, 0.3);
+  --alert-warning-bg: linear-gradient(135deg, var(--color-danger-bg-soft-hover) 0%, rgba(255, 149, 0, 0.15) 100%);
+  --alert-warning-border: var(--color-danger-border-soft);
+  --alert-warning-shadow: 0 8px 32px 0 var(--color-danger-bg-soft);
+  --tab-active-bg: var(--accent-primary-solid);
+  --tab-active-text: #ffffff;
+  --tab-active-shadow: 0 2px 4px rgba(0, 122, 255, 0.2);
+  --input-surface: var(--bg-glass);
+  --input-surface-focus: var(--bg-glass-hover);
+  --input-focus-ring: rgba(0, 122, 255, 0.1);
+  --focus-outline-color: var(--accent-primary-border);
+  --focus-outline-color-strong: var(--accent-primary-border-strong);
+  --focus-danger-outline-color: var(--color-danger-border-medium);
+  --btn-success-gradient: linear-gradient(135deg, rgba(52, 199, 89, 0.4) 0%, rgba(0, 199, 190, 0.4) 100%);
+  --btn-success-gradient-hover: linear-gradient(135deg, rgba(52, 199, 89, 0.5) 0%, rgba(0, 199, 190, 0.5) 100%);
+  --btn-success-border: rgba(52, 199, 89, 0.6);
+  --btn-success-shadow: 0 4px 12px 0 rgba(52, 199, 89, 0.2);
+  --btn-success-shadow-hover: 0 6px 16px 0 rgba(52, 199, 89, 0.3);
+  --text-emphasis: rgba(255, 255, 255, 0.8);
+  --btn-primary-bg: #0a84ff;
+  --btn-primary-hover-bg: #409cff;
+  --btn-primary-text: #ffffff;
+  --btn-primary-shadow: 0 2px 8px rgba(0, 122, 255, 0.25);
+  --btn-primary-shadow-hover: 0 4px 12px rgba(0, 122, 255, 0.35);
+  --surface-item-hover: var(--bg-glass-hover);
+  --chip-info-text: #0a84ff;
+  --chip-info-bg: rgba(10, 132, 255, 0.15);
+  --chip-info-border: rgba(10, 132, 255, 0.3);
+  --btn-icon-border: var(--border-glass);
+  --btn-icon-color: var(--text-secondary);
+  --btn-icon-hover-bg: var(--bg-glass-hover);
+  --btn-icon-hover-border: var(--border-glass-hover);
+  --btn-icon-hover-color: var(--text-primary);
+  --btn-danger-hover-bg: var(--accent-danger);
+  --btn-danger-hover-border: var(--accent-danger);
+  --btn-danger-hover-text: #ffffff;
+  --btn-secondary-border: var(--border-glass);
+  --status-devalued-text: rgba(255, 149, 0, 0.9);
+  --status-loss-text: var(--color-danger-text);
+  --surface-prediction-bg: rgba(255, 149, 0, 0.1);
+  --surface-prediction-border: rgba(255, 149, 0, 0.3);
+  --surface-danger-result-bg: var(--color-danger-bg-soft);
+  --surface-danger-result-border: var(--color-danger-border-soft);
+  --surface-info-banner-bg: linear-gradient(135deg, rgba(0, 122, 255, 0.12) 0%, rgba(88, 86, 214, 0.08) 100%);
+  --surface-info-banner-border: rgba(0, 122, 255, 0.25);
+  --surface-info-banner-shadow: 0 2px 8px rgba(0, 122, 255, 0.15);
+  --surface-info-icon-color: #007aff;
+  --surface-info-icon-bg: var(--badge-info-bg);
+  --surface-note-warning-bg: rgba(255, 193, 7, 0.1);
+  --surface-note-warning-border: rgba(255, 193, 7, 0.3);
+  --surface-note-warning-strong: rgba(255, 193, 7, 0.95);
+  --surface-warning-prominent-bg: rgba(255, 149, 0, 0.1);
+  --surface-warning-prominent-border: rgba(255, 149, 0, 0.3);
+  --surface-warning-prominent-shadow: 0 4px 16px 0 rgba(255, 149, 0, 0.1);
+  --surface-warning-title: rgba(255, 149, 0, 0.95);
+  --surface-tip-info-bg: rgba(10, 132, 255, 0.08);
+  --surface-tip-info-border: rgba(10, 132, 255, 0.25);
+  --surface-stat-muted-bg: rgba(0, 0, 0, 0.2);
+  --cta-info-gradient-bg: linear-gradient(135deg, rgba(0, 122, 255, 0.3) 0%, rgba(88, 86, 214, 0.3) 100%);
+  --cta-info-gradient-bg-hover: linear-gradient(135deg, rgba(0, 122, 255, 0.4) 0%, rgba(88, 86, 214, 0.4) 100%);
+  --cta-info-border: rgba(0, 122, 255, 0.5);
+  --cta-info-border-hover: rgba(0, 122, 255, 0.7);
+  --cta-info-text: var(--text-primary);
+  --checkbox-accent: #007aff;
+  --spinner-accent: var(--btn-primary-bg);
+  --color-unavailable: #ff6b35;
+  --surface-muted-bg: var(--input-surface);
+  --surface-checked-bg: var(--input-surface);
+  --surface-credit-summary-bg: linear-gradient(135deg, rgba(255, 45, 85, 0.1) 0%, rgba(255, 149, 0, 0.1) 100%);
+  --surface-credit-summary-border: rgba(255, 45, 85, 0.3);
+  --surface-credit-summary-shadow: 0 4px 16px 0 rgba(255, 45, 85, 0.15);
+  --surface-credit-danger-bg: rgba(255, 45, 85, 0.1);
+  --surface-credit-danger-border: rgba(255, 45, 85, 0.3);
+  --surface-credit-danger-shadow: 0 4px 16px 0 rgba(255, 45, 85, 0.1);
+  --surface-credit-danger-prominent-bg: rgba(255, 45, 85, 0.1);
+  --surface-credit-danger-prominent-border: rgba(255, 45, 85, 0.3);
+  --surface-credit-danger-prominent-shadow: 0 4px 16px 0 rgba(255, 45, 85, 0.1);
+  --surface-credit-warning-accent: #ff9500;
+  --surface-credit-warning-accent-strong: rgba(255, 149, 0, 0.95);
+  --surface-credit-danger-title: rgba(255, 45, 85, 0.95);
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  --surface-option-bg: #2c2c2e;
+  --surface-notification-bg: rgba(28, 28, 30, 0.95);
+  --btn-detail-danger-bg: var(--color-danger-bg-medium);
+  --btn-detail-danger-border: var(--color-danger-border-soft);
+  --btn-detail-danger-color: var(--color-danger-text);
+  --btn-detail-danger-hover-bg: var(--color-danger-border-soft);
+  --btn-detail-danger-hover-border: var(--color-danger-border-medium);
+  --surface-subscription-summary-bg: linear-gradient(135deg, rgba(175, 82, 222, 0.1) 0%, rgba(88, 86, 214, 0.1) 100%);
+  --surface-subscription-summary-border: rgba(175, 82, 222, 0.3);
+  --surface-subscription-summary-shadow: 0 4px 16px 0 rgba(175, 82, 222, 0.15);
+  --surface-me-deben-summary-bg: linear-gradient(135deg, rgba(52, 199, 89, 0.1) 0%, rgba(0, 199, 190, 0.1) 100%);
+  --surface-me-deben-summary-border: rgba(52, 199, 89, 0.3);
+  --surface-me-deben-summary-shadow: 0 4px 16px 0 rgba(52, 199, 89, 0.15);
+  --surface-proyectos-summary-bg: linear-gradient(135deg, rgba(255, 149, 0, 0.1) 0%, rgba(255, 45, 85, 0.1) 100%);
+  --surface-proyectos-summary-border: rgba(255, 149, 0, 0.3);
+  --surface-proyectos-summary-shadow: 0 4px 16px 0 rgba(255, 149, 0, 0.15);
+  --surface-debit-summary-bg: linear-gradient(135deg, rgba(0, 199, 190, 0.1) 0%, rgba(10, 132, 255, 0.1) 100%);
+  --surface-debit-summary-border: rgba(0, 199, 190, 0.3);
+  --surface-debit-summary-shadow: 0 4px 16px 0 rgba(0, 199, 190, 0.15);
+  --surface-streak-bg: linear-gradient(135deg, rgba(255, 87, 51, 0.12) 0%, rgba(255, 152, 0, 0.12) 100%);
+  --surface-streak-border: rgba(255, 87, 51, 0.3);
+  --surface-secret-warning-bg: rgba(255, 193, 7, 0.1);
+  --surface-secret-warning-border: rgba(255, 193, 7, 0.3);
+  --surface-verify-success-bg: rgba(52, 199, 89, 0.1);
+  --surface-verify-success-border: rgba(52, 199, 89, 0.3);
+  --surface-verify-success-text: rgba(52, 199, 89, 0.9);
+  --surface-rutinas-warning-bg: rgba(255, 193, 7, 0.12);
+  --surface-rutinas-warning-border: rgba(255, 193, 7, 0.35);
+  --surface-fechas-inspiration-shine: linear-gradient(135deg, rgba(0, 122, 255, 0.08) 0%, rgba(52, 199, 89, 0.08) 100%);
+  --surface-fechas-notice-strong: rgba(255, 59, 48, 0.9);
+  --badge-inspiration-shadow: var(--shadow-sm);
+  --text-inspiration-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --app-icon-hover-shadow: var(--shadow-md);
+  --app-icon-shine-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0) 100%);
+  --app-icon-focus-outline: var(--accent-primary-border);
+  --app-icon-material-filter: none;
+  --color-summary-purple: #af52de;
+  --color-summary-teal-alt: #5ac8fa;
+  --checkbox-accent-purple: #af52de;
+  --checkbox-accent-teal: #00c7be;
+  --crud-highlight-info: rgba(10, 132, 255, 0.9);
+  --progress-fill-success: linear-gradient(90deg, rgba(52, 199, 89, 0.9), rgba(48, 209, 88, 1));
+  --color-password-accent: rgba(10, 132, 255, 0.9);
+  --chart-danger-stroke: rgba(255, 59, 48, 0.8);
+  --chart-danger-fill: rgba(255, 59, 48, 0.1);
+  --chart-success-stroke: rgba(52, 199, 89, 0.8);
+  --chart-success-fill: rgba(52, 199, 89, 0.1);
+  --chart-warning-stroke: rgba(255, 149, 0, 0.8);
+  --chart-warning-fill: rgba(255, 149, 0, 0.1);
+  --chart-grid: rgba(255, 255, 255, 0.05);
+  --chart-tick: rgba(255, 255, 255, 0.7);
+  --chart-legend: rgba(255, 255, 255, 0.9);
+  --chart-title: rgba(255, 255, 255, 0.95);
+  --chart-tooltip-bg: rgba(0, 0, 0, 0.8);
+  --chart-tooltip-title: rgba(255, 255, 255, 0.9);
+  --chart-tooltip-body: rgba(255, 255, 255, 0.8);
+  --chart-tooltip-border: rgba(255, 59, 48, 0.5);
 
   /* Shadows */
-  --shadow-sm: 0 4px 16px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  --shadow-md: 0 6px 20px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  --shadow-lg: 0 8px 24px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  --shadow-xl: 0 12px 40px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  --shadow-modal: 0 20px 60px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --shadow-sm: 0 4px 16px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 var(--glass-inset-highlight);
+  --shadow-md: 0 6px 20px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 var(--glass-inset-highlight-strong);
+  --shadow-lg: 0 8px 24px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 var(--glass-inset-highlight-strong);
+  --shadow-xl: 0 12px 40px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 var(--glass-inset-highlight-strong);
+  --shadow-modal: 0 20px 60px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 var(--glass-inset-highlight);
 }
 
 /* Light Theme */
@@ -114,6 +402,7 @@ button {
   --bg-glass-hover: rgba(255, 255, 255, 0.8);
   --bg-glass-light: rgba(255, 255, 255, 0.5);
   --bg-glass-lighter: rgba(255, 255, 255, 0.4);
+  --bg-secondary: var(--bg-glass-light);
   --bg-body: #f5f5f7;
   --bg-body-gradient-start: #ffffff;
   --bg-body-gradient-end: #f5f5f7;
@@ -130,22 +419,235 @@ button {
   --text-disabled: rgba(0, 0, 0, 0.3);
 
   /* Colors - Accent */
-  --accent-primary: rgba(88, 86, 214, 0.2);
-  --accent-primary-hover: rgba(88, 86, 214, 0.3);
-  --accent-primary-border: rgba(88, 86, 214, 0.4);
-  --accent-success: rgba(52, 199, 89, 0.15);
-  --accent-success-hover: rgba(52, 199, 89, 0.25);
-  --accent-success-border: rgba(52, 199, 89, 0.3);
-  --accent-danger: rgba(255, 59, 48, 0.15);
-  --accent-danger-hover: rgba(255, 59, 48, 0.25);
-  --accent-danger-border: rgba(255, 59, 48, 0.3);
+  --accent-primary: rgba(88, 86, 214, 0.22);
+  --accent-primary-hover: rgba(88, 86, 214, 0.32);
+  --accent-primary-border: rgba(88, 86, 214, 0.5);
+  --accent-primary-border-strong: rgba(88, 86, 214, 0.7);
+  --accent-primary-solid: #5856d6;
+  --accent-primary-text: #4846c4;
+  --accent-success: rgba(52, 199, 89, 0.18);
+  --accent-success-hover: rgba(52, 199, 89, 0.28);
+  --accent-success-border: rgba(52, 199, 89, 0.45);
+  --accent-success-text: #1e8e3e;
+  --accent-danger: rgba(255, 59, 48, 0.18);
+  --accent-danger-hover: rgba(255, 59, 48, 0.28);
+  --accent-danger-border: rgba(255, 59, 48, 0.45);
+  --color-danger-solid: #ff3b30;
+  --color-danger-text: rgba(255, 59, 48, 0.85);
+  --color-danger-text-strong: #d70015;
+  --color-danger-bg-soft: rgba(255, 59, 48, 0.08);
+  --color-danger-bg-soft-hover: rgba(255, 59, 48, 0.12);
+  --color-danger-bg-medium: rgba(255, 59, 48, 0.12);
+  --color-danger-border-soft: rgba(255, 59, 48, 0.25);
+  --color-danger-border-medium: rgba(255, 59, 48, 0.4);
+  --color-danger-focus-ring: rgba(255, 59, 48, 0.15);
+  --accent-warning: rgba(255, 149, 0, 0.18);
+  --accent-warning-border: rgba(255, 149, 0, 0.55);
+  --accent-warning-text: #b25000;
+  --accent-info: rgba(0, 122, 255, 0.18);
+  --accent-info-border: rgba(0, 122, 255, 0.5);
+  --accent-info-subtle: rgba(0, 122, 255, 0.12);
+
+  --color-income-text: #1e8e3e;
+  --color-income-border: rgba(52, 199, 89, 0.7);
+  --color-expense-text: #b25000;
+  --color-expense-border: rgba(255, 149, 0, 0.7);
+  --color-savings-text: #008f86;
+  --color-savings-border: rgba(0, 199, 190, 0.7);
+  --color-info-text: #0051d5;
+  --color-indigo-text: #4846c4;
+  --detail-actions-bg: rgba(0, 0, 0, 0.02);
+
+  --row-accent-default: rgba(0, 81, 213, 0.6);
+  --row-accent-default-hover: rgba(0, 81, 213, 0.9);
+  --row-accent-blue: rgba(0, 81, 213, 0.65);
+  --row-accent-blue-hover: rgba(0, 81, 213, 0.9);
+  --row-accent-files: rgba(0, 122, 255, 0.7);
+  --row-accent-files-hover: rgba(0, 81, 213, 0.9);
+  --row-accent-green: rgba(40, 167, 69, 0.7);
+  --row-accent-green-hover: rgba(30, 142, 62, 0.9);
+  --row-accent-purple: rgba(175, 82, 222, 0.7);
+  --row-accent-purple-hover: rgba(155, 62, 202, 0.9);
+  --row-accent-indigo: rgba(88, 86, 214, 0.7);
+  --row-accent-indigo-hover: rgba(72, 70, 196, 0.9);
+  --row-accent-orange: rgba(253, 126, 20, 0.7);
+  --row-accent-orange-hover: rgba(230, 81, 0, 0.9);
+  --row-accent-teal: rgba(0, 143, 134, 0.7);
+  --row-accent-teal-hover: rgba(0, 122, 115, 0.9);
+
+  --btn-secondary-bg: rgba(0, 0, 0, 0.06);
+  --btn-secondary-bg-hover: rgba(0, 0, 0, 0.1);
+  --text-on-accent: rgba(255, 255, 255, 0.95);
+  --spinner-track: rgba(0, 0, 0, 0.12);
+  --border-contrast-high: rgba(0, 0, 0, 0.22);
+
+  --glass-inset-highlight: rgba(255, 255, 255, 0.85);
+  --glass-inset-highlight-strong: rgba(255, 255, 255, 0.95);
+  --glass-inset-highlight-subtle: rgba(255, 255, 255, 0.7);
+  --surface-overlay: rgba(0, 0, 0, 0.03);
+  --overlay-scrim: rgba(0, 0, 0, 0.35);
+  --modal-surface: rgba(255, 255, 255, 0.92);
+  --modal-border-accent: rgba(10, 132, 255, 0.25);
+  --empty-icon: rgba(0, 0, 0, 0.25);
+
+  --priority-high-bg: linear-gradient(135deg, var(--color-danger-bg-medium) 0%, var(--color-danger-bg-medium) 100%);
+  --priority-medium-bg: linear-gradient(135deg, rgba(255, 149, 0, 0.25) 0%, rgba(255, 149, 0, 0.2) 100%);
+  --priority-medium-border: rgba(255, 149, 0, 0.6);
+  --priority-low-bg: linear-gradient(135deg, rgba(52, 199, 89, 0.25) 0%, rgba(48, 209, 88, 0.2) 100%);
+  --priority-low-border: rgba(52, 199, 89, 0.6);
+  --badge-success-bg: linear-gradient(135deg, rgba(52, 199, 89, 0.2) 0%, rgba(48, 209, 88, 0.15) 100%);
+  --badge-success-border: rgba(52, 199, 89, 0.5);
+  --badge-info-bg: rgba(0, 122, 255, 0.15);
+  --badge-info-border: rgba(0, 122, 255, 0.4);
+  --badge-warning-bg: rgba(255, 149, 0, 0.15);
+  --badge-warning-border: rgba(255, 149, 0, 0.4);
+  --surface-success-bg: linear-gradient(135deg, rgba(52, 199, 89, 0.2) 0%, rgba(48, 209, 88, 0.15) 100%);
+  --surface-success-bg-strong: linear-gradient(135deg, rgba(52, 199, 89, 0.35) 0%, rgba(48, 209, 88, 0.3) 100%);
+  --surface-success-border: rgba(52, 199, 89, 0.5);
+  --surface-success-border-strong: rgba(52, 199, 89, 0.6);
+  --surface-success-shadow: 0 4px 16px rgba(52, 199, 89, 0.25);
+  --surface-success-shadow-sm: 0 2px 8px rgba(52, 199, 89, 0.3);
+  --surface-success-text-shadow: 0 2px 4px rgba(40, 167, 69, 0.25);
+  --surface-success-text-shadow-sm: 0 1px 2px rgba(40, 167, 69, 0.2);
+  --surface-success-divider: rgba(52, 199, 89, 0.3);
+  --highlight-success-text: #34c759;
+  --highlight-success-bg: rgba(52, 199, 89, 0.1);
+  --highlight-success-border: rgba(52, 199, 89, 0.2);
+  --alert-warning-bg: linear-gradient(135deg, var(--color-danger-bg-soft) 0%, rgba(255, 149, 0, 0.08) 100%);
+  --alert-warning-border: var(--color-danger-border-soft);
+  --alert-warning-shadow: 0 8px 32px 0 var(--color-danger-bg-soft);
+  --tab-active-bg: #007aff;
+  --input-surface-focus: var(--modal-surface);
+  --input-focus-ring: rgba(0, 122, 255, 0.15);
+  --focus-outline-color: var(--accent-primary-border);
+  --focus-outline-color-strong: var(--accent-primary-border-strong);
+  --focus-danger-outline-color: var(--color-danger-border-medium);
+  --btn-success-gradient: linear-gradient(135deg, rgba(52, 199, 89, 0.25) 0%, rgba(0, 199, 190, 0.25) 100%);
+  --btn-success-gradient-hover: linear-gradient(135deg, rgba(52, 199, 89, 0.3) 0%, rgba(0, 199, 190, 0.3) 100%);
+  --text-emphasis: rgba(0, 0, 0, 0.8);
+  --btn-primary-bg: #007aff;
+  --btn-primary-hover-bg: #0051d5;
+  --btn-primary-text: #ffffff;
+  --btn-primary-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+  --btn-primary-shadow-hover: 0 4px 12px rgba(0, 122, 255, 0.4);
+  --surface-item-hover: var(--modal-surface);
+  --chip-info-text: #007aff;
+  --chip-info-bg: rgba(0, 122, 255, 0.1);
+  --chip-info-border: rgba(0, 122, 255, 0.2);
+  --btn-icon-border: rgba(0, 0, 0, 0.15);
+  --btn-icon-hover-bg: var(--surface-overlay);
+  --btn-icon-hover-border: rgba(0, 0, 0, 0.2);
+  --btn-icon-hover-color: var(--text-primary);
+  --btn-danger-hover-bg: var(--color-danger-solid);
+  --btn-danger-hover-border: var(--color-danger-solid);
+  --btn-danger-hover-text: #ffffff;
+  --btn-secondary-border: rgba(0, 0, 0, 0.2);
+  --status-devalued-text: #ff9500;
+  --status-loss-text: var(--color-danger-solid);
+  --surface-prediction-bg: rgba(255, 149, 0, 0.05);
+  --surface-prediction-border: rgba(255, 149, 0, 0.2);
+  --surface-danger-result-border: var(--color-danger-bg-medium);
+  --surface-info-banner-bg: linear-gradient(135deg, rgba(0, 122, 255, 0.15) 0%, rgba(88, 86, 214, 0.1) 100%);
+  --surface-info-banner-border: var(--badge-info-border);
+  --surface-info-banner-shadow: 0 2px 8px rgba(0, 122, 255, 0.15);
+  --surface-info-icon-color: #0051d5;
+  --surface-info-icon-bg: rgba(0, 122, 255, 0.2);
+  --surface-note-warning-bg: rgba(255, 193, 7, 0.18);
+  --surface-note-warning-border: rgba(255, 193, 7, 0.45);
+  --surface-note-warning-strong: rgba(230, 126, 0, 1);
+  --surface-warning-prominent-bg: rgba(255, 149, 0, 0.18);
+  --surface-warning-prominent-border: rgba(255, 149, 0, 0.45);
+  --surface-warning-prominent-shadow: 0 4px 16px 0 rgba(255, 149, 0, 0.18);
+  --surface-warning-title: rgba(230, 81, 0, 1);
+  --surface-tip-info-bg: rgba(10, 132, 255, 0.05);
+  --surface-tip-info-border: rgba(10, 132, 255, 0.2);
+  --surface-stat-muted-bg: rgba(0, 0, 0, 0.03);
+  --cta-info-gradient-bg: linear-gradient(135deg, rgba(0, 122, 255, 0.2) 0%, rgba(88, 86, 214, 0.2) 100%);
+  --cta-info-gradient-bg-hover: linear-gradient(135deg, rgba(0, 122, 255, 0.3) 0%, rgba(88, 86, 214, 0.3) 100%);
+  --cta-info-border: var(--badge-info-border);
+  --cta-info-border-hover: rgba(0, 122, 255, 0.6);
+  --cta-info-text: rgba(0, 122, 255, 0.95);
+  --checkbox-accent: #007aff;
+  --spinner-accent: #007aff;
+  --color-unavailable: #c93400;
+  --surface-muted-bg: var(--surface-overlay);
+  --surface-checked-bg: var(--surface-overlay);
+  --surface-credit-summary-bg: linear-gradient(135deg, rgba(255, 45, 85, 0.08) 0%, rgba(255, 149, 0, 0.08) 100%);
+  --surface-credit-summary-border: rgba(255, 45, 85, 0.25);
+  --surface-credit-summary-shadow: 0 4px 16px 0 rgba(255, 45, 85, 0.1);
+  --surface-credit-danger-bg: rgba(255, 45, 85, 0.08);
+  --surface-credit-danger-border: rgba(255, 45, 85, 0.25);
+  --surface-credit-danger-shadow: 0 4px 16px 0 rgba(255, 45, 85, 0.1);
+  --surface-credit-danger-prominent-bg: rgba(255, 45, 85, 0.18);
+  --surface-credit-danger-prominent-border: rgba(255, 45, 85, 0.45);
+  --surface-credit-danger-prominent-shadow: 0 4px 16px 0 rgba(255, 45, 85, 0.18);
+  --surface-credit-warning-accent: rgba(255, 107, 0, 0.95);
+  --surface-credit-warning-accent-strong: rgba(255, 107, 0, 0.95);
+  --surface-credit-danger-title: rgba(220, 20, 60, 1);
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23000000' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  --surface-option-bg: #ffffff;
+  --surface-notification-bg: var(--bg-glass);
+  --btn-detail-danger-bg: var(--color-danger-bg-soft);
+  --btn-detail-danger-border: var(--color-danger-bg-medium);
+  --btn-detail-danger-color: var(--color-danger-text-strong);
+  --btn-detail-danger-hover-bg: var(--color-danger-bg-soft-hover);
+  --btn-detail-danger-hover-border: var(--color-danger-border-medium);
+  --surface-subscription-summary-bg: linear-gradient(135deg, rgba(175, 82, 222, 0.08) 0%, rgba(88, 86, 214, 0.08) 100%);
+  --surface-subscription-summary-border: rgba(175, 82, 222, 0.25);
+  --surface-subscription-summary-shadow: 0 4px 16px 0 rgba(175, 82, 222, 0.1);
+  --surface-me-deben-summary-bg: linear-gradient(135deg, rgba(52, 199, 89, 0.08) 0%, rgba(0, 199, 190, 0.08) 100%);
+  --surface-me-deben-summary-border: rgba(52, 199, 89, 0.25);
+  --surface-me-deben-summary-shadow: 0 4px 16px 0 rgba(52, 199, 89, 0.1);
+  --surface-proyectos-summary-bg: linear-gradient(135deg, rgba(255, 149, 0, 0.08) 0%, rgba(255, 45, 85, 0.08) 100%);
+  --surface-proyectos-summary-border: rgba(255, 149, 0, 0.25);
+  --surface-proyectos-summary-shadow: 0 4px 16px 0 rgba(255, 149, 0, 0.1);
+  --surface-debit-summary-bg: linear-gradient(135deg, rgba(0, 199, 190, 0.08) 0%, rgba(10, 132, 255, 0.08) 100%);
+  --surface-debit-summary-border: rgba(0, 199, 190, 0.25);
+  --surface-debit-summary-shadow: 0 4px 16px 0 rgba(0, 199, 190, 0.1);
+  --surface-streak-bg: linear-gradient(135deg, rgba(255, 87, 51, 0.1) 0%, rgba(255, 152, 0, 0.1) 100%);
+  --surface-streak-border: rgba(255, 87, 51, 0.2);
+  --surface-secret-warning-bg: rgba(255, 193, 7, 0.08);
+  --surface-secret-warning-border: rgba(255, 193, 7, 0.2);
+  --surface-verify-success-bg: rgba(52, 199, 89, 0.08);
+  --surface-verify-success-border: rgba(52, 199, 89, 0.2);
+  --surface-verify-success-text: var(--color-income-text);
+  --surface-rutinas-warning-bg: rgba(255, 193, 7, 0.15);
+  --surface-rutinas-warning-border: rgba(255, 193, 7, 0.4);
+  --surface-fechas-inspiration-shine: linear-gradient(135deg, rgba(0, 122, 255, 0.06) 0%, rgba(52, 199, 89, 0.06) 100%);
+  --surface-fechas-notice-strong: rgba(220, 38, 38, 0.9);
+  --badge-inspiration-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+  --text-inspiration-shadow: none;
+  --app-icon-hover-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.2);
+  --app-icon-shine-gradient: linear-gradient(135deg, var(--text-tertiary) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0) 100%);
+  --app-icon-focus-outline: rgba(88, 86, 214, 0.6);
+  --app-icon-material-filter: drop-shadow(0 2px 4px var(--text-disabled));
+  --color-summary-purple: #8b3db8;
+  --color-summary-teal-alt: #17a2b8;
+  --checkbox-accent-purple: #af52de;
+  --checkbox-accent-teal: #00c7be;
+  --crud-highlight-info: rgba(0, 122, 255, 0.9);
+  --progress-fill-success: linear-gradient(90deg, rgba(52, 199, 89, 0.9), rgba(48, 209, 88, 1));
+  --color-password-accent: rgba(0, 122, 255, 0.9);
+  --chart-danger-fill: rgba(255, 59, 48, 0.12);
+  --chart-success-stroke: rgba(52, 199, 89, 0.85);
+  --chart-success-fill: rgba(52, 199, 89, 0.12);
+  --chart-warning-stroke: rgba(255, 149, 0, 0.85);
+  --chart-warning-fill: rgba(255, 149, 0, 0.12);
+  --chart-grid: rgba(0, 0, 0, 0.06);
+  --chart-tick: rgba(0, 0, 0, 0.55);
+  --chart-legend: rgba(0, 0, 0, 0.85);
+  --chart-title: rgba(0, 0, 0, 0.9);
+  --chart-tooltip-bg: rgba(255, 255, 255, 0.95);
+  --chart-tooltip-title: rgba(0, 0, 0, 0.9);
+  --chart-tooltip-body: rgba(0, 0, 0, 0.75);
+  --chart-tooltip-border: rgba(255, 59, 48, 0.35);
 
   /* Shadows */
-  --shadow-sm: 0 4px 16px 0 rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  --shadow-md: 0 6px 20px 0 rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  --shadow-lg: 0 8px 24px 0 rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  --shadow-xl: 0 12px 40px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  --shadow-modal: 0 20px 60px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --shadow-sm: 0 4px 16px 0 rgba(0, 0, 0, 0.1), inset 0 1px 0 var(--glass-inset-highlight);
+  --shadow-md: 0 6px 20px 0 rgba(0, 0, 0, 0.15), inset 0 1px 0 var(--glass-inset-highlight-strong);
+  --shadow-lg: 0 8px 24px 0 rgba(0, 0, 0, 0.15), inset 0 1px 0 var(--glass-inset-highlight-strong);
+  --shadow-xl: 0 12px 40px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 var(--glass-inset-highlight-strong);
+  --shadow-modal: 0 20px 60px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 var(--glass-inset-highlight);
 }
 
 body {
@@ -154,8 +656,13 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   overflow-y: auto;
-  background: var(--bg-body);
-  transition: background-color var(--transition-base);
+  background: linear-gradient(
+    180deg,
+    var(--bg-body-gradient-start) 0%,
+    var(--bg-body) 50%,
+    var(--bg-body-gradient-end) 100%
+  );
+  transition: background var(--transition-base);
 }
 
 #root {
@@ -208,6 +715,3 @@ body {
 [data-theme='light'] * {
   scrollbar-color: rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.05);
 }
-
-/* Import shared design system */
-@import './styles/shared.css';

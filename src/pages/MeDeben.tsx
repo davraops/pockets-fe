@@ -8,8 +8,13 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
+import { devError, devLog, isDebugToolsEnabled, isDestructiveDebugEnabled } from '../utils/debugTools'
+import { subscribeFinanceEvent } from '../utils/financeEvents'
 import { useNotification } from '../contexts/NotificationContext'
+import { useConfirm } from '../contexts/ConfirmContext'
 import './AppPage.css'
+import ModalOverlay from '../components/ModalOverlay'
+import ListSkeleton from '../components/ListSkeleton'
 import './MeDeben.css'
 
 // Interfaz que coincide con la respuesta de la API (campos en inglés)
@@ -36,6 +41,7 @@ interface Debtor {
 function MeDeben() {
   const navigate = useNavigate()
   const { showError, showSuccess } = useNotification()
+  const { confirm } = useConfirm()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
@@ -90,8 +96,8 @@ function MeDeben() {
         setDebtors([])
       }
     } catch (err: any) {
-      console.error('Error al cargar deudores:', err)
-      setError('Frontend says: Error al cargar los deudores. Por favor, intenta de nuevo.')
+      devError('Error al cargar deudores:', err)
+      setError('Error al cargar los deudores. Por favor, intenta de nuevo.')
       setDebtors([])
     } finally {
       setIsLoading(false)
@@ -105,15 +111,10 @@ function MeDeben() {
 
   // Escuchar eventos de actualización de deudores desde transacciones
   useEffect(() => {
-    const handleDebtorsUpdated = () => {
-      console.log('Evento debtorsUpdated recibido, recargando deudores...')
+    return subscribeFinanceEvent('debtorsUpdated', () => {
+      devLog('Evento debtorsUpdated recibido, recargando deudores...')
       reloadDebtors()
-    }
-
-    window.addEventListener('debtorsUpdated', handleDebtorsUpdated)
-    return () => {
-      window.removeEventListener('debtorsUpdated', handleDebtorsUpdated)
-    }
+    })
   }, [])
 
   // Cerrar menú al hacer clic fuera - HIG: Clear Feedback
@@ -268,7 +269,7 @@ function MeDeben() {
         showSuccess('Deudor creado exitosamente')
       }
     } catch (err: any) {
-      console.error('Error al guardar deudor:', err)
+      devError('Error al guardar deudor:', err)
       const errorMessage = err.data?.error
         ? err.data.error
         : 'Error al guardar el deudor. Por favor, intenta de nuevo.'
@@ -297,9 +298,7 @@ function MeDeben() {
     if (!selectedDebtor) return
 
     if (
-      window.confirm(
-        `¿Estás seguro de que quieres eliminar el deudor "${selectedDebtor.nombreDeudor}"?`
-      )
+      (await confirm({ message: `¿Estás seguro de que quieres eliminar el deudor "${selectedDebtor.nombreDeudor}"?`, variant: 'danger' }))
     ) {
       try {
         await api.deleteDebtor(selectedDebtor.id)
@@ -307,7 +306,7 @@ function MeDeben() {
         handleCloseDetailModal()
         showSuccess('Deudor eliminado exitosamente')
       } catch (err: any) {
-        console.error('Error al eliminar deudor:', err)
+        devError('Error al eliminar deudor:', err)
         showError('Error al eliminar el deudor. Por favor, intenta de nuevo.')
       }
     }
@@ -475,7 +474,7 @@ function MeDeben() {
       setIsDebugModalOpen(false)
       showSuccess('8 deudores de prueba creados exitosamente')
     } catch (err: any) {
-      console.error('Error al crear deudores de prueba:', err)
+      devError('Error al crear deudores de prueba:', err)
       showError(err.data?.error || 'Error desconocido')
     } finally {
       setIsLoading(false)
@@ -484,10 +483,9 @@ function MeDeben() {
 
   // Función para eliminar todos los deudores
   const handleDeleteAllDebtors = async () => {
+    if (!isDestructiveDebugEnabled()) return
     if (
-      window.confirm(
-        '¿Estás seguro de que quieres eliminar TODOS los deudores? Esta acción es IRREVERSIBLE.'
-      )
+      (await confirm({ message: '¿Estás seguro de que quieres eliminar TODOS los deudores? Esta acción es IRREVERSIBLE.', variant: 'danger' }))
     ) {
       try {
         setIsLoading(true)
@@ -496,7 +494,7 @@ function MeDeben() {
         setIsDebugModalOpen(false)
         showSuccess('Todos los deudores han sido eliminados exitosamente')
       } catch (err: any) {
-        console.error('Error al eliminar todos los deudores:', err)
+        devError('Error al eliminar todos los deudores:', err)
         showError(err.data?.error || 'Error desconocido')
       } finally {
         setIsLoading(false)
@@ -504,127 +502,164 @@ function MeDeben() {
     }
   }
 
+  const highlights = calculateHighlights()
+
   return (
     <>
       <div className="app-page-container">
-        <div className="app-page-content me-deben-content">
+        <div className="app-page-content app-page-content-wide crud-page-content me-deben-content">
           {isLoading ? (
-            <div className="loader-container">
-              <div className="loader">
-                <div className="loader-spinner"></div>
-                <p className="loader-text">Cargando deudores...</p>
-              </div>
-            </div>
-          ) : error ? (
-            <div className="loader-container">
-              <div className="loader">
-                <p className="loader-text" style={{ color: 'rgba(255, 59, 48, 0.9)' }}>
-                  {error}
-                </p>
-              </div>
-            </div>
-          ) : (
             <>
-              {/* Toolbar - HIG: Clear Navigation */}
-              <div className="me-deben-toolbar">
+              <div className="app-toolbar">
                 <button
-                  className="me-deben-toolbar-button"
+                  className="app-toolbar-button"
                   onClick={() => navigate('/finanzas')}
                   aria-label="Volver a Finanzas"
                   type="button"
                 >
-                  <ArrowBackIcon className="me-deben-toolbar-icon" />
+                  <ArrowBackIcon className="app-toolbar-icon" />
                 </button>
-                <div className="me-deben-toolbar-menu-container" ref={menuRef}>
+              </div>
+              <h1 className="app-page-title">Me Deben</h1>
+              <div className="glass-group">
+                <ListSkeleton variant="inset-row" count={5} aria-label="Cargando deudores" />
+              </div>
+            </>
+          ) : error ? (
+            <>
+              <div className="app-toolbar">
+                <button
+                  className="app-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="app-toolbar-icon" />
+                </button>
+              </div>
+              <h1 className="app-page-title">Me Deben</h1>
+              <div className="loader-container">
+                <div className="loader finanzas-stats-error-panel">
+                  <p className="loader-text loader-text--error" role="alert">
+                    {error}
+                  </p>
                   <button
-                    className="me-deben-toolbar-button"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    aria-label="Opciones"
-                    aria-expanded={isMenuOpen}
                     type="button"
+                    className="btn-base btn-secondary finanzas-stats-retry-button"
+                    onClick={() => void reloadDebtors()}
+                    aria-label="Reintentar cargar deudores"
                   >
-                    <MoreVertIcon className="me-deben-toolbar-icon" />
+                    <span>Reintentar</span>
                   </button>
-                  {isMenuOpen && (
-                    <div className="me-deben-menu">
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Toolbar - HIG: Clear Navigation */}
+              <div className="app-toolbar">
+                <button
+                  className="app-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="app-toolbar-icon" />
+                </button>
+                <div className="app-toolbar-menu-container" ref={menuRef}>
+                  {isDebugToolsEnabled() && (
+                    <>
                       <button
-                        className="me-deben-menu-item"
-                        onClick={() => {
-                          handleOpenModal()
-                          setIsMenuOpen(false)
-                        }}
+                        className="app-toolbar-button"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        aria-label="Opciones de depuración"
+                        aria-expanded={isMenuOpen}
                         type="button"
                       >
-                        <AddIcon className="me-deben-menu-icon" />
-                        Agregar Deudor
+                        <MoreVertIcon className="app-toolbar-icon" />
                       </button>
-                      {api.isTestUser() && (
-                        <button
-                          className="me-deben-menu-item"
-                          onClick={() => {
-                            setIsDebugModalOpen(true)
-                            setIsMenuOpen(false)
-                          }}
-                          type="button"
-                        >
-                          <span className="me-deben-menu-icon">🐛</span>
-                          Debug
-                        </button>
+                      {isMenuOpen && (
+                        <div className="crud-dropdown-menu">
+                          <button
+                            className="crud-dropdown-menu-item"
+                            onClick={() => {
+                              setIsDebugModalOpen(true)
+                              setIsMenuOpen(false)
+                            }}
+                            type="button"
+                          >
+                            <span>🐛 Debug</span>
+                          </button>
+                        </div>
                       )}
-                    </div>
+                    </>
                   )}
                 </div>
               </div>
 
               {/* Page Title - HIG: Clear Orientation */}
-              <h1 className="me-deben-page-title">Me Deben</h1>
+              <h1 className="app-page-title">Me Deben</h1>
 
-              {/* Highlights - HIG: Relevant Information */}
-              {debtors.length > 0 &&
-                (() => {
-                  const highlights = calculateHighlights()
-                  return (
-                    <div className="me-deben-summary-block">
-                      <div className="summary-item">
-                        <span className="summary-label">Total Deudores</span>
-                        <span className="summary-value">{highlights.totalDeudores}</span>
-                      </div>
-                      <div className="summary-separator"></div>
-                      <div className="summary-item">
-                        <span className="summary-label">Pendiente</span>
-                        <span className="summary-value">
-                          {formatBalance(highlights.totalPendiente)}
-                        </span>
-                      </div>
-                      <div className="summary-separator"></div>
-                      <div className="summary-item">
-                        <span className="summary-label">Pagado</span>
-                        <span className="summary-value">
-                          {formatBalance(highlights.totalPagado)}
-                        </span>
-                      </div>
-                      <div className="summary-separator"></div>
-                      <div className="summary-item">
-                        <span className="summary-label">Pendientes</span>
-                        <span className="summary-value">{highlights.deudoresPendientes}</span>
-                      </div>
-                      <div className="summary-separator"></div>
-                      <div className="summary-item">
-                        <span className="summary-label">Completos</span>
-                        <span className="summary-value">{highlights.deudoresCompletos}</span>
-                      </div>
-                    </div>
-                  )
-                })()}
+              {/* Resumen de deudores */}
+              <div
+                className="crud-summary-strip crud-summary-strip--success"
+                role="region"
+                aria-label="Resumen de deudores"
+              >
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Total deudores</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
+                    {highlights.totalDeudores}
+                  </span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Pendiente</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--danger">
+                    {formatBalance(highlights.totalPendiente)}
+                  </span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Pagado</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--positive">
+                    {formatBalance(highlights.totalPagado)}
+                  </span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Pendientes</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--expense">
+                    {highlights.deudoresPendientes}
+                  </span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Completos</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--available">
+                    {highlights.deudoresCompletos}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+                onClick={handleOpenModal}
+                aria-label="Agregar deudor"
+              >
+                <AddIcon aria-hidden={true} />
+                Agregar deudor
+              </button>
 
               {debtors.length === 0 ? (
                 <div className="empty-state">
-                  <PersonIcon className="empty-icon" />
+                  <PersonIcon className="empty-state-icon" />
                   <p className="empty-text">No hay deudores registrados</p>
-                  <p className="empty-subtext">Agrega tu primer deudor</p>
+                  <p className="empty-subtext">Usa el botón de arriba para registrar el primero</p>
                 </div>
               ) : (
-                <div className="me-deben-list">
+                <div className="crud-card-list">
                   {debtors.map(debtor => {
                     const debtorColor = getDebtorColor(debtor.nombreDeudor)
                     const paidPercentage = calculatePaidPercentage(debtor.valor, debtor.totalPagado)
@@ -635,42 +670,42 @@ function MeDeben() {
                     return (
                       <button
                         key={debtor.id}
-                        className={`deudor-row ${isFullyPaid ? 'deudor-paid-off' : ''}`}
+                        className={`crud-card-row crud-card-row--debtor ${isFullyPaid ? 'crud-card-row--paid-off' : ''}`}
                         onClick={() => handleOpenDetailModal(debtor)}
                         type="button"
                         aria-label={`Ver detalles de ${debtor.nombreDeudor}`}
                       >
-                        <div className="deudor-row-content">
-                          <div className="deudor-row-main">
-                            <span className="deudor-row-title">{debtor.nombreDeudor}</span>
-                            <span className="deudor-row-subtitle">
+                        <div className="crud-row-content">
+                          <div className="crud-row-main">
+                            <span className="crud-row-title">{debtor.nombreDeudor}</span>
+                            <span className="crud-row-subtitle">
                               {debtor.concepto} • {timeOwing}
                             </span>
                           </div>
-                          <div className="deudor-row-secondary">
-                            <span className="deudor-row-total">{formatBalance(debtor.valor)}</span>
-                            <div className="deudor-row-bottom">
-                              <span className="deudor-row-pending">
+                          <div className="crud-row-secondary">
+                            <span className="crud-row-value">{formatBalance(debtor.valor)}</span>
+                            <div className="crud-row-bottom">
+                              <span className="crud-row-meta">
                                 Pendiente: {formatBalance(pending)}
                               </span>
-                              <div className="deudor-row-progress">
-                                <div className="deudor-row-progress-bar">
+                              <div className="crud-row-progress">
+                                <div className="crud-row-progress-bar">
                                   <div
-                                    className="deudor-row-progress-fill"
+                                    className="crud-row-progress-fill"
                                     style={{
                                       width: `${Math.min(paidPercentage, 100)}%`,
                                       backgroundColor: isFullyPaid ? '#34C759' : debtorColor,
                                     }}
                                   />
                                 </div>
-                                <span className="deudor-row-progress-text">
+                                <span className="crud-row-progress-text">
                                   {paidPercentage.toFixed(1)}%
                                 </span>
                               </div>
                             </div>
                           </div>
                         </div>
-                        <ChevronRightIcon className="deudor-row-chevron" aria-hidden="true" />
+                        <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
                       </button>
                     )
                   })}
@@ -683,13 +718,11 @@ function MeDeben() {
 
       {/* Modal para agregar deudor */}
       {isModalOpen && (
-        <div className="modal-overlay" onClick={handleCloseModal}>
+        <ModalOverlay onClose={handleCloseModal} className="modal-overlay">
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Nuevo Deudor</h2>
-              <button className="modal-close" onClick={handleCloseModal}>
-                ×
-              </button>
+              <h2 className="modal-title" id="modal-title-nuevo-deudor">Nuevo Deudor</h2>
+              <button className="modal-close" onClick={handleCloseModal} aria-label="Cerrar modal">×</button>
             </div>
             <form className="modal-form" onSubmit={handleSubmit}>
               <div className="form-group">
@@ -767,12 +800,12 @@ function MeDeben() {
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Modal de detalles */}
       {isDetailModalOpen && selectedDebtor && (
-        <div className="modal-overlay" onClick={handleCloseDetailModal}>
+        <ModalOverlay onClose={handleCloseDetailModal} className="modal-overlay">
           <div
             className="modal-content detail-modal"
             onClick={e => e.stopPropagation()}
@@ -783,7 +816,7 @@ function MeDeben() {
             }
           >
             <div className="modal-header">
-              <h2 className="modal-title">Detalles del Deudor</h2>
+              <h2 className="modal-title" id="modal-title-detalles-del-deudor">Detalles del Deudor</h2>
               <button
                 className="modal-close"
                 onClick={handleCloseDetailModal}
@@ -923,7 +956,7 @@ function MeDeben() {
                     backgroundColor: 'rgba(0, 122, 255, 0.1)',
                     border: '1px solid rgba(0, 122, 255, 0.3)',
                     borderRadius: '8px',
-                    fontSize: '0.875rem',
+                    fontSize: 'var(--font-size-xs)',
                     color: 'rgba(255, 255, 255, 0.9)',
                   }}
                 >
@@ -945,20 +978,20 @@ function MeDeben() {
               </form>
             )}
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Modal de Debug */}
-      {isDebugModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
+      {isDebugModalOpen && isDebugToolsEnabled() && (
+        <ModalOverlay onClose={() => setIsDebugModalOpen(false)} className="modal-overlay">
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Debug - Me Deben</h2>
+              <h2 className="modal-title" id="modal-title-debug-me-deben">Debug - Me Deben</h2>
               <button className="modal-close" onClick={() => setIsDebugModalOpen(false)}>
                 ×
               </button>
             </div>
-            <div className="debug-modal-content">
+            <div className="modal-panel-content">
               <div className="debug-options">
                 <button
                   className="debug-option-button create-demo"
@@ -998,7 +1031,7 @@ function MeDeben() {
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </>
   )

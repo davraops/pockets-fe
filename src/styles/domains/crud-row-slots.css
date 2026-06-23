@@ -1,0 +1,209 @@
+/* Shared content slots inside CRUD rows */
+
+.crud-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+.crud-row-value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: 1.4;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.crud-row-meta {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: 1.4;
+}
+
+.crud-row-preview {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.crud-row-separator {
+  color: var(--text-tertiary);
+  opacity: 0.5;
+}
+
+.crud-row-tags,
+.crud-row-tag {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.crud-row-hint {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.crud-row-highlight {
+  color: var(--accent-primary-solid);
+  font-weight: var(--font-weight-medium);
+}
+
+.crud-row-progress {
+  width: 100%;
+}
+
+.crud-row-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--bg-glass-light);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.crud-row-progress-fill {
+  height: 100%;
+  border-radius: var(--radius-sm);
+  transition: width var(--transition-base);
+}
+
+.crud-row-progress-text {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.crud-row-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+/* Inset row accent modifiers */
+.crud-row-accent-blue {
+  --row-accent: var(--row-accent-blue);
+  --row-accent-hover: var(--row-accent-blue-hover);
+}
+
+.crud-row-accent-files {
+  --row-accent: var(--row-accent-files);
+  --row-accent-hover: var(--row-accent-files-hover);
+}
+
+.crud-row-accent-green {
+  --row-accent: var(--row-accent-green);
+  --row-accent-hover: var(--row-accent-green-hover);
+}
+
+.crud-row-accent-purple {
+  --row-accent: var(--row-accent-purple);
+  --row-accent-hover: var(--row-accent-purple-hover);
+}
+
+.crud-row-accent-indigo {
+  --row-accent: var(--row-accent-indigo);
+  --row-accent-hover: var(--row-accent-indigo-hover);
+}
+
+.crud-row-accent-danger {
+  --row-accent: var(--color-danger-border-medium);
+  --row-accent-hover: var(--color-danger-text-strong);
+}
+
+.crud-row-accent-income {
+  --row-accent: var(--color-income-border);
+  --row-accent-hover: var(--color-income-text);
+}
+
+.crud-row-accent-expense {
+  --row-accent: var(--color-expense-border);
+  --row-accent-hover: var(--color-expense-text);
+}
+
+.crud-row-accent-savings {
+  --row-accent: var(--color-savings-border);
+  --row-accent-hover: var(--color-savings-text);
+}
+
+.crud-row-value--income {
+  color: var(--color-income-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.crud-row-value--expense {
+  color: var(--color-expense-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.crud-row-value--savings {
+  color: var(--color-savings-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.crud-inset-row--read {
+  opacity: 0.7;
+}
+
+.crud-inset-row--unread {
+  opacity: 1;
+}
+
+/* Card row type modifiers */
+.crud-card-row--debt {
+  --row-accent: var(--debt-color, var(--color-danger-solid));
+}
+
+.crud-card-row--credit {
+  --row-accent: var(--banco-color, var(--section-pink));
+}
+
+.crud-card-row--project {
+  --row-accent: var(--project-color, var(--section-lifestyle));
+  --row-accent-hover: var(--row-accent-orange-hover);
+}
+
+.crud-card-row--subscription {
+  --row-accent: var(--subscription-color, var(--section-purple));
+  --row-accent-hover: var(--row-accent-purple-hover);
+}
+
+.crud-card-row--debit-card {
+  --row-accent: var(--card-color, var(--section-teal));
+  --row-accent-hover: var(--row-accent-teal-hover);
+}
+
+.crud-card-row--debtor {
+  --row-accent: var(--row-accent-green);
+  --row-accent-hover: var(--row-accent-green-hover);
+}
+
+.crud-row-title-section {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex: 1;
+  min-width: 0;
+}
+
+.crud-row-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.crud-row-icon-svg {
+  font-size: var(--font-size-xl) !important;
+}

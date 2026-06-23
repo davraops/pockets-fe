@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import FolderSpecialIcon from '@mui/icons-material/FolderSpecial'
@@ -9,8 +9,11 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
+import { isDebugToolsEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
+import { emitTransactionSyncEvents } from '../utils/transactionMutation'
+import ListSkeleton from '../components/ListSkeleton'
 import './AppPage.css'
 import './Proyectos.css'
 
@@ -100,30 +103,29 @@ function Proyectos() {
     }
   }
 
-  // Cargar proyectos desde la API
-  useEffect(() => {
-    const loadProjects = async () => {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const response = await api.getProjects()
-        if (response.projects && Array.isArray(response.projects)) {
-          const mappedProjects = response.projects.map(mapProjectFromAPI)
-          setProjects(mappedProjects)
-        } else {
-          setProjects([])
-        }
-      } catch (err: any) {
-        console.error('Error al cargar proyectos:', err)
-        setError('Frontend says: Error al cargar los proyectos. Por favor, intenta de nuevo.')
+  const loadProjects = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await api.getProjects()
+      if (response.projects && Array.isArray(response.projects)) {
+        const mappedProjects = response.projects.map(mapProjectFromAPI)
+        setProjects(mappedProjects)
+      } else {
         setProjects([])
-      } finally {
-        setIsLoading(false)
       }
+    } catch (err: any) {
+      console.error('Error al cargar proyectos:', err)
+      setError('Frontend says: Error al cargar los proyectos. Por favor, intenta de nuevo.')
+      setProjects([])
+    } finally {
+      setIsLoading(false)
     }
-
-    loadProjects()
   }, [])
+
+  useEffect(() => {
+    void loadProjects()
+  }, [loadProjects])
 
   // Cerrar menú al hacer clic fuera - HIG: Clear Feedback
   useEffect(() => {
@@ -220,28 +222,10 @@ function Proyectos() {
       try {
         setIsLoading(true)
 
-        // Actualizar el proyecto a estado "completed"
-        await api.updateProject(selectedProject.id, {
-          status: 'completed',
-        })
+        await api.completeProject(selectedProject.id, { close_budget: true })
 
-        // Si tiene presupuesto asociado, eliminarlo
-        if (selectedProject.presupuestoId) {
-          try {
-            await api.deleteBudget(selectedProject.presupuestoId)
-          } catch (budgetErr: any) {
-            console.error('Error al eliminar presupuesto:', budgetErr)
-            // Continuar aunque falle la eliminación del presupuesto
-          }
-        }
-
-        // Recargar proyectos después de completar
-        const response = await api.getProjects()
-        if (response.projects && Array.isArray(response.projects)) {
-          const mappedProjects = response.projects.map(mapProjectFromAPI)
-          setProjects(mappedProjects)
-        }
-
+        await loadProjects()
+        emitTransactionSyncEvents()
         handleCloseDetailModal()
       } catch (err: any) {
         console.error('Error al completar proyecto:', err)
@@ -266,15 +250,13 @@ function Proyectos() {
     ) {
       try {
         setIsLoading(true)
-        await api.deleteProject(selectedProject.id)
+        await api.deleteProject(
+          selectedProject.id,
+          selectedProject.presupuestoId ? { delete_budget: 'soft' } : undefined
+        )
 
-        // Recargar proyectos después de eliminar
-        const response = await api.getProjects()
-        if (response.projects && Array.isArray(response.projects)) {
-          const mappedProjects = response.projects.map(mapProjectFromAPI)
-          setProjects(mappedProjects)
-        }
-
+        await loadProjects()
+        emitTransactionSyncEvents()
         handleCloseDetailModal()
       } catch (err: any) {
         console.error('Error al eliminar proyecto:', err)
@@ -400,45 +382,29 @@ function Proyectos() {
           status: newStatus,
         }
 
-        // Si el estado cambió a "completed" y tiene un presupuesto asociado, eliminarlo
-        if (
-          previousStatus !== 'completed' &&
-          newStatus === 'completed' &&
-          selectedProject.presupuestoId
-        ) {
-          // Actualizar el proyecto primero
-          await api.updateProject(selectedProject.id, projectData)
-
-          // Luego eliminar el presupuesto
-          try {
-            await api.deleteBudget(selectedProject.presupuestoId)
-          } catch (budgetErr: any) {
-            console.error('Error al eliminar presupuesto:', budgetErr)
-            // Continuar aunque falle la eliminación del presupuesto
-          }
+        if (previousStatus !== 'completed' && newStatus === 'completed') {
+          const { status: _status, ...projectFields } = projectData
+          await api.updateProject(selectedProject.id, projectFields)
+          await api.completeProject(selectedProject.id, {
+            close_budget: Boolean(selectedProject.presupuestoId),
+          })
         } else {
-          // Si el proyecto sigue activo y tiene presupuesto asociado, actualizar la meta mensual del presupuesto
           if (selectedProject.presupuestoId && newStatus !== 'completed') {
             try {
-              // Actualizar el presupuesto con la nueva meta mensual
               await api.updateBudget(selectedProject.presupuestoId, {
                 max_amount: nuevaMetaMensual,
               })
             } catch (budgetErr: any) {
               console.error('Error al actualizar presupuesto:', budgetErr)
-              // Continuar aunque falle la actualización del presupuesto
             }
           }
 
-          // Actualizar el proyecto
           await api.updateProject(selectedProject.id, projectData)
         }
 
-        // Recargar proyectos después de actualizar
-        const response = await api.getProjects()
-        if (response.projects && Array.isArray(response.projects)) {
-          const mappedProjects = response.projects.map(mapProjectFromAPI)
-          setProjects(mappedProjects)
+        await loadProjects()
+        if (previousStatus !== 'completed' && newStatus === 'completed') {
+          emitTransactionSyncEvents()
         }
         handleCloseDetailModal()
       } else {
@@ -448,38 +414,22 @@ function Proyectos() {
         const duracionMeses = parseInt(formData.duracionMeses)
         const metaMensual = montoObjetivo / duracionMeses
 
-        // Crear el presupuesto mensual asociado con la meta mensual
-        const budgetResponse = await api.createBudget({
-          name: formData.nombre.trim(),
-          max_amount: metaMensual,
+        await api.createProjectWithBudget({
+          budget: {
+            name: formData.nombre.trim(),
+            max_amount: metaMensual,
+          },
+          project: {
+            name: formData.nombre.trim(),
+            target_amount: montoObjetivo,
+            current_amount: parseFloat(formData.montoActual) || 0,
+            duration_months: duracionMeses,
+            start_date: formData.fechaInicio,
+            end_date: formData.fechaFin,
+          },
         })
 
-        const budgetId = budgetResponse.budget?.id
-
-        if (!budgetId) {
-          throw new Error('Error al crear el presupuesto asociado')
-        }
-
-        // Crear el proyecto con el budget_id
-        const projectData = {
-          name: formData.nombre.trim(),
-          target_amount: montoObjetivo,
-          current_amount: parseFloat(formData.montoActual) || 0,
-          duration_months: duracionMeses,
-          start_date: formData.fechaInicio,
-          end_date: formData.fechaFin,
-          status: 'active' as const,
-          budget_id: budgetId,
-        }
-
-        await api.createProject(projectData)
-
-        // Recargar proyectos después de crear
-        const response = await api.getProjects()
-        if (response.projects && Array.isArray(response.projects)) {
-          const mappedProjects = response.projects.map(mapProjectFromAPI)
-          setProjects(mappedProjects)
-        }
+        await loadProjects()
         handleCloseModal()
       }
     } catch (err: any) {
@@ -611,38 +561,23 @@ function Proyectos() {
     try {
       setIsLoading(true)
       for (const project of testProjects) {
-        // Calcular la meta de ahorro mensual (monto objetivo / duración en meses)
         const metaMensual = project.target_amount / project.duration_months
-
-        // Crear presupuesto mensual asociado con la meta mensual
-        const budgetResponse = await api.createBudget({
-          name: project.name,
-          max_amount: metaMensual,
+        await api.createProjectWithBudget({
+          budget: {
+            name: project.name,
+            max_amount: metaMensual,
+          },
+          project: {
+            name: project.name,
+            target_amount: project.target_amount,
+            duration_months: project.duration_months,
+            start_date: project.start_date,
+            end_date: project.end_date,
+            current_amount: project.current_amount,
+          },
         })
-
-        const budgetId = budgetResponse.budget?.id
-
-        if (budgetId) {
-          // Crear proyecto con el budget_id
-          await api.createProject({
-            ...project,
-            status: 'active' as const,
-            budget_id: budgetId,
-          })
-        } else {
-          // Si falla la creación del presupuesto, crear proyecto sin presupuesto
-          await api.createProject({
-            ...project,
-            status: 'active' as const,
-          })
-        }
       }
-      // Recargar proyectos después de crear todas
-      const response = await api.getProjects()
-      if (response.projects && Array.isArray(response.projects)) {
-        const mappedProjects = response.projects.map(mapProjectFromAPI)
-        setProjects(mappedProjects)
-      }
+      await loadProjects()
       setIsDebugModalOpen(false)
       showNotification(
         `${testProjects.length} proyectos de prueba creados exitosamente (con sus presupuestos asociados)`,
@@ -691,135 +626,160 @@ function Proyectos() {
     }
   }
 
+  const highlights = calculateHighlights()
+
   return (
     <>
       <div className="app-page-container">
-        <div className="app-page-content proyectos-content">
-          {isLoading ? (
-            <div className="loader-container">
-              <div className="loader">
-                <div className="loader-spinner"></div>
-                <p className="loader-text">Cargando proyectos...</p>
-              </div>
-            </div>
-          ) : error ? (
-            <div className="loader-container">
-              <div className="loader">
-                <p className="loader-text" style={{ color: 'rgba(255, 59, 48, 0.9)' }}>
-                  {error}
-                </p>
-              </div>
-            </div>
-          ) : (
+        <div className="app-page-content app-page-content-wide crud-page-content proyectos-content">
+          {isLoading && projects.length === 0 ? (
             <>
-              {/* Toolbar - HIG: Clear Navigation */}
-              <div className="proyectos-toolbar">
+              <div className="app-toolbar">
                 <button
-                  className="proyectos-toolbar-button"
+                  className="app-toolbar-button"
                   onClick={() => navigate('/finanzas')}
                   aria-label="Volver a Finanzas"
                   type="button"
                 >
-                  <ArrowBackIcon className="proyectos-toolbar-icon" />
+                  <ArrowBackIcon className="app-toolbar-icon" />
                 </button>
-                <div className="proyectos-toolbar-menu-container" ref={menuRef}>
+              </div>
+              <h1 className="app-page-title">Proyectos</h1>
+              <div className="crud-card-list">
+                <ListSkeleton variant="inset-row" count={4} aria-label="Cargando proyectos" />
+              </div>
+            </>
+          ) : error && projects.length === 0 ? (
+            <>
+              <div className="app-toolbar">
+                <button
+                  className="app-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="app-toolbar-icon" />
+                </button>
+              </div>
+              <h1 className="app-page-title">Proyectos</h1>
+              <div className="loader-container">
+                <div className="loader finanzas-stats-error-panel">
+                  <p className="loader-text loader-text--error" role="alert">
+                    {error}
+                  </p>
                   <button
-                    className="proyectos-toolbar-button"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    aria-label="Opciones"
-                    aria-expanded={isMenuOpen}
                     type="button"
+                    className="btn-base btn-secondary finanzas-stats-retry-button"
+                    onClick={() => void loadProjects()}
+                    aria-label="Reintentar cargar proyectos"
                   >
-                    <MoreVertIcon className="proyectos-toolbar-icon" />
+                    <span>Reintentar</span>
                   </button>
-                  {isMenuOpen && (
-                    <div className="proyectos-menu">
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="app-toolbar">
+                <button
+                  className="app-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="app-toolbar-icon" />
+                </button>
+                <div className="app-toolbar-menu-container" ref={menuRef}>
+                  {isDebugToolsEnabled() && (
+                    <>
                       <button
-                        className="proyectos-menu-item"
-                        onClick={() => {
-                          handleOpenModal()
-                          setIsMenuOpen(false)
-                        }}
+                        className="app-toolbar-button"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        aria-label="Opciones de depuración"
+                        aria-expanded={isMenuOpen}
                         type="button"
                       >
-                        <AddIcon className="proyectos-menu-icon" />
-                        Agregar Proyecto
+                        <MoreVertIcon className="app-toolbar-icon" />
                       </button>
-                      {api.isTestUser() && (
-                        <button
-                          className="proyectos-menu-item"
-                          onClick={() => {
-                            setIsDebugModalOpen(true)
-                            setIsMenuOpen(false)
-                          }}
-                          type="button"
-                        >
-                          <span className="proyectos-menu-icon">🐛</span>
-                          Debug
-                        </button>
+                      {isMenuOpen && (
+                        <div className="crud-dropdown-menu">
+                          <button
+                            className="crud-dropdown-menu-item"
+                            onClick={() => {
+                              setIsDebugModalOpen(true)
+                              setIsMenuOpen(false)
+                            }}
+                            type="button"
+                          >
+                            <span>🐛 Debug</span>
+                          </button>
+                        </div>
                       )}
-                    </div>
+                    </>
                   )}
                 </div>
               </div>
 
-              {/* Page Title - HIG: Clear Orientation */}
-              <h1 className="proyectos-page-title">Proyectos</h1>
+              <h1 className="app-page-title">Proyectos</h1>
 
-              {/* Highlights - HIG: Relevant Information */}
-              {projects.length > 0 &&
-                (() => {
-                  const highlights = calculateHighlights()
-                  return (
-                    <div className="proyectos-summary-block">
-                      <div className="summary-item">
-                        <span className="summary-label">Total</span>
-                        <span className="summary-value">{highlights.totalProyectos}</span>
-                      </div>
-                      <div className="summary-separator"></div>
-                      <div className="summary-item">
-                        <span className="summary-label">Activos</span>
-                        <span className="summary-value">{highlights.proyectosActivos}</span>
-                      </div>
-                      <div className="summary-separator"></div>
-                      <div className="summary-item">
-                        <span className="summary-label">Completados</span>
-                        <span className="summary-value">{highlights.proyectosCompletados}</span>
-                      </div>
-                      <div className="summary-separator"></div>
-                      <div className="summary-item">
-                        <span className="summary-label">Ahorrado</span>
-                        <span className="summary-value">
-                          {formatPrice(highlights.totalAhorrado)}
-                        </span>
-                      </div>
-                      <div className="summary-separator"></div>
-                      <div className="summary-item">
-                        <span className="summary-label">Progreso Promedio</span>
-                        <span className="summary-value">
-                          {highlights.porcentajePromedio.toFixed(1)}%
-                        </span>
-                      </div>
-                    </div>
-                  )
-                })()}
+              <div
+                className="crud-summary-strip crud-summary-strip--success"
+                role="region"
+                aria-label="Resumen de proyectos"
+              >
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Total</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
+                    {highlights.totalProyectos}
+                  </span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Activos</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--available">
+                    {highlights.proyectosActivos}
+                  </span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item crud-summary-strip-item--emphasis">
+                  <span className="crud-summary-strip-label">Ahorrado</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--income">
+                    {formatPrice(highlights.totalAhorrado)}
+                  </span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Progreso prom.</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
+                    {highlights.porcentajePromedio.toFixed(1)}%
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+                onClick={handleOpenModal}
+                aria-label="Agregar proyecto"
+              >
+                <AddIcon aria-hidden={true} />
+                Agregar proyecto
+              </button>
 
               {projects.length === 0 ? (
                 <div className="empty-state">
-                  <FolderSpecialIcon className="empty-icon" />
+                  <FolderSpecialIcon className="empty-state-icon" />
                   <p className="empty-text">No hay proyectos agregados</p>
-                  <p className="empty-subtext">
-                    Agrega tu primer proyecto de ahorro (máximo 9 meses)
-                  </p>
+                  <p className="empty-subtext">Usa el botón de arriba para agregar el primero (máx. 9 meses)</p>
                 </div>
               ) : (
-                <div className="proyectos-list">
+                <div className="crud-card-list">
                   {projects.map(project => {
                     const statusColor = getStatusColor(project.estado)
                     return (
                       <button
                         key={project.id}
-                        className="proyecto-row"
+                        className="crud-card-row crud-card-row--project proyecto-row"
                         onClick={() => handleOpenDetailModal(project)}
                         type="button"
                         aria-label={`Ver detalles de ${project.nombre}`}
@@ -880,8 +840,8 @@ function Proyectos() {
               </button>
             </div>
             <form className="modal-form" onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label htmlFor="nombre">Nombre del Proyecto</label>
+              <div className="form-group-base">
+                <label htmlFor="nombre" className="form-label-base">Nombre del Proyecto</label>
                 <input
                   type="text"
                   id="nombre"
@@ -890,12 +850,12 @@ function Proyectos() {
                   onChange={handleChange}
                   required
                   placeholder="Ej: Viaje a Europa"
-                  className={formErrors.nombre ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.nombre ? 'input-error' : ''}`}
                 />
                 {formErrors.nombre && <span className="error-message">{formErrors.nombre}</span>}
               </div>
-              <div className="form-group">
-                <label htmlFor="montoObjetivo">Monto Objetivo (COP)</label>
+              <div className="form-group-base">
+                <label htmlFor="montoObjetivo" className="form-label-base">Monto Objetivo (COP)</label>
                 <input
                   type="number"
                   id="montoObjetivo"
@@ -906,7 +866,7 @@ function Proyectos() {
                   min="1"
                   step="1000"
                   placeholder="5000000"
-                  className={formErrors.montoObjetivo ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.montoObjetivo ? 'input-error' : ''}`}
                 />
                 {formErrors.montoObjetivo && (
                   <span className="error-message">{formErrors.montoObjetivo}</span>
@@ -926,8 +886,8 @@ function Proyectos() {
                     </p>
                   )}
               </div>
-              <div className="form-group">
-                <label htmlFor="montoActual">Monto Actual (COP)</label>
+              <div className="form-group-base">
+                <label htmlFor="montoActual" className="form-label-base">Monto Actual (COP)</label>
                 <input
                   type="number"
                   id="montoActual"
@@ -937,14 +897,14 @@ function Proyectos() {
                   min="0"
                   step="1000"
                   placeholder="0"
-                  className={formErrors.montoActual ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.montoActual ? 'input-error' : ''}`}
                 />
                 {formErrors.montoActual && (
                   <span className="error-message">{formErrors.montoActual}</span>
                 )}
               </div>
-              <div className="form-group">
-                <label htmlFor="duracionMeses">Duración en Meses (Máximo 9)</label>
+              <div className="form-group-base">
+                <label htmlFor="duracionMeses" className="form-label-base">Duración en Meses (Máximo 9)</label>
                 <input
                   type="number"
                   id="duracionMeses"
@@ -955,7 +915,7 @@ function Proyectos() {
                   min="1"
                   max="9"
                   placeholder="6"
-                  className={formErrors.duracionMeses ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.duracionMeses ? 'input-error' : ''}`}
                 />
                 {formErrors.duracionMeses && (
                   <span className="error-message">{formErrors.duracionMeses}</span>
@@ -966,8 +926,8 @@ function Proyectos() {
                   varios CDT a más de la tasa inflacionaria.
                 </p>
               </div>
-              <div className="form-group">
-                <label htmlFor="fechaInicio">Fecha de Inicio</label>
+              <div className="form-group-base">
+                <label htmlFor="fechaInicio" className="form-label-base">Fecha de Inicio</label>
                 <input
                   type="date"
                   id="fechaInicio"
@@ -975,14 +935,14 @@ function Proyectos() {
                   value={formData.fechaInicio}
                   onChange={handleChange}
                   required
-                  className={formErrors.fechaInicio ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.fechaInicio ? 'input-error' : ''}`}
                 />
                 {formErrors.fechaInicio && (
                   <span className="error-message">{formErrors.fechaInicio}</span>
                 )}
               </div>
-              <div className="form-group">
-                <label htmlFor="fechaFin">Fecha de Fin</label>
+              <div className="form-group-base">
+                <label htmlFor="fechaFin" className="form-label-base">Fecha de Fin</label>
                 <input
                   type="date"
                   id="fechaFin"
@@ -990,7 +950,7 @@ function Proyectos() {
                   value={formData.fechaFin}
                   onChange={handleChange}
                   required
-                  className={formErrors.fechaFin ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.fechaFin ? 'input-error' : ''}`}
                 />
                 {formErrors.fechaFin && (
                   <span className="error-message">{formErrors.fechaFin}</span>
@@ -1141,8 +1101,8 @@ function Proyectos() {
               </>
             ) : (
               <form className="modal-form" onSubmit={handleSubmit}>
-                <div className="form-group">
-                  <label htmlFor="edit-nombre">Nombre del Proyecto</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-nombre" className="form-label-base">Nombre del Proyecto</label>
                   <input
                     type="text"
                     id="edit-nombre"
@@ -1151,12 +1111,12 @@ function Proyectos() {
                     onChange={handleChange}
                     required
                     placeholder="Ej: Viaje a Europa"
-                    className={formErrors.nombre ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.nombre ? 'input-error' : ''}`}
                   />
                   {formErrors.nombre && <span className="error-message">{formErrors.nombre}</span>}
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-montoObjetivo">Monto Objetivo (COP)</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-montoObjetivo" className="form-label-base">Monto Objetivo (COP)</label>
                   <input
                     type="number"
                     id="edit-montoObjetivo"
@@ -1167,7 +1127,7 @@ function Proyectos() {
                     min="1"
                     step="1000"
                     placeholder="5000000"
-                    className={formErrors.montoObjetivo ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.montoObjetivo ? 'input-error' : ''}`}
                   />
                   {formErrors.montoObjetivo && (
                     <span className="error-message">{formErrors.montoObjetivo}</span>
@@ -1187,8 +1147,8 @@ function Proyectos() {
                       </p>
                     )}
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-montoActual">Monto Actual (COP)</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-montoActual" className="form-label-base">Monto Actual (COP)</label>
                   <input
                     type="number"
                     id="edit-montoActual"
@@ -1198,14 +1158,14 @@ function Proyectos() {
                     min="0"
                     step="1000"
                     placeholder="0"
-                    className={formErrors.montoActual ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.montoActual ? 'input-error' : ''}`}
                   />
                   {formErrors.montoActual && (
                     <span className="error-message">{formErrors.montoActual}</span>
                   )}
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-duracionMeses">Duración en Meses (Máximo 9)</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-duracionMeses" className="form-label-base">Duración en Meses (Máximo 9)</label>
                   <input
                     type="number"
                     id="edit-duracionMeses"
@@ -1216,7 +1176,7 @@ function Proyectos() {
                     min="1"
                     max="9"
                     placeholder="6"
-                    className={formErrors.duracionMeses ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.duracionMeses ? 'input-error' : ''}`}
                   />
                   {formErrors.duracionMeses && (
                     <span className="error-message">{formErrors.duracionMeses}</span>
@@ -1227,8 +1187,8 @@ function Proyectos() {
                     varios CDT a más de la tasa inflacionaria.
                   </p>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-fechaInicio">Fecha de Inicio</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-fechaInicio" className="form-label-base">Fecha de Inicio</label>
                   <input
                     type="date"
                     id="edit-fechaInicio"
@@ -1236,14 +1196,14 @@ function Proyectos() {
                     value={formData.fechaInicio}
                     onChange={handleChange}
                     required
-                    className={formErrors.fechaInicio ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.fechaInicio ? 'input-error' : ''}`}
                   />
                   {formErrors.fechaInicio && (
                     <span className="error-message">{formErrors.fechaInicio}</span>
                   )}
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-fechaFin">Fecha de Fin</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-fechaFin" className="form-label-base">Fecha de Fin</label>
                   <input
                     type="date"
                     id="edit-fechaFin"
@@ -1251,20 +1211,20 @@ function Proyectos() {
                     value={formData.fechaFin}
                     onChange={handleChange}
                     required
-                    className={formErrors.fechaFin ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.fechaFin ? 'input-error' : ''}`}
                   />
                   {formErrors.fechaFin && (
                     <span className="error-message">{formErrors.fechaFin}</span>
                   )}
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-estado">Estado</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-estado" className="form-label-base">Estado</label>
                   <select
                     id="edit-estado"
                     name="estado"
                     value={formData.estado}
                     onChange={handleChange}
-                    className="form-select"
+                    className="form-select-base"
                   >
                     <option value="active">Activo</option>
                     <option value="completed">Completado</option>

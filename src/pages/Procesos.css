@@ -1,224 +1,5 @@
 /* Procesos Page Styles */
-.procesos-content {
-  flex-direction: column;
-  gap: 0.75rem;
-  align-items: stretch;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-/* Toolbar - HIG: Navigation & Actions */
-.procesos-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
-  width: 100%;
-}
-
-@media (max-width: 768px) {
-  .procesos-toolbar {
-    margin-top: var(--spacing-xl);
-    margin-bottom: var(--spacing-sm);
-  }
-}
-
-.procesos-toolbar-menu-container {
-  position: relative;
-}
-
-/* Toolbar Button - HIG: Touch Target, Feedback */
-.procesos-toolbar-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  min-width: 48px;
-  min-height: 48px;
-  background: var(--bg-glass);
-  backdrop-filter: var(--backdrop-blur);
-  -webkit-backdrop-filter: var(--backdrop-blur);
-  border: 1px solid var(--border-glass);
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all var(--transition-base);
-  padding: 0;
-  box-shadow: var(--shadow-sm);
-  color: var(--text-primary);
-}
-
-.procesos-toolbar-button:hover:not(:disabled) {
-  background: var(--bg-glass-hover);
-  border-color: var(--border-glass-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-.procesos-toolbar-button:active:not(:disabled) {
-  transform: translateY(0);
-  transition: transform var(--transition-fast);
-}
-
-.procesos-toolbar-button:focus-visible {
-  outline: 2px solid var(--accent-primary-border);
-  outline-offset: 2px;
-}
-
-.procesos-toolbar-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.procesos-toolbar-icon {
-  font-size: 1.5rem !important;
-  width: 1.5rem !important;
-  height: 1.5rem !important;
-  color: var(--text-primary);
-}
-
-[data-theme='light'] .procesos-toolbar-button {
-  background: var(--bg-glass);
-  border-color: var(--border-glass);
-}
-
-[data-theme='light'] .procesos-toolbar-button:hover:not(:disabled) {
-  background: var(--bg-glass-hover);
-  border-color: var(--border-glass-hover);
-}
-
-/* Menu - HIG: Actions Menu */
-.procesos-menu {
-  position: absolute;
-  top: calc(100% + var(--spacing-xs));
-  right: 0;
-  background: var(--bg-glass);
-  backdrop-filter: var(--backdrop-blur);
-  -webkit-backdrop-filter: var(--backdrop-blur);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-glass);
-  box-shadow: var(--shadow-lg);
-  min-width: 200px;
-  z-index: 100;
-  overflow: hidden;
-  animation: slideDown 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.procesos-menu-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  width: 100%;
-  padding: var(--spacing-md) var(--spacing-lg);
-  min-height: 48px;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--border-glass-light);
-  cursor: pointer;
-  transition: background-color var(--transition-fast);
-  text-align: left;
-  font-family: var(--font-family);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-normal);
-  color: var(--text-primary);
-  letter-spacing: var(--letter-spacing-tight);
-}
-
-.procesos-menu-item:last-child {
-  border-bottom: none;
-}
-
-.procesos-menu-item:hover:not(:disabled) {
-  background: var(--bg-glass-light);
-}
-
-.procesos-menu-item:active:not(:disabled) {
-  background: var(--bg-glass-hover);
-  transition: background-color var(--transition-fast);
-}
-
-.procesos-menu-item:focus-visible {
-  outline: 2px solid var(--accent-primary-border);
-  outline-offset: -2px;
-  z-index: 1;
-}
-
-.procesos-menu-item:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.procesos-menu-icon {
-  font-size: 1.25rem !important;
-  width: 1.25rem !important;
-  height: 1.25rem !important;
-  color: var(--text-primary);
-  flex-shrink: 0;
-}
-
-[data-theme='light'] .procesos-menu {
-  background: var(--bg-glass);
-  border-color: var(--border-glass);
-}
-
-[data-theme='light'] .procesos-menu-item {
-  color: rgba(0, 0, 0, 0.9);
-}
-
-[data-theme='light'] .procesos-menu-item:hover:not(:disabled) {
-  background: var(--bg-glass-light);
-}
-
-/* Page Title - HIG: Clear Navigation & Visual Hierarchy */
-.procesos-page-title {
-  font-size: 2.5rem;
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-lg) 0;
-  letter-spacing: var(--letter-spacing-tight);
-  font-family: var(--font-family);
-  line-height: 1.2;
-  text-align: left;
-}
-
-[data-theme='light'] .procesos-page-title {
-  color: rgba(0, 0, 0, 0.95);
-}
-
-@media (max-width: 768px) {
-  .procesos-page-title {
-    font-size: var(--font-size-xl);
-  }
-}
-
-/* Page Subtitle */
-.procesos-page-subtitle {
-  font-size: var(--font-size-base);
-  color: var(--text-secondary);
-  margin: 0 0 var(--spacing-xl) 0;
-  letter-spacing: var(--letter-spacing-tight);
-  font-family: var(--font-family);
-  line-height: 1.4;
-  text-align: left;
-}
-
-[data-theme='light'] .procesos-page-subtitle {
-  color: rgba(0, 0, 0, 0.6);
-}
+.procesos-content {}
 
 /* Procesos List - Compact iOS Style */
 .procesos-list {
@@ -227,64 +8,9 @@
   flex-direction: column;
 }
 
-.procesos-group {
-  background: var(--bg-glass);
-  backdrop-filter: var(--backdrop-blur);
-  -webkit-backdrop-filter: var(--backdrop-blur);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-glass);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-}
-
 /* Proceso Item - Compact List Item - HIG: Touch Target (min 72px height), Feedback */
-.procesos-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md) var(--spacing-lg);
-  min-height: 72px;
-  background: transparent;
-  border: none;
-  border-left: 3px solid rgba(88, 86, 214, 0.5);
-  border-bottom: 1px solid var(--border-glass-light);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  text-align: left;
-  width: 100%;
-  font-family: var(--font-family);
-  position: relative;
-  color: inherit;
-}
-
-.procesos-item:last-child {
-  border-bottom: none;
-}
-
-.procesos-item:hover:not(:disabled) {
-  background: var(--bg-glass-light);
-  border-left-color: #5856D6;
-  box-shadow: 0 4px 16px 0 rgba(88, 86, 214, 0.2), var(--shadow-sm);
-}
-
-.procesos-item:active:not(:disabled) {
-  background: var(--bg-glass-hover);
-  transition: background-color var(--transition-fast);
-}
-
-.procesos-item:focus-visible {
-  outline: 2px solid var(--accent-primary-border);
-  outline-offset: -2px;
-  z-index: 1;
-}
-
-.procesos-item:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 /* Proceso Item Content */
-.procesos-item-content {
+.crud-row-content {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -292,7 +18,7 @@
   min-width: 0;
 }
 
-.procesos-item-header {
+.crud-row-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -300,7 +26,7 @@
   width: 100%;
 }
 
-.procesos-item-title-section {
+.crud-row-title-section {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
@@ -308,7 +34,7 @@
   min-width: 0;
 }
 
-.procesos-item-estado-indicator {
+.crud-row-meta-indicator {
   width: 8px;
   height: 8px;
   min-width: 8px;
@@ -325,7 +51,7 @@
   min-width: 0;
 }
 
-.procesos-item-title-row {
+.crud-row-title-row {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
@@ -333,14 +59,14 @@
 }
 
 .procesos-item-tracking-icon {
-  font-size: 1.25rem !important;
-  width: 1.25rem !important;
-  height: 1.25rem !important;
-  color: #34C759;
+  font-size: var(--font-size-lg) !important;
+  width: var(--font-size-lg) !important;
+  height: var(--font-size-lg) !important;
+  color: var(--highlight-success-text);
   flex-shrink: 0;
 }
 
-.procesos-item-title {
+.crud-row-title {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-medium);
   color: var(--text-primary);
@@ -356,11 +82,7 @@
   white-space: nowrap;
 }
 
-[data-theme='light'] .procesos-item-title {
-  color: rgba(0, 0, 0, 0.9);
-}
-
-.procesos-item-tipo {
+.crud-row-meta {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   font-family: var(--font-family);
@@ -371,24 +93,16 @@
   max-width: 100%;
 }
 
-[data-theme='light'] .procesos-item-tipo {
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.procesos-item-chevron {
+.crud-row-chevron {
   color: var(--text-tertiary);
-  font-size: 1.25rem !important;
-  width: 1.25rem !important;
-  height: 1.25rem !important;
+  font-size: var(--font-size-lg) !important;
+  width: var(--font-size-lg) !important;
+  height: var(--font-size-lg) !important;
   flex-shrink: 0;
   margin-left: var(--spacing-xs);
 }
 
-[data-theme='light'] .procesos-item-chevron {
-  color: rgba(0, 0, 0, 0.4);
-}
-
-.procesos-item-description {
+.crud-row-preview {
   font-size: var(--font-size-base);
   color: var(--text-secondary);
   font-family: var(--font-family);
@@ -404,11 +118,7 @@
   -webkit-box-orient: vertical;
 }
 
-[data-theme='light'] .procesos-item-description {
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.procesos-item-meta {
+.crud-row-meta {
   display: flex;
   gap: var(--spacing-sm);
   align-items: center;
@@ -422,25 +132,21 @@
   flex-wrap: wrap;
 }
 
-[data-theme='light'] .procesos-item-meta {
-  color: rgba(0, 0, 0, 0.5);
-}
-
-.procesos-item-estado {
+.crud-row-meta {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
 }
 
-.procesos-item-separator {
+.crud-row-separator {
   font-size: var(--font-size-sm);
   opacity: 0.5;
 }
 
-.procesos-item-date {
+.crud-row-meta {
   font-size: var(--font-size-sm);
 }
 
-.procesos-item-departamento {
+.crud-row-meta {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
 }
@@ -467,22 +173,12 @@
 }
 
 .procesos-item-badge-rechazado {
-  background: rgba(255, 59, 48, 0.2);
-  color: #FF3B30;
-  border: 1px solid rgba(255, 59, 48, 0.3);
+  background: var(--color-danger-bg-medium);
+  color: var(--color-danger-solid);
+  border: 1px solid var(--color-danger-border-soft);
 }
 
-[data-theme='light'] .procesos-item-badge-negado {
-  background: rgba(255, 149, 0, 0.15);
-  color: #FF9500;
-  border-color: rgba(255, 149, 0, 0.4);
-}
 
-[data-theme='light'] .procesos-item-badge-rechazado {
-  background: rgba(255, 59, 48, 0.15);
-  color: #FF3B30;
-  border-color: rgba(255, 59, 48, 0.4);
-}
 
 /* Empty State - HIG: Clear Feedback */
 .procesos-empty-state {
@@ -500,14 +196,6 @@
   box-shadow: var(--shadow-sm);
 }
 
-.procesos-empty-state .empty-state-icon {
-  font-size: 4rem !important;
-  width: 4rem !important;
-  height: 4rem !important;
-  color: var(--text-tertiary);
-  margin-bottom: var(--spacing-md);
-}
-
 .procesos-empty-state .empty-state-text {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
@@ -518,25 +206,12 @@
   line-height: 1.4;
 }
 
-[data-theme='light'] .procesos-empty-state .empty-state-text {
-  color: rgba(0, 0, 0, 0.9);
-}
-
-/* Modal */
-.procesos-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--spacing-md);
-  animation: fadeIn 0.2s ease-out;
+.procesos-empty-state .empty-state-subtext {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-md) 0;
+  max-width: 300px;
+  line-height: 1.5;
 }
 
 @keyframes fadeIn {
@@ -548,22 +223,6 @@
   }
 }
 
-.procesos-modal {
-  background: var(--bg-glass);
-  backdrop-filter: var(--backdrop-blur);
-  -webkit-backdrop-filter: var(--backdrop-blur);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xl);
-  width: 100%;
-  max-width: 800px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
 @keyframes slideUp {
   from {
     transform: translateY(20px);
@@ -573,56 +232,6 @@
     transform: translateY(0);
     opacity: 1;
   }
-}
-
-[data-theme='light'] .procesos-modal {
-  background: var(--bg-glass);
-  border-color: var(--border-glass);
-}
-
-.procesos-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-lg);
-  border-bottom: 1px solid var(--border-glass-light);
-}
-
-.procesos-modal-title {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-  margin: 0;
-  font-family: var(--font-family);
-  letter-spacing: var(--letter-spacing-tight);
-}
-
-[data-theme='light'] .procesos-modal-title {
-  color: rgba(0, 0, 0, 0.95);
-}
-
-.procesos-modal-close-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  min-height: 36px;
-  background: transparent;
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  padding: 0;
-  color: var(--text-secondary);
-  font-size: 1.5rem;
-  line-height: 1;
-}
-
-.procesos-modal-close-button:hover {
-  background: var(--bg-glass-light);
-  color: var(--text-primary);
 }
 
 .procesos-detail-content {
@@ -670,7 +279,7 @@
 .procesos-tracking-button:hover {
   background: var(--bg-glass-hover);
   border-color: var(--border-glass-hover);
-  transform: translateY(-1px);
+  transform: translateY(var(--motion-lift-sm));
   box-shadow: var(--shadow-md);
 }
 
@@ -680,14 +289,14 @@
 }
 
 .procesos-tracking-button:focus-visible {
-  outline: 2px solid var(--accent-primary-border);
-  outline-offset: 2px;
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
 }
 
 .procesos-tracking-button-active {
   background: rgba(52, 199, 89, 0.1);
-  border-color: #34C759;
-  color: #34C759;
+  border-color: var(--highlight-success-text);
+  color: var(--highlight-success-text);
 }
 
 .procesos-tracking-button-active:hover {
@@ -696,9 +305,9 @@
 }
 
 .procesos-tracking-icon {
-  font-size: 1.25rem !important;
-  width: 1.25rem !important;
-  height: 1.25rem !important;
+  font-size: var(--font-size-lg) !important;
+  width: var(--font-size-lg) !important;
+  height: var(--font-size-lg) !important;
   flex-shrink: 0;
 }
 
@@ -712,25 +321,6 @@
   font-style: italic;
 }
 
-[data-theme='light'] .procesos-tracking-button {
-  background: var(--bg-glass);
-  border-color: var(--border-glass);
-}
-
-[data-theme='light'] .procesos-tracking-button:hover {
-  background: var(--bg-glass-hover);
-  border-color: var(--border-glass-hover);
-}
-
-[data-theme='light'] .procesos-tracking-button-active {
-  background: rgba(52, 199, 89, 0.1);
-  border-color: #34C759;
-  color: #34C759;
-}
-
-[data-theme='light'] .procesos-tracking-note {
-  color: rgba(0, 0, 0, 0.6);
-}
 
 .procesos-detail-label {
   font-size: var(--font-size-sm);
@@ -750,14 +340,6 @@
   letter-spacing: var(--letter-spacing-tight);
   line-height: 1.6;
   word-wrap: break-word;
-}
-
-[data-theme='light'] .procesos-detail-label {
-  color: rgba(0, 0, 0, 0.6);
-}
-
-[data-theme='light'] .procesos-detail-value {
-  color: rgba(0, 0, 0, 0.9);
 }
 
 /* Actuaciones List */
@@ -801,10 +383,6 @@
   font-family: var(--font-family);
 }
 
-[data-theme='light'] .procesos-actuacion-fecha {
-  color: rgba(0, 0, 0, 0.6);
-}
-
 .procesos-actuacion-tipo {
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
@@ -812,10 +390,6 @@
   margin: 0 0 var(--spacing-xs) 0;
   font-family: var(--font-family);
   letter-spacing: var(--letter-spacing-tight);
-}
-
-[data-theme='light'] .procesos-actuacion-tipo {
-  color: rgba(0, 0, 0, 0.9);
 }
 
 .procesos-actuacion-anotacion {
@@ -826,19 +400,11 @@
   line-height: 1.5;
 }
 
-[data-theme='light'] .procesos-actuacion-anotacion {
-  color: rgba(0, 0, 0, 0.6);
-}
-
 .procesos-actuacion-fechas {
   font-size: var(--font-size-sm);
   color: var(--text-tertiary);
   margin: var(--spacing-xs) 0;
   font-family: var(--font-family);
-}
-
-[data-theme='light'] .procesos-actuacion-fechas {
-  color: rgba(0, 0, 0, 0.5);
 }
 
 .procesos-actuacion-documentos {
@@ -855,18 +421,12 @@
     padding: 0 var(--spacing-sm);
   }
 
-  .procesos-item {
-    padding: var(--spacing-md) var(--spacing-sm);
-    min-height: auto;
-    gap: var(--spacing-sm);
-  }
-
-  .procesos-item-header {
+  .crud-row-header {
     gap: var(--spacing-sm);
     flex-wrap: wrap;
   }
 
-  .procesos-item-title {
+  .crud-row-title {
     font-size: var(--font-size-base);
     line-height: 1.3;
     white-space: normal;
@@ -876,72 +436,53 @@
     -webkit-box-orient: vertical;
   }
 
-  .procesos-item-title-row {
+  .crud-row-title-row {
     flex-wrap: wrap;
     gap: var(--spacing-xs);
     align-items: center;
   }
 
-  .procesos-item-description {
+  .crud-row-preview {
     font-size: var(--font-size-sm);
     -webkit-line-clamp: 3;
     line-height: 1.4;
   }
 
-  .procesos-item-meta {
+  .crud-row-meta {
     font-size: var(--font-size-xs);
     gap: var(--spacing-xs);
     flex-wrap: wrap;
     line-height: 1.3;
   }
 
-  .procesos-item-separator {
+  .crud-row-separator {
     display: none;
   }
 
-  .procesos-item-meta > span {
+  .crud-row-meta > span {
     display: block;
     margin-bottom: var(--spacing-xs);
   }
 
-  .procesos-item-meta > span:last-child {
+  .crud-row-meta > span:last-child {
     margin-bottom: 0;
   }
 
-  .procesos-item-chevron {
-    font-size: 1rem !important;
+  .crud-row-chevron {
+    font-size: var(--font-size-sm) !important;
     width: 1rem !important;
     height: 1rem !important;
   }
 
   .procesos-item-badge {
-    font-size: 10px;
+    font-size: var(--font-size-xs);
     padding: 2px 6px;
   }
 
   .procesos-item-tracking-icon {
-    font-size: 1rem !important;
+    font-size: var(--font-size-sm) !important;
     width: 1rem !important;
     height: 1rem !important;
-  }
-
-  .procesos-modal {
-    max-width: 100%;
-    max-height: 100vh;
-    border-radius: 0;
-    margin: 0;
-  }
-
-  .procesos-modal-overlay {
-    padding: 0;
-  }
-
-  .procesos-modal-header {
-    padding: var(--spacing-md);
-  }
-
-  .procesos-modal-title {
-    font-size: var(--font-size-lg);
   }
 
   .procesos-detail-content {
@@ -1000,7 +541,7 @@
   }
 
   .procesos-empty-state .empty-state-icon {
-    font-size: 3rem !important;
+    font-size: var(--font-size-display-xs) !important;
     width: 3rem !important;
     height: 3rem !important;
   }

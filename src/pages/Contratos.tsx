@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { backToHubLabel } from '../constants/hubLabels'
 import { useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import AddIcon from '@mui/icons-material/Add'
@@ -7,6 +8,7 @@ import EditIcon from '@mui/icons-material/Edit'
 import SaveIcon from '@mui/icons-material/Save'
 import FolderIcon from '@mui/icons-material/Folder'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import PersonIcon from '@mui/icons-material/Person'
 import PublicIcon from '@mui/icons-material/Public'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
@@ -19,9 +21,13 @@ import BlockIcon from '@mui/icons-material/Block'
 import EventIcon from '@mui/icons-material/Event'
 import BusinessIcon from '@mui/icons-material/Business'
 import { api } from '../services/api'
+import { isDebugToolsEnabled, isDestructiveDebugEnabled, devError } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
+import { useConfirm } from '../contexts/ConfirmContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
+import ModalOverlay from '../components/ModalOverlay'
+import ListSkeleton from '../components/ListSkeleton'
 import './Contratos.css'
 
 interface BankAccount {
@@ -65,6 +71,7 @@ interface ContractRecord {
 function Contratos() {
   const navigate = useNavigate()
   const { showNotification } = useNotification()
+  const { confirm } = useConfirm()
   const [contracts, setContracts] = useState<Contract[]>([])
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([])
   const [formData, setFormData] = useState({
@@ -96,6 +103,9 @@ function Contratos() {
   const [isDebugLoading, setIsDebugLoading] = useState(false)
   const [exchangeRates, setExchangeRates] = useState({ USD: 3750, EUR: 4300, GBP: 4800 })
   const menuRef = useRef<HTMLDivElement>(null)
+  const nameRef = useRef<HTMLInputElement>(null)
+  const clientNameRef = useRef<HTMLInputElement>(null)
+  const [formErrors, setFormErrors] = useState({ name: '', clientName: '' })
 
   useEffect(() => {
     loadRecords()
@@ -106,7 +116,7 @@ function Contratos() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement
-      if (isMenuOpen && !target.closest('.contratos-toolbar-menu-container')) {
+      if (isMenuOpen && !target.closest('.app-toolbar-menu-container')) {
         setIsMenuOpen(false)
       }
     }
@@ -132,8 +142,8 @@ function Contratos() {
         }))
         setBankAccounts(mappedAccounts)
       }
-    } catch (err: any) {
-      console.error('Error al cargar cuentas bancarias:', err)
+    } catch (err: unknown) {
+      devError('Error al cargar cuentas bancarias:', err)
     }
   }
 
@@ -157,8 +167,8 @@ function Contratos() {
         setContracts([])
         setRecords([])
       }
-    } catch (err: any) {
-      console.error('Error al cargar contratos:', err)
+    } catch (err: unknown) {
+      devError('Error al cargar contratos:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al cargar contratos. Por favor, intenta de nuevo.'
@@ -168,13 +178,11 @@ function Contratos() {
       setRecords([])
       showNotification(errorMessage, 'error')
     } finally {
-      setIsLoading(false)
+        setIsLoading(false)
     }
   }
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked
@@ -188,18 +196,46 @@ function Contratos() {
         [name]: value,
       }))
     }
+    if (formErrors[name as keyof typeof formErrors]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [name]: '',
+      }))
+    }
+  }
+
+  const validateForm = (): boolean => {
+    const errors = { name: '', clientName: '' }
+    let isValid = true
+
+    if (!formData.name.trim()) {
+      errors.name = 'El nombre del contrato es requerido'
+      isValid = false
+    }
+
+    if (!formData.clientName.trim()) {
+      errors.clientName = 'El nombre del cliente es requerido'
+      isValid = false
+    }
+
+    setFormErrors(errors)
+    if (!isValid) {
+      queueMicrotask(() => {
+        if (errors.name) {
+          nameRef.current?.focus()
+        } else if (errors.clientName) {
+          clientNameRef.current?.focus()
+        }
+      })
+    }
+
+    return isValid
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.name.trim()) {
-      showNotification('El nombre del contrato es requerido', 'error')
-      return
-    }
-
-    if (!formData.clientName.trim()) {
-      showNotification('El nombre del cliente es requerido', 'error')
+    if (!validateForm()) {
       return
     }
 
@@ -222,10 +258,7 @@ function Contratos() {
           ptos: formData.ptos ? parseInt(formData.ptos) : undefined,
           holidaysCountry: formData.holidaysCountry.trim() || undefined,
           hasAgency: formData.hasAgency,
-          agencyName:
-            formData.hasAgency && formData.agencyName.trim()
-              ? formData.agencyName.trim()
-              : undefined,
+          agencyName: formData.hasAgency && formData.agencyName.trim() ? formData.agencyName.trim() : undefined,
         },
       }
 
@@ -264,7 +297,8 @@ function Contratos() {
 
       // Cerrar modal si estaba abierto
       setShowFormModal(false)
-    } catch (err: any) {
+      setFormErrors({ name: '', clientName: '' })
+    } catch (err: unknown) {
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al guardar el contrato. Por favor, intenta de nuevo.'
@@ -294,6 +328,7 @@ function Contratos() {
       agencyName: contract.data.agencyName || '',
     })
     setEditingId(contract.id)
+    setFormErrors({ name: '', clientName: '' })
   }
 
   const handleCancelEdit = () => {
@@ -316,10 +351,11 @@ function Contratos() {
       agencyName: '',
     })
     setShowFormModal(false)
+    setFormErrors({ name: '', clientName: '' })
   }
 
   const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`¿Estás seguro de que quieres eliminar el contrato "${name}"?`)) {
+    if (!(await confirm({ message: `¿Estás seguro de que quieres eliminar el contrato "${name}"?`, variant: 'danger' }))) {
       return
     }
 
@@ -337,6 +373,7 @@ function Contratos() {
   }
 
   const handleDebugCreateContracts = async () => {
+    if (!isDebugToolsEnabled()) return
     try {
       setIsDebugLoading(true)
       const demoContracts = [
@@ -367,12 +404,7 @@ function Contratos() {
             contractType: 'Freelance',
             salary: 5000,
             currency: 'USD',
-            paymentAccountId:
-              bankAccounts.length > 1
-                ? bankAccounts[1].id
-                : bankAccounts.length > 0
-                  ? bankAccounts[0].id
-                  : undefined,
+            paymentAccountId: bankAccounts.length > 1 ? bankAccounts[1].id : bankAccounts.length > 0 ? bankAccounts[0].id : undefined,
             deductions: 'Impuestos según ley colombiana',
             benefits: 'Bonos por proyecto completado',
             exclusivity: false,
@@ -459,11 +491,8 @@ function Contratos() {
   }
 
   const handleDebugDeleteAll = async () => {
-    if (
-      !window.confirm(
-        '¿Estás seguro de que quieres eliminar TODOS los contratos? Esta acción es irreversible.'
-      )
-    ) {
+    if (!isDebugToolsEnabled()) return
+    if (!(await confirm({ message: '¿Estás seguro de que quieres eliminar TODOS los contratos? Esta acción es irreversible.', variant: 'danger' }))) {
       return
     }
 
@@ -511,7 +540,6 @@ function Contratos() {
     return amount // Si no se reconoce, retornar el valor original
   }
 
-  // Calcular total de ingresos en COP
   const calculateTotalIncomeCOP = (): number => {
     return contracts.reduce((total, contract) => {
       if (contract.data.salary && contract.data.currency) {
@@ -521,316 +549,179 @@ function Contratos() {
     }, 0)
   }
 
+  const calculateHighlights = () => {
+    const total = contracts.length
+    const ingresos = formatBalance(calculateTotalIncomeCOP(), 'COP')
+    const exclusivos = contracts.filter(c => c.data.exclusivity).length
+    return { total, ingresos, exclusivos }
+  }
+
+  const highlights = calculateHighlights()
+
+  const formatContractMeta = (contract: Contract) => {
+    const parts = [
+      contract.data.clientName,
+      contract.data.contractType,
+      contract.data.country,
+    ].filter(Boolean)
+    return parts.length > 0 ? parts.join(' • ') : 'Sin cliente asignado'
+  }
+
+  const openContractEdit = (contract: Contract) => {
+    handleEdit(contract)
+    setShowFormModal(true)
+  }
+
   return (
     <div className="app-page">
-      <div className="app-page-content contratos-content">
+      <div className="app-page-content app-page-content-wide crud-page-content contratos-content">
         {/* Toolbar */}
-        <div className="contratos-toolbar">
+        <div className="app-toolbar">
           <button
-            className="contratos-toolbar-button"
+            className="app-toolbar-button"
             onClick={() => navigate('/trabajo')}
-            aria-label="Volver"
+            aria-label={backToHubLabel('trabajo')}
             type="button"
           >
-            <ArrowBackIcon className="contratos-toolbar-icon" />
+            <ArrowBackIcon className="app-toolbar-icon" />
           </button>
-          <div className="contratos-toolbar-menu-container" ref={menuRef}>
-            <button
-              className="contratos-toolbar-button"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label="Opciones"
-              aria-expanded={isMenuOpen}
-              type="button"
-            >
-              <MoreVertIcon className="contratos-toolbar-icon" />
-            </button>
-            {isMenuOpen && (
-              <div className="contratos-menu">
+          <div className="app-toolbar-menu-container" ref={menuRef}>
+            {isDebugToolsEnabled() && (
+              <>
                 <button
-                  className="contratos-menu-item"
-                  onClick={() => {
-                    setIsMenuOpen(false)
-                    setShowFormModal(true)
-                  }}
+                  className="app-toolbar-button"
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  aria-label="Opciones de depuración"
+                  aria-expanded={isMenuOpen}
                   type="button"
                 >
-                  <AddIcon className="contratos-menu-icon" />
-                  <span>Crear Contrato</span>
+                  <MoreVertIcon className="app-toolbar-icon" />
                 </button>
-                {process.env.NODE_ENV === 'development' && (
-                  <button
-                    className="contratos-menu-item"
-                    onClick={() => {
-                      setIsMenuOpen(false)
-                      setIsDebugModalOpen(true)
-                    }}
-                    type="button"
-                  >
-                    <span>🐛 Debug</span>
-                  </button>
+                {isMenuOpen && (
+                  <div className="crud-dropdown-menu">
+                    <button
+                      className="crud-dropdown-menu-item"
+                      onClick={() => {
+                        setIsMenuOpen(false)
+                        setIsDebugModalOpen(true)
+                      }}
+                      type="button"
+                    >
+                      <span>🐛 Debug</span>
+                    </button>
+                  </div>
                 )}
-              </div>
+              </>
             )}
           </div>
         </div>
 
-        <h1 className="contratos-page-title">Contratos</h1>
-        <p className="contratos-page-subtitle">Gestiona tus contratos laborales</p>
+        <h1 className="app-page-title">Contratos</h1>
+
+        <div className="crud-summary-strip crud-summary-strip--success" role="region" aria-label="Resumen de contratos">
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Contratos</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--info">
+              {highlights.total}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item crud-summary-strip-item--emphasis">
+            <span className="crud-summary-strip-label">Ingresos / mes</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--available">
+              {highlights.ingresos}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Exclusivos</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--info">
+              {highlights.exclusivos}
+            </span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+          onClick={() => setShowFormModal(true)}
+          aria-label="Crear contrato"
+        >
+          <AddIcon aria-hidden={true} />
+          Crear contrato
+        </button>
 
         {/* Estado de carga */}
-        {isLoading ? (
-          <div className="contratos-empty-state">
-            <p className="empty-state-text">Cargando contratos...</p>
+        {isLoading && contracts.length === 0 ? (
+          <div className="glass-group">
+            <ListSkeleton variant="inset-row" count={4} aria-label="Cargando contratos" />
           </div>
-        ) : error ? (
-          <div className="contratos-empty-state">
-            <p className="empty-state-text">{error}</p>
+        ) : error && contracts.length === 0 ? (
+          <div className="loader-container">
+            <div className="loader finanzas-stats-error-panel">
+              <p className="loader-text loader-text--error" role="alert">
+                {error}
+              </p>
+              <button
+                type="button"
+                className="btn-base btn-secondary finanzas-stats-retry-button"
+                onClick={() => void loadRecords()}
+                aria-label="Reintentar cargar contratos"
+              >
+                Reintentar
+              </button>
+            </div>
+          </div>
+        ) : contracts.length === 0 ? (
+          <div className="empty-state">
+            <FolderIcon className="empty-state-icon" />
+            <p className="empty-text">No hay contratos guardados</p>
+            <p className="empty-subtext">Usa el botón de arriba para crear el primero</p>
           </div>
         ) : (
-          <>
-            {/* Total de Ingresos - Highlight */}
-            {contracts.length > 0 && (
-              <div className="contratos-total-income">
-                <div className="contratos-total-income-content">
-                  <div className="contratos-total-income-icon">
-                    <AttachMoneyIcon />
+          <div className="glass-group">
+            {contracts.map(contract => (
+              <button
+                key={contract.id}
+                type="button"
+                className="crud-inset-row crud-row-accent-blue"
+                onClick={() => openContractEdit(contract)}
+                aria-label={`Editar contrato ${contract.name}`}
+              >
+                <div className="crud-row-content">
+                  <div className="crud-row-header">
+                    <span className="crud-row-title">{contract.name}</span>
+                    {contract.data.salary != null && contract.data.salary > 0 && (
+                      <span className="crud-row-value">
+                        {formatCurrency(contract.data.salary, contract.data.currency)}
+                      </span>
+                    )}
+                    <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
                   </div>
-                  <div className="contratos-total-income-info">
-                    <span className="contratos-total-income-label">
-                      Total de Ingresos Mensuales
-                    </span>
-                    <span className="contratos-total-income-value">
-                      {formatBalance(calculateTotalIncomeCOP(), 'COP')}
-                    </span>
-                  </div>
+                  <p className="crud-row-meta">{formatContractMeta(contract)}</p>
+                  {contract.data.workSchedule && (
+                    <p className="crud-row-preview">{contract.data.workSchedule}</p>
+                  )}
                 </div>
-                <div className="contratos-total-income-stats">
-                  <div className="contratos-total-income-stat">
-                    <span className="contratos-total-income-stat-label">Contratos Activos</span>
-                    <span className="contratos-total-income-stat-value">{contracts.length}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Lista de Contratos */}
-            {contracts.length === 0 ? (
-              <div className="contratos-empty-state">
-                <p className="empty-state-text">No hay contratos guardados</p>
-                <p className="empty-state-subtext">
-                  Crea tu primer contrato usando el botón del menú
-                </p>
-              </div>
-            ) : (
-              <div className="contratos-list">
-                <h2 className="contratos-list-title">Contratos Guardados</h2>
-                <div className="contratos-items">
-                  {contracts.map(contract => (
-                    <div key={contract.id} className="contratos-item">
-                      <div className="contratos-item-header">
-                        <h3 className="contratos-item-name">{contract.name}</h3>
-                        <div className="contratos-item-actions">
-                          <button
-                            onClick={() => {
-                              handleEdit(contract)
-                              setShowFormModal(true)
-                            }}
-                            className="contratos-item-action-button"
-                            aria-label="Editar contrato"
-                            type="button"
-                          >
-                            <EditIcon className="contratos-item-action-icon" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(contract.id, contract.name)}
-                            className="contratos-item-action-button contratos-item-action-button-danger"
-                            aria-label="Eliminar contrato"
-                            type="button"
-                          >
-                            <DeleteIcon className="contratos-item-action-icon" />
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="contratos-item-content">
-                        {/* Información Principal - Destacada */}
-                        <div className="contratos-item-main-info">
-                          {contract.data.salary && (
-                            <div className="contratos-item-salary-badge">
-                              <AttachMoneyIcon className="contratos-item-salary-icon" />
-                              <span className="contratos-item-salary-value">
-                                {formatCurrency(contract.data.salary, contract.data.currency)}
-                              </span>
-                            </div>
-                          )}
-                          <div className="contratos-item-badges">
-                            {contract.data.contractType && (
-                              <span className="contratos-item-badge contratos-item-badge-type">
-                                <WorkIcon className="contratos-item-badge-icon" />
-                                {contract.data.contractType}
-                              </span>
-                            )}
-                            {contract.data.exclusivity && (
-                              <span className="contratos-item-badge contratos-item-badge-exclusivity">
-                                <BlockIcon className="contratos-item-badge-icon" />
-                                Exclusivo
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Información Básica - Grid */}
-                        <div className="contratos-item-info-grid">
-                          {contract.data.clientName && (
-                            <div className="contratos-item-info-item">
-                              <PersonIcon className="contratos-item-info-icon" />
-                              <div className="contratos-item-info-content">
-                                <span className="contratos-item-info-label">Cliente</span>
-                                <span className="contratos-item-info-value">
-                                  {contract.data.clientName}
-                                </span>
-                              </div>
-                            </div>
-                          )}
-
-                          {contract.data.country && (
-                            <div className="contratos-item-info-item">
-                              <PublicIcon className="contratos-item-info-icon" />
-                              <div className="contratos-item-info-content">
-                                <span className="contratos-item-info-label">País</span>
-                                <span className="contratos-item-info-value">
-                                  {contract.data.country}
-                                </span>
-                              </div>
-                            </div>
-                          )}
-
-                          {contract.data.workSchedule && (
-                            <div className="contratos-item-info-item">
-                              <AccessTimeIcon className="contratos-item-info-icon" />
-                              <div className="contratos-item-info-content">
-                                <span className="contratos-item-info-label">Horario</span>
-                                <span className="contratos-item-info-value">
-                                  {contract.data.workSchedule}
-                                </span>
-                              </div>
-                            </div>
-                          )}
-
-                          {contract.data.paymentAccountId && (
-                            <div className="contratos-item-info-item">
-                              <AccountBalanceIcon className="contratos-item-info-icon" />
-                              <div className="contratos-item-info-content">
-                                <span className="contratos-item-info-label">Cuenta</span>
-                                <span className="contratos-item-info-value">
-                                  {(() => {
-                                    const account = bankAccounts.find(
-                                      acc => acc.id === contract.data.paymentAccountId
-                                    )
-                                    return account ? `${account.nombre} - ${account.banco}` : 'N/A'
-                                  })()}
-                                </span>
-                              </div>
-                            </div>
-                          )}
-
-                          {contract.data.ptos !== undefined && (
-                            <div className="contratos-item-info-item">
-                              <EventIcon className="contratos-item-info-icon" />
-                              <div className="contratos-item-info-content">
-                                <span className="contratos-item-info-label">PTOs</span>
-                                <span className="contratos-item-info-value">
-                                  {contract.data.ptos} días
-                                </span>
-                              </div>
-                            </div>
-                          )}
-
-                          {contract.data.holidaysCountry && (
-                            <div className="contratos-item-info-item">
-                              <PublicIcon className="contratos-item-info-icon" />
-                              <div className="contratos-item-info-content">
-                                <span className="contratos-item-info-label">Holidays</span>
-                                <span className="contratos-item-info-value">
-                                  {contract.data.holidaysCountry}
-                                </span>
-                              </div>
-                            </div>
-                          )}
-
-                          {contract.data.hasAgency && contract.data.agencyName && (
-                            <div className="contratos-item-info-item">
-                              <BusinessIcon className="contratos-item-info-icon" />
-                              <div className="contratos-item-info-content">
-                                <span className="contratos-item-info-label">Agencia</span>
-                                <span className="contratos-item-info-value">
-                                  {contract.data.agencyName}
-                                </span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Información Adicional - Texto Completo */}
-                        {(contract.data.benefits || contract.data.deductions) && (
-                          <div className="contratos-item-additional">
-                            {contract.data.benefits && (
-                              <div className="contratos-item-additional-item">
-                                <CardGiftcardIcon className="contratos-item-additional-icon" />
-                                <div className="contratos-item-additional-content">
-                                  <span className="contratos-item-additional-label">
-                                    Beneficios
-                                  </span>
-                                  <p className="contratos-item-additional-text">
-                                    {contract.data.benefits}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-
-                            {contract.data.deductions && (
-                              <div className="contratos-item-additional-item">
-                                <RemoveCircleIcon className="contratos-item-additional-icon" />
-                                <div className="contratos-item-additional-content">
-                                  <span className="contratos-item-additional-label">
-                                    Deducciones
-                                  </span>
-                                  <p className="contratos-item-additional-text">
-                                    {contract.data.deductions}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
+              </button>
+            ))}
+          </div>
         )}
 
-        {/* Modal de Formulario */}
+                {/* Modal de Formulario */}
         {showFormModal && (
-          <div
-            className="contratos-modal-overlay"
-            onClick={() => {
+          <ModalOverlay
+            onClose={() => {
               setShowFormModal(false)
               handleCancelEdit()
             }}
+            className="modal-overlay"
           >
-            <div
-              className="contratos-modal contratos-modal-large"
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="contratos-modal-header">
-                <h2 className="contratos-modal-title">
-                  {editingId ? 'Editar Contrato' : 'Crear Contrato'}
-                </h2>
+            <div className="crud-form-panel-shell crud-form-panel-shell--large" onClick={e => e.stopPropagation()}>
+              <div className="modal-panel-header">
+                <h2 className="modal-panel-title" id="modal-panel-title-editingid-editar-contrato-crear-contrato">{editingId ? 'Editar Contrato' : 'Crear Contrato'}</h2>
                 <button
-                  className="contratos-modal-close"
+                  className="modal-panel-close"
                   onClick={() => {
                     setShowFormModal(false)
                     handleCancelEdit()
@@ -841,47 +732,62 @@ function Contratos() {
                   ×
                 </button>
               </div>
-              <div className="contratos-modal-content">
-                <form className="contratos-form" onSubmit={handleSubmit}>
-                  <div className="contratos-form-section">
-                    <h3 className="contratos-form-section-title">Información Básica</h3>
-
-                    <div className="contratos-form-group">
-                      <label htmlFor="name" className="contratos-form-label">
+              <div className="modal-panel-content">
+                <form className="crud-form-panel" onSubmit={handleSubmit} noValidate>
+                  <div className="crud-form-panel-section">
+                    <h3 className="crud-form-panel-section-title">Información Básica</h3>
+                    
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="name" className="form-label-base form-label-base--inline">
                         Nombre del Contrato *
                       </label>
                       <input
+                        ref={nameRef}
                         type="text"
                         id="name"
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        className="contratos-form-input"
+                        className={`form-input-base ${formErrors.name ? 'input-error' : ''}`}
                         placeholder="Ej: Contrato con Empresa XYZ"
-                        required
+                        autoFocus
+                        aria-invalid={!!formErrors.name}
+                        {...(formErrors.name ? { 'aria-describedby': 'contract-name-error' } : {})}
                       />
+                      {formErrors.name && (
+                        <span id="contract-name-error" className="error-message" role="alert">
+                          {formErrors.name}
+                        </span>
+                      )}
                     </div>
 
-                    <div className="contratos-form-group">
-                      <label htmlFor="clientName" className="contratos-form-label">
-                        <PersonIcon className="contratos-form-label-icon" />
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="clientName" className="form-label-base form-label-base--inline">
+                        <PersonIcon className="form-label-base form-label-base--inline-icon" />
                         Nombre del Cliente *
                       </label>
                       <input
+                        ref={clientNameRef}
                         type="text"
                         id="clientName"
                         name="clientName"
                         value={formData.clientName}
                         onChange={handleChange}
-                        className="contratos-form-input"
+                        className={`form-input-base ${formErrors.clientName ? 'input-error' : ''}`}
                         placeholder="Nombre de la empresa o cliente"
-                        required
+                        aria-invalid={!!formErrors.clientName}
+                        {...(formErrors.clientName ? { 'aria-describedby': 'contract-client-error' } : {})}
                       />
+                      {formErrors.clientName && (
+                        <span id="contract-client-error" className="error-message" role="alert">
+                          {formErrors.clientName}
+                        </span>
+                      )}
                     </div>
 
-                    <div className="contratos-form-group">
-                      <label htmlFor="country" className="contratos-form-label">
-                        <PublicIcon className="contratos-form-label-icon" />
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="country" className="form-label-base form-label-base--inline">
+                        <PublicIcon className="form-label-base form-label-base--inline-icon" />
                         País
                       </label>
                       <input
@@ -890,14 +796,14 @@ function Contratos() {
                         name="country"
                         value={formData.country}
                         onChange={handleChange}
-                        className="contratos-form-input"
+                        className="form-input-base"
                         placeholder="Ej: Colombia, Estados Unidos"
                       />
                     </div>
 
-                    <div className="contratos-form-group">
-                      <label htmlFor="workSchedule" className="contratos-form-label">
-                        <AccessTimeIcon className="contratos-form-label-icon" />
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="workSchedule" className="form-label-base form-label-base--inline">
+                        <AccessTimeIcon className="form-label-base form-label-base--inline-icon" />
                         Horario de Atención
                       </label>
                       <input
@@ -906,14 +812,14 @@ function Contratos() {
                         name="workSchedule"
                         value={formData.workSchedule}
                         onChange={handleChange}
-                        className="contratos-form-input"
+                        className="form-input-base"
                         placeholder="Ej: Lunes a Viernes 9am-6pm EST"
                       />
                     </div>
 
-                    <div className="contratos-form-group">
-                      <label htmlFor="contractType" className="contratos-form-label">
-                        <WorkIcon className="contratos-form-label-icon" />
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="contractType" className="form-label-base form-label-base--inline">
+                        <WorkIcon className="form-label-base form-label-base--inline-icon" />
                         Tipo de Contrato
                       </label>
                       <select
@@ -921,7 +827,7 @@ function Contratos() {
                         name="contractType"
                         value={formData.contractType}
                         onChange={handleChange}
-                        className="contratos-form-input"
+                        className="form-input-base"
                       >
                         <option value="">Seleccionar tipo</option>
                         <option value="Tiempo Completo">Tiempo Completo</option>
@@ -935,22 +841,22 @@ function Contratos() {
                     </div>
                   </div>
 
-                  <div className="contratos-form-section">
-                    <h3 className="contratos-form-section-title">Compensación</h3>
+                  <div className="crud-form-panel-section">
+                    <h3 className="crud-form-panel-section-title">Compensación</h3>
 
-                    <div className="contratos-form-group">
-                      <label htmlFor="salary" className="contratos-form-label">
-                        <AttachMoneyIcon className="contratos-form-label-icon" />
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="salary" className="form-label-base form-label-base--inline">
+                        <AttachMoneyIcon className="form-label-base form-label-base--inline-icon" />
                         Salario
                       </label>
-                      <div className="contratos-form-salary-group">
+                      <div className="crud-form-amount-row">
                         <input
                           type="number"
                           id="salary"
                           name="salary"
                           value={formData.salary}
                           onChange={handleChange}
-                          className="contratos-form-input contratos-form-salary-input"
+                          className="form-input-base crud-form-amount-input"
                           placeholder="0"
                           min="0"
                           step="0.01"
@@ -960,7 +866,7 @@ function Contratos() {
                           name="currency"
                           value={formData.currency}
                           onChange={handleChange}
-                          className="contratos-form-input contratos-form-currency-select"
+                          className="form-input-base crud-form-amount-currency"
                         >
                           <option value="USD">USD</option>
                           <option value="COP">COP</option>
@@ -970,9 +876,9 @@ function Contratos() {
                       </div>
                     </div>
 
-                    <div className="contratos-form-group">
-                      <label htmlFor="paymentAccountId" className="contratos-form-label">
-                        <AccountBalanceIcon className="contratos-form-label-icon" />
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="paymentAccountId" className="form-label-base form-label-base--inline">
+                        <AccountBalanceIcon className="form-label-base form-label-base--inline-icon" />
                         Cuenta a la que Pagan
                       </label>
                       <select
@@ -980,7 +886,7 @@ function Contratos() {
                         name="paymentAccountId"
                         value={formData.paymentAccountId}
                         onChange={handleChange}
-                        className="contratos-form-input"
+                        className="form-input-base"
                       >
                         <option value="">Seleccionar cuenta</option>
                         {bankAccounts.map(account => (
@@ -991,9 +897,9 @@ function Contratos() {
                       </select>
                     </div>
 
-                    <div className="contratos-form-group">
-                      <label htmlFor="deductions" className="contratos-form-label">
-                        <RemoveCircleIcon className="contratos-form-label-icon" />
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="deductions" className="form-label-base form-label-base--inline">
+                        <RemoveCircleIcon className="form-label-base form-label-base--inline-icon" />
                         Deducciones
                       </label>
                       <textarea
@@ -1001,19 +907,19 @@ function Contratos() {
                         name="deductions"
                         value={formData.deductions}
                         onChange={handleChange}
-                        className="contratos-form-input contratos-form-textarea"
+                        className="form-textarea-base"
                         placeholder="Describe las deducciones que se aplican (impuestos, seguros, etc.)"
                         rows={3}
                       />
                     </div>
                   </div>
 
-                  <div className="contratos-form-section">
-                    <h3 className="contratos-form-section-title">Beneficios y Condiciones</h3>
+                  <div className="crud-form-panel-section">
+                    <h3 className="crud-form-panel-section-title">Beneficios y Condiciones</h3>
 
-                    <div className="contratos-form-group">
-                      <label htmlFor="benefits" className="contratos-form-label">
-                        <CardGiftcardIcon className="contratos-form-label-icon" />
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="benefits" className="form-label-base form-label-base--inline">
+                        <CardGiftcardIcon className="form-label-base form-label-base--inline-icon" />
                         Beneficios
                       </label>
                       <textarea
@@ -1021,29 +927,29 @@ function Contratos() {
                         name="benefits"
                         value={formData.benefits}
                         onChange={handleChange}
-                        className="contratos-form-input contratos-form-textarea"
+                        className="form-textarea-base"
                         placeholder="Describe los beneficios (seguro médico, bonos, etc.)"
                         rows={3}
                       />
                     </div>
 
-                    <div className="contratos-form-group">
-                      <label className="contratos-form-checkbox-label">
+                    <div className="form-group-base form-group-base--compact">
+                      <label className="crud-form-checkbox-label">
                         <input
                           type="checkbox"
                           name="exclusivity"
                           checked={formData.exclusivity}
                           onChange={handleChange}
-                          className="contratos-form-checkbox"
+                          className="crud-form-checkbox"
                         />
-                        <BlockIcon className="contratos-form-label-icon" />
+                        <BlockIcon className="form-label-base form-label-base--inline-icon" />
                         <span>Exclusividad</span>
                       </label>
                     </div>
 
-                    <div className="contratos-form-group">
-                      <label htmlFor="ptos" className="contratos-form-label">
-                        <EventIcon className="contratos-form-label-icon" />
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="ptos" className="form-label-base form-label-base--inline">
+                        <EventIcon className="form-label-base form-label-base--inline-icon" />
                         PTOs (Días de Vacaciones)
                       </label>
                       <input
@@ -1052,15 +958,15 @@ function Contratos() {
                         name="ptos"
                         value={formData.ptos}
                         onChange={handleChange}
-                        className="contratos-form-input"
+                        className="form-input-base"
                         placeholder="Ej: 15"
                         min="0"
                       />
                     </div>
 
-                    <div className="contratos-form-group">
-                      <label htmlFor="holidaysCountry" className="contratos-form-label">
-                        <PublicIcon className="contratos-form-label-icon" />
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="holidaysCountry" className="form-label-base form-label-base--inline">
+                        <PublicIcon className="form-label-base form-label-base--inline-icon" />
                         Holidays (País)
                       </label>
                       <input
@@ -1069,33 +975,33 @@ function Contratos() {
                         name="holidaysCountry"
                         value={formData.holidaysCountry}
                         onChange={handleChange}
-                        className="contratos-form-input"
+                        className="form-input-base"
                         placeholder="Ej: Colombia, Estados Unidos"
                       />
                     </div>
                   </div>
 
-                  <div className="contratos-form-section">
-                    <h3 className="contratos-form-section-title">Agencia</h3>
+                  <div className="crud-form-panel-section">
+                    <h3 className="crud-form-panel-section-title">Agencia</h3>
 
-                    <div className="contratos-form-group">
-                      <label className="contratos-form-checkbox-label">
+                    <div className="form-group-base form-group-base--compact">
+                      <label className="crud-form-checkbox-label">
                         <input
                           type="checkbox"
                           name="hasAgency"
                           checked={formData.hasAgency}
                           onChange={handleChange}
-                          className="contratos-form-checkbox"
+                          className="crud-form-checkbox"
                         />
-                        <BusinessIcon className="contratos-form-label-icon" />
+                        <BusinessIcon className="form-label-base form-label-base--inline-icon" />
                         <span>Hay Agencia de por Medio</span>
                       </label>
                     </div>
 
                     {formData.hasAgency && (
-                      <div className="contratos-form-group">
-                        <label htmlFor="agencyName" className="contratos-form-label">
-                          <BusinessIcon className="contratos-form-label-icon" />
+                      <div className="form-group-base form-group-base--compact">
+                        <label htmlFor="agencyName" className="form-label-base form-label-base--inline">
+                          <BusinessIcon className="form-label-base form-label-base--inline-icon" />
                           Nombre de la Agencia
                         </label>
                         <input
@@ -1104,14 +1010,14 @@ function Contratos() {
                           name="agencyName"
                           value={formData.agencyName}
                           onChange={handleChange}
-                          className="contratos-form-input"
+                          className="form-input-base"
                           placeholder="Nombre de la agencia"
                         />
                       </div>
                     )}
                   </div>
 
-                  <div className="contratos-form-actions">
+                  <div className="crud-form-panel-actions">
                     {editingId ? (
                       <>
                         <button
@@ -1120,16 +1026,31 @@ function Contratos() {
                             setShowFormModal(false)
                             handleCancelEdit()
                           }}
-                          className="contratos-form-button contratos-form-button-secondary"
+                          className="crud-form-panel-button crud-form-panel-button--secondary"
                         >
                           Cancelar
                         </button>
                         <button
+                          type="button"
+                          onClick={() => {
+                            const contract = contracts.find(c => c.id === editingId)
+                            if (contract) {
+                              void handleDelete(contract.id, contract.name).then(() => {
+                                setShowFormModal(false)
+                                handleCancelEdit()
+                              })
+                            }
+                          }}
+                          className="crud-form-panel-button crud-form-panel-button--secondary"
+                        >
+                          Eliminar
+                        </button>
+                        <button
                           type="submit"
                           disabled={isSaving}
-                          className="contratos-form-button contratos-form-button-primary"
+                          className="crud-form-panel-button crud-form-panel-button--primary"
                         >
-                          <SaveIcon className="contratos-form-button-icon" />
+                          <SaveIcon className="crud-form-panel-button-icon" />
                           {isSaving ? 'Guardando...' : 'Actualizar Contrato'}
                         </button>
                       </>
@@ -1137,9 +1058,9 @@ function Contratos() {
                       <button
                         type="submit"
                         disabled={isSaving}
-                        className="contratos-form-button contratos-form-button-primary"
+                        className="crud-form-panel-button crud-form-panel-button--primary"
                       >
-                        <SaveIcon className="contratos-form-button-icon" />
+                        <SaveIcon className="crud-form-panel-button-icon" />
                         {isSaving ? 'Guardando...' : 'Guardar Contrato'}
                       </button>
                     )}
@@ -1147,40 +1068,40 @@ function Contratos() {
                 </form>
               </div>
             </div>
-          </div>
+          </ModalOverlay>
         )}
 
         {/* Modal de Registros Guardados */}
         {showRecordsModal && (
-          <div className="contratos-modal-overlay" onClick={() => setShowRecordsModal(false)}>
-            <div className="contratos-modal" onClick={e => e.stopPropagation()}>
-              <div className="contratos-modal-header">
-                <h2 className="contratos-modal-title">Contratos Guardados</h2>
-                <button
-                  className="contratos-modal-close"
+          <ModalOverlay onClose={() => setShowRecordsModal(false)} className="modal-overlay">
+            <div className="modal-panel" onClick={e => e.stopPropagation()}>
+              <div className="modal-panel-header">
+                <h2 className="modal-panel-title" id="modal-panel-title-contratos-guardados">Contratos Guardados</h2>
+                  <button
+                  className="modal-panel-close"
                   onClick={() => setShowRecordsModal(false)}
                   aria-label="Cerrar"
-                  type="button"
-                >
+                    type="button"
+                  >
                   ×
-                </button>
-              </div>
-              <div className="contratos-modal-content">
+                  </button>
+                </div>
+              <div className="modal-panel-content">
                 {isLoading ? (
                   <p>Cargando...</p>
                 ) : records.length === 0 ? (
-                  <p className="contratos-modal-empty">No hay contratos guardados</p>
+                  <p className="modal-panel-empty">No hay contratos guardados</p>
                 ) : (
-                  <div className="contratos-modal-list">
+                  <div className="crud-modal-pick-list">
                     {records.map(record => (
-                      <div key={record.id} className="contratos-modal-item">
-                        <div className="contratos-modal-item-info">
-                          <h3 className="contratos-modal-item-name">{record.name}</h3>
-                          <p className="contratos-modal-item-meta">
+                      <div key={record.id} className="crud-modal-pick-item">
+                        <div className="crud-modal-pick-item-info">
+                          <h3 className="crud-modal-pick-item-title">{record.name}</h3>
+                          <p className="crud-modal-pick-item-meta">
                             Cliente: {record.data.clientName || 'N/A'}
-                          </p>
-                        </div>
-                        <button
+                  </p>
+                          </div>
+                  <button
                           onClick={() => {
                             handleEdit({
                               id: record.id,
@@ -1191,36 +1112,36 @@ function Contratos() {
                             })
                             setShowRecordsModal(false)
                           }}
-                          className="contratos-modal-item-button"
-                          type="button"
-                        >
+                          className="crud-modal-pick-item-action"
+                    type="button"
+                  >
                           Cargar
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+                  </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                          </div>
+                </ModalOverlay>
         )}
 
         {/* Modal de Debug */}
-        {isDebugModalOpen && (
-          <div className="contratos-modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
-            <div className="contratos-modal" onClick={e => e.stopPropagation()}>
-              <div className="contratos-modal-header">
-                <h2 className="contratos-modal-title">🐛 Debug - Contratos</h2>
-                <button
-                  className="contratos-modal-close"
+        {isDebugModalOpen && isDebugToolsEnabled() && (
+          <ModalOverlay onClose={() => setIsDebugModalOpen(false)} className="modal-overlay">
+            <div className="modal-panel" onClick={e => e.stopPropagation()}>
+              <div className="modal-panel-header">
+                <h2 className="modal-panel-title" id="modal-panel-title-debug-contratos">🐛 Debug - Contratos</h2>
+                  <button
+                  className="modal-panel-close"
                   onClick={() => setIsDebugModalOpen(false)}
                   aria-label="Cerrar"
-                  type="button"
-                >
+                    type="button"
+                  >
                   ×
-                </button>
+                  </button>
               </div>
-              <div className="contratos-modal-content">
+              <div className="modal-panel-content">
                 <div className="debug-options">
                   <button
                     className="debug-option-button create-demo"
@@ -1234,7 +1155,7 @@ function Contratos() {
                       <p className="debug-option-description">
                         Crea 5 contratos de ejemplo con diferentes tipos y configuraciones
                       </p>
-                    </div>
+                        </div>
                   </button>
                   <button
                     className="debug-option-button delete-all"
@@ -1250,12 +1171,12 @@ function Contratos() {
                       </p>
                     </div>
                   </button>
-                </div>
+                    </div>
 
-                <div className="contratos-modal-form-actions">
+                <div className="crud-modal-pick-actions">
                   <button
                     type="button"
-                    className="contratos-form-button contratos-form-button-secondary"
+                    className="crud-form-panel-button crud-form-panel-button--secondary"
                     onClick={() => setIsDebugModalOpen(false)}
                   >
                     Cerrar
@@ -1263,7 +1184,7 @@ function Contratos() {
                 </div>
               </div>
             </div>
-          </div>
+          </ModalOverlay>
         )}
       </div>
     </div>

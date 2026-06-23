@@ -1,4 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
+import { backToHubLabel } from '../constants/hubLabels'
+import { sectionColor } from '../constants/sectionColors'
 import { useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -8,6 +10,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { useNotification } from '../contexts/NotificationContext'
 import './AppPage.css'
 import './GeneradorContrasenas.css'
+import { devError } from '../utils/debugTools'
 
 interface PasswordHistory {
   password: string
@@ -137,10 +140,10 @@ function GeneradorContrasenas() {
     const uniqueChars = new Set(pwd).size
     if (uniqueChars / pwd.length > 0.5) strength += 1
 
-    if (strength <= 2) return { level: 1, label: 'Débil', color: '#FF3B30' }
-    if (strength <= 4) return { level: 2, label: 'Media', color: '#FF9500' }
-    if (strength <= 6) return { level: 3, label: 'Fuerte', color: '#FFCC00' }
-    return { level: 4, label: 'Muy Fuerte', color: '#34C759' }
+    if (strength <= 2) return { level: 1, label: 'Débil', color: sectionColor.danger }
+    if (strength <= 4) return { level: 2, label: 'Media', color: sectionColor.lifestyle }
+    if (strength <= 6) return { level: 3, label: 'Fuerte', color: sectionColor.yellow }
+    return { level: 4, label: 'Muy Fuerte', color: sectionColor.success }
   }
 
   const strength = calculateStrength(password)
@@ -158,7 +161,7 @@ function GeneradorContrasenas() {
       showNotification('Contraseña copiada al portapapeles', 'success')
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
-      console.error('Error al copiar:', err)
+      devError('Error al copiar:', err)
       showNotification('Error al copiar la contraseña', 'error')
     }
   }
@@ -187,21 +190,20 @@ function GeneradorContrasenas() {
 
   return (
     <div className="app-page-container">
-      <div className="app-page-content generador-contrasenas-content">
+      <div className="app-page-content app-page-content-wide crud-page-content generador-contrasenas-content">
         {/* Toolbar */}
-        <div className="generador-contrasenas-toolbar">
+        <div className="app-toolbar">
           <button
-            className="generador-contrasenas-toolbar-button"
+            className="app-toolbar-button"
             onClick={() => navigate('/registros')}
-            aria-label="Volver a Registros"
+            aria-label={backToHubLabel('registros')}
             type="button"
           >
-            <ArrowBackIcon className="generador-contrasenas-toolbar-icon" />
+            <ArrowBackIcon className="app-toolbar-icon" />
           </button>
         </div>
 
-        <h1 className="generador-contrasenas-page-title">Generador de Contraseñas</h1>
-        <p className="generador-contrasenas-page-subtitle">Crea contraseñas seguras y únicas</p>
+        <h1 className="app-page-title">Generador de Contraseñas</h1>
 
         {/* Generador de Contraseñas */}
         <div className="password-generator">

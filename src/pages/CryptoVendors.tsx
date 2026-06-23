@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import AddIcon from '@mui/icons-material/Add'
@@ -16,10 +16,17 @@ import BusinessIcon from '@mui/icons-material/Business'
 import DescriptionIcon from '@mui/icons-material/Description'
 import PersonIcon from '@mui/icons-material/Person'
 import PercentIcon from '@mui/icons-material/Percent'
+import WarningIcon from '@mui/icons-material/Warning'
+import SyncIcon from '@mui/icons-material/Sync'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { api } from '../services/api'
+import { devError, isDebugToolsEnabled, isDestructiveDebugEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
+import { useConfirm } from '../contexts/ConfirmContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
+import ModalOverlay from '../components/ModalOverlay'
+import ListSkeleton from '../components/ListSkeleton'
 import './CryptoVendors.css'
 
 interface CryptoVendor {
@@ -53,27 +60,12 @@ interface CryptoVendorRecord {
   updated_at: string
 }
 
-const CRYPTO_OPTIONS = [
-  'BTC',
-  'ETH',
-  'USDT',
-  'USDC',
-  'BNB',
-  'ADA',
-  'SOL',
-  'XRP',
-  'DOGE',
-  'MATIC',
-  'DOT',
-  'LTC',
-  'AVAX',
-  'UNI',
-  'LINK',
-]
+const CRYPTO_OPTIONS = ['BTC', 'ETH', 'USDT', 'USDC', 'BNB', 'ADA', 'SOL', 'XRP', 'DOGE', 'MATIC', 'DOT', 'LTC', 'AVAX', 'UNI', 'LINK']
 
 function CryptoVendors() {
   const navigate = useNavigate()
   const { showNotification } = useNotification()
+  const { confirm } = useConfirm()
   const [vendors, setVendors] = useState<CryptoVendor[]>([])
   const [formData, setFormData] = useState({
     name: '',
@@ -92,9 +84,32 @@ function CryptoVendors() {
   const [isSaving, setIsSaving] = useState(false)
   const [records, setRecords] = useState<CryptoVendorRecord[]>([])
   const [isLoadingRecords, setIsLoadingRecords] = useState(false)
+  const [recordsLoadError, setRecordsLoadError] = useState<string | null>(null)
   const [showRecordsModal, setShowRecordsModal] = useState(false)
+  const [loadedRecordId, setLoadedRecordId] = useState<string | null>(null)
   const [listName, setListName] = useState('')
   const [showSaveModal, setShowSaveModal] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
+  const [isDebugLoading, setIsDebugLoading] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node
+      if (isMenuOpen && menuRef.current && !menuRef.current.contains(target)) {
+        setIsMenuOpen(false)
+      }
+    }
+
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMenuOpen])
 
   useEffect(() => {
     loadRecords()
@@ -103,20 +118,28 @@ function CryptoVendors() {
   const loadRecords = async () => {
     try {
       setIsLoadingRecords(true)
+      setRecordsLoadError(null)
       const response = await api.getCryptoVendors()
       if (response.vendors && Array.isArray(response.vendors)) {
         setRecords(response.vendors)
+      } else {
+        setRecords([])
       }
     } catch (err: any) {
-      console.error('Error al cargar registros de crypto vendors:', err)
+      devError('Error al cargar registros de crypto vendors:', err)
+      setRecords([])
+      setRecordsLoadError(
+        getTranslatedErrorMessage(
+          err,
+          'Error al cargar los registros. Por favor, intenta de nuevo.'
+        )
+      )
     } finally {
       setIsLoadingRecords(false)
     }
   }
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
@@ -167,22 +190,15 @@ function CryptoVendors() {
               address: formData.contactAddress.trim() || undefined,
             }
           : undefined,
-      acceptedCryptocurrencies:
-        formData.acceptedCryptocurrencies.length > 0
-          ? formData.acceptedCryptocurrencies
-          : undefined,
+      acceptedCryptocurrencies: formData.acceptedCryptocurrencies.length > 0 ? formData.acceptedCryptocurrencies : undefined,
       wallets: Object.keys(formData.wallets).length > 0 ? formData.wallets : undefined,
       businessType: formData.businessType.trim() || undefined,
       notes: formData.notes.trim() || undefined,
       discount:
         formData.discountPercentage.trim() || formData.discountMinAmount.trim()
           ? {
-              percentage: formData.discountPercentage
-                ? parseFloat(formData.discountPercentage)
-                : undefined,
-              minAmount: formData.discountMinAmount
-                ? parseFloat(formData.discountMinAmount)
-                : undefined,
+              percentage: formData.discountPercentage ? parseFloat(formData.discountPercentage) : undefined,
+              minAmount: formData.discountMinAmount ? parseFloat(formData.discountMinAmount) : undefined,
             }
           : undefined,
     }
@@ -256,8 +272,8 @@ function CryptoVendors() {
     })
   }
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este vendedor?')) {
+  const handleDelete = async (id: string) => {
+    if ((await confirm({ message: '¿Estás seguro de que quieres eliminar este vendedor?', variant: 'danger' }))) {
       setVendors(prev => prev.filter(v => v.id !== id))
       showNotification('Vendedor eliminado', 'success')
     }
@@ -296,9 +312,13 @@ function CryptoVendors() {
         },
       }
 
-      await api.createCryptoVendor(vendorListData)
-
-      showNotification('Lista de vendedores guardada exitosamente', 'success')
+      if (loadedRecordId) {
+        await api.updateCryptoVendor(loadedRecordId, vendorListData)
+        showNotification('Lista de vendedores actualizada exitosamente', 'success')
+      } else {
+        await api.createCryptoVendor(vendorListData)
+        showNotification('Lista de vendedores guardada exitosamente', 'success')
+      }
 
       await loadRecords()
 
@@ -322,15 +342,14 @@ function CryptoVendors() {
         const itemRecord = response.vendors[0]
 
         if (itemRecord.data && itemRecord.data.items && Array.isArray(itemRecord.data.items)) {
-          const loadedVendors: CryptoVendor[] = itemRecord.data.items.map(
-            (item: any, index: number) => ({
-              id: Date.now().toString() + index.toString(),
-              name: item.name || '',
-              data: item.data || {},
-            })
-          )
+          const loadedVendors: CryptoVendor[] = itemRecord.data.items.map((item: any, index: number) => ({
+            id: Date.now().toString() + index.toString(),
+            name: item.name || '',
+            data: item.data || {},
+          }))
           setVendors(loadedVendors)
           setListName(itemRecord.name)
+          setLoadedRecordId(itemRecord.id)
         } else {
           const loadedVendor: CryptoVendor = {
             id: itemRecord.id,
@@ -339,6 +358,7 @@ function CryptoVendors() {
           }
           setVendors([loadedVendor])
           setListName(itemRecord.name)
+          setLoadedRecordId(itemRecord.id)
         }
 
         setShowRecordsModal(false)
@@ -356,12 +376,15 @@ function CryptoVendors() {
   }
 
   const handleDeleteRecord = async (recordId: string, recordName: string) => {
-    if (!window.confirm(`¿Estás seguro de que quieres eliminar el registro "${recordName}"?`)) {
+    if (!(await confirm({ message: `¿Estás seguro de que quieres eliminar el registro "${recordName}"?`, variant: 'danger' }))) {
       return
     }
 
     try {
       await api.deleteCryptoVendor(recordId)
+      if (loadedRecordId === recordId) {
+        setLoadedRecordId(null)
+      }
       showNotification('Registro eliminado', 'success')
       await loadRecords()
     } catch (err: any) {
@@ -373,21 +396,145 @@ function CryptoVendors() {
     }
   }
 
+  const handleDebugCreateRecords = async () => {
+    if (!isDebugToolsEnabled()) return
+    try {
+      setIsDebugLoading(true)
+      const demoRecords = [
+        {
+          name: 'Comercios Bogotá',
+          data: {
+            items: [
+              {
+                name: 'Café Blockchain',
+                data: {
+                  contact: { name: 'Ana', email: 'ana@cafe.demo', phone: '+57 300 000 0001' },
+                  acceptedCryptocurrencies: ['BTC', 'USDT'],
+                  businessType: 'Restaurante',
+                },
+              },
+            ],
+            created_at: new Date().toISOString(),
+          },
+        },
+        {
+          name: 'Tiendas Medellín',
+          data: {
+            items: [
+              {
+                name: 'Tech Store Crypto',
+                data: {
+                  contact: { name: 'Luis', email: 'luis@tech.demo' },
+                  acceptedCryptocurrencies: ['ETH', 'USDC'],
+                  discount: { percentage: 5, minAmount: 100000 },
+                },
+              },
+            ],
+            created_at: new Date().toISOString(),
+          },
+        },
+      ]
+
+      for (const record of demoRecords) {
+        await api.createCryptoVendor(record)
+      }
+
+      await loadRecords()
+      setIsDebugModalOpen(false)
+      showNotification(`${demoRecords.length} registros demo creados`, 'success')
+    } catch (err: any) {
+      showNotification(
+        getTranslatedErrorMessage(err, 'Error al crear registros demo. Por favor, intenta de nuevo.'),
+        'error'
+      )
+    } finally {
+      setIsDebugLoading(false)
+    }
+  }
+
+  const handleDebugDeleteAllRecords = async () => {
+    if (!isDestructiveDebugEnabled()) return
+    if (
+      !(await confirm({
+        message: '¿Eliminar TODOS los registros de vendedores? Esta acción es irreversible.',
+        variant: 'danger',
+      }))
+    ) {
+      return
+    }
+
+    try {
+      setIsDebugLoading(true)
+      await api.deleteAllCryptoVendors()
+      setLoadedRecordId(null)
+      await loadRecords()
+      setIsDebugModalOpen(false)
+      showNotification('Todos los registros fueron eliminados', 'success')
+    } catch (err: any) {
+      showNotification(
+        getTranslatedErrorMessage(err, 'Error al eliminar los registros. Por favor, intenta de nuevo.'),
+        'error'
+      )
+    } finally {
+      setIsDebugLoading(false)
+    }
+  }
+
+  const calculateHighlights = () => {
+    const totalVendors = vendors.length
+    const withDiscount = vendors.filter(v => v.data.discount?.percentage).length
+    const cryptoTypes = new Set(
+      vendors.flatMap(v => v.data.acceptedCryptocurrencies ?? [])
+    ).size
+    const listaLabel = listName.trim() ? listName.trim() : 'Borrador'
+
+    return { totalVendors, withDiscount, cryptoTypes, listaLabel }
+  }
+
+  const highlights = calculateHighlights()
+
   return (
     <div className="app-page">
-      <div className="app-page-content cryptovendors-content">
+      <div className="app-page-content app-page-content-wide crud-page-content cryptovendors-content">
         {/* Toolbar */}
-        <div className="cryptovendors-toolbar">
+        <div className="app-toolbar">
           <button
-            className="cryptovendors-toolbar-button"
+            className="app-toolbar-button"
             onClick={() => navigate('/finanzas')}
             aria-label="Volver"
             type="button"
           >
-            <ArrowBackIcon className="cryptovendors-toolbar-icon" />
+            <ArrowBackIcon className="app-toolbar-icon" />
           </button>
+          {isDebugToolsEnabled() && (
+            <div className="app-toolbar-menu-container" ref={menuRef}>
+              <button
+                className="app-toolbar-button"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                aria-label="Opciones"
+                aria-expanded={isMenuOpen}
+                type="button"
+              >
+                <MoreVertIcon className="app-toolbar-icon" />
+              </button>
+              {isMenuOpen && (
+                <div className="crud-dropdown-menu">
+                  <button
+                    className="crud-dropdown-menu-item"
+                    onClick={() => {
+                      setIsMenuOpen(false)
+                      setIsDebugModalOpen(true)
+                    }}
+                    type="button"
+                  >
+                    <span>🐛 Debug</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
           <button
-            className="cryptovendors-toolbar-button"
+            className="app-toolbar-button"
             onClick={() => {
               loadRecords()
               setShowRecordsModal(true)
@@ -395,15 +542,45 @@ function CryptoVendors() {
             aria-label="Ver registros guardados"
             type="button"
           >
-            <FolderIcon className="cryptovendors-toolbar-icon" />
+            <FolderIcon className="app-toolbar-icon" />
           </button>
         </div>
 
-        <h1 className="cryptovendors-page-title">Vendedores de Cripto</h1>
-        <p className="cryptovendors-page-subtitle">
-          Gestiona los vendedores que aceptan pagos con criptomonedas: contacto, wallets,
-          criptomonedas aceptadas y más
-        </p>
+        <h1 className="app-page-title">Vendedores de Cripto</h1>
+
+        <div
+          className="crud-summary-strip"
+          role="region"
+          aria-label="Resumen de vendedores"
+        >
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Vendedores</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--info">
+              {highlights.totalVendors}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Con descuento</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--available">
+              {highlights.withDiscount}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Criptos</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--info">
+              {highlights.cryptoTypes}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item crud-summary-strip-item--emphasis">
+            <span className="crud-summary-strip-label">Lista</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--info">
+              {highlights.listaLabel}
+            </span>
+          </div>
+        </div>
 
         {/* Formulario para agregar vendedor */}
         <div className="cryptovendors-form-section">
@@ -411,9 +588,9 @@ function CryptoVendors() {
             {editingId ? 'Editar Vendedor' : 'Agregar Vendedor'}
           </h2>
           <form onSubmit={handleSubmit} className="cryptovendors-form">
-            <div className="cryptovendors-form-group">
-              <label htmlFor="name" className="cryptovendors-form-label">
-                <StoreIcon className="cryptovendors-label-icon" />
+            <div className="form-group-base form-group-base--compact">
+              <label htmlFor="name" className="form-label-base form-label-base--inline">
+                <StoreIcon className="form-label-icon" />
                 Nombre del Vendedor *
               </label>
               <input
@@ -422,22 +599,22 @@ function CryptoVendors() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="cryptovendors-form-input"
+                className="form-input-base"
                 placeholder="Ej: Tienda de Electrónica XYZ"
                 required
               />
             </div>
 
-            <div className="cryptovendors-form-section-divider">
+            <div className="crud-form-section-divider">
               <h3 className="cryptovendors-form-subsection-title">
-                <PersonIcon className="cryptovendors-label-icon" />
+                <PersonIcon className="form-label-icon" />
                 Información de Contacto
               </h3>
             </div>
 
-            <div className="cryptovendors-form-row">
-              <div className="cryptovendors-form-group">
-                <label htmlFor="contactName" className="cryptovendors-form-label">
+            <div className="crud-form-row">
+              <div className="form-group-base form-group-base--compact">
+                <label htmlFor="contactName" className="form-label-base form-label-base--inline">
                   Nombre de Contacto
                 </label>
                 <input
@@ -446,14 +623,14 @@ function CryptoVendors() {
                   name="contactName"
                   value={formData.contactName}
                   onChange={handleChange}
-                  className="cryptovendors-form-input"
+                  className="form-input-base"
                   placeholder="Ej: Carlos Rodríguez"
                 />
               </div>
 
-              <div className="cryptovendors-form-group">
-                <label htmlFor="contactEmail" className="cryptovendors-form-label">
-                  <EmailIcon className="cryptovendors-label-icon" />
+              <div className="form-group-base form-group-base--compact">
+                <label htmlFor="contactEmail" className="form-label-base form-label-base--inline">
+                  <EmailIcon className="form-label-icon" />
                   Email
                 </label>
                 <input
@@ -462,16 +639,16 @@ function CryptoVendors() {
                   name="contactEmail"
                   value={formData.contactEmail}
                   onChange={handleChange}
-                  className="cryptovendors-form-input"
+                  className="form-input-base"
                   placeholder="carlos@tiendaxyz.com"
                 />
               </div>
             </div>
 
-            <div className="cryptovendors-form-row">
-              <div className="cryptovendors-form-group">
-                <label htmlFor="contactPhone" className="cryptovendors-form-label">
-                  <PhoneIcon className="cryptovendors-label-icon" />
+            <div className="crud-form-row">
+              <div className="form-group-base form-group-base--compact">
+                <label htmlFor="contactPhone" className="form-label-base form-label-base--inline">
+                  <PhoneIcon className="form-label-icon" />
                   Teléfono
                 </label>
                 <input
@@ -480,14 +657,14 @@ function CryptoVendors() {
                   name="contactPhone"
                   value={formData.contactPhone}
                   onChange={handleChange}
-                  className="cryptovendors-form-input"
+                  className="form-input-base"
                   placeholder="+57 300 123 4567"
                 />
               </div>
 
-              <div className="cryptovendors-form-group">
-                <label htmlFor="contactAddress" className="cryptovendors-form-label">
-                  <LocationOnIcon className="cryptovendors-label-icon" />
+              <div className="form-group-base form-group-base--compact">
+                <label htmlFor="contactAddress" className="form-label-base form-label-base--inline">
+                  <LocationOnIcon className="form-label-icon" />
                   Dirección
                 </label>
                 <input
@@ -496,23 +673,21 @@ function CryptoVendors() {
                   name="contactAddress"
                   value={formData.contactAddress}
                   onChange={handleChange}
-                  className="cryptovendors-form-input"
+                  className="form-input-base"
                   placeholder="Calle 100 #50-30, Bogotá"
                 />
               </div>
             </div>
 
-            <div className="cryptovendors-form-section-divider">
+            <div className="crud-form-section-divider">
               <h3 className="cryptovendors-form-subsection-title">
-                <CurrencyBitcoinIcon className="cryptovendors-label-icon" />
+                <CurrencyBitcoinIcon className="form-label-icon" />
                 Criptomonedas Aceptadas
               </h3>
             </div>
 
-            <div className="cryptovendors-form-group">
-              <label className="cryptovendors-form-label">
-                Selecciona las criptomonedas aceptadas
-              </label>
+            <div className="form-group-base form-group-base--compact">
+              <label className="form-label-base form-label-base--inline">Selecciona las criptomonedas aceptadas</label>
               <div className="cryptovendors-crypto-grid">
                 {CRYPTO_OPTIONS.map(crypto => (
                   <label key={crypto} className="cryptovendors-crypto-checkbox">
@@ -528,22 +703,14 @@ function CryptoVendors() {
             </div>
 
             {formData.acceptedCryptocurrencies.length > 0 && (
-              <div className="cryptovendors-form-group">
-                <label className="cryptovendors-form-label">
-                  <AccountBalanceWalletIcon className="cryptovendors-label-icon" />
+              <div className="form-group-base form-group-base--compact">
+                <label className="form-label-base form-label-base--inline">
+                  <AccountBalanceWalletIcon className="form-label-icon" />
                   Direcciones de Wallet
                 </label>
                 {formData.acceptedCryptocurrencies.map(crypto => (
-                  <div
-                    key={crypto}
-                    className="cryptovendors-form-group"
-                    style={{ marginTop: 'var(--spacing-sm)' }}
-                  >
-                    <label
-                      htmlFor={`wallet-${crypto}`}
-                      className="cryptovendors-form-label"
-                      style={{ fontSize: 'var(--font-size-sm)' }}
-                    >
+                  <div key={crypto} className="form-group-base form-group-base--compact" style={{ marginTop: 'var(--spacing-sm)' }}>
+                    <label htmlFor={`wallet-${crypto}`} className="form-label-base form-label-base--inline" style={{ fontSize: 'var(--font-size-sm)' }}>
                       {crypto}
                     </label>
                     <input
@@ -551,7 +718,7 @@ function CryptoVendors() {
                       id={`wallet-${crypto}`}
                       value={formData.wallets[crypto] || ''}
                       onChange={e => handleWalletChange(crypto, e.target.value)}
-                      className="cryptovendors-form-input"
+                      className="form-input-base"
                       placeholder={`Dirección de wallet ${crypto}`}
                     />
                   </div>
@@ -559,10 +726,10 @@ function CryptoVendors() {
               </div>
             )}
 
-            <div className="cryptovendors-form-row">
-              <div className="cryptovendors-form-group">
-                <label htmlFor="businessType" className="cryptovendors-form-label">
-                  <BusinessIcon className="cryptovendors-label-icon" />
+            <div className="crud-form-row">
+              <div className="form-group-base form-group-base--compact">
+                <label htmlFor="businessType" className="form-label-base form-label-base--inline">
+                  <BusinessIcon className="form-label-icon" />
                   Tipo de Negocio
                 </label>
                 <input
@@ -571,22 +738,22 @@ function CryptoVendors() {
                   name="businessType"
                   value={formData.businessType}
                   onChange={handleChange}
-                  className="cryptovendors-form-input"
+                  className="form-input-base"
                   placeholder="Ej: Retail, Online, Servicios"
                 />
               </div>
             </div>
 
-            <div className="cryptovendors-form-section-divider">
+            <div className="crud-form-section-divider">
               <h3 className="cryptovendors-form-subsection-title">
-                <PercentIcon className="cryptovendors-label-icon" />
+                <PercentIcon className="form-label-icon" />
                 Descuentos (Opcional)
               </h3>
             </div>
 
-            <div className="cryptovendors-form-row">
-              <div className="cryptovendors-form-group">
-                <label htmlFor="discountPercentage" className="cryptovendors-form-label">
+            <div className="crud-form-row">
+              <div className="form-group-base form-group-base--compact">
+                <label htmlFor="discountPercentage" className="form-label-base form-label-base--inline">
                   Porcentaje de Descuento
                 </label>
                 <input
@@ -595,7 +762,7 @@ function CryptoVendors() {
                   name="discountPercentage"
                   value={formData.discountPercentage}
                   onChange={handleChange}
-                  className="cryptovendors-form-input"
+                  className="form-input-base"
                   placeholder="5"
                   min="0"
                   max="100"
@@ -603,8 +770,8 @@ function CryptoVendors() {
                 />
               </div>
 
-              <div className="cryptovendors-form-group">
-                <label htmlFor="discountMinAmount" className="cryptovendors-form-label">
+              <div className="form-group-base form-group-base--compact">
+                <label htmlFor="discountMinAmount" className="form-label-base form-label-base--inline">
                   Monto Mínimo (COP)
                 </label>
                 <input
@@ -613,7 +780,7 @@ function CryptoVendors() {
                   name="discountMinAmount"
                   value={formData.discountMinAmount}
                   onChange={handleChange}
-                  className="cryptovendors-form-input"
+                  className="form-input-base"
                   placeholder="100000"
                   min="0"
                   step="1000"
@@ -621,9 +788,9 @@ function CryptoVendors() {
               </div>
             </div>
 
-            <div className="cryptovendors-form-group">
-              <label htmlFor="notes" className="cryptovendors-form-label">
-                <DescriptionIcon className="cryptovendors-label-icon" />
+            <div className="form-group-base form-group-base--compact">
+              <label htmlFor="notes" className="form-label-base form-label-base--inline">
+                <DescriptionIcon className="form-label-icon" />
                 Notas
               </label>
               <textarea
@@ -631,7 +798,7 @@ function CryptoVendors() {
                 name="notes"
                 value={formData.notes}
                 onChange={handleChange}
-                className="cryptovendors-form-input"
+                className="form-input-base"
                 placeholder="Ej: Acepta pagos en cripto desde $50.000 COP"
                 rows={3}
               />
@@ -647,10 +814,7 @@ function CryptoVendors() {
                   Cancelar
                 </button>
               )}
-              <button
-                type="submit"
-                className="cryptovendors-form-button cryptovendors-form-button-primary"
-              >
+              <button type="submit" className="cryptovendors-form-button cryptovendors-form-button-primary">
                 {editingId ? 'Actualizar' : 'Agregar'}
               </button>
             </div>
@@ -660,7 +824,9 @@ function CryptoVendors() {
         {vendors.length > 0 && (
           <div className="cryptovendors-list-section">
             <div className="cryptovendors-section-header">
-              <h2 className="cryptovendors-section-title">Vendedores ({vendors.length})</h2>
+              <h2 className="cryptovendors-section-title">
+                Vendedores ({vendors.length})
+              </h2>
               <button
                 className="cryptovendors-save-button"
                 onClick={handleSaveClick}
@@ -691,23 +857,15 @@ function CryptoVendors() {
                           </span>
                         </>
                       )}
-                      {vendor.data.acceptedCryptocurrencies &&
-                        vendor.data.acceptedCryptocurrencies.length > 0 && (
-                          <>
-                            <span className="cryptovendors-item-separator">•</span>
-                            <span className="cryptovendors-item-meta-item">
-                              <CurrencyBitcoinIcon
-                                style={{
-                                  width: 16,
-                                  height: 16,
-                                  verticalAlign: 'middle',
-                                  marginRight: 4,
-                                }}
-                              />
-                              {vendor.data.acceptedCryptocurrencies.join(', ')}
-                            </span>
-                          </>
-                        )}
+                      {vendor.data.acceptedCryptocurrencies && vendor.data.acceptedCryptocurrencies.length > 0 && (
+                        <>
+                          <span className="cryptovendors-item-separator">•</span>
+                          <span className="cryptovendors-item-meta-item">
+                            <CurrencyBitcoinIcon style={{ width: 16, height: 16, verticalAlign: 'middle', marginRight: 4 }} />
+                            {vendor.data.acceptedCryptocurrencies.join(', ')}
+                          </span>
+                        </>
+                      )}
                     </div>
                     <div className="cryptovendors-item-details">
                       {vendor.data.contact?.email && (
@@ -732,9 +890,8 @@ function CryptoVendors() {
                         <div className="cryptovendors-item-detail">
                           <PercentIcon className="cryptovendors-item-detail-icon" />
                           <span>
-                            Descuento: {vendor.data.discount.percentage}%
-                            {vendor.data.discount.minAmount &&
-                              ` (mín. ${vendor.data.discount.minAmount.toLocaleString('es-CO')} COP)`}
+                            Descuento: {vendor.data.discount.percentage}% 
+                            {vendor.data.discount.minAmount && ` (mín. ${vendor.data.discount.minAmount.toLocaleString('es-CO')} COP)`}
                           </span>
                         </div>
                       )}
@@ -772,12 +929,12 @@ function CryptoVendors() {
 
         {/* Modal para guardar lista */}
         {showSaveModal && (
-          <div className="cryptovendors-modal-overlay" onClick={() => setShowSaveModal(false)}>
-            <div className="cryptovendors-modal" onClick={e => e.stopPropagation()}>
-              <div className="cryptovendors-modal-header">
-                <h2 className="cryptovendors-modal-title">Guardar Lista de Vendedores</h2>
+          <ModalOverlay onClose={() => setShowSaveModal(false)} className="modal-overlay">
+            <div className="modal-panel" onClick={e => e.stopPropagation()}>
+              <div className="modal-panel-header">
+                <h2 className="modal-panel-title" id="modal-panel-title-guardar-lista-de-vendedores">Guardar Lista de Vendedores</h2>
                 <button
-                  className="cryptovendors-modal-close"
+                  className="modal-panel-close"
                   onClick={() => setShowSaveModal(false)}
                   aria-label="Cerrar"
                   type="button"
@@ -785,9 +942,9 @@ function CryptoVendors() {
                   ×
                 </button>
               </div>
-              <div className="cryptovendors-modal-content">
-                <div className="cryptovendors-form-group">
-                  <label htmlFor="listName" className="cryptovendors-form-label">
+              <div className="modal-panel-content">
+                <div className="form-group-base form-group-base--compact">
+                  <label htmlFor="listName" className="form-label-base form-label-base--inline">
                     Nombre de la Lista *
                   </label>
                   <input
@@ -795,7 +952,7 @@ function CryptoVendors() {
                     id="listName"
                     value={listName}
                     onChange={e => setListName(e.target.value)}
-                    className="cryptovendors-form-input"
+                    className="form-input-base"
                     placeholder="Ej: Vendedores Bogotá"
                     required
                   />
@@ -814,22 +971,22 @@ function CryptoVendors() {
                     disabled={isSaving || !listName.trim()}
                     className="cryptovendors-form-button cryptovendors-form-button-primary"
                   >
-                    {isSaving ? 'Guardando...' : 'Guardar'}
+                    {isSaving ? 'Guardando...' : loadedRecordId ? 'Actualizar' : 'Guardar'}
                   </button>
                 </div>
               </div>
             </div>
-          </div>
+          </ModalOverlay>
         )}
 
         {/* Modal para ver registros guardados */}
         {showRecordsModal && (
-          <div className="cryptovendors-modal-overlay" onClick={() => setShowRecordsModal(false)}>
-            <div className="cryptovendors-modal" onClick={e => e.stopPropagation()}>
-              <div className="cryptovendors-modal-header">
-                <h2 className="cryptovendors-modal-title">Registros Guardados</h2>
+          <ModalOverlay onClose={() => setShowRecordsModal(false)} className="modal-overlay">
+            <div className="modal-panel" onClick={e => e.stopPropagation()}>
+              <div className="modal-panel-header">
+                <h2 className="modal-panel-title" id="modal-panel-title-registros-guardados">Registros Guardados</h2>
                 <button
-                  className="cryptovendors-modal-close"
+                  className="modal-panel-close"
                   onClick={() => setShowRecordsModal(false)}
                   aria-label="Cerrar"
                   type="button"
@@ -837,11 +994,20 @@ function CryptoVendors() {
                   ×
                 </button>
               </div>
-              <div className="cryptovendors-modal-content">
+              <div className="modal-panel-content">
                 {isLoadingRecords ? (
-                  <div className="cryptovendors-modal-loading">Cargando...</div>
+                  <ListSkeleton variant="inset-row" count={3} aria-label="Cargando registros" />
+                ) : recordsLoadError && records.length === 0 ? (
+                  <div className="cryptovendors-empty-state cryptovendors-error-state" role="alert">
+                    <WarningIcon className="cryptovendors-error-icon" aria-hidden="true" />
+                    <p className="cryptovendors-empty-text">{recordsLoadError}</p>
+                    <button className="cryptovendors-retry-button" onClick={loadRecords} type="button">
+                      <SyncIcon aria-hidden="true" />
+                      <span>Reintentar</span>
+                    </button>
+                  </div>
                 ) : records.length === 0 ? (
-                  <div className="cryptovendors-modal-empty">No hay registros guardados</div>
+                  <div className="modal-panel-empty">No hay registros guardados</div>
                 ) : (
                   <div className="cryptovendors-records-list">
                     {records.map(record => (
@@ -879,7 +1045,57 @@ function CryptoVendors() {
                 )}
               </div>
             </div>
-          </div>
+          </ModalOverlay>
+        )}
+
+        {isDebugModalOpen && isDebugToolsEnabled() && (
+          <ModalOverlay onClose={() => setIsDebugModalOpen(false)} className="modal-overlay">
+            <div className="modal-panel" onClick={e => e.stopPropagation()}>
+              <div className="modal-panel-header">
+                <h2 className="modal-panel-title">🐛 Debug - Vendedores Cripto</h2>
+                <button
+                  className="modal-panel-close"
+                  onClick={() => setIsDebugModalOpen(false)}
+                  aria-label="Cerrar"
+                  type="button"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="modal-panel-content">
+                <div className="debug-options">
+                  <button
+                    className="debug-option-button"
+                    onClick={handleDebugCreateRecords}
+                    disabled={isDebugLoading}
+                    type="button"
+                  >
+                    <span className="debug-option-icon">📦</span>
+                    <div className="debug-option-info">
+                      <h3 className="debug-option-title">Crear registros demo</h3>
+                      <p className="debug-option-description">
+                        Crea 2 listas de vendedores de ejemplo
+                      </p>
+                    </div>
+                  </button>
+                  <button
+                    className="debug-option-button debug-option-button-danger"
+                    onClick={handleDebugDeleteAllRecords}
+                    disabled={isDebugLoading}
+                    type="button"
+                  >
+                    <span className="debug-option-icon">🗑️</span>
+                    <div className="debug-option-info">
+                      <h3 className="debug-option-title">Eliminar todos los registros</h3>
+                      <p className="debug-option-description">
+                        Elimina permanentemente todos los registros guardados
+                      </p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </ModalOverlay>
         )}
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
@@ -10,7 +10,9 @@ import SyncIcon from '@mui/icons-material/Sync'
 import CurrencyBitcoinIcon from '@mui/icons-material/CurrencyBitcoin'
 import CloseIcon from '@mui/icons-material/Close'
 import { api } from '../services/api'
+import { isDebugToolsEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
+import ListSkeleton from '../components/ListSkeleton'
 import './AppPage.css'
 import './CriptoTransacciones.css'
 
@@ -44,6 +46,7 @@ function CriptoTransacciones() {
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
   const [selectedCrypto, setSelectedCrypto] = useState<Cryptocurrency | null>(null)
   const [wallets, setWallets] = useState<Wallet[]>([])
   const [cryptocurrencies, setCryptocurrencies] = useState<Cryptocurrency[]>([])
@@ -103,39 +106,55 @@ function CriptoTransacciones() {
   }, [])
 
   // Cargar cryptocurrencies desde la API
+  const loadCryptocurrencies = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await api.getCryptocurrencies()
+      if (response.cryptocurrencies && Array.isArray(response.cryptocurrencies)) {
+        setCryptocurrencies(response.cryptocurrencies)
+      } else {
+        setCryptocurrencies([])
+      }
+    } catch (err: any) {
+      console.error('Error al cargar cryptocurrencies:', err)
+      if (err.response?.status === 500) {
+        console.warn(
+          'Endpoint de cryptocurrencies devuelve 500. Puede que no esté implementado aún en el backend.'
+        )
+        setCryptocurrencies([])
+      } else {
+        const errorMessage =
+          err.data?.error ||
+          err.data?.message ||
+          'Error al cargar las transacciones. Por favor, intenta de nuevo.'
+        setError(errorMessage)
+        setCryptocurrencies([])
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
-    const loadCryptocurrencies = async () => {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const response = await api.getCryptocurrencies()
-        if (response.cryptocurrencies && Array.isArray(response.cryptocurrencies)) {
-          setCryptocurrencies(response.cryptocurrencies)
-        } else {
-          setCryptocurrencies([])
-        }
-      } catch (err: any) {
-        console.error('Error al cargar cryptocurrencies:', err)
-        if (err.response?.status === 500) {
-          console.warn(
-            'Endpoint de cryptocurrencies devuelve 500. Puede que no esté implementado aún en el backend.'
-          )
-          setCryptocurrencies([])
-        } else {
-          const errorMessage =
-            err.data?.error ||
-            err.data?.message ||
-            'Error al cargar las transacciones. Por favor, intenta de nuevo.'
-          setError(errorMessage)
-          setCryptocurrencies([])
-        }
-      } finally {
-        setIsLoading(false)
+    void loadCryptocurrencies()
+  }, [loadCryptocurrencies])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false)
       }
     }
 
-    loadCryptocurrencies()
-  }, [])
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMenuOpen])
 
   // Cargar tasas de cambio de criptomonedas
   useEffect(() => {
@@ -723,138 +742,169 @@ function CriptoTransacciones() {
     return wallet ? wallet.wallet_name : 'Wallet desconocida'
   }
 
+  const calculateHighlights = () => {
+    const balances = calculateCryptoBalances()
+    const totalValueUSDT = balances.reduce((sum, b) => sum + b.totalValueUSDT, 0)
+
+    return {
+      totalTransacciones: cryptocurrencies.length,
+      totalValueUSDT,
+      posiciones: balances.length,
+      tasasActualizadas: areRatesUpdatedToday(),
+    }
+  }
+
+  const highlights = calculateHighlights()
+
   return (
     <>
       <div className="app-page-container">
-        <div className="app-page-content cripto-transacciones-content">
+        <div className="app-page-content app-page-content-wide crud-page-content cripto-transacciones-content">
           {isLoading && cryptocurrencies.length === 0 ? (
-            <div className="loader-container">
-              <div className="loader">
-                <div className="loader-spinner"></div>
-                <p className="loader-text">Cargando transacciones...</p>
-              </div>
-            </div>
-          ) : error ? (
-            <div className="loader-container">
-              <div className="loader">
-                <p className="loader-text" style={{ color: 'rgba(255, 59, 48, 0.9)' }}>
-                  {error}
-                </p>
-              </div>
-            </div>
-          ) : (
             <>
-              {/* Toolbar - HIG: Navigation */}
-              <div className="cripto-transacciones-toolbar">
+              <div className="app-toolbar">
                 <button
-                  className="cripto-transacciones-toolbar-button"
+                  className="app-toolbar-button"
                   onClick={() => navigate('/finanzas')}
                   aria-label="Volver a Finanzas"
                   type="button"
                 >
-                  <ArrowBackIcon className="cripto-transacciones-toolbar-icon" />
+                  <ArrowBackIcon className="app-toolbar-icon" />
                 </button>
-                <div className="cripto-transacciones-toolbar-menu-container">
+              </div>
+              <h1 className="app-page-title">Mi Cripto</h1>
+              <div className="crud-crypto-list">
+                <ListSkeleton variant="inset-row" count={5} aria-label="Cargando transacciones" />
+              </div>
+            </>
+          ) : error && cryptocurrencies.length === 0 ? (
+            <>
+              <div className="app-toolbar">
+                <button
+                  className="app-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="app-toolbar-icon" />
+                </button>
+              </div>
+              <h1 className="app-page-title">Mi Cripto</h1>
+              <div className="loader-container">
+                <div className="loader finanzas-stats-error-panel">
+                  <p className="loader-text loader-text--error" role="alert">
+                    {error}
+                  </p>
                   <button
-                    className="cripto-transacciones-toolbar-button"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    aria-label="Opciones"
-                    aria-expanded={isMenuOpen}
                     type="button"
+                    className="btn-base btn-secondary finanzas-stats-retry-button"
+                    onClick={() => void loadCryptocurrencies()}
+                    aria-label="Reintentar cargar transacciones"
                   >
-                    <MoreVertIcon className="cripto-transacciones-toolbar-icon" />
+                    <span>Reintentar</span>
                   </button>
-                  {isMenuOpen && (
-                    <div className="cripto-transacciones-menu">
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="app-toolbar">
+                <button
+                  className="app-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="app-toolbar-icon" />
+                </button>
+                <button
+                  className="app-toolbar-button"
+                  onClick={() => void handleSyncExchangeRates()}
+                  disabled={areRatesUpdatedToday() || isLoading}
+                  aria-label="Sincronizar tasas de cambio"
+                  type="button"
+                >
+                  <SyncIcon className="app-toolbar-icon" />
+                </button>
+                <div className="app-toolbar-menu-container" ref={menuRef}>
+                  {isDebugToolsEnabled() && (
+                    <>
                       <button
-                        className="cripto-transacciones-menu-item"
-                        onClick={() => {
-                          setIsMenuOpen(false)
-                          handleOpenCryptoModal()
-                        }}
+                        className="app-toolbar-button"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        aria-label="Opciones de depuración"
+                        aria-expanded={isMenuOpen}
                         type="button"
                       >
-                        <AddIcon className="cripto-transacciones-menu-icon" />
-                        <span>Agregar</span>
+                        <MoreVertIcon className="app-toolbar-icon" />
                       </button>
-                      <button
-                        className="cripto-transacciones-menu-item"
-                        onClick={() => {
-                          setIsMenuOpen(false)
-                          handleSyncExchangeRates()
-                        }}
-                        disabled={areRatesUpdatedToday() || isLoading}
-                        type="button"
-                      >
-                        <SyncIcon className="cripto-transacciones-menu-icon" />
-                        <span>Sincronizar Tasas</span>
-                      </button>
-                      {api.isTestUser() && (
-                        <button
-                          className="cripto-transacciones-menu-item"
-                          onClick={() => {
-                            setIsMenuOpen(false)
-                            setIsDebugModalOpen(true)
-                          }}
-                          type="button"
-                        >
-                          <span>🐛 Debug</span>
-                        </button>
+                      {isMenuOpen && (
+                        <div className="crud-dropdown-menu">
+                          <button
+                            className="crud-dropdown-menu-item"
+                            onClick={() => {
+                              setIsDebugModalOpen(true)
+                              setIsMenuOpen(false)
+                            }}
+                            type="button"
+                          >
+                            <span>🐛 Debug</span>
+                          </button>
+                        </div>
                       )}
-                    </div>
+                    </>
                   )}
                 </div>
               </div>
 
-              {/* Encabezado de Sección - HIG: Clear Navigation */}
-              <h1 className="cripto-transacciones-page-title">Mi Cripto</h1>
-              <p className="cripto-transacciones-page-subtitle">
-                Registros de transacciones de compra y venta
-              </p>
+              <h1 className="app-page-title">Mi Cripto</h1>
 
-              {/* Highlights de Balances por Cripto */}
-              {calculateCryptoBalances().length > 0 && (
-                <div className="cripto-transacciones-highlights">
-                  {calculateCryptoBalances().map(balance => (
-                    <div key={balance.crypto_name} className="cripto-transacciones-highlight-card">
-                      <div className="cripto-transacciones-highlight-header">
-                        <h3 className="cripto-transacciones-highlight-title">
-                          {balance.crypto_name}
-                        </h3>
-                        <span className="cripto-transacciones-highlight-units">
-                          {balance.totalUnits.toFixed(8)} unidades
-                        </span>
-                      </div>
-                      <div className="cripto-transacciones-highlight-details">
-                        <div className="cripto-transacciones-highlight-detail">
-                          <span className="cripto-transacciones-highlight-label">Valor Total:</span>
-                          <span className="cripto-transacciones-highlight-value">
-                            {formatBalance(balance.totalValueUSDT, 'USD')}
-                          </span>
-                        </div>
-                        <div className="cripto-transacciones-highlight-detail">
-                          <span className="cripto-transacciones-highlight-label">Precio USDT:</span>
-                          <span className="cripto-transacciones-highlight-value">
-                            {formatBalance(balance.priceUSDT, 'USD')}
-                          </span>
-                        </div>
-                        {balance.lastSyncDate && (
-                          <div className="cripto-transacciones-highlight-detail">
-                            <span className="cripto-transacciones-highlight-label">
-                              Última Sincronización:
-                            </span>
-                            <span className="cripto-transacciones-highlight-value">
-                              {formatDate(balance.lastSyncDate)}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+              <div
+                className="crud-summary-strip"
+                role="region"
+                aria-label="Resumen de posiciones cripto"
+              >
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Transacciones</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
+                    {highlights.totalTransacciones}
+                  </span>
                 </div>
-              )}
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item crud-summary-strip-item--emphasis">
+                  <span className="crud-summary-strip-label">Valor USDT</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--income">
+                    {formatBalance(highlights.totalValueUSDT, 'USD')}
+                  </span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Posiciones</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--available">
+                    {highlights.posiciones}
+                  </span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Tasas</span>
+                  <span
+                    className={`crud-summary-strip-value ${highlights.tasasActualizadas ? 'crud-summary-strip-value--income' : 'crud-summary-strip-value--expense'}`}
+                  >
+                    {highlights.tasasActualizadas ? 'Hoy' : 'Pendiente'}
+                  </span>
+                </div>
+              </div>
 
-              {/* Filtro por Tipo de Cripto */}
+              <button
+                type="button"
+                className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+                onClick={handleOpenCryptoModal}
+                aria-label="Agregar transacción"
+              >
+                <AddIcon aria-hidden={true} />
+                Agregar transacción
+              </button>
+
               <div className="cripto-transacciones-filter">
                 <label htmlFor="crypto-filter" className="cripto-transacciones-filter-label">
                   Filtrar por:
@@ -872,55 +922,45 @@ function CriptoTransacciones() {
                 </select>
               </div>
 
-              {/* Lista de Transacciones */}
-              <div className="cripto-transacciones-list">
-                {getFilteredCryptocurrencies().length === 0 ? (
-                  <div className="cripto-transacciones-empty">
-                    <CurrencyBitcoinIcon className="cripto-transacciones-empty-icon" />
-                    <p className="cripto-transacciones-empty-text">
-                      {cryptocurrencies.length === 0
-                        ? 'No hay transacciones registradas'
-                        : `No hay transacciones de ${cryptoFilter === 'all' ? 'ningún tipo' : cryptoFilter}`}
-                    </p>
-                    {cryptocurrencies.length === 0 && (
-                      <button
-                        className="cripto-transacciones-empty-button"
-                        onClick={handleOpenCryptoModal}
-                        type="button"
-                      >
-                        <AddIcon />
-                        <span>Agregar</span>
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  getFilteredCryptocurrencies().map(crypto => (
+              {getFilteredCryptocurrencies().length === 0 ? (
+                <div className="empty-state">
+                  <CurrencyBitcoinIcon className="empty-state-icon" />
+                  <p className="empty-text">
+                    {cryptocurrencies.length === 0
+                      ? 'No hay transacciones registradas'
+                      : `No hay transacciones de ${cryptoFilter === 'all' ? 'ningún tipo' : cryptoFilter}`}
+                  </p>
+                  {cryptocurrencies.length === 0 && (
+                    <p className="empty-subtext">Usa el botón de arriba para agregar la primera</p>
+                  )}
+                </div>
+              ) : (
+                <div className="crud-crypto-list">
+                  {getFilteredCryptocurrencies().map(crypto => (
                     <button
                       key={crypto.id}
-                      className="cripto-transacciones-row"
+                      className="crud-crypto-row"
                       onClick={() => handleOpenDetailModal(crypto)}
                       type="button"
+                      aria-label={`Ver detalles de ${crypto.crypto_name}`}
                     >
-                      <div className="cripto-transacciones-row-content">
-                        <div className="cripto-transacciones-row-header">
-                          <h3 className="cripto-transacciones-row-title">{crypto.crypto_name}</h3>
-                          <ChevronRightIcon
-                            className="cripto-transacciones-row-chevron"
-                            aria-hidden="true"
-                          />
+                      <div className="crud-row-content">
+                        <div className="crud-row-header">
+                          <span className="crud-row-title">{crypto.crypto_name}</span>
+                          <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
                         </div>
-                        <p className="cripto-transacciones-row-subtitle">
+                        <p className="crud-row-meta">
                           {getWalletName(crypto.wallet_id)} • {crypto.units_purchased} unidades
                         </p>
-                        <p className="cripto-transacciones-row-amount">
+                        <p className="crud-row-meta">
                           {formatBalance(crypto.purchase_value, crypto.currency)}/unidad • Fees:{' '}
                           {formatBalance(crypto.purchase_cost, crypto.currency)}
                         </p>
                       </div>
                     </button>
-                  ))
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
             </>
           )}
         </div>
@@ -942,8 +982,8 @@ function CriptoTransacciones() {
               </button>
             </div>
             <form className="modal-form" onSubmit={handleCryptoSubmit}>
-              <div className="form-group">
-                <label htmlFor="crypto_name" className="form-label">
+              <div className="form-group-base">
+                <label htmlFor="crypto_name" className="form-label-base">
                   Criptomoneda
                 </label>
                 <select
@@ -951,7 +991,7 @@ function CriptoTransacciones() {
                   name="crypto_name"
                   value={cryptoFormData.crypto_name}
                   onChange={handleCryptoChange}
-                  className={formErrors.crypto_name ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.crypto_name ? 'input-error' : ''}`}
                   required
                 >
                   <option value="">Selecciona una criptomoneda</option>
@@ -966,8 +1006,8 @@ function CriptoTransacciones() {
                 )}
               </div>
 
-              <div className="form-group">
-                <label htmlFor="wallet_id" className="form-label">
+              <div className="form-group-base">
+                <label htmlFor="wallet_id" className="form-label-base">
                   Wallet
                 </label>
                 <select
@@ -975,7 +1015,7 @@ function CriptoTransacciones() {
                   name="wallet_id"
                   value={cryptoFormData.wallet_id}
                   onChange={handleCryptoChange}
-                  className={formErrors.wallet_id ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.wallet_id ? 'input-error' : ''}`}
                   required
                   disabled={!cryptoFormData.crypto_name}
                 >
@@ -997,8 +1037,8 @@ function CriptoTransacciones() {
                 )}
               </div>
 
-              <div className="form-group">
-                <label htmlFor="purchase_date" className="form-label">
+              <div className="form-group-base">
+                <label htmlFor="purchase_date" className="form-label-base">
                   Fecha de Compra
                 </label>
                 <input
@@ -1007,7 +1047,7 @@ function CriptoTransacciones() {
                   name="purchase_date"
                   value={cryptoFormData.purchase_date}
                   onChange={handleCryptoChange}
-                  className={formErrors.purchase_date ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.purchase_date ? 'input-error' : ''}`}
                   required
                 />
                 {formErrors.purchase_date && (
@@ -1017,8 +1057,8 @@ function CriptoTransacciones() {
                 )}
               </div>
 
-              <div className="form-group">
-                <label htmlFor="units_purchased" className="form-label">
+              <div className="form-group-base">
+                <label htmlFor="units_purchased" className="form-label-base">
                   Unidades Compradas
                 </label>
                 <input
@@ -1027,7 +1067,7 @@ function CriptoTransacciones() {
                   name="units_purchased"
                   value={cryptoFormData.units_purchased}
                   onChange={handleCryptoChange}
-                  className={formErrors.units_purchased ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.units_purchased ? 'input-error' : ''}`}
                   placeholder="0.00000000"
                   step="0.00000001"
                   min="0.00000001"
@@ -1040,8 +1080,8 @@ function CriptoTransacciones() {
                 )}
               </div>
 
-              <div className="form-group">
-                <label htmlFor="purchase_value" className="form-label">
+              <div className="form-group-base">
+                <label htmlFor="purchase_value" className="form-label-base">
                   Precio Unitario al Momento de Compra
                 </label>
                 <input
@@ -1050,7 +1090,7 @@ function CriptoTransacciones() {
                   name="purchase_value"
                   value={cryptoFormData.purchase_value}
                   onChange={handleCryptoChange}
-                  className={formErrors.purchase_value ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.purchase_value ? 'input-error' : ''}`}
                   placeholder="0.00"
                   step="0.01"
                   min="0.01"
@@ -1063,8 +1103,8 @@ function CriptoTransacciones() {
                 )}
               </div>
 
-              <div className="form-group">
-                <label htmlFor="purchase_cost" className="form-label">
+              <div className="form-group-base">
+                <label htmlFor="purchase_cost" className="form-label-base">
                   Fees y Costos (Gas, Comisiones, etc.)
                 </label>
                 <input
@@ -1073,7 +1113,7 @@ function CriptoTransacciones() {
                   name="purchase_cost"
                   value={cryptoFormData.purchase_cost}
                   onChange={handleCryptoChange}
-                  className={formErrors.purchase_cost ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.purchase_cost ? 'input-error' : ''}`}
                   placeholder="0.00"
                   step="0.01"
                   min="0"
@@ -1086,8 +1126,8 @@ function CriptoTransacciones() {
                 )}
               </div>
 
-              <div className="form-group">
-                <label htmlFor="currency" className="form-label">
+              <div className="form-group-base">
+                <label htmlFor="currency" className="form-label-base">
                   Moneda
                 </label>
                 <select

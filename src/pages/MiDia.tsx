@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
+import { backToHubLabel } from '../constants/hubLabels'
 import { useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
-import AccessTimeIcon from '@mui/icons-material/AccessTime'
-import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment'
+import RepeatIcon from '@mui/icons-material/Repeat'
 import { api } from '../services/api'
 import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
+import ListSkeleton from '../components/ListSkeleton'
 import './AppPage.css'
 import './MiDia.css'
 
@@ -93,7 +94,7 @@ function MiDia() {
         end_date: today,
       })
       const completions = completionsResponse.completions || []
-
+      
       // Filtrar solo completados que realmente sean de hoy (validación adicional)
       // Normalizar fechas para comparación (remover hora si existe)
       const todayCompletions = completions.filter((c: any) => {
@@ -103,8 +104,10 @@ function MiDia() {
         const normalizedDate = completionDate.split('T')[0]
         return normalizedDate === today
       })
-
-      const completedRoutineIds = new Set(todayCompletions.map((c: any) => c.routine_id))
+      
+      const completedRoutineIds = new Set(
+        todayCompletions.map((c: any) => c.routine_id)
+      )
 
       // Crear eventos de hoy
       const todayEvents: RoutineEvent[] = todayRoutinesData.map((routine: RoutineAPI) => {
@@ -121,7 +124,7 @@ function MiDia() {
       const sortByScheduledTime = (a: RoutineEvent, b: RoutineEvent) => {
         const timeA = a.routine.scheduled_time || ''
         const timeB = b.routine.scheduled_time || ''
-
+        
         // Si ambas tienen hora, comparar por hora
         if (timeA && timeB) {
           return timeA.localeCompare(timeB)
@@ -141,9 +144,7 @@ function MiDia() {
 
       // Crear eventos de la semana (excluir las de hoy)
       const weekEvents: RoutineEvent[] = weekRoutinesData
-        .filter(
-          (routine: RoutineAPI) => !todayRoutinesData.some((tr: RoutineAPI) => tr.id === routine.id)
-        )
+        .filter((routine: RoutineAPI) => !todayRoutinesData.some((tr: RoutineAPI) => tr.id === routine.id))
         .map((routine: RoutineAPI) => ({
           routine,
           isCompleted: false,
@@ -192,7 +193,7 @@ function MiDia() {
       const sortByScheduledTime = (a: RoutineEvent, b: RoutineEvent) => {
         const timeA = a.routine.scheduled_time || ''
         const timeB = b.routine.scheduled_time || ''
-
+        
         // Si ambas tienen hora, comparar por hora
         if (timeA && timeB) {
           return timeA.localeCompare(timeB)
@@ -221,7 +222,7 @@ function MiDia() {
           }
           return event
         })
-
+        
         // Reordenar: pendientes primero (ordenadas por hora), completadas al final (ordenadas por hora)
         const pending = updatedRoutines.filter(e => !e.isCompleted).sort(sortByScheduledTime)
         const completed = updatedRoutines.filter(e => e.isCompleted).sort(sortByScheduledTime)
@@ -238,7 +239,7 @@ function MiDia() {
             title: routine.title,
             current_streak: currentStreak,
             longest_streak: longestStreak,
-          }),
+          })
         ])
       } catch (backendErr: any) {
         // Si falla, revertir actualización optimista
@@ -282,7 +283,7 @@ function MiDia() {
 
   const formatDaysOfWeek = (days: number[] | null | undefined): string => {
     if (!days || days.length === 0) return ''
-
+    
     const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
     const sortedDays = [...days].sort((a, b) => a - b)
     return sortedDays.map(day => dayNames[day]).join(', ')
@@ -293,45 +294,106 @@ function MiDia() {
     return `Día ${day}`
   }
 
+  const highlights = {
+    hoy: todayRoutines.length,
+    completadas: todayRoutines.filter(event => event.isCompleted).length,
+    semana: weekRoutines.length,
+  }
+
+  const formatRoutineMeta = (routine: RoutineAPI) => {
+    const parts = [formatFrequency(routine.frequency)]
+    if (routine.frequency === 'weekly' && routine.days_of_week?.length) {
+      parts.push(formatDaysOfWeek(routine.days_of_week))
+    }
+    if (routine.scheduled_time) parts.push(formatTime(routine.scheduled_time))
+    return parts.join(' • ')
+  }
+
   return (
     <div className="app-page-container">
-      <div className="app-page-content midia-content">
+      <div className="app-page-content app-page-content-wide crud-page-content midia-content">
         {/* Toolbar */}
-        <div className="midia-toolbar">
+        <div className="app-toolbar">
           <button
-            className="midia-toolbar-button"
+            className="app-toolbar-button"
             onClick={() => navigate('/tiempo')}
-            aria-label="Volver"
+            aria-label={backToHubLabel('tiempo')}
             type="button"
           >
-            <ArrowBackIcon className="midia-toolbar-icon" />
+            <ArrowBackIcon className="app-toolbar-icon" />
           </button>
         </div>
 
-        <h1 className="midia-page-title">Mi Día</h1>
-        <p className="midia-page-subtitle">Gestiona tus rutinas del día y la semana</p>
+        <h1 className="app-page-title">Mi Día</h1>
+
+        <div className="crud-summary-strip" role="region" aria-label="Resumen del día">
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Hoy</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--info">
+              {highlights.hoy}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Completadas</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--available">
+              {highlights.completadas}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Esta semana</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--info">
+              {highlights.semana}
+            </span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="btn-base btn-secondary btn-block crud-primary-cta"
+          onClick={() => navigate('/tiempo/rutinas')}
+          aria-label="Gestionar rutinas"
+        >
+          <RepeatIcon aria-hidden={true} />
+          Gestionar rutinas
+        </button>
 
         {/* Rutinas de Hoy */}
         <div className="midia-section">
           <h2 className="midia-section-title">Hoy</h2>
-          {isLoading ? (
-            <div className="midia-empty-state">
-              <p>Cargando rutinas...</p>
+          {isLoading && todayRoutines.length === 0 ? (
+            <div className="glass-group">
+              <ListSkeleton variant="inset-row" count={3} aria-label="Cargando rutinas de hoy" />
             </div>
           ) : error ? (
-            <div className="midia-empty-state">
-              <p>{error}</p>
+            <div className="loader-container">
+              <div className="loader finanzas-stats-error-panel">
+                <p className="loader-text loader-text--error" role="alert">
+                  {error}
+                </p>
+                <button
+                  type="button"
+                  className="btn-base btn-secondary finanzas-stats-retry-button"
+                  onClick={() => void loadRoutines()}
+                  aria-label="Reintentar cargar rutinas"
+                >
+                  <span>Reintentar</span>
+                </button>
+              </div>
             </div>
           ) : todayRoutines.length === 0 ? (
-            <div className="midia-empty-state">
-              <p className="empty-state-text">No hay rutinas programadas para hoy</p>
+            <div className="empty-state">
+              <RepeatIcon className="empty-state-icon" />
+              <p className="empty-text">No hay rutinas programadas para hoy</p>
+              <p className="empty-subtext">Usa el botón de arriba para crear o editar rutinas</p>
             </div>
           ) : (
-            <div className="midia-routines-list">
+            <div className="glass-group">
               {todayRoutines.map(event => (
                 <div
                   key={event.routine.id}
-                  className={`midia-routine-item ${event.isCompleted ? 'completed' : ''}`}
+                  className={`crud-inset-row crud-row-accent-green ${event.isCompleted ? 'crud-inset-row--read' : ''}`}
                 >
                   <button
                     className="midia-routine-check"
@@ -346,63 +408,17 @@ function MiDia() {
                       <RadioButtonUncheckedIcon className="midia-check-icon" />
                     )}
                   </button>
-                  <div className="midia-routine-content">
-                    <div className="midia-routine-header">
-                      {event.routine.color && (
-                        <div
-                          className="midia-routine-color-indicator"
-                          style={{ backgroundColor: event.routine.color }}
-                        />
+                  <div className="crud-row-content">
+                    <div className="crud-row-header">
+                      <span className="crud-row-title">{event.routine.title}</span>
+                      {(event.routine.current_streak ?? 0) > 0 && (
+                        <span className="crud-row-value">{event.routine.current_streak}d</span>
                       )}
-                      <h3 className="midia-routine-title">{event.routine.title}</h3>
                     </div>
+                    <p className="crud-row-meta">{formatRoutineMeta(event.routine)}</p>
                     {event.routine.description && (
-                      <p className="midia-routine-description">{event.routine.description}</p>
+                      <p className="crud-row-preview">{event.routine.description}</p>
                     )}
-                    <div className="midia-routine-meta">
-                      <span className="midia-routine-frequency">
-                        {formatFrequency(event.routine.frequency)}
-                      </span>
-                      {event.routine.frequency === 'weekly' &&
-                        event.routine.days_of_week &&
-                        event.routine.days_of_week.length > 0 && (
-                          <span className="midia-routine-days">
-                            {formatDaysOfWeek(event.routine.days_of_week)}
-                          </span>
-                        )}
-                      {event.routine.frequency === 'monthly' &&
-                        event.routine.day_of_month !== null &&
-                        event.routine.day_of_month !== undefined && (
-                          <span className="midia-routine-days">
-                            {formatDayOfMonth(event.routine.day_of_month)}
-                          </span>
-                        )}
-                      {event.routine.scheduled_time && (
-                        <span className="midia-routine-time">
-                          <AccessTimeIcon className="midia-routine-time-icon" />
-                          {formatTime(event.routine.scheduled_time)}
-                        </span>
-                      )}
-                      {event.routine.duration !== null && event.routine.duration !== undefined && (
-                        <span className="midia-routine-duration">{event.routine.duration} min</span>
-                      )}
-                      {event.routine.current_streak !== undefined &&
-                        event.routine.current_streak > 0 && (
-                          <span className="midia-routine-streak">
-                            <LocalFireDepartmentIcon className="midia-routine-streak-icon" />
-                            {event.routine.current_streak}{' '}
-                            {event.routine.current_streak === 1 ? 'día' : 'días'}
-                          </span>
-                        )}
-                      {event.routine.total_completions !== undefined &&
-                        event.routine.total_completions > 0 && (
-                          <span className="midia-routine-completions">
-                            <CheckCircleIcon className="midia-routine-completions-icon" />
-                            {event.routine.total_completions}{' '}
-                            {event.routine.total_completions === 1 ? 'completado' : 'completados'}
-                          </span>
-                        )}
-                    </div>
                   </div>
                 </div>
               ))}
@@ -414,50 +430,20 @@ function MiDia() {
         {weekRoutines.length > 0 && (
           <div className="midia-section">
             <h2 className="midia-section-title">Esta Semana</h2>
-            <div className="midia-routines-list">
+            <div className="glass-group">
               {weekRoutines.map(event => (
-                <div key={event.routine.id} className="midia-routine-item week">
-                  <div className="midia-routine-content">
-                    <div className="midia-routine-header">
-                      {event.routine.color && (
-                        <div
-                          className="midia-routine-color-indicator"
-                          style={{ backgroundColor: event.routine.color }}
-                        />
-                      )}
-                      <h3 className="midia-routine-title">{event.routine.title}</h3>
+                <div
+                  key={event.routine.id}
+                  className="crud-inset-row crud-row-accent-indigo"
+                >
+                  <div className="crud-row-content">
+                    <div className="crud-row-header">
+                      <span className="crud-row-title">{event.routine.title}</span>
                     </div>
+                    <p className="crud-row-meta">{formatRoutineMeta(event.routine)}</p>
                     {event.routine.description && (
-                      <p className="midia-routine-description">{event.routine.description}</p>
+                      <p className="crud-row-preview">{event.routine.description}</p>
                     )}
-                    <div className="midia-routine-meta">
-                      <span className="midia-routine-frequency">
-                        {formatFrequency(event.routine.frequency)}
-                      </span>
-                      {event.routine.frequency === 'weekly' &&
-                        event.routine.days_of_week &&
-                        event.routine.days_of_week.length > 0 && (
-                          <span className="midia-routine-days">
-                            {formatDaysOfWeek(event.routine.days_of_week)}
-                          </span>
-                        )}
-                      {event.routine.frequency === 'monthly' &&
-                        event.routine.day_of_month !== null &&
-                        event.routine.day_of_month !== undefined && (
-                          <span className="midia-routine-days">
-                            {formatDayOfMonth(event.routine.day_of_month)}
-                          </span>
-                        )}
-                      {event.routine.scheduled_time && (
-                        <span className="midia-routine-time">
-                          <AccessTimeIcon className="midia-routine-time-icon" />
-                          {formatTime(event.routine.scheduled_time)}
-                        </span>
-                      )}
-                      {event.routine.duration !== null && event.routine.duration !== undefined && (
-                        <span className="midia-routine-duration">{event.routine.duration} min</span>
-                      )}
-                    </div>
                   </div>
                 </div>
               ))}
@@ -470,3 +456,4 @@ function MiDia() {
 }
 
 export default MiDia
+

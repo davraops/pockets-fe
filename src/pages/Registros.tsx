@@ -1,7 +1,6 @@
 import '../App.css'
 import './AppPage.css'
 import './Registros.css'
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BookIcon from '@mui/icons-material/Book'
 import LockIcon from '@mui/icons-material/Lock'
@@ -13,204 +12,143 @@ import DirectionsCarIcon from '@mui/icons-material/DirectionsCar'
 import InventoryIcon from '@mui/icons-material/Inventory'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import { sectionColor } from '../constants/sectionColors'
+
+const REGISTROS_HUB_ROWS = [
+  {
+    section: 'Cuadernos',
+    rows: [
+      {
+        path: '/registros/cuadernos',
+        label: 'Ir a Cuadernos',
+        title: 'Cuadernos',
+        subtitle: 'Gestiona tus cuadernos de notas',
+        icon: BookIcon,
+        color: sectionColor.blue,
+      },
+    ],
+  },
+  {
+    section: 'Herramientas',
+    rows: [
+      {
+        path: '/registros/calculadora',
+        label: 'Ir a Calculadora',
+        title: 'Calculadora',
+        subtitle: 'Realiza cálculos rápidos',
+        icon: CalculateIcon,
+        color: sectionColor.success,
+      },
+      {
+        path: '/registros/archivos',
+        label: 'Ir a Archivos',
+        title: 'Archivos',
+        subtitle: 'Gestiona tus documentos',
+        icon: FolderIcon,
+        color: sectionColor.utilidades,
+      },
+      {
+        path: '/registros/empleados',
+        label: 'Ir a Empleados',
+        title: 'Empleados',
+        subtitle: 'Gestiona información de empleados',
+        icon: PeopleIcon,
+        color: sectionColor.lifestyle,
+      },
+      {
+        path: '/registros/vehiculos',
+        label: 'Ir a Vehículos',
+        title: 'Vehículos',
+        subtitle: 'Gestiona información de vehículos',
+        icon: DirectionsCarIcon,
+        color: sectionColor.indigo,
+      },
+      {
+        path: '/registros/patrimonio',
+        label: 'Ir a Patrimonio',
+        title: 'Patrimonio',
+        subtitle: 'Gestiona inventario de items valiosos',
+        icon: InventoryIcon,
+        color: sectionColor.lifestyle,
+      },
+    ],
+  },
+  {
+    section: 'Secretos',
+    rows: [
+      {
+        path: '/registros/generador-contrasenas',
+        label: 'Ir a Generador de Contraseñas',
+        title: 'Generador de Contraseñas',
+        subtitle: 'Crea contraseñas seguras y únicas',
+        icon: VpnKeyIcon,
+        color: sectionColor.blue,
+      },
+      {
+        path: '/registros/secretos',
+        label: 'Ir a Secretos',
+        title: 'Secretos',
+        subtitle: 'Almacena información confidencial',
+        icon: LockIcon,
+        color: sectionColor.danger,
+      },
+    ],
+  },
+] as const
 
 function Registros() {
   const navigate = useNavigate()
 
   return (
     <div className="app-page-container">
-      <div className="app-page-content registros-content">
-        {/* Toolbar - HIG: Navigation */}
-        <div className="registros-toolbar">
+      <div className="app-page-content app-page-content-wide crud-page-content registros-content">
+        <div className="app-toolbar">
           <button
-            className="registros-toolbar-button"
+            className="app-toolbar-button"
             onClick={() => navigate('/')}
             aria-label="Volver al inicio"
             type="button"
           >
-            <ArrowBackIcon className="registros-toolbar-icon" />
+            <ArrowBackIcon className="app-toolbar-icon" />
           </button>
         </div>
 
-        <h1 className="registros-page-title">Utilidades</h1>
+        <h1 className="app-page-title">Utilidades</h1>
         <p className="registros-page-subtitle">Herramientas útiles para tu día a día</p>
 
-        {/* Lista de Secciones */}
-        <div className="settings-list">
-          {/* Sección: Cuadernos */}
-          <div className="settings-section">
-            <div className="settings-section-header">Cuadernos</div>
-            <div className="settings-group">
-              <button
-                className="settings-row"
-                onClick={() => navigate('/registros/cuadernos')}
-                aria-label="Ir a Cuadernos"
-                type="button"
-              >
-                <div
-                  className="settings-row-icon"
-                  style={{ backgroundColor: '#007AFF' }}
-                  aria-hidden="true"
-                >
-                  <BookIcon />
-                </div>
-                <div className="settings-row-content">
-                  <span className="settings-row-title">Cuadernos</span>
-                  <span className="settings-row-subtitle">Gestiona tus cuadernos de notas</span>
-                </div>
-                <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
-              </button>
+        <div className="crud-hub-list">
+          {REGISTROS_HUB_ROWS.map(group => (
+            <div key={group.section} className="crud-hub-section">
+              <div className="crud-hub-section-header">{group.section}</div>
+              <div className="glass-group">
+                {group.rows.map(row => {
+                  const Icon = row.icon
+                  return (
+                    <button
+                      key={row.path}
+                      className="crud-hub-row"
+                      onClick={() => navigate(row.path)}
+                      aria-label={row.label}
+                      type="button"
+                    >
+                      <div
+                        className="crud-hub-row-icon"
+                        style={{ backgroundColor: row.color }}
+                        aria-hidden="true"
+                      >
+                        <Icon />
+                      </div>
+                      <div className="crud-row-content">
+                        <span className="crud-row-title">{row.title}</span>
+                        <span className="crud-row-subtitle">{row.subtitle}</span>
+                      </div>
+                      <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-          </div>
-
-          {/* Sección: Herramientas */}
-          <div className="settings-section">
-            <div className="settings-section-header">Herramientas</div>
-            <div className="settings-group">
-              <button
-                className="settings-row"
-                onClick={() => navigate('/registros/calculadora')}
-                aria-label="Ir a Calculadora"
-                type="button"
-              >
-                <div
-                  className="settings-row-icon"
-                  style={{ backgroundColor: '#34C759' }}
-                  aria-hidden="true"
-                >
-                  <CalculateIcon />
-                </div>
-                <div className="settings-row-content">
-                  <span className="settings-row-title">Calculadora</span>
-                  <span className="settings-row-subtitle">Realiza cálculos rápidos</span>
-                </div>
-                <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
-              </button>
-              <button
-                className="settings-row"
-                onClick={() => navigate('/registros/archivos')}
-                aria-label="Ir a Archivos"
-                type="button"
-              >
-                <div
-                  className="settings-row-icon"
-                  style={{ backgroundColor: '#007AFF' }}
-                  aria-hidden="true"
-                >
-                  <FolderIcon />
-                </div>
-                <div className="settings-row-content">
-                  <span className="settings-row-title">Archivos</span>
-                  <span className="settings-row-subtitle">Gestiona tus documentos</span>
-                </div>
-                <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
-              </button>
-              <button
-                className="settings-row"
-                onClick={() => navigate('/registros/empleados')}
-                aria-label="Ir a Empleados"
-                type="button"
-              >
-                <div
-                  className="settings-row-icon"
-                  style={{ backgroundColor: '#FF9500' }}
-                  aria-hidden="true"
-                >
-                  <PeopleIcon />
-                </div>
-                <div className="settings-row-content">
-                  <span className="settings-row-title">Empleados</span>
-                  <span className="settings-row-subtitle">Gestiona información de empleados</span>
-                </div>
-                <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
-              </button>
-              <button
-                className="settings-row"
-                onClick={() => navigate('/registros/vehiculos')}
-                aria-label="Ir a Vehículos"
-                type="button"
-              >
-                <div
-                  className="settings-row-icon"
-                  style={{ backgroundColor: '#5856D6' }}
-                  aria-hidden="true"
-                >
-                  <DirectionsCarIcon />
-                </div>
-                <div className="settings-row-content">
-                  <span className="settings-row-title">Vehículos</span>
-                  <span className="settings-row-subtitle">Gestiona información de vehículos</span>
-                </div>
-                <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
-              </button>
-              <button
-                className="settings-row"
-                onClick={() => navigate('/registros/patrimonio')}
-                aria-label="Ir a Patrimonio"
-                type="button"
-              >
-                <div
-                  className="settings-row-icon"
-                  style={{ backgroundColor: '#FF9500' }}
-                  aria-hidden="true"
-                >
-                  <InventoryIcon />
-                </div>
-                <div className="settings-row-content">
-                  <span className="settings-row-title">Patrimonio</span>
-                  <span className="settings-row-subtitle">
-                    Gestiona inventario de items valiosos
-                  </span>
-                </div>
-                <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
-              </button>
-            </div>
-          </div>
-
-          {/* Sección: Secretos */}
-          <div className="settings-section">
-            <div className="settings-section-header">Secretos</div>
-            <div className="settings-group">
-              <button
-                className="settings-row"
-                onClick={() => navigate('/registros/generador-contrasenas')}
-                aria-label="Ir a Generador de Contraseñas"
-                type="button"
-              >
-                <div
-                  className="settings-row-icon"
-                  style={{ backgroundColor: '#007AFF' }}
-                  aria-hidden="true"
-                >
-                  <VpnKeyIcon />
-                </div>
-                <div className="settings-row-content">
-                  <span className="settings-row-title">Generador de Contraseñas</span>
-                  <span className="settings-row-subtitle">Crea contraseñas seguras y únicas</span>
-                </div>
-                <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
-              </button>
-              <button
-                className="settings-row"
-                onClick={() => navigate('/registros/secretos')}
-                aria-label="Ir a Secretos"
-                type="button"
-              >
-                <div
-                  className="settings-row-icon"
-                  style={{ backgroundColor: '#FF3B30' }}
-                  aria-hidden="true"
-                >
-                  <LockIcon />
-                </div>
-                <div className="settings-row-content">
-                  <span className="settings-row-title">Secretos</span>
-                  <span className="settings-row-subtitle">Almacena información confidencial</span>
-                </div>
-                <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
-              </button>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </div>

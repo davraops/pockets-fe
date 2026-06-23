@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, Fragment } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import TrendingDownIcon from '@mui/icons-material/TrendingDown'
@@ -14,6 +14,8 @@ import {
   Filler,
 } from 'chart.js'
 import { Line } from 'react-chartjs-2'
+import { useTheme } from '../contexts/ThemeContext'
+import { buildLineChartOptions, getChartThemeColors } from '../utils/chartTheme'
 import './AppPage.css'
 import './Inflacion.css'
 
@@ -684,6 +686,7 @@ const minimumWageData: MinimumWageData[] = [
 
 function Inflacion() {
   const navigate = useNavigate()
+  const { theme } = useTheme()
   const [amount, setAmount] = useState<string>('1000000')
   const [years, setYears] = useState<string>('1')
 
@@ -769,6 +772,7 @@ function Inflacion() {
 
   // Preparar datos para el gráfico (últimos 20 años + proyección)
   const chartData = useMemo(() => {
+    const colors = getChartThemeColors()
     const labels: string[] = []
     const historicalValues: number[] = []
     const predictedValues: number[] = []
@@ -800,8 +804,8 @@ function Inflacion() {
         {
           label: 'Inflación Anual Histórica (%)',
           data: historicalValues,
-          borderColor: 'rgba(255, 59, 48, 0.8)',
-          backgroundColor: 'rgba(255, 59, 48, 0.1)',
+          borderColor: colors.dangerStroke,
+          backgroundColor: colors.dangerFill,
           fill: true,
           tension: 0.4,
           pointRadius: 3,
@@ -810,8 +814,8 @@ function Inflacion() {
         {
           label: 'Proyección (Tendencia)',
           data: predictedValues,
-          borderColor: 'rgba(255, 149, 0, 0.8)',
-          backgroundColor: 'rgba(255, 149, 0, 0.1)',
+          borderColor: colors.warningStroke,
+          backgroundColor: colors.warningFill,
           fill: true,
           tension: 0.4,
           borderDash: [5, 5],
@@ -820,81 +824,53 @@ function Inflacion() {
         },
       ],
     }
-  }, [])
+  }, [theme])
 
-  const chartOptions: any = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-        labels: {
-          color: 'rgba(255, 255, 255, 0.9)',
-          font: {
-            family: 'Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
-            size: 12,
-          },
+  const chartOptions = useMemo(
+    () =>
+      buildLineChartOptions({
+        title: 'Inflación Anual (%) - La Calamidad',
+        showTitle: true,
+      }),
+    [theme]
+  )
+
+  const salaryChartData = useMemo(() => {
+    const colors = getChartThemeColors()
+    return {
+      labels: minimumWageData.map(d => d.year.toString()),
+      datasets: [
+        {
+          label: 'Variación Salario Mínimo (%)',
+          data: minimumWageData.map(d => d.annualVariation),
+          borderColor: colors.successStroke,
+          backgroundColor: colors.successFill,
+          fill: true,
+          tension: 0.4,
+          yAxisID: 'y',
         },
-      },
-      title: {
-        display: true,
-        text: 'Inflación Anual (%) - La Calamidad',
-        color: 'rgba(255, 255, 255, 0.95)',
-        font: {
-          family: 'Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
-          size: 18,
+        {
+          label: 'Inflación Anual (%)',
+          data: minimumWageData.map(d => d.inflation),
+          borderColor: colors.dangerStroke,
+          backgroundColor: colors.dangerFill,
+          fill: true,
+          tension: 0.4,
+          yAxisID: 'y',
         },
-      },
-      tooltip: {
-        callbacks: {
-          label: function (context: any) {
-            let label = context.dataset.label || ''
-            if (label) {
-              label += ': '
-            }
-            if (context.parsed.y !== null) {
-              label += context.parsed.y.toFixed(2) + '%'
-            }
-            return label
-          },
-        },
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        titleColor: 'rgba(255, 255, 255, 0.9)',
-        bodyColor: 'rgba(255, 255, 255, 0.8)',
-        borderColor: 'rgba(255, 59, 48, 0.5)',
-        borderWidth: 1,
-      },
-    },
-    scales: {
-      x: {
-        ticks: {
-          color: 'rgba(255, 255, 255, 0.7)',
-          font: {
-            family: 'Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
-            size: 12,
-          },
-        },
-        grid: {
-          color: 'rgba(255, 255, 255, 0.05)',
-        },
-      },
-      y: {
-        ticks: {
-          color: 'rgba(255, 255, 255, 0.7)',
-          callback: function (value: any) {
-            return value + '%'
-          },
-          font: {
-            family: 'Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
-            size: 12,
-          },
-        },
-        grid: {
-          color: 'rgba(255, 255, 255, 0.05)',
-        },
-      },
-    },
-  }
+      ],
+    }
+  }, [theme])
+
+  const salaryChartOptions = useMemo(
+    () =>
+      buildLineChartOptions({
+        tickFontSize: 10,
+        rotateXTicks: true,
+        yTickFormatter: value => `${value.toFixed(1)}%`,
+      }),
+    [theme]
+  )
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CO', {
@@ -907,26 +883,134 @@ function Inflacion() {
 
   return (
     <div className="app-page-container">
-      <div className="app-page-content inflacion-content">
+      <div className="app-page-content app-page-content-wide crud-page-content inflacion-content">
         {/* Toolbar */}
-        <div className="inflacion-toolbar">
+        <div className="app-toolbar">
           <button
-            className="inflacion-toolbar-button"
+            className="app-toolbar-button"
             onClick={() => navigate('/finanzas')}
             aria-label="Volver a Finanzas"
             type="button"
           >
-            <ArrowBackIcon className="inflacion-toolbar-icon" />
+            <ArrowBackIcon className="app-toolbar-icon" />
           </button>
         </div>
 
         {/* Page Title */}
-        <h1 className="inflacion-page-title">Inflación</h1>
+        <h1 className="app-page-title">Inflación</h1>
         <p className="inflacion-page-subtitle">
           Calculadora de devaluación y predictor de inflación
         </p>
 
-        {/* Mensaje Impactante */}
+        {/* Calculador de Devaluación */}
+        <div className="inflacion-calculator">
+          <h2 className="inflacion-section-title">Calculador de devaluación</h2>
+          <div className="inflacion-calculator-inputs">
+            <div className="inflacion-input-group">
+              <label htmlFor="amount" className="inflacion-label">
+                Monto inicial (COP)
+              </label>
+              <input
+                type="number"
+                id="amount"
+                className="form-input-base"
+                value={amount}
+                onChange={e => setAmount(e.target.value)}
+                placeholder="1000000"
+                min="0"
+                step="1000"
+              />
+            </div>
+            <div className="inflacion-input-group">
+              <label htmlFor="years" className="inflacion-label">
+                Años
+              </label>
+              <input
+                type="number"
+                id="years"
+                className="form-input-base"
+                value={years}
+                onChange={e => setYears(e.target.value)}
+                placeholder="1"
+                min="1"
+                max="20"
+              />
+            </div>
+          </div>
+
+          {devaluationResult && (
+            <div
+              className="crud-summary-strip crud-summary-strip--danger"
+              role="region"
+              aria-label="Resultado de devaluación"
+            >
+              <div className="crud-summary-strip-item">
+                <span className="crud-summary-strip-label">Valor inicial</span>
+                <span className="crud-summary-strip-value crud-summary-strip-value--info">
+                  {formatCurrency(parseFloat(amount))}
+                </span>
+              </div>
+              <div className="crud-summary-strip-separator" aria-hidden="true" />
+              <div className="crud-summary-strip-item">
+                <span className="crud-summary-strip-label">
+                  En {years} {years === '1' ? 'año' : 'años'}
+                </span>
+                <span className="crud-summary-strip-value crud-summary-strip-value--expense">
+                  {formatCurrency(devaluationResult.finalValue)}
+                </span>
+              </div>
+              <div className="crud-summary-strip-separator" aria-hidden="true" />
+              <div className="crud-summary-strip-item crud-summary-strip-item--emphasis">
+                <span className="crud-summary-strip-label">Pérdida</span>
+                <span className="crud-summary-strip-value crud-summary-strip-value--expense">
+                  {formatCurrency(devaluationResult.devaluation)} (
+                  {devaluationResult.percentage.toFixed(1)}%)
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Predictor de Inflación */}
+        <div className="inflacion-predictor">
+          <h2 className="inflacion-section-title">Predictor de inflación</h2>
+          <p className="inflacion-predictor-description">
+            Proyección basada en la tendencia histórica reciente:
+          </p>
+          <div
+            className="crud-summary-strip"
+            role="region"
+            aria-label="Proyección de inflación"
+          >
+            {[1, 2, 3, 5].map((yearsAhead, index) => {
+              const prediction = predictInflation(yearsAhead)
+              return (
+                <Fragment key={yearsAhead}>
+                  {index > 0 && (
+                    <div className="crud-summary-strip-separator" aria-hidden="true" />
+                  )}
+                  <div className="crud-summary-strip-item">
+                    <span className="crud-summary-strip-label">
+                      {yearsAhead === 1 ? '1 año' : `${yearsAhead} años`}
+                    </span>
+                    <span className="crud-summary-strip-value crud-summary-strip-value--expense">
+                      {prediction.toFixed(1)}%
+                    </span>
+                  </div>
+                </Fragment>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Gráfico Histórico */}
+        <div className="inflacion-chart-container">
+          <div className="inflacion-chart-wrapper">
+            <Line data={chartData} options={chartOptions} />
+          </div>
+        </div>
+
+        {/* Mensaje editorial */}
         <div className="inflacion-warning">
           <div className="inflacion-warning-icon">
             <TrendingDownIcon />
@@ -946,9 +1030,9 @@ function Inflacion() {
           </div>
         </div>
 
-        {/* Tips para Combatir la Inflación */}
+        {/* Tips para combatir la inflación */}
         <div className="inflacion-tips">
-          <h2 className="inflacion-section-title">Armas contra el Monstruo</h2>
+          <h2 className="inflacion-section-title">Armas contra el monstruo</h2>
           <div className="inflacion-tips-grid">
             <div className="inflacion-tip-card">
               <div className="inflacion-tip-icon">💰</div>
@@ -1014,95 +1098,6 @@ function Inflacion() {
                 relajes, el monstruo nunca duerme.
               </p>
             </div>
-          </div>
-        </div>
-
-        {/* Gráfico Histórico */}
-        <div className="inflacion-chart-container">
-          <div className="inflacion-chart-wrapper">
-            <Line data={chartData} options={chartOptions} />
-          </div>
-        </div>
-
-        {/* Calculador de Devaluación */}
-        <div className="inflacion-calculator">
-          <h2 className="inflacion-section-title">Calculador de Devaluación</h2>
-          <div className="inflacion-calculator-inputs">
-            <div className="inflacion-input-group">
-              <label htmlFor="amount" className="inflacion-label">
-                Monto Inicial (COP)
-              </label>
-              <input
-                type="number"
-                id="amount"
-                className="inflacion-input"
-                value={amount}
-                onChange={e => setAmount(e.target.value)}
-                placeholder="1000000"
-                min="0"
-                step="1000"
-              />
-            </div>
-            <div className="inflacion-input-group">
-              <label htmlFor="years" className="inflacion-label">
-                Años
-              </label>
-              <input
-                type="number"
-                id="years"
-                className="inflacion-input"
-                value={years}
-                onChange={e => setYears(e.target.value)}
-                placeholder="1"
-                min="1"
-                max="20"
-              />
-            </div>
-          </div>
-
-          {devaluationResult && (
-            <div className="inflacion-result">
-              <div className="inflacion-result-item">
-                <span className="inflacion-result-label">Valor Inicial:</span>
-                <span className="inflacion-result-value">{formatCurrency(parseFloat(amount))}</span>
-              </div>
-              <div className="inflacion-result-item">
-                <span className="inflacion-result-label">
-                  Valor Después de {years} {years === '1' ? 'Año' : 'Años'}:
-                </span>
-                <span className="inflacion-result-value devalued">
-                  {formatCurrency(devaluationResult.finalValue)}
-                </span>
-              </div>
-              <div className="inflacion-result-item highlight">
-                <span className="inflacion-result-label">Pérdida de Valor:</span>
-                <span className="inflacion-result-value loss">
-                  {formatCurrency(devaluationResult.devaluation)} (
-                  {devaluationResult.percentage.toFixed(2)}%)
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Predictor de Inflación */}
-        <div className="inflacion-predictor">
-          <h2 className="inflacion-section-title">Predictor de Inflación</h2>
-          <p className="inflacion-predictor-description">
-            Basado en la tendencia histórica, la inflación proyectada para los próximos años es:
-          </p>
-          <div className="inflacion-predictions">
-            {[1, 2, 3, 5].map(yearsAhead => {
-              const prediction = predictInflation(yearsAhead)
-              return (
-                <div key={yearsAhead} className="inflacion-prediction-card">
-                  <div className="inflacion-prediction-period">
-                    {yearsAhead === 1 ? '1 Año' : `${yearsAhead} Años`}
-                  </div>
-                  <div className="inflacion-prediction-value">{prediction.toFixed(2)}%</div>
-                </div>
-              )
-            })}
           </div>
         </div>
 
@@ -1176,96 +1171,7 @@ function Inflacion() {
               Evolución del Salario Mínimo vs Inflación
             </h3>
             <div className="inflacion-salary-chart-wrapper">
-              <Line
-                data={{
-                  labels: minimumWageData.map(d => d.year.toString()),
-                  datasets: [
-                    {
-                      label: 'Variación Salario Mínimo (%)',
-                      data: minimumWageData.map(d => d.annualVariation),
-                      borderColor: 'rgba(52, 199, 89, 0.8)',
-                      backgroundColor: 'rgba(52, 199, 89, 0.1)',
-                      fill: true,
-                      tension: 0.4,
-                      yAxisID: 'y',
-                    },
-                    {
-                      label: 'Inflación Anual (%)',
-                      data: minimumWageData.map(d => d.inflation),
-                      borderColor: 'rgba(255, 59, 48, 0.8)',
-                      backgroundColor: 'rgba(255, 59, 48, 0.1)',
-                      fill: true,
-                      tension: 0.4,
-                      yAxisID: 'y',
-                    },
-                  ],
-                }}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
-                      position: 'top' as const,
-                      labels: {
-                        color: 'rgba(255, 255, 255, 0.9)',
-                        font: {
-                          family:
-                            'Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
-                          size: 12,
-                        },
-                      },
-                    },
-                    title: {
-                      display: false,
-                    },
-                    tooltip: {
-                      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                      titleColor: 'rgba(255, 255, 255, 0.9)',
-                      bodyColor: 'rgba(255, 255, 255, 0.8)',
-                      borderColor: 'rgba(255, 59, 48, 0.5)',
-                      borderWidth: 1,
-                      callbacks: {
-                        label: function (context: any) {
-                          return `${context.dataset.label}: ${context.parsed.y.toFixed(2)}%`
-                        },
-                      },
-                    },
-                  },
-                  scales: {
-                    x: {
-                      ticks: {
-                        color: 'rgba(255, 255, 255, 0.7)',
-                        font: {
-                          family:
-                            'Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
-                          size: 10,
-                        },
-                        maxRotation: 45,
-                        minRotation: 45,
-                      },
-                      grid: {
-                        color: 'rgba(255, 255, 255, 0.1)',
-                      },
-                    },
-                    y: {
-                      ticks: {
-                        color: 'rgba(255, 255, 255, 0.7)',
-                        font: {
-                          family:
-                            'Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
-                          size: 10,
-                        },
-                        callback: function (value: any) {
-                          return value.toFixed(1) + '%'
-                        },
-                      },
-                      grid: {
-                        color: 'rgba(255, 255, 255, 0.1)',
-                      },
-                    },
-                  },
-                }}
-              />
+              <Line data={salaryChartData} options={salaryChartOptions} />
             </div>
           </div>
 

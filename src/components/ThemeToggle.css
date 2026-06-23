@@ -19,12 +19,12 @@
 }
 
 .theme-toggle-button:active {
-  transform: scale(0.95);
+  transform: scale(var(--motion-press-scale));
 }
 
 .theme-toggle-button:focus-visible {
-  outline: 2px solid var(--accent-primary-border);
-  outline-offset: 2px;
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
 }
 
 /* Toggle Track - HIG: Visual Feedback */
@@ -78,21 +78,21 @@
 }
 
 .theme-toggle-thumb-light {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--bg-glass-hover);
   backdrop-filter: var(--backdrop-blur-light);
   -webkit-backdrop-filter: var(--backdrop-blur-light);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--border-glass-hover);
   left: 2px;
   transform: translateX(24px);
 }
 
 [data-theme='light'] .theme-toggle-thumb-light {
-  background: rgba(255, 255, 255, 1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: var(--modal-surface);
+  border: 1px solid var(--border-glass);
 }
 
 .theme-toggle-icon {
-  font-size: 1rem;
+  font-size: var(--font-size-sm);
   width: 1rem;
   height: 1rem;
   color: var(--text-primary);

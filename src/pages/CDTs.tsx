@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
@@ -8,9 +8,13 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
+import { devError, isDebugToolsEnabled, isDestructiveDebugEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
+import { useConfirm } from '../contexts/ConfirmContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
+import ModalOverlay from '../components/ModalOverlay'
+import ListSkeleton from '../components/ListSkeleton'
 import './CDTs.css'
 
 // Interfaz que coincide con la respuesta de la API (campos en inglés)
@@ -41,6 +45,7 @@ interface CDT {
 function CDTs() {
   const navigate = useNavigate()
   const { showNotification } = useNotification()
+  const { confirm } = useConfirm()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
@@ -85,38 +90,35 @@ function CDTs() {
   }
 
   // Cargar CDTs desde la API
-  useEffect(() => {
-    const loadCDTs = async () => {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const response = await api.getCDTs()
-        console.log('API Response:', response)
-        if (response.cdts && Array.isArray(response.cdts)) {
-          console.log('CDTs from API:', response.cdts)
-          const mappedCDTs = response.cdts.map(mapCDTFromAPI)
-          console.log('Mapped CDTs:', mappedCDTs)
-          setCDTs(mappedCDTs)
-        } else {
-          setCDTs([])
-        }
-      } catch (err: any) {
-        console.error('Error al cargar CDTs:', err)
-        setError('Error al cargar los CDTs. Por favor, intenta de nuevo.')
+  const loadCDTs = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await api.getCDTs()
+      if (response.cdts && Array.isArray(response.cdts)) {
+        const mappedCDTs = response.cdts.map(mapCDTFromAPI)
+        setCDTs(mappedCDTs)
+      } else {
         setCDTs([])
-      } finally {
-        setIsLoading(false)
       }
+    } catch (err: any) {
+      devError('Error al cargar CDTs:', err)
+      setError(
+        getTranslatedErrorMessage(err, 'Error al cargar los CDTs. Por favor, intenta de nuevo.')
+      )
+      setCDTs([])
+    } finally {
+      setIsLoading(false)
     }
-
-    loadCDTs()
   }, [])
 
-  // Cerrar menú al hacer clic fuera - HIG: Clear Feedback
+  useEffect(() => {
+    loadCDTs()
+  }, [loadCDTs])
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement
-      if (isMenuOpen && !target.closest('.cdts-toolbar-menu-container')) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsMenuOpen(false)
       }
     }
@@ -194,7 +196,7 @@ function CDTs() {
   }
 
   const handleDeleteClick = async () => {
-    if (selectedCDT && window.confirm('¿Estás seguro de que quieres eliminar este CDT?')) {
+    if (selectedCDT && (await confirm({ message: '¿Estás seguro de que quieres eliminar este CDT?', variant: 'danger' }))) {
       try {
         await api.deleteCDT(selectedCDT.id)
         const response = await api.getCDTs()
@@ -205,7 +207,7 @@ function CDTs() {
         handleCloseDetailModal()
         showNotification('CDT eliminado exitosamente', 'success')
       } catch (err: any) {
-        console.error('Error al eliminar CDT:', err)
+        devError('Error al eliminar CDT:', err)
         const errorMessage = getTranslatedErrorMessage(
           err,
           'Error al eliminar el CDT. Por favor, intenta de nuevo.'
@@ -330,7 +332,7 @@ function CDTs() {
         showNotification('CDT creado exitosamente', 'success')
       }
     } catch (err: any) {
-      console.error('Error al guardar CDT:', err)
+      devError('Error al guardar CDT:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al guardar el CDT. Por favor, intenta de nuevo.'
@@ -423,7 +425,21 @@ function CDTs() {
     return realGain
   }
 
+  const calculateHighlights = () => {
+    const totalCDTs = cdts.length
+    const totalInvertido = cdts.reduce((sum, cdt) => sum + cdt.valor, 0)
+    const tasaPromedio =
+      totalCDTs > 0 ? cdts.reduce((sum, cdt) => sum + cdt.tasa, 0) / totalCDTs : 0
+    const gananciaRealTotal = cdts.reduce(
+      (sum, cdt) => sum + calculateInflationAdjustedGain(cdt),
+      0
+    )
+
+    return { totalCDTs, totalInvertido, tasaPromedio, gananciaRealTotal }
+  }
+
   const handleDebugCreateCDTs = async () => {
+    if (!isDebugToolsEnabled()) return
     try {
       setIsLoading(true)
       const demoCDTs = [
@@ -505,7 +521,7 @@ function CDTs() {
       setIsDebugModalOpen(false)
       showNotification('CDTs demo creados exitosamente', 'success')
     } catch (err: any) {
-      console.error('Error al crear CDTs demo:', err)
+      devError('Error al crear CDTs demo:', err)
       const errorMessage =
         err.data?.error ||
         err.data?.message ||
@@ -517,10 +533,9 @@ function CDTs() {
   }
 
   const handleDeleteAllCDTs = async () => {
+    if (!isDestructiveDebugEnabled()) return
     if (
-      window.confirm(
-        '¿Estás seguro de que quieres eliminar TODOS los CDTs? Esta acción es irreversible.'
-      )
+      (await confirm({ message: '¿Estás seguro de que quieres eliminar TODOS los CDTs? Esta acción es irreversible.', variant: 'danger' }))
     ) {
       try {
         setIsLoading(true)
@@ -529,7 +544,7 @@ function CDTs() {
         setIsDebugModalOpen(false)
         showNotification('Todos los CDTs han sido eliminados', 'success')
       } catch (err: any) {
-        console.error('Error al eliminar todos los CDTs:', err)
+        devError('Error al eliminar todos los CDTs:', err)
         const errorMessage =
           err.data?.error ||
           err.data?.message ||
@@ -541,153 +556,211 @@ function CDTs() {
     }
   }
 
-  if (isLoading && cdts.length === 0) {
-    return (
-      <div className="app-page-container">
-        <div className="app-page-content">
-          <div className="loading-container">
-            <p>Cargando CDTs...</p>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const highlights = calculateHighlights()
 
   return (
     <>
       <div className="app-page-container">
-        <div className="app-page-content cdts-content">
-          {/* Toolbar */}
-          <div className="cdts-toolbar">
-            <button
-              className="cdts-toolbar-button"
-              onClick={() => navigate('/finanzas')}
-              aria-label="Volver a Finanzas"
-              type="button"
-            >
-              <ArrowBackIcon className="cdts-toolbar-icon" />
-            </button>
-            <div className="cdts-toolbar-menu-container" ref={menuRef}>
-              <button
-                className="cdts-toolbar-button"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                aria-label="Opciones"
-                aria-expanded={isMenuOpen}
-                type="button"
-              >
-                <MoreVertIcon className="cdts-toolbar-icon" />
-              </button>
-              {isMenuOpen && (
-                <div className="cdts-menu">
-                  <button
-                    className="cdts-menu-item"
-                    onClick={() => {
-                      setIsMenuOpen(false)
-                      handleOpenModal()
-                    }}
-                    type="button"
-                  >
-                    <AddIcon className="cdts-menu-icon" />
-                    <span>Agregar CDT</span>
-                  </button>
-                  {api.isTestUser() && (
-                    <button
-                      className="cdts-menu-item"
-                      onClick={() => {
-                        setIsMenuOpen(false)
-                        setIsDebugModalOpen(true)
-                      }}
-                      type="button"
-                    >
-                      <span>🐛 Debug</span>
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <h1 className="cdts-page-title">CDTs</h1>
-          <p className="cdts-page-subtitle">Certificados de Depósito a Término</p>
-
-          {/* Lista de CDTs */}
-          <div className="cdts-list">
-            {cdts.length === 0 ? (
-              <div className="cdts-empty">
-                <AccountBalanceWalletIcon className="cdts-empty-icon" />
-                <p className="cdts-empty-text">No hay CDTs registrados</p>
-                <button className="cdts-empty-button" onClick={handleOpenModal} type="button">
-                  <AddIcon />
-                  <span>Agregar</span>
+        <div className="app-page-content app-page-content-wide crud-page-content cdts-content">
+          {isLoading && cdts.length === 0 ? (
+            <>
+              <div className="app-toolbar">
+                <button
+                  className="app-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="app-toolbar-icon" />
                 </button>
               </div>
-            ) : (
-              <div className="cdts-group">
-                {cdts.map(cdt => (
+              <h1 className="app-page-title">CDTs</h1>
+              <div className="glass-group">
+                <ListSkeleton variant="inset-row" count={4} aria-label="Cargando CDTs" />
+              </div>
+            </>
+          ) : error && cdts.length === 0 ? (
+            <>
+              <div className="app-toolbar">
+                <button
+                  className="app-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="app-toolbar-icon" />
+                </button>
+              </div>
+              <h1 className="app-page-title">CDTs</h1>
+              <div className="loader-container">
+                <div className="loader finanzas-stats-error-panel">
+                  <p className="loader-text loader-text--error" role="alert">
+                    {error}
+                  </p>
                   <button
-                    key={cdt.id}
-                    className="cdts-row"
-                    onClick={() => handleOpenDetailModal(cdt)}
                     type="button"
+                    className="btn-base btn-secondary finanzas-stats-retry-button"
+                    onClick={() => void loadCDTs()}
+                    aria-label="Reintentar cargar CDTs"
                   >
-                    <div className="cdts-row-content">
-                      <div className="cdts-row-header">
-                        <h3 className="cdts-row-title">{cdt.nombre}</h3>
-                        <ChevronRightIcon className="cdts-row-chevron" aria-hidden="true" />
-                      </div>
-                      <p className="cdts-row-subtitle">
-                        {formatCurrency(cdt.valor)} • {cdt.tasa}% anual
-                        {cdt.emisor && ` • ${cdt.emisor}`}
-                        {cdt.duracion && ` • ${cdt.duracion} días`}
-                      </p>
-                      {cdt.duracion && (
-                        <div className="cdts-progress-container">
-                          <div className="cdts-progress-bar">
-                            <div
-                              className="cdts-progress-fill"
-                              style={{ width: `${calculateProgress(cdt)}%` }}
-                            />
-                          </div>
-                          <span className="cdts-progress-text">
-                            {calculateProgress(cdt)}% completado
-                          </span>
+                    <span>Reintentar</span>
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="app-toolbar">
+                <button
+                  className="app-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="app-toolbar-icon" />
+                </button>
+                <div className="app-toolbar-menu-container" ref={menuRef}>
+                  {isDebugToolsEnabled() && (
+                    <>
+                      <button
+                        className="app-toolbar-button"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        aria-label="Opciones de depuración"
+                        aria-expanded={isMenuOpen}
+                        type="button"
+                      >
+                        <MoreVertIcon className="app-toolbar-icon" />
+                      </button>
+                      {isMenuOpen && (
+                        <div className="crud-dropdown-menu">
+                          <button
+                            className="crud-dropdown-menu-item"
+                            onClick={() => {
+                              setIsDebugModalOpen(true)
+                              setIsMenuOpen(false)
+                            }}
+                            type="button"
+                          >
+                            <span>🐛 Debug</span>
+                          </button>
                         </div>
                       )}
-                      <div className="cdts-row-info">
-                        <p className="cdts-row-date">Retiro: {formatDate(cdt.fechaRetiro)}</p>
-                        {cdt.created_at && (
-                          <p className="cdts-row-gain">
-                            Ganancia real: {formatCurrency(calculateInflationAdjustedGain(cdt))}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                    </>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
 
-          {/* Botón flotante para agregar */}
-          {cdts.length > 0 && (
-            <button
-              className="cdts-fab"
-              onClick={handleOpenModal}
-              aria-label="Agregar CDT"
-              type="button"
-            >
-              <AddIcon />
-            </button>
+              <h1 className="app-page-title">CDTs</h1>
+
+              <div
+                className="crud-summary-strip crud-summary-strip--success"
+                role="region"
+                aria-label="Resumen de CDTs"
+              >
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Total CDTs</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
+                    {highlights.totalCDTs}
+                  </span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item crud-summary-strip-item--emphasis">
+                  <span className="crud-summary-strip-label">Invertido</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--income">
+                    {formatCurrency(highlights.totalInvertido)}
+                  </span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Tasa prom.</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--available">
+                    {highlights.tasaPromedio.toFixed(1)}%
+                  </span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Ganancia real</span>
+                  <span
+                    className={`crud-summary-strip-value ${highlights.gananciaRealTotal >= 0 ? 'crud-summary-strip-value--income' : 'crud-summary-strip-value--expense'}`}
+                  >
+                    {formatCurrency(highlights.gananciaRealTotal)}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+                onClick={handleOpenModal}
+                aria-label="Agregar CDT"
+              >
+                <AddIcon aria-hidden={true} />
+                Agregar CDT
+              </button>
+
+              {cdts.length === 0 ? (
+                <div className="empty-state">
+                  <AccountBalanceWalletIcon className="empty-state-icon" />
+                  <p className="empty-text">No hay CDTs registrados</p>
+                  <p className="empty-subtext">Usa el botón de arriba para agregar el primero</p>
+                </div>
+              ) : (
+                <div className="glass-group">
+                  {cdts.map(cdt => (
+                    <button
+                      key={cdt.id}
+                      className="crud-inset-row crud-inset-row--tall crud-row-accent-green"
+                      onClick={() => handleOpenDetailModal(cdt)}
+                      type="button"
+                      aria-label={`Ver detalles de ${cdt.nombre}`}
+                    >
+                      <div className="crud-row-content">
+                        <div className="crud-row-header">
+                          <span className="crud-row-title">{cdt.nombre}</span>
+                          <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
+                        </div>
+                        <p className="crud-row-meta">
+                          {formatCurrency(cdt.valor)} • {cdt.tasa}% anual
+                          {cdt.emisor && ` • ${cdt.emisor}`}
+                          {cdt.duracion && ` • ${cdt.duracion} días`}
+                        </p>
+                        {cdt.duracion && (
+                          <div className="cdts-progress-container">
+                            <div className="cdts-progress-bar">
+                              <div
+                                className="cdts-progress-fill"
+                                style={{ width: `${calculateProgress(cdt)}%` }}
+                              />
+                            </div>
+                            <span className="cdts-progress-text">
+                              {calculateProgress(cdt)}% completado
+                            </span>
+                          </div>
+                        )}
+                        <div className="crud-row-meta">
+                          <p className="crud-row-meta">Retiro: {formatDate(cdt.fechaRetiro)}</p>
+                          {cdt.created_at && (
+                            <p className="crud-row-highlight">
+                              Ganancia real: {formatCurrency(calculateInflationAdjustedGain(cdt))}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
 
       {/* Modal para crear/editar CDT */}
       {isModalOpen && (
-        <div className="modal-overlay" onClick={handleCloseModal}>
+        <ModalOverlay onClose={handleCloseModal} className="modal-overlay">
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Nuevo CDT</h2>
+              <h2 className="modal-title" id="modal-title-nuevo-cdt">Nuevo CDT</h2>
               <button
                 className="modal-close"
                 onClick={handleCloseModal}
@@ -832,15 +905,15 @@ function CDTs() {
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Modal de Detalle */}
       {isDetailModalOpen && selectedCDT && !isEditMode && (
-        <div className="modal-overlay" onClick={handleCloseDetailModal}>
+        <ModalOverlay onClose={handleCloseDetailModal} className="modal-overlay">
           <div className="modal-content detail-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">{selectedCDT.nombre}</h2>
+              <h2 className="modal-title" id="modal-title-selectedcdt-nombre">{selectedCDT.nombre}</h2>
               <button
                 className="modal-close"
                 onClick={handleCloseDetailModal}
@@ -907,15 +980,15 @@ function CDTs() {
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Modal de Edición */}
       {isDetailModalOpen && selectedCDT && isEditMode && (
-        <div className="modal-overlay edit-modal-overlay" onClick={handleCloseDetailModal}>
+        <ModalOverlay onClose={handleCloseDetailModal} className="modal-overlay edit-modal-overlay">
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Editar CDT</h2>
+              <h2 className="modal-title" id="modal-title-editar-cdt">Editar CDT</h2>
               <button
                 className="modal-close"
                 onClick={handleCloseDetailModal}
@@ -1064,15 +1137,15 @@ function CDTs() {
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Modal de Debug */}
-      {isDebugModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
+      {isDebugModalOpen && isDebugToolsEnabled() && (
+        <ModalOverlay onClose={() => setIsDebugModalOpen(false)} className="modal-overlay">
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Debug - CDTs</h2>
+              <h2 className="modal-title" id="modal-title-debug-cdts">Debug - CDTs</h2>
               <button
                 className="modal-close"
                 onClick={() => setIsDebugModalOpen(false)}
@@ -1082,7 +1155,7 @@ function CDTs() {
                 ×
               </button>
             </div>
-            <div className="debug-modal-content">
+            <div className="modal-panel-content">
               <div className="debug-options">
                 <button
                   className="debug-option-button create-demo"
@@ -1124,7 +1197,7 @@ function CDTs() {
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </>
   )

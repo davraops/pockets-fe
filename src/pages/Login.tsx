@@ -1,12 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import LockIcon from '@mui/icons-material/Lock'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import ThemeToggle from '../components/ThemeToggle'
 import { api } from '../services/api'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
-import './Login.css'
+import { devError } from '../utils/debugTools'
 
 function Login() {
   const navigate = useNavigate()
@@ -23,14 +22,24 @@ function Login() {
   const [isLoading, setIsLoading] = useState(false)
   const [focusedField, setFocusedField] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
+  const usernameRef = useRef<HTMLInputElement>(null)
+  const passwordRef = useRef<HTMLInputElement>(null)
+  const errorRef = useRef<HTMLDivElement>(null)
 
-  // Si ya está autenticado, redirigir al home o a la página de origen
   useEffect(() => {
     if (api.isAuthenticated()) {
-      const from = (location.state as any)?.from?.pathname || '/'
+      const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || '/'
       navigate(from, { replace: true })
+      return
     }
+    usernameRef.current?.focus()
   }, [navigate, location])
+
+  useEffect(() => {
+    if (formErrors.general) {
+      errorRef.current?.focus()
+    }
+  }, [formErrors.general])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -38,7 +47,6 @@ function Login() {
       ...formData,
       [name]: value,
     })
-    // Limpiar errores cuando el usuario empiece a escribir
     if (formErrors[name as keyof typeof formErrors]) {
       setFormErrors({
         ...formErrors,
@@ -48,12 +56,25 @@ function Login() {
     }
   }
 
-  const handleFocus = (fieldName: string) => {
+  const handleFieldFocus = (fieldName: string, target: HTMLInputElement) => {
     setFocusedField(fieldName)
+    if (window.matchMedia('(max-width: 768px)').matches) {
+      queueMicrotask(() => {
+        target.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      })
+    }
   }
 
   const handleBlur = () => {
     setFocusedField(null)
+  }
+
+  const focusFirstInvalidField = (errors: { username: string; password: string }) => {
+    if (errors.username) {
+      usernameRef.current?.focus()
+    } else if (errors.password) {
+      passwordRef.current?.focus()
+    }
   }
 
   const validateForm = (): boolean => {
@@ -75,6 +96,9 @@ function Login() {
     }
 
     setFormErrors(errors)
+    if (!isValid) {
+      queueMicrotask(() => focusFirstInvalidField(errors))
+    }
     return isValid
   }
 
@@ -92,9 +116,7 @@ function Login() {
       const result = await api.login(formData.username.trim(), formData.password)
 
       if (result.token) {
-        // El token ya se guarda automáticamente en el servicio API
-        // Redirigir al home o a la página de origen
-        const from = (location.state as any)?.from?.pathname || '/'
+        const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || '/'
         navigate(from, { replace: true })
       } else {
         setFormErrors({
@@ -103,8 +125,8 @@ function Login() {
           general: 'Error al iniciar sesión. Por favor, intenta de nuevo.',
         })
       }
-    } catch (err: any) {
-      console.error('Error al iniciar sesión:', err)
+    } catch (err: unknown) {
+      devError('Error al iniciar sesión:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al iniciar sesión. Por favor, verifica tus credenciales.'
@@ -120,45 +142,58 @@ function Login() {
     }
   }
 
-  return (
-    <div className="login-container">
-      <div className="login-card">
-        <div className="login-theme-toggle-wrapper">
-          <ThemeToggle />
-        </div>
-        <div className="login-header">
-          <div className="login-icon" aria-hidden="true">
-            <LockIcon />
-          </div>
-          <h1 className="login-title">Iniciar Sesión</h1>
-          <p className="login-subtitle">Ingresa tus credenciales para continuar</p>
-        </div>
+  const wrapperClass = (field: string, hasError: boolean) =>
+    [
+      'form-input-wrapper',
+      field === 'password' ? 'password-input-wrapper' : '',
+      focusedField === field ? 'is-focused' : '',
+      hasError ? 'is-error' : '',
+    ]
+      .filter(Boolean)
+      .join(' ')
 
-        <form className="login-form" onSubmit={handleSubmit} noValidate>
+  return (
+    <div className="auth-shell">
+      <div className="auth-card">
+        <header className="auth-card-header">
+          <h1 className="auth-card-title">
+            <span className="auth-card-title-brand">Pockets</span>
+            <span className="auth-card-title-sep" aria-hidden="true">
+              —
+            </span>
+            Iniciar sesión
+          </h1>
+        </header>
+
+        <form className="auth-form" onSubmit={handleSubmit} noValidate>
           {formErrors.general && (
-            <div className="login-error-general" role="alert" aria-live="polite">
+            <div
+              ref={errorRef}
+              className="form-alert-banner"
+              role="alert"
+              aria-live="polite"
+              tabIndex={-1}
+            >
               {formErrors.general}
             </div>
           )}
 
-          <div className="form-group">
-            <label htmlFor="username" className="form-label">
+          <div className="form-group-base">
+            <label htmlFor="username" className="form-label-base form-label-base--comfortable">
               Usuario
             </label>
-            <div
-              className={`input-wrapper ${focusedField === 'username' ? 'input-focused' : ''} ${formErrors.username ? 'input-error-wrapper' : ''}`}
-            >
+            <div className={wrapperClass('username', !!formErrors.username)}>
               <input
+                ref={usernameRef}
                 type="text"
                 id="username"
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
-                onFocus={() => handleFocus('username')}
+                onFocus={e => handleFieldFocus('username', e.currentTarget)}
                 onBlur={handleBlur}
                 required
-                placeholder="Ingresa tu usuario"
-                className={formErrors.username ? 'input-error' : ''}
+                className={`form-input-base form-input-base--comfortable${formErrors.username ? ' input-error' : ''}`}
                 disabled={isLoading}
                 autoComplete="username"
                 aria-invalid={!!formErrors.username}
@@ -176,30 +211,28 @@ function Login() {
               />
             </div>
             {formErrors.username && (
-              <span className="error-message" id="username-error" role="alert">
+              <span className="error-message error-message--comfortable" id="username-error" role="alert">
                 {formErrors.username}
               </span>
             )}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="password" className="form-label">
+          <div className="form-group-base">
+            <label htmlFor="password" className="form-label-base form-label-base--comfortable">
               Contraseña
             </label>
-            <div
-              className={`input-wrapper password-input-wrapper ${focusedField === 'password' ? 'input-focused' : ''} ${formErrors.password ? 'input-error-wrapper' : ''}`}
-            >
+            <div className={wrapperClass('password', !!formErrors.password)}>
               <input
+                ref={passwordRef}
                 type={showPassword ? 'text' : 'password'}
                 id="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                onFocus={() => handleFocus('password')}
+                onFocus={e => handleFieldFocus('password', e.currentTarget)}
                 onBlur={handleBlur}
                 required
-                placeholder="Ingresa tu contraseña"
-                className={formErrors.password ? 'input-error' : ''}
+                className={`form-input-base form-input-base--comfortable${formErrors.password ? ' input-error' : ''}`}
                 disabled={isLoading}
                 autoComplete="current-password"
                 aria-invalid={!!formErrors.password}
@@ -221,7 +254,6 @@ function Login() {
                 onClick={() => setShowPassword(!showPassword)}
                 disabled={isLoading}
                 aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                tabIndex={0}
               >
                 {showPassword ? (
                   <VisibilityOffIcon className="password-toggle-icon" />
@@ -231,23 +263,36 @@ function Login() {
               </button>
             </div>
             {formErrors.password && (
-              <span className="error-message" id="password-error" role="alert">
+              <span className="error-message error-message--comfortable" id="password-error" role="alert">
                 {formErrors.password}
               </span>
             )}
           </div>
 
-          <button type="submit" className="login-button" disabled={isLoading} aria-busy={isLoading}>
+          <p className="auth-support-note">
+            ¿Problemas para entrar? Las cuentas son asignadas por el administrador.
+          </p>
+
+          <button
+            type="submit"
+            className="btn-base btn-accent btn-block btn-submit"
+            disabled={isLoading}
+            aria-busy={isLoading}
+          >
             {isLoading ? (
               <>
-                <span className="button-spinner" aria-hidden="true"></span>
+                <span className="btn-spinner" aria-hidden="true"></span>
                 <span>Iniciando sesión...</span>
               </>
             ) : (
-              'Iniciar Sesión'
+              'Iniciar sesión'
             )}
           </button>
         </form>
+
+        <footer className="auth-card-footer">
+          <ThemeToggle />
+        </footer>
       </div>
     </div>
   )

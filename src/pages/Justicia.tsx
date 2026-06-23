@@ -6,6 +6,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import DescriptionIcon from '@mui/icons-material/Description'
 import type { SvgIconProps } from '@mui/material'
+import { sectionColor } from '../constants/sectionColors'
 
 interface JusticiaItem {
   id: string
@@ -20,7 +21,7 @@ const justiciaItems: JusticiaItem[] = [
     id: '1',
     title: 'Procesos',
     Icon: DescriptionIcon,
-    color: '#5856D6',
+    color: sectionColor.justicia,
     path: '/justicia/procesos',
   },
 ]
@@ -43,21 +44,20 @@ function Justicia() {
 
   return (
     <div className="app-page-container">
-      <div className="app-page-content justicia-content">
+      <div className="app-page-content app-page-content-wide crud-page-content justicia-content">
         {/* Toolbar */}
-        <div className="justicia-toolbar">
+        <div className="app-toolbar">
           <button
-            className="justicia-toolbar-button"
+            className="app-toolbar-button"
             onClick={() => navigate('/')}
-            aria-label="Volver"
+            aria-label="Volver al inicio"
             type="button"
           >
-            <ArrowBackIcon className="justicia-toolbar-icon" />
+            <ArrowBackIcon className="app-toolbar-icon" />
           </button>
         </div>
 
-        <h1 className="justicia-page-title">Justicia</h1>
-        <p className="justicia-page-subtitle">Gestiona tus asuntos legales y jurídicos</p>
+        <h1 className="app-page-title">Justicia</h1>
 
         {/* Lista de Items */}
         {justiciaItems.length === 0 ? (
@@ -66,31 +66,31 @@ function Justicia() {
           </div>
         ) : (
           <div className="justicia-list">
-            <div className="justicia-group">
+            <div className="glass-group">
               {justiciaItems.map(item => {
                 const IconComponent = item.Icon
                 return (
                   <button
                     key={item.id}
-                    className="justicia-row"
+                    className="crud-inset-row crud-row-accent-indigo"
                     onClick={() => handleItemClick(item)}
                     onKeyDown={e => handleKeyDown(e, item)}
                     aria-label={`Ir a ${item.title}`}
                     type="button"
                   >
-                    <div className="justicia-row-content">
-                      <div className="justicia-row-header">
-                        <div className="justicia-row-title-section">
+                    <div className="crud-row-content">
+                      <div className="crud-row-header">
+                        <div className="crud-row-title-section">
                           <div
-                            className="justicia-row-icon"
+                            className="crud-row-icon"
                             style={{ backgroundColor: item.color }}
                             aria-hidden="true"
                           >
-                            <IconComponent className="justicia-row-icon-svg" />
+                            <IconComponent className="crud-row-icon-svg" />
                           </div>
-                          <h3 className="justicia-row-title">{item.title}</h3>
+                          <h3 className="crud-row-title">{item.title}</h3>
                         </div>
-                        <ChevronRightIcon className="justicia-row-chevron" aria-hidden="true" />
+                        <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
                       </div>
                     </div>
                   </button>

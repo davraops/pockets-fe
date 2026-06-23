@@ -1,0 +1,61 @@
+/* Crypto card rows — wallet and transaction lists */
+
+.crud-crypto-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.crud-crypto-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  min-height: 72px;
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-glass);
+  border-left: 3px solid var(--accent-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+  width: 100%;
+  font-family: var(--font-family);
+  position: relative;
+  box-shadow: var(--shadow-sm);
+}
+
+.crud-crypto-row:hover:not(:disabled) {
+  background: var(--bg-glass-light);
+  border-left-color: var(--accent-primary);
+  box-shadow:
+    0 4px 16px 0 rgba(10, 132, 255, 0.2),
+    var(--shadow-sm);
+}
+
+.crud-crypto-row:active:not(:disabled) {
+  background: var(--bg-glass-hover);
+  transition: background-color var(--transition-fast);
+  transform: translateY(0);
+}
+
+.crud-crypto-row:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset-inset);
+  z-index: 1;
+}
+
+.crud-crypto-row:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .crud-crypto-row {
+    padding: var(--spacing-sm) var(--spacing-md);
+    min-height: 64px;
+  }
+}

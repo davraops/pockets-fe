@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { backToHubLabel } from '../constants/hubLabels'
 import { useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import AddIcon from '@mui/icons-material/Add'
@@ -7,6 +8,7 @@ import EditIcon from '@mui/icons-material/Edit'
 import SaveIcon from '@mui/icons-material/Save'
 import FolderIcon from '@mui/icons-material/Folder'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import PersonIcon from '@mui/icons-material/Person'
 import AssignmentIcon from '@mui/icons-material/Assignment'
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber'
@@ -16,9 +18,14 @@ import WorkIcon from '@mui/icons-material/Work'
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { api } from '../services/api'
+import { isDebugToolsEnabled, isDestructiveDebugEnabled, devError } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
+import { useConfirm } from '../contexts/ConfirmContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
+import { sectionColor } from '../constants/sectionColors'
 import './AppPage.css'
+import ModalOverlay from '../components/ModalOverlay'
+import ListSkeleton from '../components/ListSkeleton'
 import './Actividades.css'
 
 interface ClientActivity {
@@ -48,6 +55,7 @@ interface ClientActivityRecord {
 function Actividades() {
   const navigate = useNavigate()
   const { showNotification } = useNotification()
+  const { confirm } = useConfirm()
   const [activities, setActivities] = useState<ClientActivity[]>([])
   const [formData, setFormData] = useState({
     name: '',
@@ -71,6 +79,9 @@ function Actividades() {
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [isDebugLoading, setIsDebugLoading] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const nameRef = useRef<HTMLInputElement>(null)
+  const clientRef = useRef<HTMLInputElement>(null)
+  const [formErrors, setFormErrors] = useState({ name: '', client: '' })
 
   useEffect(() => {
     loadRecords()
@@ -80,7 +91,7 @@ function Actividades() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement
-      if (isMenuOpen && !target.closest('.actividades-toolbar-menu-container')) {
+      if (isMenuOpen && !target.closest('.app-toolbar-menu-container')) {
         setIsMenuOpen(false)
       }
     }
@@ -113,8 +124,8 @@ function Actividades() {
         setActivities([])
         setRecords([])
       }
-    } catch (err: any) {
-      console.error('Error al cargar actividades:', err)
+    } catch (err: unknown) {
+      devError('Error al cargar actividades:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al cargar actividades. Por favor, intenta de nuevo.'
@@ -124,30 +135,56 @@ function Actividades() {
       setRecords([])
       showNotification(errorMessage, 'error')
     } finally {
-      setIsLoading(false)
+        setIsLoading(false)
     }
   }
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
       [name]: value,
     }))
+    if (formErrors[name as keyof typeof formErrors]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [name]: '',
+      }))
+    }
+  }
+
+  const validateForm = (): boolean => {
+    const errors = { name: '', client: '' }
+    let isValid = true
+
+    if (!formData.name.trim()) {
+      errors.name = 'El nombre de la actividad es requerido'
+      isValid = false
+    }
+
+    if (!formData.client.trim()) {
+      errors.client = 'El cliente es requerido'
+      isValid = false
+    }
+
+    setFormErrors(errors)
+    if (!isValid) {
+      queueMicrotask(() => {
+        if (errors.name) {
+          nameRef.current?.focus()
+        } else if (errors.client) {
+          clientRef.current?.focus()
+        }
+      })
+    }
+
+    return isValid
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.name.trim()) {
-      showNotification('El nombre de la actividad es requerido', 'error')
-      return
-    }
-
-    if (!formData.client.trim()) {
-      showNotification('El cliente es requerido', 'error')
+    if (!validateForm()) {
       return
     }
 
@@ -189,7 +226,8 @@ function Actividades() {
 
       // Cerrar modal si estaba abierto
       setShowFormModal(false)
-    } catch (err: any) {
+      setFormErrors({ name: '', client: '' })
+    } catch (err: unknown) {
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al guardar la actividad. Por favor, intenta de nuevo.'
@@ -212,6 +250,7 @@ function Actividades() {
     })
     setEditingId(activity.id)
     setShowFormModal(true)
+    setFormErrors({ name: '', client: '' })
   }
 
   const handleCancelEdit = () => {
@@ -226,10 +265,11 @@ function Actividades() {
       status: 'defined',
     })
     setShowFormModal(false)
+    setFormErrors({ name: '', client: '' })
   }
 
   const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`¿Estás seguro de que quieres eliminar la actividad "${name}"?`)) {
+    if (!(await confirm({ message: `¿Estás seguro de que quieres eliminar la actividad "${name}"?`, variant: 'danger' }))) {
       return
     }
 
@@ -271,12 +311,12 @@ function Actividades() {
   const formatDate = (dateString: string | undefined) => {
     if (!dateString) return 'N/A'
     try {
-      const date = new Date(dateString)
-      return date.toLocaleDateString('es-ES', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
+    const date = new Date(dateString)
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
     } catch {
       return dateString
     }
@@ -297,10 +337,23 @@ function Actividades() {
     }
   }
 
+  const getPriorityClass = (priority: string | undefined) => {
+    switch (priority) {
+      case 'Alta':
+        return 'crud-priority-high'
+      case 'Media':
+        return 'crud-priority-medium'
+      case 'Baja':
+        return 'crud-priority-low'
+      default:
+        return ''
+    }
+  }
+
   const getPriorityColor = (priority: string | undefined) => {
     switch (priority) {
       case 'Alta':
-        return '#FF3B30'
+        return sectionColor.danger
       case 'Media':
         return '#FF9500'
       case 'Baja':
@@ -335,9 +388,13 @@ function Actividades() {
 
     // Filtrar por tab
     if (activeTab === 'active') {
-      filtered = filtered.filter(a => a.data.status !== 'done' && a.data.status !== 'wont_do')
+      filtered = filtered.filter(
+        a => a.data.status !== 'done' && a.data.status !== 'wont_do'
+      )
     } else {
-      filtered = filtered.filter(a => a.data.status === 'done' || a.data.status === 'wont_do')
+      filtered = filtered.filter(
+        a => a.data.status === 'done' || a.data.status === 'wont_do'
+      )
     }
 
     // Filtrar por cliente
@@ -350,7 +407,7 @@ function Actividades() {
       // Primero por prioridad
       const priorityA = getPriorityValue(a.data.priority)
       const priorityB = getPriorityValue(b.data.priority)
-
+      
       if (priorityA !== priorityB) {
         return priorityA - priorityB
       }
@@ -358,7 +415,7 @@ function Actividades() {
       // Si tienen la misma prioridad, ordenar por fecha de creación (más antiguos primero)
       const dateA = a.created_at ? new Date(a.created_at).getTime() : 0
       const dateB = b.created_at ? new Date(b.created_at).getTime() : 0
-
+      
       return dateA - dateB
     })
 
@@ -381,6 +438,38 @@ function Actividades() {
 
   const stats = calculateStats()
 
+  const getEmptyStateCopy = () => {
+    if (activities.length === 0) {
+      return {
+        title: activeTab === 'active' ? 'No hay actividades activas' : 'No hay actividades completadas',
+        subtext:
+          activeTab === 'active'
+            ? 'Crea tu primera actividad para comenzar'
+            : 'Las actividades completadas o descartadas aparecerán aquí',
+      }
+    }
+
+    if (clientFilter) {
+      return {
+        title: 'No hay actividades para este cliente',
+        subtext:
+          activeTab === 'active'
+            ? 'Prueba otro filtro o crea una actividad nueva'
+            : 'Este cliente no tiene actividades completadas',
+      }
+    }
+
+    return {
+      title: activeTab === 'active' ? 'No hay actividades activas' : 'No hay actividades completadas',
+      subtext:
+        activeTab === 'active'
+          ? 'Todas tus actividades están completadas o descartadas'
+          : 'Las actividades completadas o descartadas aparecerán aquí',
+    }
+  }
+
+  const emptyStateCopy = getEmptyStateCopy()
+
   // Obtener color del estado
   const getStatusColor = (status: string | undefined) => {
     switch (status) {
@@ -389,7 +478,7 @@ function Actividades() {
       case 'in_progress':
         return '#007AFF'
       case 'blocked':
-        return '#FF3B30'
+        return sectionColor.danger
       case 'done':
         return '#34C759'
       case 'wont_do':
@@ -417,120 +506,142 @@ function Actividades() {
     }
   }
 
+  const formatActivityMeta = (activity: ClientActivity) => {
+    const parts = [
+      activity.data.client,
+      getStatusLabel(activity.data.status),
+      activity.data.priority,
+    ].filter(Boolean)
+    return parts.length > 0 ? parts.join(' • ') : 'Sin cliente'
+  }
+
+  const formatActivityPreview = (activity: ClientActivity) => {
+    if (activity.data.ticket) return `Ticket: ${activity.data.ticket}`
+    if (activity.data.activity) return activity.data.activity
+    if (activity.data.assignmentDate) return `Asignada: ${formatDate(activity.data.assignmentDate)}`
+    return null
+  }
+
   return (
     <div className="app-page">
-      <div className="app-page-content actividades-content">
+      <div className="app-page-content app-page-content-wide crud-page-content actividades-content">
         {/* Toolbar */}
-        <div className="actividades-toolbar">
+        <div className="app-toolbar">
           <button
-            className="actividades-toolbar-button"
+            className="app-toolbar-button"
             onClick={() => navigate('/trabajo')}
-            aria-label="Volver"
+            aria-label={backToHubLabel('trabajo')}
             type="button"
           >
-            <ArrowBackIcon className="actividades-toolbar-icon" />
+            <ArrowBackIcon className="app-toolbar-icon" />
           </button>
-          <div className="actividades-toolbar-menu-container" ref={menuRef}>
-            <button
-              className="actividades-toolbar-button"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label="Opciones"
-              aria-expanded={isMenuOpen}
-              type="button"
-            >
-              <MoreVertIcon className="actividades-toolbar-icon" />
-            </button>
-            {isMenuOpen && (
-              <div className="actividades-menu">
+          <div className="app-toolbar-menu-container" ref={menuRef}>
+            {isDebugToolsEnabled() && (
+              <>
                 <button
-                  className="actividades-menu-item"
-                  onClick={() => {
-                    setIsMenuOpen(false)
-                    setShowFormModal(true)
-                  }}
+                  className="app-toolbar-button"
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  aria-label="Opciones de depuración"
+                  aria-expanded={isMenuOpen}
                   type="button"
                 >
-                  <AddIcon className="actividades-menu-icon" />
-                  <span>Crear Actividad</span>
+                  <MoreVertIcon className="app-toolbar-icon" />
                 </button>
-                {process.env.NODE_ENV === 'development' && (
-                  <button
-                    className="actividades-menu-item"
-                    onClick={() => {
-                      setIsMenuOpen(false)
-                      setIsDebugModalOpen(true)
-                    }}
-                    type="button"
-                  >
-                    <span>🐛 Debug</span>
-                  </button>
+                {isMenuOpen && (
+                  <div className="crud-dropdown-menu">
+                    <button
+                      className="crud-dropdown-menu-item"
+                      onClick={() => {
+                        setIsMenuOpen(false)
+                        setIsDebugModalOpen(true)
+                      }}
+                      type="button"
+                    >
+                      <span>🐛 Debug</span>
+                    </button>
+                  </div>
                 )}
-              </div>
+              </>
             )}
           </div>
         </div>
 
-        <h1 className="actividades-page-title">Actividades</h1>
-        <p className="actividades-page-subtitle">Gestiona las actividades de tus clientes</p>
+        <h1 className="app-page-title">Actividades</h1>
+
+        <div className="crud-summary-strip" role="region" aria-label="Resumen de actividades">
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Activas</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--info">
+              {stats.total}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Alta</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--expense">
+              {stats.alta}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Media</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--info">
+              {stats.media}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Baja</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--available">
+              {stats.baja}
+            </span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+          onClick={() => setShowFormModal(true)}
+          aria-label="Crear actividad"
+        >
+          <AddIcon aria-hidden={true} />
+          Crear actividad
+        </button>
 
         {/* Estado de carga */}
-        {isLoading ? (
-          <div className="actividades-empty-state">
-            <p className="empty-state-text">Cargando actividades...</p>
+        {isLoading && activities.length === 0 ? (
+          <div className="glass-group">
+            <ListSkeleton variant="inset-row" count={4} aria-label="Cargando actividades" />
           </div>
-        ) : error ? (
-          <div className="actividades-empty-state">
-            <p className="empty-state-text">{error}</p>
+        ) : error && activities.length === 0 ? (
+          <div className="loader-container">
+            <div className="loader finanzas-stats-error-panel">
+              <p className="loader-text loader-text--error" role="alert">
+                {error}
+              </p>
+              <button
+                type="button"
+                className="btn-base btn-secondary finanzas-stats-retry-button"
+                onClick={() => void loadRecords()}
+                aria-label="Reintentar cargar actividades"
+              >
+                Reintentar
+              </button>
+            </div>
           </div>
         ) : (
           <>
-            {/* Estadísticas - Highlight */}
-            {activities.length > 0 && (
-              <div className="actividades-total-stats">
-                <div className="actividades-total-stats-content">
-                  <div className="actividades-total-stats-icon">
-                    <WorkIcon />
-                  </div>
-                  <div className="actividades-total-stats-info">
-                    <span className="actividades-total-stats-label">Total de Actividades</span>
-                    <span className="actividades-total-stats-value">{stats.total}</span>
-                  </div>
-                </div>
-                <div className="actividades-total-stats-details">
-                  <div className="actividades-total-stats-detail">
-                    <span className="actividades-total-stats-detail-label">Alta</span>
-                    <span className="actividades-total-stats-detail-value actividades-priority-alta">
-                      {stats.alta}
-                    </span>
-                  </div>
-                  <div className="actividades-total-stats-detail">
-                    <span className="actividades-total-stats-detail-label">Media</span>
-                    <span className="actividades-total-stats-detail-value actividades-priority-media">
-                      {stats.media}
-                    </span>
-                  </div>
-                  <div className="actividades-total-stats-detail">
-                    <span className="actividades-total-stats-detail-label">Baja</span>
-                    <span className="actividades-total-stats-detail-value actividades-priority-baja">
-                      {stats.baja}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Tabs y Filtro */}
-            <div className="actividades-tabs-container">
-              <div className="actividades-tabs">
+            <div className="crud-segmented-tabs-container">
+              <div className="crud-segmented-tabs">
                 <button
-                  className={`actividades-tab ${activeTab === 'active' ? 'actividades-tab-active' : ''}`}
+                  className={`crud-segmented-tab ${activeTab === 'active' ? 'crud-segmented-tab--active' : ''}`}
                   onClick={() => setActiveTab('active')}
                   type="button"
                 >
                   Activas
                 </button>
                 <button
-                  className={`actividades-tab ${activeTab === 'completed' ? 'actividades-tab-active' : ''}`}
+                  className={`crud-segmented-tab ${activeTab === 'completed' ? 'crud-segmented-tab--active' : ''}`}
                   onClick={() => setActiveTab('completed')}
                   type="button"
                 >
@@ -538,11 +649,11 @@ function Actividades() {
                 </button>
               </div>
               {uniqueClients.length > 0 && (
-                <div className="actividades-filter">
+                <div className="crud-inline-filter">
                   <select
-                    className="actividades-filter-select"
+                    className="crud-inline-filter-select"
                     value={clientFilter}
-                    onChange={e => setClientFilter(e.target.value)}
+                    onChange={(e) => setClientFilter(e.target.value)}
                   >
                     <option value="">Todos los clientes</option>
                     {uniqueClients.map(client => (
@@ -555,192 +666,57 @@ function Actividades() {
               )}
             </div>
 
-            {/* Lista de Actividades */}
             {filteredActivities.length === 0 ? (
-              <div className="actividades-empty-state">
-                <p className="empty-state-text">
-                  {activeTab === 'active'
-                    ? 'No hay actividades activas'
-                    : 'No hay actividades completadas'}
-                </p>
-                <p className="empty-state-subtext">
-                  {activeTab === 'active'
-                    ? 'Crea tu primera actividad usando el botón del menú'
-                    : 'Las actividades completadas o descartadas aparecerán aquí'}
+              <div className="empty-state">
+                <WorkIcon className="empty-state-icon" />
+                <p className="empty-text">{emptyStateCopy.title}</p>
+                <p className="empty-subtext">
+                  {activities.length === 0
+                    ? 'Usa el botón de arriba para crear la primera'
+                    : emptyStateCopy.subtext}
                 </p>
               </div>
             ) : (
-              <div className="actividades-list">
-                <h2 className="actividades-list-title">
-                  {activeTab === 'active' ? 'Actividades Activas' : 'Actividades Completadas'}
-                </h2>
-                <div className="actividades-items">
-                  {filteredActivities.map(activity => (
-                    <div key={activity.id} className="actividades-item">
-                      <div className="actividades-item-header">
-                        <h3 className="actividades-item-name">{activity.name}</h3>
-                        <div className="actividades-item-actions">
-                          {activeTab === 'active' &&
-                            activity.data.status !== 'done' &&
-                            activity.data.status !== 'wont_do' && (
-                              <button
-                                onClick={() => handleComplete(activity)}
-                                className="actividades-item-action-button actividades-item-action-button-complete"
-                                aria-label="Completar actividad"
-                                type="button"
-                              >
-                                <CheckCircleIcon className="actividades-item-action-icon" />
-                              </button>
-                            )}
-                          <button
-                            onClick={() => handleEdit(activity)}
-                            className="actividades-item-action-button"
-                            aria-label="Editar actividad"
-                            type="button"
-                          >
-                            <EditIcon className="actividades-item-action-icon" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(activity.id, activity.name)}
-                            className="actividades-item-action-button actividades-item-action-button-danger"
-                            aria-label="Eliminar actividad"
-                            type="button"
-                          >
-                            <DeleteIcon className="actividades-item-action-icon" />
-                          </button>
-                        </div>
+              <div className="glass-group">
+                {filteredActivities.map(activity => (
+                  <button
+                    key={activity.id}
+                    type="button"
+                    className="crud-inset-row crud-row-accent-indigo"
+                    onClick={() => handleEdit(activity)}
+                    aria-label={`Editar actividad ${activity.name}`}
+                  >
+                    <div className="crud-row-content">
+                      <div className="crud-row-header">
+                        <span className="crud-row-title">{activity.name}</span>
+                        <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
                       </div>
-
-                      <div className="actividades-item-content">
-                        {/* Estado y Prioridad - Badges Destacados */}
-                        <div className="actividades-item-main-info">
-                          <span
-                            className="actividades-item-status-badge"
-                            style={{
-                              backgroundColor: `${getStatusColor(activity.data.status)}20`,
-                              borderColor: getStatusColor(activity.data.status),
-                              color: getStatusColor(activity.data.status),
-                            }}
-                          >
-                            {getStatusLabel(activity.data.status)}
-                          </span>
-                          {activity.data.priority && (
-                            <span
-                              className={`actividades-item-priority-badge actividades-priority-${activity.data.priority.toLowerCase()}`}
-                            >
-                              <PriorityHighIcon className="actividades-item-priority-badge-icon" />
-                              {activity.data.priority}
-                            </span>
-                          )}
-                          {activity.data.assignmentDate && (
-                            <div className="actividades-item-date-badge">
-                              <CalendarTodayIcon className="actividades-item-date-icon" />
-                              <div className="actividades-item-date-content">
-                                <span className="actividades-item-date-value">
-                                  {formatDate(activity.data.assignmentDate)}
-                                </span>
-                                {(() => {
-                                  const daysSince = calculateDaysSince(activity.data.assignmentDate)
-                                  if (daysSince !== null) {
-                                    return (
-                                      <span className="actividades-item-date-days">
-                                        {daysSince === 0
-                                          ? 'Hoy'
-                                          : daysSince === 1
-                                            ? 'Hace 1 día'
-                                            : `Hace ${daysSince} días`}
-                                      </span>
-                                    )
-                                  }
-                                  return null
-                                })()}
-                              </div>
-                            </div>
-                          )}
-                          {activity.data.completedDate && (
-                            <div className="actividades-item-completed-badge">
-                              <CheckCircleIcon className="actividades-item-completed-icon" />
-                              <div className="actividades-item-completed-content">
-                                <span className="actividades-item-completed-label">
-                                  Completada:
-                                </span>
-                                <span className="actividades-item-completed-value">
-                                  {formatDate(activity.data.completedDate)}
-                                </span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Información Básica - Grid */}
-                        <div className="actividades-item-info-grid">
-                          {activity.data.client && (
-                            <div className="actividades-item-info-item">
-                              <PersonIcon className="actividades-item-info-icon" />
-                              <div className="actividades-item-info-content">
-                                <span className="actividades-item-info-label">Cliente</span>
-                                <span className="actividades-item-info-value">
-                                  {activity.data.client}
-                                </span>
-                              </div>
-                            </div>
-                          )}
-
-                          {activity.data.ticket && (
-                            <div className="actividades-item-info-item">
-                              <ConfirmationNumberIcon className="actividades-item-info-icon" />
-                              <div className="actividades-item-info-content">
-                                <span className="actividades-item-info-label">Ticket</span>
-                                <span className="actividades-item-info-value">
-                                  {activity.data.ticket}
-                                </span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Descripción de la Actividad */}
-                        {activity.data.activity && (
-                          <div className="actividades-item-additional">
-                            <div className="actividades-item-additional-item">
-                              <AssignmentIcon className="actividades-item-additional-icon" />
-                              <div className="actividades-item-additional-content">
-                                <span className="actividades-item-additional-label">Actividad</span>
-                                <p className="actividades-item-additional-text">
-                                  {activity.data.activity}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                      <p className="crud-row-meta">{formatActivityMeta(activity)}</p>
+                      {formatActivityPreview(activity) && (
+                        <p className="crud-row-preview">{formatActivityPreview(activity)}</p>
+                      )}
                     </div>
-                  ))}
-                </div>
+                  </button>
+                ))}
               </div>
             )}
           </>
         )}
 
-        {/* Modal de Formulario */}
+                {/* Modal de Formulario */}
         {showFormModal && (
-          <div
-            className="actividades-modal-overlay"
-            onClick={() => {
+          <ModalOverlay
+            onClose={() => {
               setShowFormModal(false)
               handleCancelEdit()
             }}
+            className="modal-overlay"
           >
-            <div
-              className="actividades-modal actividades-modal-large"
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="actividades-modal-header">
-                <h2 className="actividades-modal-title">
-                  {editingId ? 'Editar Actividad' : 'Crear Actividad'}
-                </h2>
+            <div className="crud-form-panel-shell crud-form-panel-shell--large" onClick={e => e.stopPropagation()}>
+              <div className="modal-panel-header">
+                <h2 className="modal-panel-title" id="modal-panel-title-editingid-editar-actividad-crear-actividad">{editingId ? 'Editar Actividad' : 'Crear Actividad'}</h2>
                 <button
-                  className="actividades-modal-close"
+                  className="modal-panel-close"
                   onClick={() => {
                     setShowFormModal(false)
                     handleCancelEdit()
@@ -751,47 +727,62 @@ function Actividades() {
                   ×
                 </button>
               </div>
-              <div className="actividades-modal-content">
-                <form className="actividades-form" onSubmit={handleSubmit}>
-                  <div className="actividades-form-section">
-                    <h3 className="actividades-form-section-title">Información de la Actividad</h3>
+              <div className="modal-panel-content">
+                <form className="crud-form-panel" onSubmit={handleSubmit} noValidate>
+                  <div className="crud-form-panel-section">
+                    <h3 className="crud-form-panel-section-title">Información de la Actividad</h3>
 
-                    <div className="actividades-form-group">
-                      <label htmlFor="name" className="actividades-form-label">
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="name" className="form-label-base form-label-base--inline">
                         Nombre de la Actividad *
                       </label>
                       <input
+                        ref={nameRef}
                         type="text"
                         id="name"
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        className="actividades-form-input"
+                        className={`form-input-base ${formErrors.name ? 'input-error' : ''}`}
                         placeholder="Ej: Revisión de código - Cliente XYZ"
-                        required
+                        autoFocus
+                        aria-invalid={!!formErrors.name}
+                        {...(formErrors.name ? { 'aria-describedby': 'activity-name-error' } : {})}
                       />
-                    </div>
+                      {formErrors.name && (
+                        <span id="activity-name-error" className="error-message" role="alert">
+                          {formErrors.name}
+                        </span>
+                      )}
+                </div>
 
-                    <div className="actividades-form-group">
-                      <label htmlFor="client" className="actividades-form-label">
-                        <PersonIcon className="actividades-form-label-icon" />
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="client" className="form-label-base form-label-base--inline">
+                        <PersonIcon className="form-label-base form-label-base--inline-icon" />
                         Cliente *
                       </label>
                       <input
+                        ref={clientRef}
                         type="text"
                         id="client"
                         name="client"
                         value={formData.client}
                         onChange={handleChange}
-                        className="actividades-form-input"
+                        className={`form-input-base ${formErrors.client ? 'input-error' : ''}`}
                         placeholder="Nombre del cliente"
-                        required
+                        aria-invalid={!!formErrors.client}
+                        {...(formErrors.client ? { 'aria-describedby': 'activity-client-error' } : {})}
                       />
+                      {formErrors.client && (
+                        <span id="activity-client-error" className="error-message" role="alert">
+                          {formErrors.client}
+                        </span>
+                      )}
                     </div>
 
-                    <div className="actividades-form-group">
-                      <label htmlFor="activity" className="actividades-form-label">
-                        <AssignmentIcon className="actividades-form-label-icon" />
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="activity" className="form-label-base form-label-base--inline">
+                        <AssignmentIcon className="form-label-base form-label-base--inline-icon" />
                         Actividad
                       </label>
                       <input
@@ -800,14 +791,14 @@ function Actividades() {
                         name="activity"
                         value={formData.activity}
                         onChange={handleChange}
-                        className="actividades-form-input"
+                        className="form-input-base"
                         placeholder="Descripción de la actividad"
                       />
-                    </div>
+                </div>
 
-                    <div className="actividades-form-group">
-                      <label htmlFor="ticket" className="actividades-form-label">
-                        <ConfirmationNumberIcon className="actividades-form-label-icon" />
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="ticket" className="form-label-base form-label-base--inline">
+                        <ConfirmationNumberIcon className="form-label-base form-label-base--inline-icon" />
                         Ticket
                       </label>
                       <input
@@ -816,14 +807,14 @@ function Actividades() {
                         name="ticket"
                         value={formData.ticket}
                         onChange={handleChange}
-                        className="actividades-form-input"
+                        className="form-input-base"
                         placeholder="Número o ID del ticket"
                       />
-                    </div>
+                </div>
 
-                    <div className="actividades-form-group">
-                      <label htmlFor="priority" className="actividades-form-label">
-                        <PriorityHighIcon className="actividades-form-label-icon" />
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="priority" className="form-label-base form-label-base--inline">
+                        <PriorityHighIcon className="form-label-base form-label-base--inline-icon" />
                         Prioridad
                       </label>
                       <select
@@ -831,18 +822,18 @@ function Actividades() {
                         name="priority"
                         value={formData.priority}
                         onChange={handleChange}
-                        className="actividades-form-input"
+                        className="form-input-base"
                       >
                         <option value="">Seleccionar prioridad</option>
                         <option value="Alta">Alta</option>
                         <option value="Media">Media</option>
                         <option value="Baja">Baja</option>
                       </select>
-                    </div>
+                </div>
 
-                    <div className="actividades-form-group">
-                      <label htmlFor="assignmentDate" className="actividades-form-label">
-                        <EventIcon className="actividades-form-label-icon" />
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="assignmentDate" className="form-label-base form-label-base--inline">
+                        <EventIcon className="form-label-base form-label-base--inline-icon" />
                         Día de Asignación
                       </label>
                       <input
@@ -851,31 +842,24 @@ function Actividades() {
                         name="assignmentDate"
                         value={formData.assignmentDate}
                         onChange={handleChange}
-                        className="actividades-form-input"
+                        className="form-input-base"
                       />
-                    </div>
+                </div>
 
-                    <div className="actividades-form-group">
-                      <label htmlFor="status" className="actividades-form-label">
-                        <WorkIcon className="actividades-form-label-icon" />
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="status" className="form-label-base form-label-base--inline">
+                        <WorkIcon className="form-label-base form-label-base--inline-icon" />
                         Estado
                       </label>
                       <select
                         id="status"
                         name="status"
                         value={formData.status}
-                        onChange={e =>
-                          setFormData(prev => ({
-                            ...prev,
-                            status: e.target.value as
-                              | 'defined'
-                              | 'in_progress'
-                              | 'blocked'
-                              | 'done'
-                              | 'wont_do',
-                          }))
-                        }
-                        className="actividades-form-input"
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          status: e.target.value as 'defined' | 'in_progress' | 'blocked' | 'done' | 'wont_do'
+                        }))}
+                        className="form-input-base"
                       >
                         <option value="defined">Definida</option>
                         <option value="in_progress">En Progreso</option>
@@ -884,9 +868,9 @@ function Actividades() {
                         <option value="wont_do">No se hará</option>
                       </select>
                     </div>
-                  </div>
+                </div>
 
-                  <div className="actividades-form-actions">
+                  <div className="crud-form-panel-actions">
                     {editingId ? (
                       <>
                         <button
@@ -895,16 +879,55 @@ function Actividades() {
                             setShowFormModal(false)
                             handleCancelEdit()
                           }}
-                          className="actividades-form-button actividades-form-button-secondary"
+                          className="crud-form-panel-button crud-form-panel-button--secondary"
                         >
                           Cancelar
+                        </button>
+                        {(() => {
+                          const activity = activities.find(a => a.id === editingId)
+                          if (
+                            activity &&
+                            activity.data.status !== 'done' &&
+                            activity.data.status !== 'wont_do'
+                          ) {
+                            return (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  void handleComplete(activity).then(() => {
+                                    setShowFormModal(false)
+                                    handleCancelEdit()
+                                  })
+                                }}
+                                className="crud-form-panel-button crud-form-panel-button--secondary"
+                              >
+                                Completar
+                              </button>
+                            )
+                          }
+                          return null
+                        })()}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const activity = activities.find(a => a.id === editingId)
+                            if (activity) {
+                              void handleDelete(activity.id, activity.name).then(() => {
+                                setShowFormModal(false)
+                                handleCancelEdit()
+                              })
+                            }
+                          }}
+                          className="crud-form-panel-button crud-form-panel-button--secondary"
+                        >
+                          Eliminar
                         </button>
                         <button
                           type="submit"
                           disabled={isSaving}
-                          className="actividades-form-button actividades-form-button-primary"
+                          className="crud-form-panel-button crud-form-panel-button--primary"
                         >
-                          <SaveIcon className="actividades-form-button-icon" />
+                          <SaveIcon className="crud-form-panel-button-icon" />
                           {isSaving ? 'Guardando...' : 'Actualizar Actividad'}
                         </button>
                       </>
@@ -912,27 +935,27 @@ function Actividades() {
                       <button
                         type="submit"
                         disabled={isSaving}
-                        className="actividades-form-button actividades-form-button-primary"
+                        className="crud-form-panel-button crud-form-panel-button--primary"
                       >
-                        <SaveIcon className="actividades-form-button-icon" />
+                        <SaveIcon className="crud-form-panel-button-icon" />
                         {isSaving ? 'Guardando...' : 'Guardar Actividad'}
-                      </button>
-                    )}
-                  </div>
+                  </button>
+                  )}
+                </div>
                 </form>
               </div>
             </div>
-          </div>
+          </ModalOverlay>
         )}
 
         {/* Modal de Registros Guardados */}
         {showRecordsModal && (
-          <div className="actividades-modal-overlay" onClick={() => setShowRecordsModal(false)}>
-            <div className="actividades-modal" onClick={e => e.stopPropagation()}>
-              <div className="actividades-modal-header">
-                <h2 className="actividades-modal-title">Actividades Guardadas</h2>
+          <ModalOverlay onClose={() => setShowRecordsModal(false)} className="modal-overlay">
+            <div className="modal-panel" onClick={e => e.stopPropagation()}>
+              <div className="modal-panel-header">
+                <h2 className="modal-panel-title" id="modal-panel-title-actividades-guardadas">Actividades Guardadas</h2>
                 <button
-                  className="actividades-modal-close"
+                  className="modal-panel-close"
                   onClick={() => setShowRecordsModal(false)}
                   aria-label="Cerrar"
                   type="button"
@@ -940,19 +963,17 @@ function Actividades() {
                   ×
                 </button>
               </div>
-              <div className="actividades-modal-content">
+              <div className="modal-panel-content">
                 {records.length === 0 ? (
-                  <p className="actividades-modal-empty">No hay actividades guardadas</p>
+                  <p className="modal-panel-empty">No hay actividades guardadas</p>
                 ) : (
-                  <div className="actividades-modal-list">
+                  <div className="crud-modal-pick-list">
                     {records.map(record => (
-                      <div key={record.id} className="actividades-modal-item">
-                        <div className="actividades-modal-item-info">
-                          <h3 className="actividades-modal-item-name">{record.name}</h3>
-                          <p className="actividades-modal-item-meta">
-                            Cliente: {record.data.client || 'N/A'}
-                          </p>
-                        </div>
+                      <div key={record.id} className="crud-modal-pick-item">
+                        <div className="crud-modal-pick-item-info">
+                          <h3 className="crud-modal-pick-item-title">{record.name}</h3>
+                          <p className="crud-modal-pick-item-meta">Cliente: {record.data.client || 'N/A'}</p>
+                          </div>
                         <button
                           onClick={() => {
                             handleEdit({
@@ -964,28 +985,28 @@ function Actividades() {
                             })
                             setShowRecordsModal(false)
                           }}
-                          className="actividades-modal-item-button"
+                          className="crud-modal-pick-item-action"
                           type="button"
                         >
                           Cargar
                         </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
               </div>
             </div>
-          </div>
+          </ModalOverlay>
         )}
 
         {/* Modal de Debug */}
-        {isDebugModalOpen && (
-          <div className="actividades-modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
-            <div className="actividades-modal" onClick={e => e.stopPropagation()}>
-              <div className="actividades-modal-header">
-                <h2 className="actividades-modal-title">🐛 Debug - Actividades</h2>
+        {isDebugModalOpen && isDebugToolsEnabled() && (
+          <ModalOverlay onClose={() => setIsDebugModalOpen(false)} className="modal-overlay">
+            <div className="modal-panel" onClick={e => e.stopPropagation()}>
+              <div className="modal-panel-header">
+                <h2 className="modal-panel-title" id="modal-panel-title-debug-actividades">🐛 Debug - Actividades</h2>
                 <button
-                  className="actividades-modal-close"
+                  className="modal-panel-close"
                   onClick={() => setIsDebugModalOpen(false)}
                   aria-label="Cerrar"
                   type="button"
@@ -993,7 +1014,7 @@ function Actividades() {
                   ×
                 </button>
               </div>
-              <div className="actividades-modal-content">
+              <div className="modal-panel-content">
                 <div className="debug-options">
                   <button
                     className="debug-option-button create-demo"
@@ -1037,10 +1058,7 @@ function Actividades() {
                           await api.createClientActivity(activity)
                         }
 
-                        showNotification(
-                          `${demoActivities.length} actividades demo creadas exitosamente`,
-                          'success'
-                        )
+                        showNotification(`${demoActivities.length} actividades demo creadas exitosamente`, 'success')
                         await loadRecords()
                         setIsDebugModalOpen(false)
                       } catch (err: any) {
@@ -1062,15 +1080,14 @@ function Actividades() {
                       <p className="debug-option-description">
                         Crea 3 actividades de ejemplo con diferentes configuraciones
                       </p>
-                    </div>
+                </div>
                   </button>
                   <button
                     className="debug-option-button delete-all"
                     onClick={async () => {
+                      if (!isDestructiveDebugEnabled()) return
                       if (
-                        !window.confirm(
-                          '¿Estás seguro de que quieres eliminar TODAS las actividades? Esta acción es irreversible.'
-                        )
+                        !(await confirm({ message: '¿Estás seguro de que quieres eliminar TODAS las actividades? Esta acción es irreversible.', variant: 'danger' }))
                       ) {
                         return
                       }
@@ -1099,15 +1116,15 @@ function Actividades() {
                       <h3 className="debug-option-title">Eliminar Todas las Actividades</h3>
                       <p className="debug-option-description">
                         ⚠️ PELIGROSO: Elimina todas las actividades (IRREVERSIBLE)
-                      </p>
-                    </div>
+                  </p>
+                </div>
                   </button>
                 </div>
 
-                <div className="actividades-modal-form-actions">
+                <div className="crud-modal-pick-actions">
                   <button
                     type="button"
-                    className="actividades-form-button actividades-form-button-secondary"
+                    className="crud-form-panel-button crud-form-panel-button--secondary"
                     onClick={() => setIsDebugModalOpen(false)}
                   >
                     Cerrar
@@ -1115,7 +1132,7 @@ function Actividades() {
                 </div>
               </div>
             </div>
-          </div>
+          </ModalOverlay>
         )}
       </div>
     </div>

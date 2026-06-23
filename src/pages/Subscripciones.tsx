@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import CardMembershipIcon from '@mui/icons-material/CardMembership'
@@ -8,9 +8,13 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
+import { devError, devWarn, isDebugToolsEnabled, isDestructiveDebugEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
+import { useConfirm } from '../contexts/ConfirmContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
+import ModalOverlay from '../components/ModalOverlay'
+import ListSkeleton from '../components/ListSkeleton'
 import './Subscripciones.css'
 
 // Interfaz que coincide con la respuesta de la API (campos en inglés)
@@ -63,6 +67,7 @@ interface Card {
 function Subscripciones() {
   const navigate = useNavigate()
   const { showNotification } = useNotification()
+  const { confirm } = useConfirm()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
@@ -124,7 +129,7 @@ function Subscripciones() {
           setCards(mappedCards)
         }
       } catch (err) {
-        console.error('Error al cargar tarjetas:', err)
+        devError('Error al cargar tarjetas:', err)
       }
     }
 
@@ -132,33 +137,32 @@ function Subscripciones() {
   }, [])
 
   // Cargar subscripciones desde la API
-  useEffect(() => {
-    const loadSubscriptions = async () => {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const response = await api.getSubscriptions()
-        console.log('Respuesta de API getSubscriptions:', response)
+  const reloadSubscriptions = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await api.getSubscriptions()
 
-        if (response.subscriptions && Array.isArray(response.subscriptions)) {
-          const mappedSubscriptions = response.subscriptions.map(mapSubscriptionFromAPI)
-          setSubscriptions(mappedSubscriptions)
-        } else {
-          console.warn('Respuesta inesperada de getSubscriptions:', response)
-          setSubscriptions([])
-        }
-      } catch (err: any) {
-        console.error('Error al cargar subscripciones:', err)
-        console.error('Detalles del error:', err.data || err.message)
-        setError('Frontend says: Error al cargar las subscripciones. Por favor, intenta de nuevo.')
+      if (response.subscriptions && Array.isArray(response.subscriptions)) {
+        const mappedSubscriptions = response.subscriptions.map(mapSubscriptionFromAPI)
+        setSubscriptions(mappedSubscriptions)
+      } else {
+        devWarn('Respuesta inesperada de getSubscriptions:', response)
         setSubscriptions([])
-      } finally {
-        setIsLoading(false)
       }
+    } catch (err: any) {
+      devError('Error al cargar subscripciones:', err)
+      devError('Detalles del error:', err.data || err.message)
+      setError('Error al cargar las subscripciones. Por favor, intenta de nuevo.')
+      setSubscriptions([])
+    } finally {
+      setIsLoading(false)
     }
-
-    loadSubscriptions()
   }, [])
+
+  useEffect(() => {
+    reloadSubscriptions()
+  }, [reloadSubscriptions])
 
   // Cerrar menú al hacer clic fuera - HIG: Clear Feedback
   useEffect(() => {
@@ -179,8 +183,9 @@ function Subscripciones() {
 
   const handleOpenModal = () => {
     if (cards.length === 0) {
-      alert(
-        'Frontend says: No hay tarjetas de débito disponibles. Por favor, crea al menos una tarjeta primero.'
+      showNotification(
+        'No hay tarjetas de débito disponibles. Por favor, crea al menos una tarjeta primero.',
+        'warning'
       )
       return
     }
@@ -243,9 +248,7 @@ function Subscripciones() {
   const handleDeleteClick = async () => {
     if (
       selectedSubscription &&
-      window.confirm(
-        `¿Estás seguro de que quieres eliminar la subscripción "${selectedSubscription.nombre}"?`
-      )
+      (await confirm({ message: `¿Estás seguro de que quieres eliminar la subscripción "${selectedSubscription.nombre}"?`, variant: 'danger' }))
     ) {
       try {
         await api.deleteSubscription(selectedSubscription.id)
@@ -259,11 +262,8 @@ function Subscripciones() {
         window.dispatchEvent(new Event('subscriptionsUpdated'))
         handleCloseDetailModal()
       } catch (err: any) {
-        console.error('Error al eliminar subscripción:', err)
-        const errorMessage = getTranslatedErrorMessage(
-          err,
-          'Error al eliminar la subscripción. Por favor, intenta de nuevo.'
-        )
+        devError('Error al eliminar subscripción:', err)
+        const errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar la subscripción. Por favor, intenta de nuevo.')
         showNotification(errorMessage, 'error')
       }
     }
@@ -346,7 +346,7 @@ function Subscripciones() {
           }
         }
       } catch (err) {
-        console.error('Error al validar contra la API:', err)
+        devError('Error al validar contra la API:', err)
       }
     }
 
@@ -388,8 +388,6 @@ function Subscripciones() {
         is_family: formData.esFamiliar,
       }
 
-      console.log('Enviando datos de subscripción:', subscriptionData)
-
       if (isEditMode && selectedSubscription) {
         // Editar subscripción existente
         await api.updateSubscription(selectedSubscription.id, subscriptionData)
@@ -418,12 +416,12 @@ function Subscripciones() {
         handleCloseModal()
       }
     } catch (err: any) {
-      console.error('Error al guardar subscripción:', err)
-      const errorMessage =
-        err.data?.error || err.message
-          ? `Backend says: ${err.data?.error || err.message}`
-          : 'Frontend says: Error al guardar la subscripción. Por favor, intenta de nuevo.'
-      alert(errorMessage)
+      devError('Error al guardar subscripción:', err)
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al guardar la subscripción. Por favor, intenta de nuevo.'
+      )
+      showNotification(errorMessage, 'error')
     }
   }
 
@@ -491,8 +489,12 @@ function Subscripciones() {
 
   // Función de debug para crear subscripciones de prueba
   const handleDebugCreateSubscriptions = async () => {
+    if (!isDebugToolsEnabled()) return
     if (cards.length === 0) {
-      alert('No hay tarjetas de débito disponibles. Crea al menos una tarjeta primero.')
+      showNotification(
+        'No hay tarjetas de débito disponibles. Crea al menos una tarjeta primero.',
+        'warning'
+      )
       return
     }
 
@@ -534,16 +536,10 @@ function Subscripciones() {
       // Disparar evento para actualizar otros componentes
       window.dispatchEvent(new Event('subscriptionsUpdated'))
       setIsDebugModalOpen(false)
-      showNotification(
-        `${testSubscriptions.length} subscripciones de prueba creadas exitosamente`,
-        'success'
-      )
+      showNotification(`${testSubscriptions.length} subscripciones de prueba creadas exitosamente`, 'success')
     } catch (err: any) {
-      console.error('Error al crear subscripciones de prueba:', err)
-      const errorMessage = getTranslatedErrorMessage(
-        err,
-        'Error al crear las subscripciones de prueba. Por favor, intenta de nuevo.'
-      )
+      devError('Error al crear subscripciones de prueba:', err)
+      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear las subscripciones de prueba. Por favor, intenta de nuevo.')
       showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
@@ -552,10 +548,9 @@ function Subscripciones() {
 
   // Función de debug para borrar todas las subscripciones
   const handleDeleteAllSubscriptions = async () => {
+    if (!isDestructiveDebugEnabled()) return
     if (
-      window.confirm(
-        '¿Estás seguro de que quieres eliminar TODAS las subscripciones? Esta acción es IRREVERSIBLE.'
-      )
+      (await confirm({ message: '¿Estás seguro de que quieres eliminar TODAS las subscripciones? Esta acción es IRREVERSIBLE.', variant: 'danger' }))
     ) {
       try {
         setIsLoading(true)
@@ -571,11 +566,8 @@ function Subscripciones() {
         setIsDebugModalOpen(false)
         showNotification('Todas las subscripciones han sido eliminadas exitosamente', 'success')
       } catch (err: any) {
-        console.error('Error al eliminar todas las subscripciones:', err)
-        const errorMessage = getTranslatedErrorMessage(
-          err,
-          'Error al eliminar las subscripciones. Por favor, intenta de nuevo.'
-        )
+        devError('Error al eliminar todas las subscripciones:', err)
+        const errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar las subscripciones. Por favor, intenta de nuevo.')
         showNotification(errorMessage, 'error')
       } finally {
         setIsLoading(false)
@@ -583,155 +575,184 @@ function Subscripciones() {
     }
   }
 
+  const highlights = calculateHighlights()
+
   return (
     <>
       <div className="app-page-container">
-        <div className="app-page-content subscripciones-content">
+        <div className="app-page-content app-page-content-wide crud-page-content subscripciones-content">
           {isLoading ? (
-            <div className="loader-container">
-              <div className="loader">
-                <div className="loader-spinner"></div>
-                <p className="loader-text">Cargando subscripciones...</p>
-              </div>
-            </div>
-          ) : error ? (
-            <div className="loader-container">
-              <div className="loader">
-                <p className="loader-text" style={{ color: 'rgba(255, 59, 48, 0.9)' }}>
-                  {error}
-                </p>
-              </div>
-            </div>
-          ) : (
             <>
-              {/* Toolbar - HIG: Clear Navigation */}
-              <div className="subscripciones-toolbar">
+              <div className="app-toolbar">
                 <button
-                  className="subscripciones-toolbar-button"
+                  className="app-toolbar-button"
                   onClick={() => navigate('/finanzas')}
                   aria-label="Volver a Finanzas"
                   type="button"
                 >
-                  <ArrowBackIcon className="subscripciones-toolbar-icon" />
+                  <ArrowBackIcon className="app-toolbar-icon" />
                 </button>
-                <div className="subscripciones-toolbar-menu-container" ref={menuRef}>
+              </div>
+              <h1 className="app-page-title">Subscripciones</h1>
+              <div className="glass-group">
+                <ListSkeleton variant="inset-row" count={5} aria-label="Cargando subscripciones" />
+              </div>
+            </>
+          ) : error ? (
+            <>
+              <div className="app-toolbar">
+                <button
+                  className="app-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="app-toolbar-icon" />
+                </button>
+              </div>
+              <h1 className="app-page-title">Subscripciones</h1>
+              <div className="loader-container">
+                <div className="loader finanzas-stats-error-panel">
+                  <p className="loader-text loader-text--error" role="alert">
+                    {error}
+                  </p>
                   <button
-                    className="subscripciones-toolbar-button"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    aria-label="Opciones"
-                    aria-expanded={isMenuOpen}
                     type="button"
+                    className="btn-base btn-secondary finanzas-stats-retry-button"
+                    onClick={() => void reloadSubscriptions()}
+                    aria-label="Reintentar cargar subscripciones"
                   >
-                    <MoreVertIcon className="subscripciones-toolbar-icon" />
+                    <span>Reintentar</span>
                   </button>
-                  {isMenuOpen && (
-                    <div className="subscripciones-menu">
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Toolbar - HIG: Clear Navigation */}
+              <div className="app-toolbar">
+                <button
+                  className="app-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="app-toolbar-icon" />
+                </button>
+                <div className="app-toolbar-menu-container" ref={menuRef}>
+                  {isDebugToolsEnabled() && (
+                    <>
                       <button
-                        className="subscripciones-menu-item"
-                        onClick={() => {
-                          handleOpenModal()
-                          setIsMenuOpen(false)
-                        }}
+                        className="app-toolbar-button"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        aria-label="Opciones de depuración"
+                        aria-expanded={isMenuOpen}
                         type="button"
                       >
-                        <AddIcon className="subscripciones-menu-icon" />
-                        Agregar Subscripción
+                        <MoreVertIcon className="app-toolbar-icon" />
                       </button>
-                      {api.isTestUser() && (
-                        <button
-                          className="subscripciones-menu-item"
-                          onClick={() => {
-                            setIsDebugModalOpen(true)
-                            setIsMenuOpen(false)
-                          }}
-                          type="button"
-                        >
-                          <span className="subscripciones-menu-icon">🐛</span>
-                          Debug
-                        </button>
+                      {isMenuOpen && (
+                        <div className="crud-dropdown-menu">
+                          <button
+                            className="crud-dropdown-menu-item"
+                            onClick={() => {
+                              setIsDebugModalOpen(true)
+                              setIsMenuOpen(false)
+                            }}
+                            type="button"
+                          >
+                            <span>🐛 Debug</span>
+                          </button>
+                        </div>
                       )}
-                    </div>
+                    </>
                   )}
                 </div>
               </div>
 
               {/* Page Title - HIG: Clear Orientation */}
-              <h1 className="subscripciones-page-title">Subscripciones</h1>
+              <h1 className="app-page-title">Subscripciones</h1>
 
-              {/* Highlights - HIG: Relevant Information */}
-              {subscriptions.length > 0 &&
-                (() => {
-                  const highlights = calculateHighlights()
-                  return (
-                    <div className="subscripciones-summary-block">
-                      <div className="summary-item">
-                        <span className="summary-label">Total</span>
-                        <span className="summary-value">{highlights.totalSubscripciones}</span>
-                      </div>
-                      <div className="summary-separator"></div>
-                      <div className="summary-item">
-                        <span className="summary-label">Total Mensual</span>
-                        <span className="summary-value">
-                          {formatPrice(highlights.totalMensual)}
-                        </span>
-                      </div>
-                      <div className="summary-separator"></div>
-                      <div className="summary-item">
-                        <span className="summary-label">Familiares</span>
-                        <span className="summary-value">{highlights.subscripcionesFamiliares}</span>
-                      </div>
-                      <div className="summary-separator"></div>
-                      <div className="summary-item">
-                        <span className="summary-label">Individuales</span>
-                        <span className="summary-value">
-                          {highlights.subscripcionesIndividuales}
-                        </span>
-                      </div>
-                    </div>
-                  )
-                })()}
+              {/* Resumen de subscripciones */}
+              <div className="crud-summary-strip" role="region" aria-label="Resumen de subscripciones">
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Total</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
+                    {highlights.totalSubscripciones}
+                  </span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item crud-summary-strip-item--emphasis">
+                  <span className="crud-summary-strip-label">Total mensual</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--expense">
+                    {formatPrice(highlights.totalMensual)}
+                  </span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Familiares</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
+                    {highlights.subscripcionesFamiliares}
+                  </span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Individuales</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--available">
+                    {highlights.subscripcionesIndividuales}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+                onClick={handleOpenModal}
+                aria-label="Agregar subscripción"
+              >
+                <AddIcon aria-hidden={true} />
+                Agregar subscripción
+              </button>
 
               {subscriptions.length === 0 ? (
                 <div className="empty-state">
-                  <CardMembershipIcon className="empty-icon" />
+                  <CardMembershipIcon className="empty-state-icon" />
                   <p className="empty-text">No hay subscripciones agregadas</p>
-                  <p className="empty-subtext">Agrega tu primera subscripción</p>
+                  <p className="empty-subtext">Usa el botón de arriba para agregar la primera</p>
                 </div>
               ) : (
-                <div className="subscripciones-list">
-                  {subscriptions.map(subscription => {
-                    return (
+                <div className="crud-card-list">
+                  {subscriptions.map(subscription => (
                       <button
                         key={subscription.id}
-                        className="subscripcion-row"
+                        className="crud-card-row crud-card-row--subscription"
                         onClick={() => handleOpenDetailModal(subscription)}
                         type="button"
                         aria-label={`Ver detalles de ${subscription.nombre}`}
                       >
-                        <div className="subscripcion-row-content">
-                          <div className="subscripcion-row-main">
-                            <span className="subscripcion-row-title">{subscription.nombre}</span>
-                            <span className="subscripcion-row-subtitle">
+                        <div className="crud-row-content">
+                          <div className="crud-row-main">
+                            <span className="crud-row-title">{subscription.nombre}</span>
+                            <span className="crud-row-subtitle">
                               {subscription.nombreTarjeta} •{' '}
                               {formatCardNumber(subscription.ultimos4Digitos)}
                             </span>
                           </div>
-                          <div className="subscripcion-row-secondary">
-                            <span className="subscripcion-row-price">
+                          <div className="crud-row-secondary">
+                            <span className="crud-row-value">
                               {formatPrice(subscription.precio)}
                             </span>
-                            <span className="subscripcion-row-date">
+                            <span className="crud-row-meta">
                               Corte: {formatDate(subscription.fechaCorte)}
                             </span>
                             {subscription.esFamiliar && (
-                              <span className="subscripcion-row-family">👨‍👩‍👧‍👦 Familiar</span>
+                              <span className="crud-row-tag">👨‍👩‍👧‍👦 Familiar</span>
                             )}
                           </div>
                         </div>
-                        <ChevronRightIcon className="subscripcion-row-chevron" aria-hidden="true" />
+                        <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
                       </button>
-                    )
-                  })}
+                  ))}
                 </div>
               )}
             </>
@@ -741,13 +762,11 @@ function Subscripciones() {
 
       {/* Modal para agregar subscripción */}
       {isModalOpen && (
-        <div className="modal-overlay" onClick={handleCloseModal}>
+        <ModalOverlay onClose={handleCloseModal} className="modal-overlay">
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Nueva Subscripción</h2>
-              <button className="modal-close" onClick={handleCloseModal}>
-                ×
-              </button>
+              <h2 className="modal-title" id="modal-title-nueva-subscripci-n">Nueva Subscripción</h2>
+              <button className="modal-close" onClick={handleCloseModal} aria-label="Cerrar modal">×</button>
             </div>
             <form className="modal-form" onSubmit={handleSubmit}>
               <div className="form-group">
@@ -840,19 +859,19 @@ function Subscripciones() {
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Modal de detalles */}
       {isDetailModalOpen && selectedSubscription && (
-        <div className="modal-overlay" onClick={handleCloseDetailModal}>
+        <ModalOverlay onClose={handleCloseDetailModal} className="modal-overlay">
           <div
             className="modal-content detail-modal"
             onClick={e => e.stopPropagation()}
             style={{ '--subscription-color': '#AF52DE' } as React.CSSProperties}
           >
             <div className="modal-header">
-              <h2 className="modal-title">Detalles de la Subscripción</h2>
+              <h2 className="modal-title" id="modal-title-detalles-de-la-subscripci-n">Detalles de la Subscripción</h2>
               <button
                 className="modal-close"
                 onClick={handleCloseDetailModal}
@@ -1020,20 +1039,20 @@ function Subscripciones() {
               </form>
             )}
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Modal de Debug */}
-      {isDebugModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
+      {isDebugModalOpen && isDebugToolsEnabled() && (
+        <ModalOverlay onClose={() => setIsDebugModalOpen(false)} className="modal-overlay">
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Debug - Subscripciones</h2>
+              <h2 className="modal-title" id="modal-title-debug-subscripciones">Debug - Subscripciones</h2>
               <button className="modal-close" onClick={() => setIsDebugModalOpen(false)}>
                 ×
               </button>
             </div>
-            <div className="debug-modal-content">
+            <div className="modal-panel-content">
               <div className="debug-options">
                 <button
                   className="debug-option-button create-demo"
@@ -1073,7 +1092,7 @@ function Subscripciones() {
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </>
   )

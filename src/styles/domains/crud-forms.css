@@ -1,0 +1,40 @@
+/* CRUD form layout — shared across hub pages */
+
+.crud-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+@media (max-width: 768px) {
+  .crud-form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.crud-form-section-divider {
+  margin: var(--spacing-lg) 0 var(--spacing-md) 0;
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border-glass);
+}
+
+.crud-form-section-header {
+  margin: var(--spacing-md) 0 var(--spacing-sm);
+}
+
+.crud-form-section-header:first-child {
+  margin-top: 0;
+}
+
+.crud-form-section-title {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  letter-spacing: var(--letter-spacing-tight);
+  font-family: var(--font-family);
+}
+
+.crud-primary-cta {
+  margin-bottom: var(--spacing-md);
+}

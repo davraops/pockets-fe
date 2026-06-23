@@ -8,6 +8,7 @@ import AssignmentIcon from '@mui/icons-material/Assignment'
 import WorkIcon from '@mui/icons-material/Work'
 import PersonSearchIcon from '@mui/icons-material/PersonSearch'
 import type { SvgIconProps } from '@mui/material'
+import { sectionColor } from '../constants/sectionColors'
 
 interface TrabajoItem {
   id: string
@@ -24,7 +25,7 @@ const trabajoItems: TrabajoItem[] = [
     title: 'Contratos',
     subtitle: 'Gestiona tus contratos laborales',
     Icon: AssignmentIcon,
-    color: '#007AFF',
+    color: sectionColor.blue,
     path: '/trabajo/contratos',
   },
   {
@@ -32,7 +33,7 @@ const trabajoItems: TrabajoItem[] = [
     title: 'Actividades',
     subtitle: 'Gestiona tus actividades de trabajo',
     Icon: WorkIcon,
-    color: '#FF9500',
+    color: sectionColor.lifestyle,
     path: '/trabajo/actividades',
   },
   {
@@ -63,21 +64,20 @@ function Trabajo() {
 
   return (
     <div className="app-page-container">
-      <div className="app-page-content trabajo-content">
+      <div className="app-page-content app-page-content-wide crud-page-content trabajo-content">
         {/* Toolbar */}
-        <div className="trabajo-toolbar">
+        <div className="app-toolbar">
           <button
-            className="trabajo-toolbar-button"
+            className="app-toolbar-button"
             onClick={() => navigate('/')}
-            aria-label="Volver"
+            aria-label="Volver al inicio"
             type="button"
           >
-            <ArrowBackIcon className="trabajo-toolbar-icon" />
+            <ArrowBackIcon className="app-toolbar-icon" />
           </button>
         </div>
 
-        <h1 className="trabajo-page-title">Trabajo</h1>
-        <p className="trabajo-page-subtitle">Gestiona tus contratos y actividades laborales</p>
+        <h1 className="app-page-title">Trabajo</h1>
 
         {/* Lista de Secciones */}
         {trabajoItems.length === 0 ? (
@@ -85,33 +85,33 @@ function Trabajo() {
             <p className="empty-state-text">No hay secciones disponibles aún.</p>
           </div>
         ) : (
-          <div className="settings-list">
-            <div className="settings-section">
-              <div className="settings-section-header">Trabajo</div>
-              <div className="settings-group">
+          <div className="crud-hub-list">
+            <div className="crud-hub-section">
+              <div className="crud-hub-section-header">Trabajo</div>
+              <div className="glass-group">
                 {trabajoItems.map(item => {
                   const IconComponent = item.Icon
                   return (
                     <button
                       key={item.id}
-                      className="settings-row"
+                      className="crud-hub-row"
                       onClick={() => handleItemClick(item)}
                       onKeyDown={e => handleKeyDown(e, item)}
                       aria-label={`Ir a ${item.title}`}
                       type="button"
                     >
                       <div
-                        className="settings-row-icon"
+                        className="crud-hub-row-icon"
                         style={{ backgroundColor: item.color }}
                         aria-hidden="true"
                       >
                         <IconComponent />
                       </div>
-                      <div className="settings-row-content">
-                        <span className="settings-row-title">{item.title}</span>
-                        <span className="settings-row-subtitle">{item.subtitle}</span>
+                      <div className="crud-row-content">
+                        <span className="crud-row-title">{item.title}</span>
+                        <span className="crud-row-subtitle">{item.subtitle}</span>
                       </div>
-                      <ChevronRightIcon className="settings-row-chevron" aria-hidden="true" />
+                      <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
                     </button>
                   )
                 })}

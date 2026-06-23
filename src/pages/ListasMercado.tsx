@@ -10,10 +10,15 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
 import StoreIcon from '@mui/icons-material/Store'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
+import WarningIcon from '@mui/icons-material/Warning'
+import SyncIcon from '@mui/icons-material/Sync'
 import { api } from '../services/api'
+import { devError, isDebugToolsEnabled, isDestructiveDebugEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
+import { useConfirm } from '../contexts/ConfirmContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
+import ModalOverlay from '../components/ModalOverlay'
 import './ListasMercado.css'
 
 interface ShoppingItem {
@@ -42,6 +47,7 @@ interface ShoppingList {
 function ListasMercado() {
   const navigate = useNavigate()
   const { showNotification } = useNotification()
+  const { confirm } = useConfirm()
   const [items, setItems] = useState<ShoppingItem[]>([])
   const [formData, setFormData] = useState({
     name: '',
@@ -54,10 +60,12 @@ function ListasMercado() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [categories, setCategories] = useState<string[]>([])
   const [stores, setStores] = useState<string[]>([])
+  const [loadedListId, setLoadedListId] = useState<string | null>(null)
   const [listName, setListName] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [lists, setLists] = useState<ShoppingList[]>([])
   const [isLoadingLists, setIsLoadingLists] = useState(false)
+  const [listsLoadError, setListsLoadError] = useState<string | null>(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [isDebugLoading, setIsDebugLoading] = useState(false)
@@ -100,15 +108,38 @@ function ListasMercado() {
   const loadLists = async () => {
     try {
       setIsLoadingLists(true)
+      setListsLoadError(null)
       const response = await api.getShoppingLists()
       if (response.lists && Array.isArray(response.lists)) {
         setLists(response.lists)
+      } else {
+        setLists([])
       }
     } catch (err: any) {
-      console.error('Error al cargar listas:', err)
+      devError('Error al cargar listas:', err)
+      setLists([])
+      setListsLoadError(
+        getTranslatedErrorMessage(
+          err,
+          'Error al cargar las listas. Por favor, intenta de nuevo.'
+        )
+      )
     } finally {
       setIsLoadingLists(false)
     }
+  }
+
+  const handleOpenAddProduct = () => {
+    setEditingId(null)
+    setFormData({
+      name: '',
+      quantity: '1',
+      category: '',
+      store: '',
+      packaging: 'Unidades',
+      price: '',
+    })
+    setIsFormModalOpen(true)
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -214,8 +245,8 @@ function ListasMercado() {
     })
   }
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+  const handleDelete = async (id: string) => {
+    if ((await confirm({ message: '¿Estás seguro de que quieres eliminar este producto?', variant: 'danger' }))) {
       setItems(prev => prev.filter(item => item.id !== id))
       showNotification('Producto eliminado', 'success')
     }
@@ -223,7 +254,9 @@ function ListasMercado() {
 
   const handleToggleChecked = (id: string) => {
     setItems(prev =>
-      prev.map(item => (item.id === id ? { ...item, checked: !item.checked } : item))
+      prev.map(item =>
+        item.id === id ? { ...item, checked: !item.checked } : item
+      )
     )
   }
 
@@ -242,6 +275,7 @@ function ListasMercado() {
       }))
       setItems(mappedItems)
       setListName(list.name)
+      setLoadedListId(list.id)
       showNotification(`Lista "${list.name}" cargada`, 'success')
     } else {
       showNotification('La lista no tiene datos válidos', 'error')
@@ -249,12 +283,15 @@ function ListasMercado() {
   }
 
   const handleDeleteList = async (listId: string, listName: string) => {
-    if (!window.confirm(`¿Estás seguro de que quieres eliminar la lista "${listName}"?`)) {
+    if (!(await confirm({ message: `¿Estás seguro de que quieres eliminar la lista "${listName}"?`, variant: 'danger' }))) {
       return
     }
 
     try {
       await api.deleteShoppingList(listId)
+      if (loadedListId === listId) {
+        setLoadedListId(null)
+      }
       showNotification('Lista eliminada', 'success')
       await loadLists()
     } catch (err: any) {
@@ -267,6 +304,7 @@ function ListasMercado() {
   }
 
   const handleDebugCreateLists = async () => {
+    if (!isDebugToolsEnabled()) return
     try {
       setIsDebugLoading(true)
       const demoLists = [
@@ -274,33 +312,9 @@ function ListasMercado() {
           name: 'Lista Semanal',
           data: {
             items: [
-              {
-                name: 'Leche',
-                quantity: 2,
-                category: 'Lácteos',
-                store: 'Supermercado',
-                packaging: 'Botella',
-                price: 3500,
-                checked: false,
-              },
-              {
-                name: 'Pan',
-                quantity: 3,
-                category: 'Panadería',
-                store: 'Panadería',
-                packaging: 'Unidades',
-                price: 1200,
-                checked: true,
-              },
-              {
-                name: 'Huevos',
-                quantity: 1,
-                category: 'Lácteos',
-                store: 'Supermercado',
-                packaging: 'Caja x 12',
-                price: 8500,
-                checked: false,
-              },
+              { name: 'Leche', quantity: 2, category: 'Lácteos', store: 'Supermercado', packaging: 'Botella', price: 3500, checked: false },
+              { name: 'Pan', quantity: 3, category: 'Panadería', store: 'Panadería', packaging: 'Unidades', price: 1200, checked: true },
+              { name: 'Huevos', quantity: 1, category: 'Lácteos', store: 'Supermercado', packaging: 'Caja x 12', price: 8500, checked: false },
             ],
           },
         },
@@ -308,33 +322,9 @@ function ListasMercado() {
           name: 'Lista Mensual',
           data: {
             items: [
-              {
-                name: 'Arroz',
-                quantity: 2,
-                category: 'Granos',
-                store: 'Supermercado',
-                packaging: 'Bolsa',
-                price: 12000,
-                checked: false,
-              },
-              {
-                name: 'Aceite',
-                quantity: 1,
-                category: 'Aceites',
-                store: 'Supermercado',
-                packaging: 'Botella',
-                price: 8500,
-                checked: false,
-              },
-              {
-                name: 'Azúcar',
-                quantity: 1,
-                category: 'Endulzantes',
-                store: 'Supermercado',
-                packaging: 'Bolsa',
-                price: 4500,
-                checked: true,
-              },
+              { name: 'Arroz', quantity: 2, category: 'Granos', store: 'Supermercado', packaging: 'Bolsa', price: 12000, checked: false },
+              { name: 'Aceite', quantity: 1, category: 'Aceites', store: 'Supermercado', packaging: 'Botella', price: 8500, checked: false },
+              { name: 'Azúcar', quantity: 1, category: 'Endulzantes', store: 'Supermercado', packaging: 'Bolsa', price: 4500, checked: true },
             ],
           },
         },
@@ -342,24 +332,8 @@ function ListasMercado() {
           name: 'Lista Farmacia',
           data: {
             items: [
-              {
-                name: 'Acetaminofén',
-                quantity: 1,
-                category: 'Medicamentos',
-                store: 'Farmacia',
-                packaging: 'Caja',
-                price: 15000,
-                checked: false,
-              },
-              {
-                name: 'Alcohol',
-                quantity: 2,
-                category: 'Medicamentos',
-                store: 'Farmacia',
-                packaging: 'Botella',
-                price: 3500,
-                checked: false,
-              },
+              { name: 'Acetaminofén', quantity: 1, category: 'Medicamentos', store: 'Farmacia', packaging: 'Caja', price: 15000, checked: false },
+              { name: 'Alcohol', quantity: 2, category: 'Medicamentos', store: 'Farmacia', packaging: 'Botella', price: 3500, checked: false },
             ],
           },
         },
@@ -384,11 +358,8 @@ function ListasMercado() {
   }
 
   const handleDebugDeleteAll = async () => {
-    if (
-      !window.confirm(
-        '¿Estás seguro de que quieres eliminar TODAS las listas? Esta acción es irreversible.'
-      )
-    ) {
+    if (!isDebugToolsEnabled()) return
+    if (!(await confirm({ message: '¿Estás seguro de que quieres eliminar TODAS las listas? Esta acción es irreversible.', variant: 'danger' }))) {
       return
     }
 
@@ -440,12 +411,17 @@ function ListasMercado() {
         },
       }
 
-      await api.createShoppingList(listData)
-      showNotification('Lista guardada exitosamente', 'success')
-
+      if (loadedListId) {
+        await api.updateShoppingList(loadedListId, listData)
+        showNotification('Lista actualizada exitosamente', 'success')
+      } else {
+        await api.createShoppingList(listData)
+        showNotification('Lista guardada exitosamente', 'success')
+      }
+      
       // Recargar lista de listas
       await loadLists()
-
+      
       // Limpiar después de guardar (opcional)
       // setItems([])
       // setListName('')
@@ -466,17 +442,14 @@ function ListasMercado() {
   const totalPrice = items.reduce((sum, item) => sum + (item.price || 0), 0)
 
   // Organizar productos por categoría
-  const itemsByCategory = items.reduce(
-    (acc, item) => {
-      const category = item.category || 'Sin categoría'
-      if (!acc[category]) {
-        acc[category] = []
-      }
-      acc[category].push(item)
-      return acc
-    },
-    {} as Record<string, ShoppingItem[]>
-  )
+  const itemsByCategory = items.reduce((acc, item) => {
+    const category = item.category || 'Sin categoría'
+    if (!acc[category]) {
+      acc[category] = []
+    }
+    acc[category].push(item)
+    return acc
+  }, {} as Record<string, ShoppingItem[]>)
 
   // Ordenar categorías y productos dentro de cada categoría (pendientes primero)
   const sortedCategories = Object.keys(itemsByCategory).sort()
@@ -491,32 +464,32 @@ function ListasMercado() {
 
   return (
     <div className="app-page-container">
-      <div className="app-page-content listas-content">
+      <div className="app-page-content app-page-content-wide crud-page-content listas-content">
         {/* Toolbar */}
-        <div className="listas-toolbar">
+        <div className="app-toolbar">
           <button
-            className="listas-toolbar-button"
+            className="app-toolbar-button"
             onClick={() => navigate('/finanzas')}
             aria-label="Volver"
             type="button"
           >
-            <ArrowBackIcon className="listas-toolbar-icon" />
+            <ArrowBackIcon className="app-toolbar-icon" />
           </button>
-          {api.isTestUser() && (
-            <div className="listas-toolbar-menu-container" ref={menuRef}>
+          {isDebugToolsEnabled() && (
+            <div className="app-toolbar-menu-container" ref={menuRef}>
               <button
-                className="listas-toolbar-button"
+                className="app-toolbar-button"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 aria-label="Opciones"
                 aria-expanded={isMenuOpen}
                 type="button"
               >
-                <MoreVertIcon className="listas-toolbar-icon" />
+                <MoreVertIcon className="app-toolbar-icon" />
               </button>
               {isMenuOpen && (
-                <div className="listas-menu">
+                <div className="crud-dropdown-menu">
                   <button
-                    className="listas-menu-item"
+                    className="crud-dropdown-menu-item"
                     onClick={() => {
                       setIsMenuOpen(false)
                       setIsDebugModalOpen(true)
@@ -531,69 +504,52 @@ function ListasMercado() {
           )}
         </div>
 
-        <h1 className="listas-page-title">
+        <h1 className="app-page-title">
           {listName && items.length > 0 ? listName : 'Listas de Mercado'}
         </h1>
-        <p className="listas-page-subtitle">
-          {listName && items.length > 0
-            ? 'Gestiona los productos de tu lista de compras'
-            : 'Crea y gestiona tus listas de compras con productos, cantidades y categorías'}
-        </p>
 
-        {/* Resumen rápido */}
-        {items.length > 0 && (
-          <div className="listas-summary">
-            <div className="listas-summary-item">
-              <span className="listas-summary-label">Total</span>
-              <span className="listas-summary-value">{totalItems}</span>
-            </div>
-            <div className="listas-summary-separator"></div>
-            <div className="listas-summary-item">
-              <span className="listas-summary-label">Pendientes</span>
-              <span className="listas-summary-value listas-summary-pending">{pendingCount}</span>
-            </div>
-            <div className="listas-summary-separator"></div>
-            <div className="listas-summary-item">
-              <span className="listas-summary-label">Comprados</span>
-              <span className="listas-summary-value listas-summary-checked">{checkedCount}</span>
-            </div>
-            {totalPrice > 0 && (
-              <>
-                <div className="listas-summary-separator"></div>
-                <div className="listas-summary-item">
-                  <span className="listas-summary-label">Total</span>
-                  <span className="listas-summary-value listas-summary-price">
-                    $
-                    {totalPrice.toLocaleString('es-CO', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </span>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Botón flotante para agregar producto */}
-        <button
-          className="listas-fab"
-          onClick={() => {
-            setEditingId(null)
-            setFormData({
-              name: '',
-              quantity: '1',
-              category: '',
-              store: '',
-              packaging: 'Unidades',
-              price: '',
-            })
-            setIsFormModalOpen(true)
-          }}
-          aria-label="Agregar producto"
-          type="button"
+        <div
+          className="crud-summary-strip"
+          role="region"
+          aria-label="Resumen de lista de mercado"
         >
-          <AddIcon />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Total</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--info">
+              {totalItems}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Pendientes</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--expense">
+              {pendingCount}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Comprados</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--income">
+              {checkedCount}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item crud-summary-strip-item--emphasis">
+            <span className="crud-summary-strip-label">Precio</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--info">
+              ${totalPrice.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            </span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+          onClick={handleOpenAddProduct}
+          aria-label="Agregar producto"
+        >
+          <AddIcon aria-hidden={true} />
+          Agregar producto
         </button>
 
         {/* Lista de productos organizados por categoría */}
@@ -612,33 +568,28 @@ function ListasMercado() {
                     <div className="listas-category-stats">
                       <span className="listas-category-count">
                         {categoryPending > 0 && (
-                          <span className="listas-category-pending">
-                            {categoryPending} pendientes
-                          </span>
+                          <span className="listas-category-pending">{categoryPending} pendientes</span>
                         )}
                         {categoryChecked > 0 && (
                           <>
                             {categoryPending > 0 && ' • '}
-                            <span className="listas-category-checked">
-                              {categoryChecked} comprados
-                            </span>
+                            <span className="listas-category-checked">{categoryChecked} comprados</span>
                           </>
                         )}
                       </span>
                       {categoryPrice > 0 && (
                         <span className="listas-category-price">
-                          $
-                          {categoryPrice.toLocaleString('es-CO', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
+                          ${categoryPrice.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       )}
                     </div>
                   </div>
                   <div className="listas-items-list">
                     {categoryItems.map(item => (
-                      <div key={item.id} className={`listas-item ${item.checked ? 'checked' : ''}`}>
+                      <div
+                        key={item.id}
+                        className={`listas-item ${item.checked ? 'checked' : ''}`}
+                      >
                         <button
                           className="listas-item-check"
                           onClick={() => handleToggleChecked(item.id)}
@@ -660,11 +611,7 @@ function ListasMercado() {
                               </span>
                               {item.price > 0 && (
                                 <span className="listas-item-price">
-                                  $
-                                  {item.price.toLocaleString('es-CO', {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                  })}
+                                  ${item.price.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                               )}
                             </div>
@@ -711,7 +658,7 @@ function ListasMercado() {
                 type="text"
                 value={listName}
                 onChange={e => setListName(e.target.value)}
-                className="listas-form-input"
+                className="form-input-base"
                 placeholder="Nombre de la lista (ej: Lista Semanal)"
               />
               <button
@@ -721,7 +668,7 @@ function ListasMercado() {
                 type="button"
               >
                 <SaveIcon className="listas-save-icon" />
-                {isSaving ? 'Guardando...' : 'Guardar Lista'}
+                {isSaving ? 'Guardando...' : loadedListId ? 'Actualizar Lista' : 'Guardar Lista'}
               </button>
             </div>
           </div>
@@ -729,21 +676,23 @@ function ListasMercado() {
 
         {/* Empty state */}
         {items.length === 0 && (
-          <div className="listas-empty-state">
-            <p className="listas-empty-text">Agrega productos para comenzar tu lista de mercado</p>
+          <div className="empty-state">
+            <StoreIcon className="empty-state-icon" aria-hidden="true" />
+            <p className="empty-text">Agrega productos para comenzar tu lista de mercado</p>
+            <p className="empty-subtext">Usa el botón de arriba para agregar el primero</p>
           </div>
         )}
 
         {/* Formulario en modal */}
         {isFormModalOpen && (
-          <div className="listas-modal-overlay" onClick={() => handleCancelEdit()}>
+          <ModalOverlay onClose={() => handleCancelEdit()} className="modal-overlay">
             <div className="listas-modal listas-modal-large" onClick={e => e.stopPropagation()}>
-              <div className="listas-modal-header">
-                <h2 className="listas-modal-title">
+              <div className="modal-panel-header">
+                <h2 className="modal-panel-title" id="modal-panel-title-editingid-editar-producto-agregar-producto">
                   {editingId ? 'Editar Producto' : 'Agregar Producto'}
                 </h2>
                 <button
-                  className="listas-modal-close"
+                  className="modal-panel-close"
                   onClick={() => handleCancelEdit()}
                   aria-label="Cerrar"
                   type="button"
@@ -751,10 +700,10 @@ function ListasMercado() {
                   ×
                 </button>
               </div>
-              <div className="listas-modal-content">
+              <div className="modal-panel-content">
                 <form onSubmit={handleSubmit} className="listas-form">
-                  <div className="listas-form-group">
-                    <label htmlFor="name" className="listas-form-label">
+                  <div className="form-group-base form-group-base--compact">
+                    <label htmlFor="name" className="form-label-base form-label-base--inline">
                       Nombre del Producto *
                     </label>
                     <input
@@ -763,15 +712,15 @@ function ListasMercado() {
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      className="listas-form-input"
+                      className="form-input-base"
                       placeholder="Ej: Leche, Pan, Huevos..."
                       required
                     />
                   </div>
 
-                  <div className="listas-form-row">
-                    <div className="listas-form-group">
-                      <label htmlFor="quantity" className="listas-form-label">
+                  <div className="crud-form-row">
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="quantity" className="form-label-base form-label-base--inline">
                         Cantidad *
                       </label>
                       <input
@@ -780,7 +729,7 @@ function ListasMercado() {
                         name="quantity"
                         value={formData.quantity}
                         onChange={handleChange}
-                        className="listas-form-input"
+                        className="form-input-base"
                         placeholder="1"
                         min="1"
                         step="1"
@@ -788,8 +737,8 @@ function ListasMercado() {
                       />
                     </div>
 
-                    <div className="listas-form-group">
-                      <label htmlFor="packaging" className="listas-form-label">
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="packaging" className="form-label-base form-label-base--inline">
                         Embalaje *
                       </label>
                       <input
@@ -798,7 +747,7 @@ function ListasMercado() {
                         name="packaging"
                         value={formData.packaging}
                         onChange={handleChange}
-                        className="listas-form-input"
+                        className="form-input-base"
                         placeholder="Ej: Unidades, Caja x 12, Caja x 6..."
                         list="packaging-list"
                         required
@@ -816,8 +765,8 @@ function ListasMercado() {
                     </div>
                   </div>
 
-                  <div className="listas-form-group">
-                    <label htmlFor="category" className="listas-form-label">
+                  <div className="form-group-base form-group-base--compact">
+                    <label htmlFor="category" className="form-label-base form-label-base--inline">
                       Categoría *
                     </label>
                     <input
@@ -826,7 +775,7 @@ function ListasMercado() {
                       name="category"
                       value={formData.category}
                       onChange={handleChange}
-                      className="listas-form-input"
+                      className="form-input-base"
                       placeholder="Ej: Lácteos, Panadería..."
                       list="categories-list"
                       required
@@ -838,10 +787,10 @@ function ListasMercado() {
                     </datalist>
                   </div>
 
-                  <div className="listas-form-row">
-                    <div className="listas-form-group">
-                      <label htmlFor="store" className="listas-form-label">
-                        <StoreIcon className="listas-label-icon" />
+                  <div className="crud-form-row">
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="store" className="form-label-base form-label-base--inline">
+                        <StoreIcon className="form-label-icon" />
                         Sitio donde se compra *
                       </label>
                       <input
@@ -850,7 +799,7 @@ function ListasMercado() {
                         name="store"
                         value={formData.store}
                         onChange={handleChange}
-                        className="listas-form-input"
+                        className="form-input-base"
                         placeholder="Ej: Supermercado, Tienda, Farmacia..."
                         list="stores-list"
                         required
@@ -862,8 +811,8 @@ function ListasMercado() {
                       </datalist>
                     </div>
 
-                    <div className="listas-form-group">
-                      <label htmlFor="price" className="listas-form-label">
+                    <div className="form-group-base form-group-base--compact">
+                      <label htmlFor="price" className="form-label-base form-label-base--inline">
                         Precio de Compra
                       </label>
                       <input
@@ -872,7 +821,7 @@ function ListasMercado() {
                         name="price"
                         value={formData.price}
                         onChange={handleChange}
-                        className="listas-form-input"
+                        className="form-input-base"
                         placeholder="0.00"
                         min="0"
                         step="0.01"
@@ -888,21 +837,27 @@ function ListasMercado() {
                     >
                       Cancelar
                     </button>
-                    <button type="submit" className="listas-form-button listas-form-button-primary">
+                    <button
+                      type="submit"
+                      className="listas-form-button listas-form-button-primary"
+                    >
                       {editingId ? 'Actualizar' : 'Agregar'}
                     </button>
                   </div>
                 </form>
               </div>
             </div>
-          </div>
+          </ModalOverlay>
         )}
 
+
         {/* Listas Guardadas */}
-        {lists.length > 0 && (
+        {(lists.length > 0 || listsLoadError) && (
           <div className="listas-saved-section">
             <div className="listas-section-header">
-              <h2 className="listas-section-title">Listas Guardadas ({lists.length})</h2>
+              <h2 className="listas-section-title">
+                Listas Guardadas{lists.length > 0 ? ` (${lists.length})` : ''}
+              </h2>
               <button
                 className="listas-refresh-button"
                 onClick={loadLists}
@@ -917,6 +872,15 @@ function ListasMercado() {
               <div className="listas-loading">
                 <p>Cargando listas...</p>
               </div>
+            ) : listsLoadError && lists.length === 0 ? (
+              <div className="listas-empty-state listas-error-state" role="alert">
+                <WarningIcon className="listas-error-icon" aria-hidden="true" />
+                <p className="listas-empty-text">{listsLoadError}</p>
+                <button className="listas-retry-button" onClick={loadLists} type="button">
+                  <SyncIcon aria-hidden="true" />
+                  <span>Reintentar</span>
+                </button>
+              </div>
             ) : (
               <div className="listas-saved-list">
                 {lists.map(list => (
@@ -930,8 +894,7 @@ function ListasMercado() {
                       <div className="listas-saved-info">
                         {list.data.items && (
                           <span className="listas-saved-meta">
-                            {list.data.items.length}{' '}
-                            {list.data.items.length === 1 ? 'producto' : 'productos'}
+                            {list.data.items.length} {list.data.items.length === 1 ? 'producto' : 'productos'}
                           </span>
                         )}
                         {list.data.items && (
@@ -945,8 +908,7 @@ function ListasMercado() {
                       </div>
                       {list.created_at && (
                         <p className="listas-saved-date">
-                          Creada:{' '}
-                          {new Date(list.created_at).toLocaleDateString('es-ES', {
+                          Creada: {new Date(list.created_at).toLocaleDateString('es-ES', {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric',
@@ -970,13 +932,13 @@ function ListasMercado() {
         )}
 
         {/* Modal de Debug */}
-        {isDebugModalOpen && (
-          <div className="listas-modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
-            <div className="listas-modal" onClick={e => e.stopPropagation()}>
-              <div className="listas-modal-header">
-                <h2 className="listas-modal-title">🐛 Debug - Listas de Mercado</h2>
+        {isDebugModalOpen && isDebugToolsEnabled() && (
+          <ModalOverlay onClose={() => setIsDebugModalOpen(false)} className="modal-overlay">
+            <div className="modal-panel" onClick={e => e.stopPropagation()}>
+              <div className="modal-panel-header">
+                <h2 className="modal-panel-title" id="modal-panel-title-debug-listas-de-mercado">🐛 Debug - Listas de Mercado</h2>
                 <button
-                  className="listas-modal-close"
+                  className="modal-panel-close"
                   onClick={() => setIsDebugModalOpen(false)}
                   aria-label="Cerrar"
                   type="button"
@@ -984,7 +946,7 @@ function ListasMercado() {
                   ×
                 </button>
               </div>
-              <div className="listas-modal-content">
+              <div className="modal-panel-content">
                 <div className="debug-options">
                   <button
                     className="debug-option-button"
@@ -1017,7 +979,7 @@ function ListasMercado() {
                 </div>
               </div>
             </div>
-          </div>
+          </ModalOverlay>
         )}
       </div>
     </div>
@@ -1025,3 +987,4 @@ function ListasMercado() {
 }
 
 export default ListasMercado
+

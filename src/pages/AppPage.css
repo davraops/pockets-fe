@@ -4,47 +4,28 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--bg-body);
+  background: transparent;
   position: relative;
   overflow-x: hidden;
   overflow-y: auto;
   margin-top: 0;
-  margin-bottom: 30px;
-  transition: background-color var(--transition-base);
-}
-
-/* Subtle background gradient - HIG: Depth */
-.app-page-container::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    180deg,
-    var(--bg-body-gradient-start) 0%,
-    var(--bg-body) 50%,
-    var(--bg-body-gradient-end) 100%
-  );
-  z-index: -1;
+  margin-bottom: 0;
   transition: background var(--transition-base);
 }
 
 /* App Page Content - HIG: Layout */
 .app-page-content {
   flex: 1;
-  padding: var(--spacing-md) var(--spacing-xl) var(--spacing-xl) var(--spacing-xl);
-  padding-top: calc(var(--spacing-xs) + 44px);
-  padding-bottom: var(--spacing-xl);
-  margin-bottom: 30px;
+  padding: var(--spacing-md) var(--spacing-xl) var(--layout-chrome-offset-bottom) var(--spacing-xl);
+  padding-top: var(--layout-chrome-offset-top);
+  margin-bottom: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
   position: relative;
   z-index: 1;
-  min-height: calc(100vh - 44px - 60px);
+  min-height: calc(100vh - var(--layout-status-bar-height) - var(--layout-footer-height));
   box-sizing: border-box;
 }
 
@@ -61,6 +42,60 @@
   text-align: center;
 }
 
+/* Blank placeholder pages */
+.app-page-blank {
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 44px - 60px);
+}
+
+.app-page-blank-card {
+  width: 100%;
+  max-width: 28rem;
+  padding: var(--spacing-2xl) var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--spacing-md);
+}
+
+.app-page-blank-icon {
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-primary);
+  color: var(--text-on-accent);
+  box-shadow: var(--shadow-md);
+}
+
+.app-page-blank-icon svg {
+  font-size: var(--font-size-display-xs);
+  width: 2rem !important;
+  height: 2rem !important;
+}
+
+.app-page-blank-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+  font-family: var(--font-family);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.app-page-blank-text {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.6;
+  font-family: var(--font-family);
+  max-width: 22rem;
+}
+
 /* App Page Subtitle - HIG: Typography */
 .app-page-subtitle {
   font-size: var(--font-size-base);
@@ -70,102 +105,7 @@
   font-family: var(--font-family);
 }
 
-/* Shared Styles for Financial Pages - HIG: Consistency */
-/* Toolbar - Shared across financial pages */
-.app-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
-  width: 100%;
-}
-
-@media (max-width: 768px) {
-  .app-toolbar {
-    margin-top: var(--spacing-xl);
-    margin-bottom: var(--spacing-sm);
-  }
-}
-
-/* Toolbar Button - Unified style */
-.app-toolbar-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  min-width: 48px;
-  min-height: 48px;
-  background: var(--bg-glass);
-  backdrop-filter: var(--backdrop-blur);
-  -webkit-backdrop-filter: var(--backdrop-blur);
-  border: 1px solid var(--border-glass);
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all var(--transition-base);
-  padding: 0;
-  box-shadow: var(--shadow-sm);
-  color: var(--text-primary);
-  position: relative;
-  z-index: 1001;
-}
-
-.app-toolbar-button:hover:not(:disabled) {
-  background: var(--bg-glass-hover);
-  border-color: var(--border-glass-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-.app-toolbar-button:active:not(:disabled) {
-  transform: translateY(0);
-  transition: transform var(--transition-fast);
-}
-
-.app-toolbar-button:focus-visible {
-  outline: 2px solid var(--accent-primary-border);
-  outline-offset: 2px;
-}
-
-.app-toolbar-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.app-toolbar-icon {
-  font-size: 1.5rem !important;
-  width: 1.5rem !important;
-  height: 1.5rem !important;
-  color: var(--text-primary);
-}
-
-[data-theme='light'] .app-toolbar-button {
-  background: var(--bg-glass);
-  border-color: var(--border-glass);
-}
-
-[data-theme='light'] .app-toolbar-button:hover:not(:disabled) {
-  background: var(--bg-glass-hover);
-  border-color: var(--border-glass-hover);
-}
-
-/* Page Title - Unified style */
-.app-page-title {
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-  margin: 0;
-  margin-bottom: var(--spacing-xs);
-  letter-spacing: var(--letter-spacing-tight);
-  font-family: var(--font-family);
-  line-height: 1.2;
-}
-
-[data-theme='light'] .app-page-title {
-  color: rgba(0, 0, 0, 0.95);
-}
+/* Page Title - uses ui-patterns .app-page-title */
 
 /* Page Subtitle - Unified style */
 .app-page-subtitle {
@@ -178,18 +118,16 @@
   line-height: 1.5;
 }
 
-[data-theme='light'] .app-page-subtitle {
-  color: rgba(0, 0, 0, 0.6);
-}
-
-/* Content Container - Unified max-width for financial pages */
+/* Content Container - Wide layout for CRUD / data-heavy pages */
+.app-page-content-wide,
 .app-page-content-financial {
   flex-direction: column;
   gap: 0.75rem;
   align-items: stretch;
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: var(--layout-max-width-wide);
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Responsive adjustments */
@@ -200,9 +138,9 @@
   }
 
   .app-page-content {
-    padding: 1rem 1.25rem 1.5rem 1.25rem;
+    padding: var(--spacing-md) var(--spacing-lg) var(--layout-chrome-offset-bottom-mobile) var(--spacing-lg);
     padding-top: var(--spacing-md);
-    min-height: calc(100vh - 60px); /* Adjust for Footer only */
+    min-height: calc(100vh - var(--layout-footer-height-mobile));
   }
 
   .glass-content {
@@ -211,20 +149,18 @@
   }
 
   .app-page-subtitle {
-    font-size: 1rem;
+    font-size: var(--font-size-sm);
   }
-}
-
-@media (max-width: 480px) {
+}@media (max-width: 480px){
   /* Remove margin-top since StatusBar is hidden on mobile (moved to Footer) */
   .app-page-container {
     margin-top: 0;
   }
 
   .app-page-content {
-    padding: 1rem 1rem 1.25rem 1rem;
+    padding: var(--spacing-sm) var(--spacing-md) var(--layout-chrome-offset-bottom-mobile) var(--spacing-md);
     padding-top: var(--spacing-sm);
-    min-height: calc(100vh - 60px); /* Adjust for Footer only */
+    min-height: calc(100vh - var(--layout-footer-height-mobile));
   }
 
   .glass-content {
@@ -233,7 +169,7 @@
   }
 
   .app-page-subtitle {
-    font-size: 1rem;
+    font-size: var(--font-size-sm);
   }
 }
 
@@ -245,9 +181,13 @@
   }
 
   .app-page-content {
-    max-width: 800px;
+    max-width: var(--layout-max-width-hub);
     width: 100%;
     margin: 0 auto;
+  }
+
+  .app-page-content.app-page-content-wide {
+    max-width: var(--layout-max-width-wide);
   }
 }
 
@@ -284,7 +224,7 @@
 .back-button:hover:not(:disabled) {
   background: var(--bg-glass);
   border-color: var(--border-glass-hover);
-  transform: translateY(-2px);
+  transform: translateY(var(--motion-lift-md));
   box-shadow: var(--shadow-md);
 }
 
@@ -294,8 +234,8 @@
 }
 
 .back-button:focus-visible {
-  outline: 2px solid var(--accent-primary-border);
-  outline-offset: 2px;
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
 }
 
 .back-button:disabled {
@@ -304,13 +244,13 @@
 }
 
 .back-button svg {
-  font-size: 1.25rem;
-  width: 1.25rem;
-  height: 1.25rem;
+  font-size: var(--font-size-lg);
+  width: var(--font-size-lg);
+  height: var(--font-size-lg);
 }
 
 .back-button span {
-  font-size: 1rem;
+  font-size: var(--font-size-sm);
 }
 
 /* Responsive adjustments para botón de volver */
@@ -321,28 +261,26 @@
 
   .back-button {
     padding: 0.625rem 1.25rem;
-    font-size: 1rem;
+    font-size: var(--font-size-sm);
   }
 
   .back-button svg {
-    font-size: 1.125rem;
-    width: 1.125rem;
-    height: 1.125rem;
+    font-size: var(--font-size-base);
+    width: var(--font-size-base);
+    height: var(--font-size-base);
   }
-}
-
-@media (max-width: 480px) {
+}@media (max-width: 480px){
   .back-button-container {
     margin-top: 1.25rem;
   }
 
   .back-button {
     padding: 0.625rem 1rem;
-    font-size: 1rem;
+    font-size: var(--font-size-sm);
   }
 
   .back-button svg {
-    font-size: 1rem;
+    font-size: var(--font-size-sm);
     width: 1rem;
     height: 1rem;
   }

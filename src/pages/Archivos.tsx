@@ -1,88 +1,77 @@
 import { useState, useEffect, useRef } from 'react'
+import { backToHubLabel } from '../constants/hubLabels'
 import { useNavigate } from 'react-router-dom'
-import AddIcon from '@mui/icons-material/Add'
-import DeleteIcon from '@mui/icons-material/Delete'
-import DownloadIcon from '@mui/icons-material/Download'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import MoreVertIcon from '@mui/icons-material/MoreVert'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import DescriptionIcon from '@mui/icons-material/Description'
+import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import { api } from '../services/api'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
+import CrudListPanel from '../components/crud/CrudListPanel'
+import ArchivoUploadModal from '../components/archivos/ArchivoUploadModal'
+import ArchivoDetailModal from '../components/archivos/ArchivoDetailModal'
+import ArchivoEditModal from '../components/archivos/ArchivoEditModal'
+import ArchivoListRow from '../components/archivos/ArchivoListRow'
+import {
+  EMPTY_ARCHIVO_METADATA_FORM,
+  fileToMetadataForm,
+  getUploadErrorMessage,
+  validateSelectedUploadFile,
+  type ArchivoMetadataFormData,
+} from '../components/archivos/archivosFormUtils'
+import {
+  archivoSummaryItems,
+  calculateArchivoHighlights,
+} from '../components/archivos/archivosDisplayUtils'
+import type { FileAPI } from '../components/archivos/archivosTypes'
+import { sortFilesByDate } from '../components/archivos/archivosTypes'
+import { devError, devLog } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
+import { useConfirm } from '../contexts/ConfirmContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
 import './Archivos.css'
 
-interface FileAPI {
-  id: string
-  title: string
-  description?: string | null
-  file_name: string
-  file_size: number
-  mime_type: string
-  created_at: string
-  updated_at: string
-}
-
 function Archivos() {
   const navigate = useNavigate()
   const { showNotification } = useNotification()
+  const { confirm } = useConfirm()
   const [files, setFiles] = useState<FileAPI[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isUploading, setIsUploading] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const [selectedFile, setSelectedFile] = useState<FileAPI | null>(null)
-  const menuRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-  })
+  const [uploadFormData, setUploadFormData] = useState<ArchivoMetadataFormData>(
+    EMPTY_ARCHIVO_METADATA_FORM
+  )
+  const [editFormData, setEditFormData] = useState<ArchivoMetadataFormData>(
+    EMPTY_ARCHIVO_METADATA_FORM
+  )
   const [selectedFileForUpload, setSelectedFileForUpload] = useState<File | null>(null)
-  const [uploadProgress, setUploadProgress] = useState(0)
 
   useEffect(() => {
-    loadFiles()
+    void loadFiles()
   }, [])
-
-  // Cerrar menú al hacer clic fuera
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement
-      if (isMenuOpen && !target.closest('.archivos-toolbar-menu-container')) {
-        setIsMenuOpen(false)
-      }
-    }
-
-    if (isMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isMenuOpen])
 
   const loadFiles = async () => {
     try {
       setIsLoading(true)
       setError(null)
       const response = await api.getFiles()
-      console.log('🔵 GET /files - Respuesta:', response)
+      devLog('🔵 GET /files - Respuesta:', response)
 
       if (response.files && Array.isArray(response.files)) {
-        // Ordenar por fecha descendente (más recientes primero)
-        const sortedFiles = [...response.files].sort((a, b) => {
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        })
-        setFiles(sortedFiles)
+        setFiles(sortFilesByDate(response.files))
       } else {
         setFiles([])
       }
-    } catch (err: any) {
-      console.error('Error al cargar archivos:', err)
+    } catch (err: unknown) {
+      devError('Error al cargar archivos:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al cargar los archivos. Por favor, intenta de nuevo.'
@@ -94,76 +83,61 @@ function Archivos() {
     }
   }
 
-  const handleOpenUploadModal = () => {
-    setIsUploadModalOpen(true)
-    setFormData({
-      title: '',
-      description: '',
-    })
+  const resetUploadForm = () => {
+    setUploadFormData(EMPTY_ARCHIVO_METADATA_FORM)
     setSelectedFileForUpload(null)
-    setUploadProgress(0)
-  }
-
-  const handleCloseUploadModal = () => {
-    setIsUploadModalOpen(false)
-    setFormData({
-      title: '',
-      description: '',
-    })
-    setSelectedFileForUpload(null)
-    setUploadProgress(0)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
   }
 
+  const handleOpenUploadModal = () => {
+    setIsUploadModalOpen(true)
+    resetUploadForm()
+  }
+
+  const handleCloseUploadModal = () => {
+    setIsUploadModalOpen(false)
+    resetUploadForm()
+  }
+
+  const handleUploadFormChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target
+    setUploadFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleEditFormChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target
+    setEditFormData(prev => ({ ...prev, [name]: value }))
+  }
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      // Validar tamaño (25MB máximo)
-      const maxSize = 25 * 1024 * 1024 // 25MB en bytes
-      if (file.size > maxSize) {
-        showNotification('El archivo es demasiado grande. El tamaño máximo es 25MB.', 'error')
-        return
-      }
+    if (!file) {
+      return
+    }
 
-      // Validar tipo de archivo
-      const allowedTypes = [
-        'application/pdf',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/vnd.ms-excel',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'application/vnd.ms-powerpoint',
-        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-        'text/plain',
-        'text/csv',
-        'image/jpeg',
-        'image/png',
-        'image/gif',
-      ]
+    const validationError = validateSelectedUploadFile(file)
+    if (validationError) {
+      showNotification(validationError, 'error')
+      return
+    }
 
-      if (!allowedTypes.includes(file.type)) {
-        showNotification(
-          'Tipo de archivo no permitido. Solo se permiten PDFs, documentos, imágenes y archivos de texto.',
-          'error'
-        )
-        return
-      }
-
-      setSelectedFileForUpload(file)
-      // Si no hay título, usar el nombre del archivo sin extensión
-      if (!formData.title) {
-        const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, '')
-        setFormData(prev => ({
-          ...prev,
-          title: fileNameWithoutExt,
-        }))
-      }
+    setSelectedFileForUpload(file)
+    if (!uploadFormData.title) {
+      const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, '')
+      setUploadFormData(prev => ({
+        ...prev,
+        title: fileNameWithoutExt,
+      }))
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!selectedFileForUpload) {
@@ -171,100 +145,75 @@ function Archivos() {
       return
     }
 
-    if (!formData.title.trim()) {
+    if (!uploadFormData.title.trim()) {
       showNotification('Por favor ingresa un título', 'error')
       return
     }
 
     try {
-      setIsLoading(true)
-      setUploadProgress(0)
+      setIsUploading(true)
 
-      console.log('🟢 POST /files - Subiendo archivo:', {
+      devLog('🟢 POST /files - Subiendo archivo:', {
         fileName: selectedFileForUpload.name,
         fileSize: selectedFileForUpload.size,
         fileType: selectedFileForUpload.type,
-        title: formData.title,
-        description: formData.description,
+        title: uploadFormData.title,
+        description: uploadFormData.description,
       })
 
       const response = await api.uploadFile(
         selectedFileForUpload,
-        formData.title.trim(),
-        formData.description.trim() || undefined
+        uploadFormData.title.trim(),
+        uploadFormData.description.trim() || undefined
       )
 
-      console.log('✅ POST /files - Respuesta:', response)
+      devLog('✅ POST /files - Respuesta:', response)
       showNotification('Archivo subido exitosamente', 'success')
       handleCloseUploadModal()
       await loadFiles()
-    } catch (err: any) {
-      console.error('Error al subir archivo:', err)
-      console.error('Detalles del error:', {
-        response: err?.response,
-        data: err?.data,
-        status: err?.response?.status,
-        statusText: err?.response?.statusText,
-      })
-
-      // Extraer mensaje de error más específico
-      let errorMessage = 'Error al subir el archivo. Por favor, intenta de nuevo.'
-
-      if (err?.data?.error) {
-        errorMessage = err.data.error
-      } else if (err?.data?.message) {
-        errorMessage = err.data.message
-      } else if (err?.data?.details?.message) {
-        errorMessage = err.data.details.message
-      } else if (err?.message) {
-        errorMessage = err.message
-      } else {
-        errorMessage = getTranslatedErrorMessage(err, errorMessage)
-      }
-
-      // Agregar información del status si está disponible
-      if (err?.response?.status) {
-        errorMessage += ` (Error ${err.response.status})`
-      }
-
-      showNotification(errorMessage, 'error')
+    } catch (err: unknown) {
+      devError('Error al subir archivo:', err)
+      showNotification(getUploadErrorMessage(err), 'error')
     } finally {
-      setIsLoading(false)
-      setUploadProgress(0)
+      setIsUploading(false)
     }
   }
 
   const handleDownload = async (file: FileAPI) => {
     try {
-      setIsLoading(true)
-      console.log(`🔵 GET /files/${file.id} - Obteniendo URL de descarga`)
+      setIsProcessing(true)
+      devLog(`🔵 GET /files/${file.id} - Obteniendo URL de descarga`)
       const response = await api.getFileDownloadUrl(file.id)
-      console.log('✅ GET /files/' + file.id + ' - Respuesta:', response)
+      devLog(`✅ GET /files/${file.id} - Respuesta:`, response)
 
       if (response.download_url) {
-        // Abrir en nueva pestaña para descargar
         window.open(response.download_url, '_blank')
         showNotification('Descarga iniciada', 'success')
       }
-    } catch (err: any) {
-      console.error('Error al descargar archivo:', err)
+    } catch (err: unknown) {
+      devError('Error al descargar archivo:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al descargar el archivo. Por favor, intenta de nuevo.'
       )
       showNotification(errorMessage, 'error')
     } finally {
-      setIsLoading(false)
+      setIsProcessing(false)
     }
   }
 
   const handleDelete = async (file: FileAPI) => {
-    if (!window.confirm(`¿Estás seguro de que deseas eliminar "${file.title}"?`)) {
+    if (
+      !(await confirm({
+        message: `¿Estás seguro de que deseas eliminar "${file.title}"?`,
+        variant: 'danger',
+      }))
+    ) {
       return
     }
 
     try {
-      setIsLoading(true)
+      setIsProcessing(true)
       await api.deleteFile(file.id)
       showNotification('Archivo eliminado exitosamente', 'success')
       await loadFiles()
@@ -272,350 +221,170 @@ function Archivos() {
         setIsDetailModalOpen(false)
         setSelectedFile(null)
       }
-    } catch (err: any) {
-      console.error('Error al eliminar archivo:', err)
+    } catch (err: unknown) {
+      devError('Error al eliminar archivo:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al eliminar el archivo. Por favor, intenta de nuevo.'
       )
       showNotification(errorMessage, 'error')
     } finally {
-      setIsLoading(false)
+      setIsProcessing(false)
     }
   }
 
   const handleOpenDetailModal = (file: FileAPI) => {
     setSelectedFile(file)
+    setIsEditMode(false)
     setIsDetailModalOpen(true)
   }
 
   const handleCloseDetailModal = () => {
     setIsDetailModalOpen(false)
+    setIsEditMode(false)
     setSelectedFile(null)
   }
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
+  const handleEditClick = () => {
+    if (!selectedFile) {
+      return
+    }
+    setEditFormData(fileToMetadataForm(selectedFile))
+    setIsEditMode(true)
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
+  const handleUpdateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedFile) {
+      return
+    }
+
+    const title = editFormData.title.trim()
+    if (!title) {
+      showNotification('Por favor ingresa un título', 'error')
+      return
+    }
+
+    const description = editFormData.description.trim()
+
+    try {
+      setIsSaving(true)
+      const response = await api.updateFile(selectedFile.id, {
+        title,
+        description: description || null,
+      })
+
+      const updatedFile: FileAPI = response.file ?? {
+        ...selectedFile,
+        title,
+        description: description || null,
+        updated_at: new Date().toISOString(),
+      }
+
+      setFiles(prev => prev.map(file => (file.id === updatedFile.id ? updatedFile : file)))
+      setSelectedFile(updatedFile)
+      setIsEditMode(false)
+      showNotification('Archivo actualizado exitosamente', 'success')
+    } catch (err: unknown) {
+      devError('Error al actualizar archivo:', err)
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al actualizar el archivo. Por favor, intenta de nuevo.'
+      )
+      showNotification(errorMessage, 'error')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
-  const getFileIcon = (mimeType: string) => {
-    if (mimeType.includes('pdf')) return '📄'
-    if (mimeType.includes('word') || mimeType.includes('document')) return '📝'
-    if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return '📊'
-    if (mimeType.includes('powerpoint') || mimeType.includes('presentation')) return '📽️'
-    if (mimeType.includes('image')) return '🖼️'
-    if (mimeType.includes('text') || mimeType.includes('csv')) return '📃'
-    return '📎'
-  }
+  const isFileBusy = isUploading || isProcessing || isSaving
+  const highlights = calculateArchivoHighlights(files)
 
   return (
     <>
       <div className="app-page-container">
-        <div className="app-page-content archivos-content">
-          {/* Toolbar */}
-          <div className="archivos-toolbar">
+        <div className="app-page-content app-page-content-wide crud-page-content archivos-content">
+          <div className="app-toolbar">
             <button
-              className="archivos-toolbar-button"
+              className="app-toolbar-button"
               onClick={() => navigate('/registros')}
-              aria-label="Volver"
+              aria-label={backToHubLabel('registros')}
               type="button"
             >
-              <ArrowBackIcon className="archivos-toolbar-icon" />
+              <ArrowBackIcon className="app-toolbar-icon" />
             </button>
-
-            <div className="archivos-toolbar-menu-container" ref={menuRef}>
-              <button
-                className="archivos-toolbar-button"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                aria-label="Opciones"
-                aria-expanded={isMenuOpen}
-                type="button"
-              >
-                <MoreVertIcon className="archivos-toolbar-icon" />
-              </button>
-              {isMenuOpen && (
-                <div className="archivos-menu">
-                  <button
-                    className="archivos-menu-item"
-                    onClick={() => {
-                      handleOpenUploadModal()
-                      setIsMenuOpen(false)
-                    }}
-                    type="button"
-                  >
-                    <AddIcon className="archivos-menu-icon" />
-                    <span>Subir Archivo</span>
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
 
-          <h1 className="archivos-page-title">Archivos</h1>
-          <p className="archivos-page-subtitle">Gestiona tus documentos y archivos</p>
+          <h1 className="app-page-title">Archivos</h1>
 
-          {/* Lista de Archivos */}
-          {isLoading && files.length === 0 ? (
-            <div className="archivos-empty-state">
-              <p>Cargando archivos...</p>
-            </div>
-          ) : error ? (
-            <div className="archivos-empty-state">
-              <p>{error}</p>
-            </div>
-          ) : files.length === 0 ? (
-            <div className="archivos-empty-state">
-              <DescriptionIcon className="empty-state-icon" />
-              <p className="empty-state-text">No hay archivos subidos aún.</p>
-            </div>
-          ) : (
-            <div className="archivos-list">
-              <div className="archivos-group">
-                {files.map(file => (
-                  <button
-                    key={file.id}
-                    className="archivos-row"
-                    onClick={() => handleOpenDetailModal(file)}
-                    type="button"
-                  >
-                    <div className="archivos-row-content">
-                      <div className="archivos-row-header">
-                        <div className="archivos-row-title-section">
-                          <span className="archivos-row-icon-emoji">
-                            {getFileIcon(file.mime_type)}
-                          </span>
-                          <h3 className="archivos-row-title">{file.title}</h3>
-                        </div>
-                        <ChevronRightIcon className="archivos-row-chevron" />
-                      </div>
-                      {file.description && (
-                        <p className="archivos-row-preview">{file.description}</p>
-                      )}
-                      <div className="archivos-row-meta">
-                        <span className="archivos-row-file-name">{file.file_name}</span>
-                        <span className="archivos-row-separator">•</span>
-                        <span className="archivos-row-file-size">
-                          {formatFileSize(file.file_size)}
-                        </span>
-                        <span className="archivos-row-separator">•</span>
-                        <span className="archivos-row-date">{formatDate(file.created_at)}</span>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+          <CrudSummaryStrip
+            ariaLabel="Resumen de archivos"
+            items={archivoSummaryItems(highlights)}
+          />
+
+          <button
+            type="button"
+            className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+            onClick={handleOpenUploadModal}
+            aria-label="Subir archivo"
+          >
+            <CloudUploadIcon aria-hidden={true} />
+            Subir archivo
+          </button>
+
+          <CrudListPanel
+            items={files}
+            isLoading={isLoading}
+            error={error}
+            onRetry={() => void loadFiles()}
+            retryAriaLabel="Reintentar cargar archivos"
+            loadingAriaLabel="Cargando archivos"
+            emptyIcon={<DescriptionIcon className="empty-state-icon" />}
+            emptyTitle="No hay archivos subidos aún"
+            emptySubtext="Usa el botón de arriba para subir el primero"
+            getItemKey={file => file.id}
+            listOuterClassName="archivos-list"
+            renderItem={file => (
+              <ArchivoListRow file={file} onClick={() => handleOpenDetailModal(file)} />
+            )}
+          />
         </div>
       </div>
 
-      {/* Modal de Subida */}
       {isUploadModalOpen && (
-        <div className="archivos-modal-overlay" onClick={handleCloseUploadModal}>
-          <div className="archivos-modal" onClick={e => e.stopPropagation()}>
-            <div className="archivos-modal-header">
-              <h2 className="archivos-modal-title">Subir Archivo</h2>
-              <button
-                className="archivos-modal-close-button"
-                onClick={handleCloseUploadModal}
-                aria-label="Cerrar"
-                type="button"
-              >
-                ×
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="archivos-modal-form">
-              <div className="archivos-form-group">
-                <label htmlFor="file" className="archivos-form-label">
-                  Archivo *
-                </label>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  id="file"
-                  name="file"
-                  onChange={handleFileSelect}
-                  className="archivos-form-file-input"
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,image/*"
-                  required
-                />
-                {selectedFileForUpload && (
-                  <div className="archivos-file-selected">
-                    <span className="archivos-file-selected-icon">
-                      {getFileIcon(selectedFileForUpload.type)}
-                    </span>
-                    <div className="archivos-file-selected-info">
-                      <span className="archivos-file-selected-name">
-                        {selectedFileForUpload.name}
-                      </span>
-                      <span className="archivos-file-selected-size">
-                        {formatFileSize(selectedFileForUpload.size)}
-                      </span>
-                    </div>
-                  </div>
-                )}
-                <p className="archivos-form-hint">
-                  Tamaño máximo: 25MB. Formatos permitidos: PDF, Word, Excel, PowerPoint, texto,
-                  CSV, imágenes
-                </p>
-              </div>
-
-              <div className="archivos-form-group">
-                <label htmlFor="title" className="archivos-form-label">
-                  Título *
-                </label>
-                <input
-                  type="text"
-                  id="title"
-                  name="title"
-                  value={formData.title}
-                  onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  className="archivos-form-input"
-                  required
-                  placeholder="Ej: Contrato de arrendamiento"
-                />
-              </div>
-
-              <div className="archivos-form-group">
-                <label htmlFor="description" className="archivos-form-label">
-                  Descripción (opcional)
-                </label>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  className="archivos-form-textarea"
-                  rows={3}
-                  placeholder="Descripción adicional del archivo..."
-                />
-              </div>
-
-              <div className="archivos-form-actions">
-                <button
-                  type="button"
-                  className="archivos-form-button archivos-form-button-secondary"
-                  onClick={handleCloseUploadModal}
-                  disabled={isLoading}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="archivos-form-button archivos-form-button-primary"
-                  disabled={isLoading || !selectedFileForUpload}
-                >
-                  {isLoading ? 'Subiendo...' : 'Subir Archivo'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <ArchivoUploadModal
+          formData={uploadFormData}
+          selectedFile={selectedFileForUpload}
+          isUploading={isUploading}
+          fileInputRef={fileInputRef}
+          onFileSelect={handleFileSelect}
+          onChange={handleUploadFormChange}
+          onSubmit={handleUploadSubmit}
+          onClose={handleCloseUploadModal}
+        />
       )}
 
-      {/* Modal de Detalle */}
-      {isDetailModalOpen && selectedFile && (
-        <div className="archivos-modal-overlay" onClick={handleCloseDetailModal}>
-          <div className="archivos-modal" onClick={e => e.stopPropagation()}>
-            <div className="archivos-modal-header">
-              <h2 className="archivos-modal-title">{selectedFile.title}</h2>
-              <div className="archivos-modal-actions">
-                <button
-                  className="archivos-modal-action-button"
-                  onClick={() => handleDownload(selectedFile)}
-                  aria-label="Descargar"
-                  type="button"
-                  disabled={isLoading}
-                >
-                  <DownloadIcon />
-                </button>
-                <button
-                  className="archivos-modal-action-button archivos-modal-delete-button"
-                  onClick={() => handleDelete(selectedFile)}
-                  aria-label="Eliminar"
-                  type="button"
-                  disabled={isLoading}
-                >
-                  <DeleteIcon />
-                </button>
-                <button
-                  className="archivos-modal-close-button"
-                  onClick={handleCloseDetailModal}
-                  aria-label="Cerrar"
-                  type="button"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
+      {isDetailModalOpen && selectedFile && !isEditMode && (
+        <ArchivoDetailModal
+          file={selectedFile}
+          isBusy={isFileBusy}
+          onClose={handleCloseDetailModal}
+          onEdit={handleEditClick}
+          onDownload={() => void handleDownload(selectedFile)}
+          onDelete={() => void handleDelete(selectedFile)}
+        />
+      )}
 
-            <div className="archivos-detail-content">
-              <div className="archivos-detail-section">
-                <div className="archivos-detail-info-item">
-                  <span className="archivos-detail-label">Archivo:</span>
-                  <span className="archivos-detail-value">{selectedFile.file_name}</span>
-                </div>
-                <div className="archivos-detail-info-item">
-                  <span className="archivos-detail-label">Tamaño:</span>
-                  <span className="archivos-detail-value">
-                    {formatFileSize(selectedFile.file_size)}
-                  </span>
-                </div>
-                <div className="archivos-detail-info-item">
-                  <span className="archivos-detail-label">Tipo:</span>
-                  <span className="archivos-detail-value">{selectedFile.mime_type}</span>
-                </div>
-                {selectedFile.description && (
-                  <div className="archivos-detail-section">
-                    <h3 className="archivos-detail-label">Descripción</h3>
-                    <p className="archivos-detail-value">{selectedFile.description}</p>
-                  </div>
-                )}
-                <div className="archivos-detail-info-item">
-                  <span className="archivos-detail-label">Subido:</span>
-                  <span className="archivos-detail-value">
-                    {formatDate(selectedFile.created_at)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="archivos-detail-actions">
-                <button
-                  className="archivos-detail-action-button"
-                  onClick={() => handleDownload(selectedFile)}
-                  disabled={isLoading}
-                  type="button"
-                >
-                  <DownloadIcon className="archivos-detail-action-icon" />
-                  <span>Descargar</span>
-                </button>
-                <button
-                  className="archivos-detail-action-button archivos-detail-action-button-danger"
-                  onClick={() => handleDelete(selectedFile)}
-                  disabled={isLoading}
-                  type="button"
-                >
-                  <DeleteIcon className="archivos-detail-action-icon" />
-                  <span>Eliminar</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+      {isDetailModalOpen && selectedFile && isEditMode && (
+        <ArchivoEditModal
+          file={selectedFile}
+          formData={editFormData}
+          isSaving={isSaving}
+          onChange={handleEditFormChange}
+          onSubmit={handleUpdateSubmit}
+          onCancel={() => setIsEditMode(false)}
+          onClose={handleCloseDetailModal}
+        />
       )}
     </>
   )

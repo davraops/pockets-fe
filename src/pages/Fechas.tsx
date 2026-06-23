@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { backToHubLabel } from '../constants/hubLabels'
 import { useNavigate } from 'react-router-dom'
 import { Calendar, dateFnsLocalizer, View, Event as CalendarEvent } from 'react-big-calendar'
 import { format, parse, startOfWeek, getDay } from 'date-fns'
 import { es } from 'date-fns/locale'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
+import '../styles/big-calendar-theme.css'
 import AddIcon from '@mui/icons-material/Add'
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import EditIcon from '@mui/icons-material/Edit'
@@ -14,9 +16,13 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ViewListIcon from '@mui/icons-material/ViewList'
 import CalendarViewWeekIcon from '@mui/icons-material/CalendarViewWeek'
 import { api } from '../services/api'
+import { devError, isDebugToolsEnabled, isDestructiveDebugEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
+import { useConfirm } from '../contexts/ConfirmContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
+import ModalOverlay from '../components/ModalOverlay'
+import ListSkeleton from '../components/ListSkeleton'
 import './Fechas.css'
 
 // Interfaz que coincide con la respuesta de la API (campos en inglés)
@@ -71,6 +77,7 @@ const localizer = dateFnsLocalizer({
 function Fechas() {
   const navigate = useNavigate()
   const { showNotification } = useNotification()
+  const { confirm } = useConfirm()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
@@ -85,6 +92,8 @@ function Fechas() {
   const [calendarDate, setCalendarDate] = useState(new Date())
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
   const menuRef = useRef<HTMLDivElement>(null)
+  const tituloRef = useRef<HTMLInputElement>(null)
+  const fechaRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState({
     titulo: '',
     descripcion: '',
@@ -189,36 +198,34 @@ function Fechas() {
 
   const upcomingEvents = getUpcomingEvents()
 
-  // Cargar eventos desde la API
-  useEffect(() => {
-    const loadEvents = async () => {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const response = await api.getEvents()
-        if (response.events && Array.isArray(response.events)) {
-          const mappedEvents = response.events.map(mapEventFromAPI)
-          setEvents(mappedEvents)
-        } else {
-          setEvents([])
-        }
-      } catch (err: any) {
-        console.error('Error al cargar eventos:', err)
-        setError('Error al cargar los eventos. Por favor, intenta de nuevo.')
+  const loadEvents = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await api.getEvents()
+      if (response.events && Array.isArray(response.events)) {
+        const mappedEvents = response.events.map(mapEventFromAPI)
+        setEvents(mappedEvents)
+      } else {
         setEvents([])
-      } finally {
-        setIsLoading(false)
       }
+    } catch (err: any) {
+      devError('Error al cargar eventos:', err)
+      setError('Error al cargar los eventos. Por favor, intenta de nuevo.')
+      setEvents([])
+    } finally {
+      setIsLoading(false)
     }
-
-    loadEvents()
   }, [])
+
+  useEffect(() => {
+    void loadEvents()
+  }, [loadEvents])
 
   // Cerrar menú al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement
-      if (isMenuOpen && !target.closest('.fechas-toolbar-menu-container')) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsMenuOpen(false)
       }
     }
@@ -303,7 +310,7 @@ function Fechas() {
   }
 
   const handleDeleteClick = async () => {
-    if (selectedEvent && window.confirm('¿Estás seguro de que quieres eliminar este evento?')) {
+    if (selectedEvent && (await confirm({ message: '¿Estás seguro de que quieres eliminar este evento?', variant: 'danger' }))) {
       try {
         setIsLoading(true)
         await api.deleteEvent(selectedEvent.id)
@@ -315,7 +322,7 @@ function Fechas() {
         handleCloseDetailModal()
         showNotification('Evento eliminado exitosamente', 'success')
       } catch (err: any) {
-        console.error('Error al eliminar evento:', err)
+        devError('Error al eliminar evento:', err)
         const errorMessage = getTranslatedErrorMessage(
           err,
           'Error al eliminar el evento. Por favor, intenta de nuevo.'
@@ -345,6 +352,15 @@ function Fechas() {
     }
 
     setFormErrors(errors)
+    if (!isValid) {
+      queueMicrotask(() => {
+        if (errors.titulo) {
+          tituloRef.current?.focus()
+        } else if (errors.fecha) {
+          fechaRef.current?.focus()
+        }
+      })
+    }
     return isValid
   }
 
@@ -418,7 +434,7 @@ function Fechas() {
         showNotification('Evento creado exitosamente', 'success')
       }
     } catch (err: any) {
-      console.error('Error al guardar evento:', err)
+      devError('Error al guardar evento:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al guardar el evento. Por favor, intenta de nuevo.'
@@ -466,6 +482,7 @@ function Fechas() {
 
   // Función de debug para crear eventos demo
   const handleDebugCreateEvents = async () => {
+    if (!isDebugToolsEnabled()) return
     try {
       setIsLoading(true)
       const today = new Date()
@@ -561,7 +578,7 @@ function Fechas() {
       setIsDebugModalOpen(false)
       showNotification('Eventos demo creados exitosamente', 'success')
     } catch (err: any) {
-      console.error('Error al crear eventos demo:', err)
+      devError('Error al crear eventos demo:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al crear los eventos demo. Por favor, intenta de nuevo.'
@@ -573,10 +590,9 @@ function Fechas() {
   }
 
   const handleDeleteAllEvents = async () => {
+    if (!isDestructiveDebugEnabled()) return
     if (
-      window.confirm(
-        '¿Estás seguro de que quieres eliminar TODOS los eventos? Esta acción es irreversible.'
-      )
+      (await confirm({ message: '¿Estás seguro de que quieres eliminar TODOS los eventos? Esta acción es irreversible.', variant: 'danger' }))
     ) {
       try {
         setIsLoading(true)
@@ -585,7 +601,7 @@ function Fechas() {
         setIsDebugModalOpen(false)
         showNotification('Todos los eventos han sido eliminados', 'success')
       } catch (err: any) {
-        console.error('Error al eliminar todos los eventos:', err)
+        devError('Error al eliminar todos los eventos:', err)
         const errorMessage = getTranslatedErrorMessage(
           err,
           'Error al eliminar los eventos. Por favor, intenta de nuevo.'
@@ -597,139 +613,160 @@ function Fechas() {
     }
   }
 
+  const calculateHighlights = () => {
+    const total = events.length
+    const proximos = upcomingEvents.length
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const hoy = events.filter(event => {
+      const eventDate = new Date(event.fecha)
+      eventDate.setHours(0, 0, 0, 0)
+      return eventDate.getTime() === today.getTime()
+    }).length
+
+    return { total, proximos, hoy }
+  }
+
+  const highlights = calculateHighlights()
+
+  const formatEventMeta = (event: Event) => {
+    const parts = [formatDate(event.fecha)]
+    if (event.hora && !event.esTodoElDia) parts.push(formatTime(event.hora))
+    if (event.esTodoElDia) parts.push('Todo el día')
+    return parts.join(' • ')
+  }
+
   return (
     <div className="app-page-container">
-      <div className="app-page-content fechas-content">
+      <div className="app-page-content app-page-content-wide crud-page-content fechas-content">
         {/* Toolbar - HIG: Navigation */}
-        <div className="fechas-toolbar">
+        <div className="app-toolbar">
           <button
-            className="fechas-toolbar-button"
+            className="app-toolbar-button"
             onClick={() => navigate('/tiempo')}
-            aria-label="Volver a Tiempo"
+            aria-label={backToHubLabel('tiempo')}
             type="button"
           >
-            <ArrowBackIcon className="fechas-toolbar-icon" />
+            <ArrowBackIcon className="app-toolbar-icon" />
           </button>
 
-          <div className="fechas-toolbar-menu-container" ref={menuRef}>
-            <button
-              className="fechas-toolbar-button"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label="Menú de acciones"
-              type="button"
-            >
-              <MoreVertIcon className="fechas-toolbar-icon" />
-            </button>
-
-            {isMenuOpen && (
-              <div className="fechas-menu">
+          <div className="app-toolbar-menu-container" ref={menuRef}>
+            {isDebugToolsEnabled() && (
+              <>
                 <button
-                  className="fechas-menu-item"
-                  onClick={() => {
-                    handleOpenModal()
-                    setIsMenuOpen(false)
-                  }}
+                  className="app-toolbar-button"
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  aria-label="Opciones de depuración"
+                  aria-expanded={isMenuOpen}
                   type="button"
                 >
-                  <AddIcon className="fechas-menu-icon" />
-                  <span>Agregar Evento</span>
+                  <MoreVertIcon className="app-toolbar-icon" />
                 </button>
-                <button
-                  className="fechas-menu-item"
-                  onClick={() => {
-                    setIsDebugModalOpen(true)
-                    setIsMenuOpen(false)
-                  }}
-                  type="button"
-                >
-                  <span>🐛 Debug</span>
-                </button>
-              </div>
+                {isMenuOpen && (
+                  <div className="crud-dropdown-menu">
+                    <button
+                      className="crud-dropdown-menu-item"
+                      onClick={() => {
+                        setIsDebugModalOpen(true)
+                        setIsMenuOpen(false)
+                      }}
+                      type="button"
+                    >
+                      <span>🐛 Debug</span>
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
 
-        <h1 className="fechas-page-title">Fechas</h1>
-        <p className="fechas-page-subtitle">Gestiona tus eventos, recordatorios y cumpleaños</p>
+        <h1 className="app-page-title">Fechas</h1>
+
+        <div className="crud-summary-strip" role="region" aria-label="Resumen de eventos">
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Total</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--info">
+              {highlights.total}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Hoy</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--available">
+              {highlights.hoy}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Próximos</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--info">
+              {highlights.proximos}
+            </span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+          onClick={handleOpenModal}
+          aria-label="Agregar evento"
+        >
+          <AddIcon aria-hidden={true} />
+          Agregar evento
+        </button>
 
         {/* Mensaje Inspirador */}
         <div className="fechas-inspiration-message">
           <div className="fechas-inspiration-content">
             <p className="fechas-inspiration-badge">✨ Respira tranquilo</p>
-            <p className="fechas-inspiration-main">Este es un espacio libre de trabajo</p>
+            <p className="fechas-inspiration-main">
+              Este es un espacio libre de trabajo
+            </p>
             <p className="fechas-inspiration-text">
-              Cuando todos los engaños fallen y cuando las cosas se pongan difíciles, te vas a
-              necesitar a ti y a tu familia real. Este espacio es para las fechas y compromisos
-              contigo y los tuyos.
+              Cuando todos los engaños fallen y cuando las cosas se pongan difíciles, te vas a necesitar a ti y a tu familia real. Este espacio es para las fechas y compromisos contigo y los tuyos.
             </p>
           </div>
         </div>
 
-        {/* Próximos Eventos */}
         {!isLoading && !error && upcomingEvents.length > 0 && (
-          <div className="fechas-upcoming-section">
-            <h2 className="fechas-upcoming-title">Próximos Eventos</h2>
-            <div className="fechas-upcoming-list">
-              {upcomingEvents.map(event => {
-                const eventDate = new Date(event.fecha)
-                const today = new Date()
-                today.setHours(0, 0, 0, 0)
-                eventDate.setHours(0, 0, 0, 0)
-                const daysUntil = Math.ceil(
-                  (eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-                )
-                const isToday = daysUntil === 0
-                const isTomorrow = daysUntil === 1
+          <div className="glass-group" role="region" aria-label="Próximos eventos">
+            {upcomingEvents.map(event => {
+              const eventDate = new Date(event.fecha)
+              const today = new Date()
+              today.setHours(0, 0, 0, 0)
+              eventDate.setHours(0, 0, 0, 0)
+              const daysUntil = Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+              const isToday = daysUntil === 0
+              const isTomorrow = daysUntil === 1
+              const whenLabel = isToday ? 'Hoy' : isTomorrow ? 'Mañana' : `En ${daysUntil} días`
 
-                return (
-                  <div
-                    key={event.id}
-                    className="fechas-upcoming-item"
-                    onClick={() => handleOpenDetailModal(event)}
-                  >
-                    <div className="fechas-upcoming-item-date">
-                      <span className="fechas-upcoming-item-day">
-                        {eventDate.toLocaleDateString('es-ES', { day: 'numeric' })}
-                      </span>
-                      <span className="fechas-upcoming-item-month">
-                        {eventDate.toLocaleDateString('es-ES', { month: 'short' })}
-                      </span>
+              return (
+                <button
+                  key={event.id}
+                  type="button"
+                  className="crud-inset-row crud-row-accent-blue"
+                  onClick={() => handleOpenDetailModal(event)}
+                  aria-label={`Ver evento ${event.titulo}`}
+                >
+                  <div className="crud-row-content">
+                    <div className="crud-row-header">
+                      <span className="crud-row-title">{event.titulo}</span>
+                      <span className="crud-row-value">{whenLabel}</span>
+                      <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
                     </div>
-                    <div className="fechas-upcoming-item-content">
-                      <div className="fechas-upcoming-item-header">
-                        <h3 className="fechas-upcoming-item-title">{event.titulo}</h3>
-                        <span className="fechas-upcoming-item-badge">
-                          {isToday ? 'Hoy' : isTomorrow ? 'Mañana' : `En ${daysUntil} días`}
-                        </span>
-                      </div>
-                      <div className="fechas-upcoming-item-meta">
-                        {event.hora && !event.esTodoElDia && (
-                          <span className="fechas-upcoming-item-time">
-                            {formatTime(event.hora)}
-                          </span>
-                        )}
-                        {event.esTodoElDia && (
-                          <span className="fechas-upcoming-item-all-day">Todo el día</span>
-                        )}
-                        {event.ubicacion && (
-                          <span className="fechas-upcoming-item-location">
-                            📍 {event.ubicacion}
-                          </span>
-                        )}
-                      </div>
-                      {event.descripcion && (
-                        <p className="fechas-upcoming-item-description">{event.descripcion}</p>
-                      )}
-                    </div>
-                    <ChevronRightIcon className="fechas-upcoming-item-chevron" />
+                    <p className="crud-row-meta">{formatEventMeta(event)}</p>
+                    {event.descripcion && (
+                      <p className="crud-row-preview">{event.descripcion}</p>
+                    )}
                   </div>
-                )
-              })}
-            </div>
+                </button>
+              )
+            })}
           </div>
         )}
 
-        {/* Toggle de Vista */}
+                {/* Toggle de Vista */}
         <div className="fechas-view-toggle">
           <button
             className={`fechas-view-toggle-button ${viewMode === 'list' ? 'active' : ''}`}
@@ -753,14 +790,26 @@ function Fechas() {
 
         {/* Vista de Calendario */}
         {viewMode === 'calendar' && (
-          <div className="fechas-calendar-container">
-            {isLoading ? (
-              <div className="fechas-empty-state">
-                <p>Cargando eventos...</p>
+          <div className="fechas-calendar-container calendar-themed">
+            {isLoading && events.length === 0 ? (
+              <div className="glass-group">
+                <ListSkeleton variant="inset-row" count={4} aria-label="Cargando eventos" />
               </div>
             ) : error ? (
-              <div className="fechas-empty-state">
-                <p>{error}</p>
+              <div className="loader-container">
+                <div className="loader finanzas-stats-error-panel">
+                  <p className="loader-text loader-text--error" role="alert">
+                    {error}
+                  </p>
+                  <button
+                    type="button"
+                    className="finanzas-stats-retry-button"
+                    onClick={() => void loadEvents()}
+                    aria-label="Reintentar cargar eventos"
+                  >
+                    <span>Reintentar</span>
+                  </button>
+                </div>
               </div>
             ) : (
               <Calendar
@@ -768,8 +817,10 @@ function Fechas() {
                 events={getCalendarEvents()}
                 startAccessor="start"
                 endAccessor="end"
-                style={{
-                  height: calendarView === 'agenda' ? 'auto' : isMobile ? 400 : 600,
+                style={{ 
+                  height: calendarView === 'agenda' 
+                    ? 'auto' 
+                    : (isMobile ? 400 : 600) 
                 }}
                 view={calendarView}
                 onView={setCalendarView}
@@ -798,68 +849,72 @@ function Fechas() {
         {/* Lista de Eventos */}
         {viewMode === 'list' && (
           <>
-            {isLoading ? (
-              <div className="fechas-empty-state">
-                <p>Cargando eventos...</p>
-              </div>
-            ) : error ? (
-              <div className="fechas-empty-state">
-                <p>{error}</p>
-              </div>
-            ) : events.length === 0 ? (
-              <div className="fechas-empty-state">
-                <CalendarTodayIcon className="empty-state-icon" />
-                <p className="empty-state-text">No hay eventos registrados aún.</p>
-                <button className="empty-state-button" onClick={handleOpenModal} type="button">
-                  Agregar Evento
-                </button>
-              </div>
-            ) : (
-              <div className="fechas-list">
-                {events.map(event => (
-                  <div
-                    key={event.id}
-                    className="fechas-item"
-                    onClick={() => handleOpenDetailModal(event)}
-                  >
-                    <div className="fechas-item-content">
-                      <div className="fechas-item-header">
-                        <h3 className="fechas-item-title">{event.titulo}</h3>
-                        <ChevronRightIcon className="fechas-item-chevron" />
-                      </div>
-                      <div className="fechas-item-meta">
-                        <span className="fechas-item-date">{formatDate(event.fecha)}</span>
-                        {event.hora && !event.esTodoElDia && (
-                          <span className="fechas-item-time">{formatTime(event.hora)}</span>
-                        )}
-                        {event.esTodoElDia && (
-                          <span className="fechas-item-all-day">Todo el día</span>
-                        )}
-                      </div>
-                      {event.descripcion && (
-                        <p className="fechas-item-description">{event.descripcion}</p>
-                      )}
-                      {event.ubicacion && (
-                        <p className="fechas-item-location">📍 {event.ubicacion}</p>
-                      )}
-                    </div>
+            {isLoading && events.length === 0 ? (
+          <div className="glass-group">
+            <ListSkeleton variant="inset-row" count={4} aria-label="Cargando eventos" />
+          </div>
+        ) : error && events.length === 0 ? (
+          <div className="loader-container">
+            <div className="loader finanzas-stats-error-panel">
+              <p className="loader-text loader-text--error" role="alert">
+                {error}
+              </p>
+              <button
+                type="button"
+                className="btn-base btn-secondary finanzas-stats-retry-button"
+                onClick={() => void loadEvents()}
+                aria-label="Reintentar cargar eventos"
+              >
+                <span>Reintentar</span>
+              </button>
+            </div>
+          </div>
+        ) : events.length === 0 ? (
+          <div className="empty-state">
+            <CalendarTodayIcon className="empty-state-icon" />
+            <p className="empty-text">No hay eventos registrados aún</p>
+            <p className="empty-subtext">Usa el botón de arriba para agregar el primero</p>
+          </div>
+        ) : (
+          <div className="glass-group">
+            {events.map(event => (
+              <button
+                key={event.id}
+                type="button"
+                className="crud-inset-row crud-row-accent-blue"
+                onClick={() => handleOpenDetailModal(event)}
+                aria-label={`Ver evento ${event.titulo}`}
+              >
+                <div className="crud-row-content">
+                  <div className="crud-row-header">
+                    <span className="crud-row-title">{event.titulo}</span>
+                    <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
                   </div>
-                ))}
-              </div>
-            )}
+                  <p className="crud-row-meta">{formatEventMeta(event)}</p>
+                  {event.descripcion && (
+                    <p className="crud-row-preview">{event.descripcion}</p>
+                  )}
+                  {event.ubicacion && (
+                    <p className="crud-row-hint">📍 {event.ubicacion}</p>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
           </>
         )}
 
-        {/* Modal de Crear/Editar Evento */}
+                {/* Modal de Crear/Editar Evento */}
         {isModalOpen && (
-          <div className="fechas-modal-overlay" onClick={handleCloseModal}>
-            <div className="fechas-modal" onClick={e => e.stopPropagation()}>
-              <div className="fechas-modal-header">
-                <h2 className="fechas-modal-title">
+          <ModalOverlay onClose={handleCloseModal} className="modal-overlay">
+            <div className="modal-panel" onClick={e => e.stopPropagation()}>
+              <div className="modal-panel-header">
+                <h2 className="modal-panel-title" id="modal-panel-title-iseditmode-editar-evento-nuevo-evento">
                   {isEditMode ? 'Editar Evento' : 'Nuevo Evento'}
                 </h2>
                 <button
-                  className="fechas-modal-close"
+                  className="modal-panel-close"
                   onClick={handleCloseModal}
                   aria-label="Cerrar"
                   type="button"
@@ -868,36 +923,41 @@ function Fechas() {
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="fechas-modal-form">
+              <form onSubmit={handleSubmit} className="fechas-modal-form" noValidate>
                 {/* Nota sobre eventos laborales */}
                 <div className="fechas-form-notice">
                   <span className="fechas-form-notice-icon">🚫</span>
                   <span className="fechas-form-notice-text">
-                    Prohibido agregar eventos laborales aquí. Este espacio es solo para fechas y
-                    compromisos contigo y los tuyos.
+                    Prohibido agregar eventos laborales aquí. Este espacio es solo para fechas y compromisos contigo y los tuyos.
                   </span>
                 </div>
 
-                <div className="fechas-form-group">
-                  <label htmlFor="titulo" className="fechas-form-label">
+                <div className="form-group-base">
+                  <label htmlFor="titulo" className="form-label-base form-label-base--comfortable">
                     Título *
                   </label>
                   <input
+                    ref={tituloRef}
                     type="text"
                     id="titulo"
                     name="titulo"
                     value={formData.titulo}
                     onChange={handleChange}
-                    className={`fechas-form-input ${formErrors.titulo ? 'error' : ''}`}
+                    className={`form-input-base ${formErrors.titulo  ? 'input-error' : ''}`}
                     placeholder="Ej: Cumpleaños de Juan"
+                    autoFocus
+                    aria-invalid={!!formErrors.titulo}
+                    {...(formErrors.titulo ? { 'aria-describedby': 'titulo-error' } : {})}
                   />
                   {formErrors.titulo && (
-                    <span className="fechas-form-error">{formErrors.titulo}</span>
+                    <span id="titulo-error" className="fechas-form-error" role="alert">
+                      {formErrors.titulo}
+                    </span>
                   )}
                 </div>
 
-                <div className="fechas-form-group">
-                  <label htmlFor="descripcion" className="fechas-form-label">
+                <div className="form-group-base">
+                  <label htmlFor="descripcion" className="form-label-base form-label-base--comfortable">
                     Descripción
                   </label>
                   <textarea
@@ -905,30 +965,35 @@ function Fechas() {
                     name="descripcion"
                     value={formData.descripcion}
                     onChange={handleChange}
-                    className="fechas-form-textarea"
+                    className="form-textarea-base"
                     rows={3}
                     placeholder="Descripción del evento (opcional)"
                   />
                 </div>
 
-                <div className="fechas-form-group">
-                  <label htmlFor="fecha" className="fechas-form-label">
+                <div className="form-group-base">
+                  <label htmlFor="fecha" className="form-label-base form-label-base--comfortable">
                     Fecha *
                   </label>
                   <input
+                    ref={fechaRef}
                     type="date"
                     id="fecha"
                     name="fecha"
                     value={formData.fecha}
                     onChange={handleChange}
-                    className={`fechas-form-input ${formErrors.fecha ? 'error' : ''}`}
+                    className={`form-input-base ${formErrors.fecha  ? 'input-error' : ''}`}
+                    aria-invalid={!!formErrors.fecha}
+                    {...(formErrors.fecha ? { 'aria-describedby': 'fecha-error' } : {})}
                   />
                   {formErrors.fecha && (
-                    <span className="fechas-form-error">{formErrors.fecha}</span>
+                    <span id="fecha-error" className="fechas-form-error" role="alert">
+                      {formErrors.fecha}
+                    </span>
                   )}
                 </div>
 
-                <div className="fechas-form-group">
+                <div className="form-group-base">
                   <label className="fechas-form-checkbox-label">
                     <input
                       type="checkbox"
@@ -942,8 +1007,8 @@ function Fechas() {
                 </div>
 
                 {!formData.esTodoElDia && (
-                  <div className="fechas-form-group">
-                    <label htmlFor="hora" className="fechas-form-label">
+                  <div className="form-group-base">
+                    <label htmlFor="hora" className="form-label-base form-label-base--comfortable">
                       Hora
                     </label>
                     <input
@@ -952,13 +1017,13 @@ function Fechas() {
                       name="hora"
                       value={formData.hora}
                       onChange={handleChange}
-                      className="fechas-form-input"
+                      className="form-input-base"
                     />
                   </div>
                 )}
 
-                <div className="fechas-form-group">
-                  <label htmlFor="ubicacion" className="fechas-form-label">
+                <div className="form-group-base">
+                  <label htmlFor="ubicacion" className="form-label-base form-label-base--comfortable">
                     Ubicación
                   </label>
                   <input
@@ -967,7 +1032,7 @@ function Fechas() {
                     name="ubicacion"
                     value={formData.ubicacion}
                     onChange={handleChange}
-                    className="fechas-form-input"
+                    className="form-input-base"
                     placeholder="Ej: Restaurante El Jardín"
                   />
                 </div>
@@ -986,19 +1051,19 @@ function Fechas() {
                 </div>
               </form>
             </div>
-          </div>
+          </ModalOverlay>
         )}
 
         {/* Modal de Detalle de Evento */}
         {isDetailModalOpen && selectedEvent && (
-          <div className="fechas-modal-overlay" onClick={handleCloseDetailModal}>
-            <div className="fechas-modal" onClick={e => e.stopPropagation()}>
-              <div className="fechas-modal-header">
-                <h2 className="fechas-modal-title">
+          <ModalOverlay onClose={handleCloseDetailModal} className="modal-overlay">
+            <div className="modal-panel" onClick={e => e.stopPropagation()}>
+              <div className="modal-panel-header">
+                <h2 className="modal-panel-title" id="modal-panel-title-iseditmode-editar-evento-selectedevent-titulo">
                   {isEditMode ? 'Editar Evento' : selectedEvent.titulo}
                 </h2>
                 <button
-                  className="fechas-modal-close"
+                  className="modal-panel-close"
                   onClick={handleCloseDetailModal}
                   aria-label="Cerrar"
                   type="button"
@@ -1008,35 +1073,40 @@ function Fechas() {
               </div>
 
               {isEditMode ? (
-                <form onSubmit={handleSubmit} className="fechas-modal-form">
+                <form onSubmit={handleSubmit} className="fechas-modal-form" noValidate>
                   {/* Nota sobre eventos laborales */}
                   <div className="fechas-form-notice">
                     <span className="fechas-form-notice-icon">🚫</span>
                     <span className="fechas-form-notice-text">
-                      Prohibido agregar eventos laborales aquí. Este espacio es solo para fechas y
-                      compromisos contigo y los tuyos.
+                      Prohibido agregar eventos laborales aquí. Este espacio es solo para fechas y compromisos contigo y los tuyos.
                     </span>
                   </div>
 
-                  <div className="fechas-form-group">
-                    <label htmlFor="titulo" className="fechas-form-label">
+                  <div className="form-group-base">
+                    <label htmlFor="titulo" className="form-label-base form-label-base--comfortable">
                       Título *
                     </label>
                     <input
+                      ref={tituloRef}
                       type="text"
                       id="titulo"
                       name="titulo"
                       value={formData.titulo}
                       onChange={handleChange}
-                      className={`fechas-form-input ${formErrors.titulo ? 'error' : ''}`}
+                      className={`form-input-base ${formErrors.titulo  ? 'input-error' : ''}`}
+                      autoFocus
+                      aria-invalid={!!formErrors.titulo}
+                      {...(formErrors.titulo ? { 'aria-describedby': 'edit-titulo-error' } : {})}
                     />
                     {formErrors.titulo && (
-                      <span className="fechas-form-error">{formErrors.titulo}</span>
+                      <span id="edit-titulo-error" className="fechas-form-error" role="alert">
+                        {formErrors.titulo}
+                      </span>
                     )}
                   </div>
 
-                  <div className="fechas-form-group">
-                    <label htmlFor="descripcion" className="fechas-form-label">
+                  <div className="form-group-base">
+                    <label htmlFor="descripcion" className="form-label-base form-label-base--comfortable">
                       Descripción
                     </label>
                     <textarea
@@ -1044,29 +1114,34 @@ function Fechas() {
                       name="descripcion"
                       value={formData.descripcion}
                       onChange={handleChange}
-                      className="fechas-form-textarea"
+                      className="form-textarea-base"
                       rows={3}
                     />
                   </div>
 
-                  <div className="fechas-form-group">
-                    <label htmlFor="fecha" className="fechas-form-label">
+                  <div className="form-group-base">
+                    <label htmlFor="fecha" className="form-label-base form-label-base--comfortable">
                       Fecha *
                     </label>
                     <input
+                      ref={fechaRef}
                       type="date"
                       id="fecha"
                       name="fecha"
                       value={formData.fecha}
                       onChange={handleChange}
-                      className={`fechas-form-input ${formErrors.fecha ? 'error' : ''}`}
+                      className={`form-input-base ${formErrors.fecha  ? 'input-error' : ''}`}
+                      aria-invalid={!!formErrors.fecha}
+                      {...(formErrors.fecha ? { 'aria-describedby': 'edit-fecha-error' } : {})}
                     />
                     {formErrors.fecha && (
-                      <span className="fechas-form-error">{formErrors.fecha}</span>
+                      <span id="edit-fecha-error" className="fechas-form-error" role="alert">
+                        {formErrors.fecha}
+                      </span>
                     )}
                   </div>
 
-                  <div className="fechas-form-group">
+                  <div className="form-group-base">
                     <label className="fechas-form-checkbox-label">
                       <input
                         type="checkbox"
@@ -1080,8 +1155,8 @@ function Fechas() {
                   </div>
 
                   {!formData.esTodoElDia && (
-                    <div className="fechas-form-group">
-                      <label htmlFor="hora" className="fechas-form-label">
+                    <div className="form-group-base">
+                      <label htmlFor="hora" className="form-label-base form-label-base--comfortable">
                         Hora
                       </label>
                       <input
@@ -1090,13 +1165,13 @@ function Fechas() {
                         name="hora"
                         value={formData.hora}
                         onChange={handleChange}
-                        className="fechas-form-input"
+                        className="form-input-base"
                       />
                     </div>
                   )}
 
-                  <div className="fechas-form-group">
-                    <label htmlFor="ubicacion" className="fechas-form-label">
+                  <div className="form-group-base">
+                    <label htmlFor="ubicacion" className="form-label-base form-label-base--comfortable">
                       Ubicación
                     </label>
                     <input
@@ -1105,7 +1180,7 @@ function Fechas() {
                       name="ubicacion"
                       value={formData.ubicacion}
                       onChange={handleChange}
-                      className="fechas-form-input"
+                      className="form-input-base"
                     />
                   </div>
 
@@ -1179,17 +1254,17 @@ function Fechas() {
                 </div>
               )}
             </div>
-          </div>
+          </ModalOverlay>
         )}
 
         {/* Modal de Debug */}
-        {isDebugModalOpen && (
-          <div className="fechas-modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
-            <div className="fechas-modal" onClick={e => e.stopPropagation()}>
-              <div className="fechas-modal-header">
-                <h2 className="fechas-modal-title">Debug - Eventos</h2>
+        {isDebugModalOpen && isDebugToolsEnabled() && (
+          <ModalOverlay onClose={() => setIsDebugModalOpen(false)} className="modal-overlay">
+            <div className="modal-panel" onClick={e => e.stopPropagation()}>
+              <div className="modal-panel-header">
+                <h2 className="modal-panel-title" id="modal-panel-title-debug-eventos">Debug - Eventos</h2>
                 <button
-                  className="fechas-modal-close"
+                  className="modal-panel-close"
                   onClick={() => setIsDebugModalOpen(false)}
                   aria-label="Cerrar modal"
                   type="button"
@@ -1241,7 +1316,7 @@ function Fechas() {
                 </div>
               </div>
             </div>
-          </div>
+          </ModalOverlay>
         )}
       </div>
     </div>

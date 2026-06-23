@@ -1,20 +1,21 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
-import { ThemeProvider } from './contexts/ThemeContext'
+import { useEffect, lazy, Suspense } from 'react'
 import { NotificationProvider } from './contexts/NotificationContext'
+import { ConfirmProvider } from './contexts/ConfirmContext'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import AppPage from './pages/AppPage'
 import Finanzas from './pages/Finanzas'
+import { FinanzasCreditoHub, FinanzasCriptoHub, FinanzasAhorroHub } from './pages/FinanzasSectionHub'
 import Cuentas from './pages/Cuentas'
 import Presupuestos from './pages/Presupuestos'
 import DiseñadorPresupuestos from './pages/DiseñadorPresupuestos'
 import ListasMercado from './pages/ListasMercado'
-import Transacciones from './pages/Transacciones'
+const Transacciones = lazy(() => import('./pages/Transacciones'))
 import Deudas from './pages/Deudas'
 import TarjetasDebito from './pages/TarjetasDebito'
 import Subscripciones from './pages/Subscripciones'
-import TarjetasCredito from './pages/TarjetasCredito'
+const TarjetasCredito = lazy(() => import('./pages/TarjetasCredito'))
 import Proyectos from './pages/Proyectos'
 import MeDeben from './pages/MeDeben'
 import CriptoWallet from './pages/CriptoWallet'
@@ -22,14 +23,14 @@ import CriptoTransacciones from './pages/CriptoTransacciones'
 import Inflacion from './pages/Inflacion'
 import CDTs from './pages/CDTs'
 import Registros from './pages/Registros'
-import Cuadernos from './pages/Cuadernos'
-import Secretos from './pages/Secretos'
-import GeneradorContrasenas from './pages/GeneradorContrasenas'
-import Calculadora from './pages/Calculadora'
-import Archivos from './pages/Archivos'
-import Empleados from './pages/Empleados'
-import Vehiculos from './pages/Vehiculos'
-import Patrimonio from './pages/Patrimonio'
+const Cuadernos = lazy(() => import('./pages/Cuadernos'))
+const Secretos = lazy(() => import('./pages/Secretos'))
+const GeneradorContrasenas = lazy(() => import('./pages/GeneradorContrasenas'))
+const Calculadora = lazy(() => import('./pages/Calculadora'))
+const Archivos = lazy(() => import('./pages/Archivos'))
+const Empleados = lazy(() => import('./pages/Empleados'))
+const Vehiculos = lazy(() => import('./pages/Vehiculos'))
+const Patrimonio = lazy(() => import('./pages/Patrimonio'))
 import CryptoVendors from './pages/CryptoVendors'
 import Tiempo from './pages/Tiempo'
 import Fechas from './pages/Fechas'
@@ -43,14 +44,37 @@ import Trabajo from './pages/Trabajo'
 import Contratos from './pages/Contratos'
 import Actividades from './pages/Actividades'
 import ProcesosContratacion from './pages/ProcesosContratacion'
+import Ajustes from './pages/Ajustes'
+import UiReadiness from './pages/UiReadiness'
+import UxReadiness from './pages/UxReadiness'
+import ProductReadiness from './pages/ProductReadiness'
+import SpaceAudit from './pages/SpaceAudit'
 import StatusBar from './components/StatusBar'
 import ProtectedRoute from './components/ProtectedRoute'
 import Footer from './components/Footer'
+import AuthSessionRedirect from './components/AuthSessionRedirect'
 import { NotificationContainer } from './components/NotificationContainer'
+
+function PageLoader() {
+  return (
+    <div className="app-page-container">
+      <div className="app-page-content">
+        <div className="loader-container">
+          <div className="loader">
+            <div className="loader-spinner"></div>
+            <p className="loader-text">Cargando...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function AppContent() {
   const location = useLocation()
   const isLogin = location.pathname === '/login'
+  const isHome = location.pathname === '/'
+  const isDocsPage = location.pathname.startsWith('/product-readiness')
 
   // Scroll to top cuando cambia la ruta
   useEffect(() => {
@@ -59,8 +83,14 @@ function AppContent() {
 
   return (
     <>
-      <StatusBar />
+      <a href="#main-content" className="skip-link">
+        Saltar al contenido
+      </a>
+      <AuthSessionRedirect />
+      {!isDocsPage && !isHome && <StatusBar />}
       <NotificationContainer />
+      <main id="main-content">
+      <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route
@@ -76,6 +106,30 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <Finanzas />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finanzas/credito"
+          element={
+            <ProtectedRoute>
+              <FinanzasCreditoHub />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finanzas/cripto"
+          element={
+            <ProtectedRoute>
+              <FinanzasCriptoHub />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finanzas/ahorro"
+          element={
+            <ProtectedRoute>
+              <FinanzasAhorroHub />
             </ProtectedRoute>
           }
         />
@@ -375,6 +429,19 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/ajustes"
+          element={
+            <ProtectedRoute>
+              <Ajustes />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/ui-readiness" element={<UiReadiness />} />
+        <Route path="/ux-readiness" element={<UxReadiness />} />
+        <Route path="/product-readiness" element={<ProductReadiness />} />
+        <Route path="/product-readiness/:docId" element={<ProductReadiness />} />
+        <Route path="/space-audit" element={<SpaceAudit />} />
         <Route path="/blank-2" element={<AppPage title="" />} />
         <Route path="/blank-3" element={<AppPage title="" />} />
         <Route path="/blank-4" element={<AppPage title="" />} />
@@ -387,7 +454,9 @@ function AppContent() {
         <Route path="/blank-11" element={<AppPage title="" />} />
         <Route path="/blank-12" element={<AppPage title="" />} />
       </Routes>
-      {!isLogin && <Footer />}
+      </Suspense>
+      </main>
+      {!isLogin && !isDocsPage && !isHome && <Footer />}
     </>
   )
 }
@@ -396,13 +465,13 @@ function App() {
   // Las tasas de cambio ahora se obtienen desde la API en el componente Cuentas
 
   return (
-    <ThemeProvider>
-      <NotificationProvider>
+    <NotificationProvider>
+      <ConfirmProvider>
         <BrowserRouter>
           <AppContent />
         </BrowserRouter>
-      </NotificationProvider>
-    </ThemeProvider>
+      </ConfirmProvider>
+    </NotificationProvider>
   )
 }
 

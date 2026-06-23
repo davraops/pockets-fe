@@ -1,45 +1,24 @@
-// API Client for Pockets Backend
+import { cacheDisplayNameFromAuthResponse, clearCachedDisplayName } from '../utils/userDisplayName'
 // Arquitectura de múltiples servicios: 3 servicios independientes
 // Para desarrollo local, configurar variables de entorno en el archivo .env
 
-// Configuración de APIs por servicio - URLs de producción (valores por defecto)
+// Configuración de APIs por servicio (VITE_* override; en dev local usa localhost por defecto)
 const API_CONFIG = {
-  core: {
-    production: 'https://qe765aps3a.execute-api.us-east-1.amazonaws.com/dev',
-    local: 'http://localhost:7000',
-  },
-  financial: {
-    production: 'https://l1nfx233y1.execute-api.us-east-1.amazonaws.com/dev',
-    local: 'http://localhost:7001',
-  },
-  lifestyle: {
-    production: 'https://kstxcg0o0g.execute-api.us-east-1.amazonaws.com/dev',
-    local: 'http://localhost:7002',
-  },
-}
-
-// Helper para obtener la URL según el entorno
-const getApiUrl = (service: 'core' | 'financial' | 'lifestyle'): string => {
-  // En Vite, import.meta.env.MODE es 'development' o 'production'
-  const isProduction = import.meta.env.MODE === 'production'
-
-  // Prioridad: variable de entorno > valor por defecto según entorno
-  if (service === 'core') {
-    return (
-      import.meta.env.VITE_API_CORE_URL ||
-      (isProduction ? API_CONFIG.core.production : API_CONFIG.core.local)
-    )
-  } else if (service === 'financial') {
-    return (
-      import.meta.env.VITE_API_FINANCIAL_URL ||
-      (isProduction ? API_CONFIG.financial.production : API_CONFIG.financial.local)
-    )
-  } else {
-    return (
-      import.meta.env.VITE_API_LIFESTYLE_URL ||
-      (isProduction ? API_CONFIG.lifestyle.production : API_CONFIG.lifestyle.local)
-    )
-  }
+  core:
+    import.meta.env.VITE_API_CORE_URL ??
+    (import.meta.env.DEV
+      ? 'http://localhost:7000'
+      : 'https://qe765aps3a.execute-api.us-east-1.amazonaws.com/dev'),
+  financial:
+    import.meta.env.VITE_API_FINANCIAL_URL ??
+    (import.meta.env.DEV
+      ? 'http://localhost:7001'
+      : 'https://l1nfx233y1.execute-api.us-east-1.amazonaws.com/dev'),
+  lifestyle:
+    import.meta.env.VITE_API_LIFESTYLE_URL ??
+    (import.meta.env.DEV
+      ? 'http://localhost:7002'
+      : 'https://kstxcg0o0g.execute-api.us-east-1.amazonaws.com/dev'),
 }
 
 class PocketsAPI {
@@ -48,9 +27,9 @@ class PocketsAPI {
   private lifestyleURL: string
 
   constructor() {
-    this.coreURL = getApiUrl('core')
-    this.financialURL = getApiUrl('financial')
-    this.lifestyleURL = getApiUrl('lifestyle')
+    this.coreURL = API_CONFIG.core
+    this.financialURL = API_CONFIG.financial
+    this.lifestyleURL = API_CONFIG.lifestyle
   }
 
   /**
@@ -62,7 +41,9 @@ class PocketsAPI {
       endpoint.startsWith('/bank-accounts') ||
       endpoint.startsWith('/budgets') ||
       endpoint.startsWith('/transactions') ||
-      endpoint.startsWith('/exchange-rates')
+      endpoint.startsWith('/exchange-rates') ||
+      endpoint.startsWith('/user-settings') ||
+      endpoint.startsWith('/user-details')
     ) {
       return 'core'
     } else if (
@@ -183,10 +164,7 @@ class PocketsAPI {
       if (!response.ok) {
         // Si recibimos un 401 (Unauthorized), el token puede estar expirado o ser inválido
         if (response.status === 401) {
-          // Limpiar el token y redirigir al login
-          this.logout()
-          // Lanzar error para que el componente pueda manejar la redirección
-          throw { response, data, isUnauthorized: true }
+          this.handleUnauthorized(response, data)
         }
         throw { response, data }
       }
@@ -217,14 +195,52 @@ class PocketsAPI {
       if (result.expires_at) {
         localStorage.setItem('tokenExpiresAt', result.expires_at)
       }
+      window.dispatchEvent(new CustomEvent('pockets:auth-login'))
+      cacheDisplayNameFromAuthResponse(result)
     }
 
     return result
   }
 
+  // User Details
+  async getUserDetails() {
+    return this.request('/user-details')
+  }
+
+  async updateUserDetails(data: {
+    nombre_usuario?: string
+    nombre_completo?: string
+    fecha_nacimiento?: string
+    documento_identidad?: string
+  }) {
+    return this.request('/user-details', {
+      method: 'PUT',
+      body: data,
+    })
+  }
+
+  // User Settings
+  async getUserSettings() {
+    return this.request('/user-settings')
+  }
+
+  async updateUserSettings(data: { theme: 'light' | 'dark' }) {
+    return this.request('/user-settings', {
+      method: 'PUT',
+      body: data,
+    })
+  }
+
   logout() {
     localStorage.removeItem('authToken')
     localStorage.removeItem('tokenExpiresAt')
+    clearCachedDisplayName()
+  }
+
+  private handleUnauthorized(response: Response, data: unknown): never {
+    this.logout()
+    window.dispatchEvent(new CustomEvent('pockets:auth-unauthorized'))
+    throw { response, data, isUnauthorized: true }
   }
 
   isAuthenticated(): boolean {
@@ -281,6 +297,9 @@ class PocketsAPI {
   /**
    * Verifica si el usuario actual es "testuser".
    * Útil para mostrar funcionalidades de debug solo a usuarios de prueba.
+   */
+  /**
+   * @deprecated Usar isDebugToolsEnabled() de utils/debugTools.ts
    */
   isTestUser(): boolean {
     const username = this.getCurrentUsername()
@@ -516,6 +535,28 @@ class PocketsAPI {
     return this.request(endpoint)
   }
 
+  async updateTransaction(
+    transactionId: string,
+    data: {
+      date: string
+      type: 'ingreso' | 'egreso' | 'ahorro'
+      amount: number
+      description: string
+      category: string
+      currency: string
+      bank_account_id: string | null
+      budget_id?: string | null
+      credit_card_id?: string | null
+      debt_id?: string | null
+      debtor_id?: string | null
+    }
+  ) {
+    return this.request(`/transactions/${transactionId}`, {
+      method: 'PUT',
+      body: data,
+    })
+  }
+
   async deleteTransaction(transactionId: string) {
     return this.request(`/transactions/${transactionId}`, {
       method: 'DELETE',
@@ -698,6 +739,33 @@ class PocketsAPI {
     })
   }
 
+  async createCreditCardWithDebt(data: {
+    name: string
+    bank: string
+    credit_limit: number
+    monthly_rate: number
+    management_fee?: number
+    cut_date?: string
+    used_credit?: number
+    benefits?: string[]
+    create_linked_debt?: boolean
+    debt?: {
+      value: number
+      currency: string
+      concept?: string
+      owed?: number
+      cut_date?: string
+      interest_rate?: number
+      reference?: string
+      minimum_payment?: number
+    }
+  }) {
+    return this.request('/credit-cards/with-debt', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
   async getCreditCards(creditCardId: string | null = null) {
     const endpoint = creditCardId ? `/credit-cards?id=${creditCardId}` : '/credit-cards'
     return this.request(endpoint)
@@ -751,6 +819,27 @@ class PocketsAPI {
     })
   }
 
+  async createProjectWithBudget(data: {
+    budget: {
+      name: string
+      max_amount: number
+      periodicity?: 'mensual' | 'bimestral' | 'trimestral' | 'semestral' | 'anual'
+    }
+    project: {
+      name: string
+      target_amount: number
+      duration_months: number
+      end_date: string
+      start_date?: string
+      current_amount?: number
+    }
+  }) {
+    return this.request('/projects/with-budget', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
   async getProjects(projectId: string | null = null) {
     const endpoint = projectId ? `/projects?id=${projectId}` : '/projects'
     return this.request(endpoint)
@@ -775,8 +864,21 @@ class PocketsAPI {
     })
   }
 
-  async deleteProject(projectId: string) {
-    return this.request(`/projects/${projectId}`, {
+  async completeProject(projectId: string, data: { close_budget?: boolean } = {}) {
+    return this.request(`/projects/${projectId}/complete`, {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async deleteProject(projectId: string, options?: { delete_budget?: 'soft' | 'hard' }) {
+    const params = new URLSearchParams()
+    if (options?.delete_budget) {
+      params.append('delete_budget', options.delete_budget)
+    }
+    const query = params.toString()
+    const endpoint = query ? `/projects/${projectId}?${query}` : `/projects/${projectId}`
+    return this.request(endpoint, {
       method: 'DELETE',
     })
   }
@@ -833,7 +935,11 @@ class PocketsAPI {
   }
 
   // Wallets (Crypto Wallets)
-  async createWallet(data: { wallet_name: string; crypto_name: string; address: string }) {
+  async createWallet(data: {
+    wallet_name: string
+    crypto_name: string
+    address: string
+  }) {
     return this.request('/wallets', {
       method: 'POST',
       body: data,
@@ -1096,7 +1202,11 @@ class PocketsAPI {
     })
   }
 
-  async getEvents(filters?: { id?: string; start_date?: string; end_date?: string }) {
+  async getEvents(filters?: {
+    id?: string
+    start_date?: string
+    end_date?: string
+  }) {
     const params = new URLSearchParams()
     if (filters?.id) params.append('id', filters.id)
     if (filters?.start_date) params.append('start_date', filters.start_date)
@@ -1274,9 +1384,7 @@ class PocketsAPI {
   }
 
   async deleteAllRoutineCompletions(routineId?: string) {
-    const endpoint = routineId
-      ? `/routine-completions?routine_id=${routineId}`
-      : '/routine-completions'
+    const endpoint = routineId ? `/routine-completions?routine_id=${routineId}` : '/routine-completions'
     return this.request(endpoint, {
       method: 'DELETE',
     })
@@ -1408,7 +1516,7 @@ class PocketsAPI {
 
     try {
       const response = await fetch(url, config)
-
+      
       // Intentar parsear JSON, pero manejar errores si no es JSON válido
       let data: any
       const contentType = response.headers.get('content-type')
@@ -1421,10 +1529,7 @@ class PocketsAPI {
           console.error('Respuesta del servidor:', text)
           throw {
             response,
-            data: {
-              error: 'Error al procesar la respuesta del servidor',
-              details: { message: text },
-            },
+            data: { error: 'Error al procesar la respuesta del servidor', details: { message: text } },
           }
         }
       } else {
@@ -1441,8 +1546,7 @@ class PocketsAPI {
           data,
         })
         if (response.status === 401) {
-          this.logout()
-          throw { response, data, isUnauthorized: true }
+          this.handleUnauthorized(response, data)
         }
         throw { response, data }
       }
@@ -1464,7 +1568,10 @@ class PocketsAPI {
     }
   }
 
-  async getFiles(filters?: { id?: string; mime_type?: string }) {
+  async getFiles(filters?: {
+    id?: string
+    mime_type?: string
+  }) {
     const params = new URLSearchParams()
     if (filters?.id) params.append('id', filters.id)
     if (filters?.mime_type) params.append('mime_type', filters.mime_type)
@@ -1482,6 +1589,16 @@ class PocketsAPI {
     })
   }
 
+  async updateFile(
+    fileId: string,
+    data: { title?: string; description?: string | null }
+  ) {
+    return this.request(`/files/${fileId}`, {
+      method: 'PUT',
+      body: data,
+    })
+  }
+
   async deleteFile(fileId: string) {
     return this.request(`/files/${fileId}`, {
       method: 'DELETE',
@@ -1495,14 +1612,22 @@ class PocketsAPI {
     nombreCompleto: string,
     tipoPersona: 'nat' | 'jur' = 'nat',
     soloActivos: boolean = false,
-    pagina: number = 1
+    pagina: number = 1,
+    documentoIdentidad?: string
   ) {
     const params = new URLSearchParams({
-      nombre: nombreCompleto,
       tipoPersona: tipoPersona,
       SoloActivos: soloActivos ? 'true' : 'false', // La API espera string 'true' o 'false'
       pagina: pagina.toString(),
     })
+
+    const documento = documentoIdentidad?.replace(/\D/g, '') ?? ''
+    if (documento) {
+      params.set('documento', documento)
+      params.set('tipoDocumento', 'CC')
+    } else {
+      params.set('nombre', nombreCompleto)
+    }
 
     return await this.request(`/judicial-processes?${params.toString()}`)
   }
@@ -1603,13 +1728,10 @@ class PocketsAPI {
     })
   }
 
-  async updateEmployee(
-    employeeId: string,
-    data: {
-      name?: string
-      data?: any // JSON object
-    }
-  ) {
+  async updateEmployee(employeeId: string, data: {
+    name?: string
+    data?: any // JSON object
+  }) {
     return this.request(`/employees/${employeeId}`, {
       method: 'PUT',
       body: data,
@@ -1646,13 +1768,10 @@ class PocketsAPI {
     })
   }
 
-  async updateVehicle(
-    vehicleId: string,
-    data: {
-      name?: string
-      data?: any // JSON object
-    }
-  ) {
+  async updateVehicle(vehicleId: string, data: {
+    name?: string
+    data?: any // JSON object
+  }) {
     return this.request(`/vehicles/${vehicleId}`, {
       method: 'PUT',
       body: data,
@@ -1689,13 +1808,10 @@ class PocketsAPI {
     })
   }
 
-  async updatePatrimonyItem(
-    itemId: string,
-    data: {
-      name?: string
-      data?: any // JSON object
-    }
-  ) {
+  async updatePatrimonyItem(itemId: string, data: {
+    name?: string
+    data?: any // JSON object
+  }) {
     return this.request(`/patrimony/${itemId}`, {
       method: 'PUT',
       body: data,
@@ -1732,13 +1848,10 @@ class PocketsAPI {
     })
   }
 
-  async updateCryptoVendor(
-    vendorId: string,
-    data: {
-      name?: string
-      data?: any // JSON object
-    }
-  ) {
+  async updateCryptoVendor(vendorId: string, data: {
+    name?: string
+    data?: any // JSON object
+  }) {
     return this.request(`/crypto-vendors/${vendorId}`, {
       method: 'PUT',
       body: data,
@@ -1842,7 +1955,7 @@ class PocketsAPI {
   // Hiring Processes (Procesos de Contratación)
   async createHiringProcess(data: {
     name: string
-    data: any // JSON object
+    data: Record<string, unknown>
   }) {
     return this.request('/hiring-processes', {
       method: 'POST',
@@ -1859,7 +1972,7 @@ class PocketsAPI {
     processId: string,
     updates: {
       name?: string
-      data?: any
+      data?: Record<string, unknown>
     }
   ) {
     return this.request(`/hiring-processes/${processId}`, {

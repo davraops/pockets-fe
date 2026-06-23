@@ -1,0 +1,115 @@
+/* CRUD card rows — glass cards in vertical lists */
+
+.crud-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  width: 100%;
+}
+
+.crud-card-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  min-height: 72px;
+  width: 100%;
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+  font-family: var(--font-family);
+  cursor: pointer;
+  text-align: left;
+  border: 1px solid var(--border-glass);
+  border-left: 4px solid var(--row-accent, var(--accent-primary-border));
+}
+
+.crud-card-row--project,
+.crud-card-row--subscription,
+.crud-card-row--debit-card,
+.crud-card-row--debtor {
+  justify-content: space-between;
+  border-top: 1px solid var(--border-glass);
+  border-right: 1px solid var(--border-glass);
+  border-bottom: 1px solid var(--border-glass);
+  border-left: 4px solid var(--row-accent, var(--accent-primary-border));
+}
+
+.crud-card-row--debtor {
+  border-left-width: 3px;
+}
+
+.crud-card-row--debt::before,
+.crud-card-row--credit::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--row-accent, var(--color-danger-solid));
+  opacity: 0.8;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.crud-card-row--debt:hover:not(:disabled),
+.crud-card-row--credit:hover:not(:disabled) {
+  background: var(--bg-glass-light);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-glass-hover);
+}
+
+.crud-card-row--project:hover:not(:disabled),
+.crud-card-row--subscription:hover:not(:disabled),
+.crud-card-row--debit-card:hover:not(:disabled),
+.crud-card-row--debtor:hover:not(:disabled) {
+  background: var(--bg-glass-hover);
+  border-left-color: var(--row-accent-hover, var(--row-accent, var(--accent-primary-border)));
+  border-top-color: var(--border-glass-hover);
+  border-right-color: var(--border-glass-hover);
+  border-bottom-color: var(--border-glass-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.crud-card-row:active:not(:disabled) {
+  transform: translateY(0);
+  transition: transform var(--transition-fast);
+}
+
+.crud-card-row:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.crud-card-row:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.crud-card-row--credit:hover:not(:disabled) {
+  border-left-color: var(--row-accent);
+  box-shadow: var(--shadow-md);
+}
+
+.crud-row-subtitle {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  line-height: 1.4;
+}
+
+.crud-row-secondary {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  width: 100%;
+}

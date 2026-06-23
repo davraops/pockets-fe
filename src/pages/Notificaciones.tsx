@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
@@ -7,9 +7,13 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
 import NotificationsIcon from '@mui/icons-material/Notifications'
 import { api } from '../services/api'
+import { devError, isDebugToolsEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
+import { useConfirm } from '../contexts/ConfirmContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
+import ModalOverlay from '../components/ModalOverlay'
+import ListSkeleton from '../components/ListSkeleton'
 import './Notificaciones.css'
 
 interface NotificationAPI {
@@ -27,6 +31,7 @@ interface NotificationAPI {
 function Notificaciones() {
   const navigate = useNavigate()
   const { showNotification } = useNotification()
+  const { confirm } = useConfirm()
   const [notifications, setNotifications] = useState<NotificationAPI[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
@@ -34,17 +39,74 @@ function Notificaciones() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all')
+  const [totalCount, setTotalCount] = useState(0)
   const menuRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    loadNotifications()
-  }, [filter])
+  const stripStats = useMemo(() => {
+    if (isLoading && notifications.length === 0) {
+      return null
+    }
+    return {
+      total: totalCount,
+      unread: unreadCount,
+      read: Math.max(0, totalCount - unreadCount),
+    }
+  }, [isLoading, notifications.length, totalCount, unreadCount])
 
-  // Cerrar menú al hacer clic fuera
+  const loadNotifications = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      const filters: Record<string, string> = {}
+      if (filter === 'unread') {
+        filters.is_read = 'false'
+      } else if (filter === 'read') {
+        filters.is_read = 'true'
+      }
+
+      const response = await api.getNotifications(filters)
+
+      if (response.notifications && Array.isArray(response.notifications)) {
+        setNotifications(response.notifications)
+        if (filter === 'all') {
+          setTotalCount(response.notifications.length)
+        }
+      } else {
+        setNotifications([])
+        if (filter === 'all') {
+          setTotalCount(0)
+        }
+      }
+
+      if (response.unread_count !== undefined) {
+        setUnreadCount(response.unread_count)
+      } else if (response.notifications && Array.isArray(response.notifications)) {
+        setUnreadCount(response.notifications.filter((n: NotificationAPI) => !n.is_read).length)
+      } else {
+        setUnreadCount(0)
+      }
+    } catch (err: unknown) {
+      devError('Error al cargar notificaciones:', err)
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al cargar las notificaciones. Por favor, intenta de nuevo.'
+      )
+      setError(errorMessage)
+      setNotifications([])
+      showNotification(errorMessage, 'error')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [filter, showNotification])
+
+  useEffect(() => {
+    void loadNotifications()
+  }, [loadNotifications])
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement
-      if (isMenuOpen && !target.closest('.notificaciones-toolbar-menu-container')) {
+      if (isMenuOpen && !target.closest('.app-toolbar-menu-container')) {
         setIsMenuOpen(false)
       }
     }
@@ -58,134 +120,78 @@ function Notificaciones() {
     }
   }, [isMenuOpen])
 
-  const loadNotifications = async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
-
-      const filters: any = {}
-      if (filter === 'unread') {
-        filters.is_read = 'false'
-      } else if (filter === 'read') {
-        filters.is_read = 'true'
-      }
-
-      const response = await api.getNotifications(filters)
-
-      if (response.notifications && Array.isArray(response.notifications)) {
-        setNotifications(response.notifications)
-      } else {
-        setNotifications([])
-      }
-
-      // Actualizar unread_count desde la respuesta
-      if (response.unread_count !== undefined) {
-        setUnreadCount(response.unread_count)
-      } else if (response.notifications && Array.isArray(response.notifications)) {
-        // Fallback: calcular localmente si unread_count no está disponible
-        setUnreadCount(response.notifications.filter((n: any) => !n.is_read).length)
-      } else {
-        setUnreadCount(0)
-      }
-    } catch (err: any) {
-      console.error('Error al cargar notificaciones:', err)
-      const errorMessage = getTranslatedErrorMessage(
-        err,
-        'Error al cargar las notificaciones. Por favor, intenta de nuevo.'
-      )
-      setError(errorMessage)
-      showNotification(errorMessage, 'error')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   const handleMarkAsRead = async (notificationId: string, isRead: boolean) => {
     try {
-      setIsLoading(true)
       await api.markNotificationRead(notificationId, isRead)
       showNotification(
         isRead ? 'Notificación marcada como leída' : 'Notificación marcada como no leída',
         'success'
       )
       await loadNotifications()
-    } catch (err: any) {
-      console.error('Error al marcar notificación:', err)
+    } catch (err: unknown) {
+      devError('Error al marcar notificación:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al actualizar la notificación. Por favor, intenta de nuevo.'
       )
       showNotification(errorMessage, 'error')
-    } finally {
-      setIsLoading(false)
     }
   }
 
   const handleMarkAllAsRead = async () => {
     try {
-      setIsLoading(true)
       await api.markAllNotificationsRead(true)
       showNotification('Todas las notificaciones han sido marcadas como leídas', 'success')
       await loadNotifications()
-      setIsMenuOpen(false)
     } catch (err: any) {
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al actualizar las notificaciones. Por favor, intenta de nuevo.'
       )
       showNotification(errorMessage, 'error')
-    } finally {
-      setIsLoading(false)
     }
   }
 
   const handleDelete = async (notificationId: string) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar esta notificación?')) {
+    if (!(await confirm({ message: '¿Estás seguro de que deseas eliminar esta notificación?', variant: 'danger' }))) {
       return
     }
 
     try {
-      setIsLoading(true)
       await api.deleteNotification(notificationId)
       showNotification('Notificación eliminada exitosamente', 'success')
       await loadNotifications()
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al eliminar la notificación. Por favor, intenta de nuevo.'
       )
       showNotification(errorMessage, 'error')
-    } finally {
-      setIsLoading(false)
     }
   }
 
   const handleDeleteAll = async () => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar todas las notificaciones?')) {
+    if (!(await confirm({ message: '¿Estás seguro de que deseas eliminar todas las notificaciones?', variant: 'danger' }))) {
       return
     }
 
     try {
-      setIsLoading(true)
       await api.deleteAllNotifications()
       showNotification('Todas las notificaciones han sido eliminadas', 'success')
       await loadNotifications()
-      setIsMenuOpen(false)
       setIsDebugModalOpen(false)
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al eliminar las notificaciones. Por favor, intenta de nuevo.'
       )
       showNotification(errorMessage, 'error')
-    } finally {
-      setIsLoading(false)
     }
   }
 
   const handleDebugCreateNotifications = async () => {
+    if (!isDebugToolsEnabled()) return
     try {
-      setIsLoading(true)
       const demoNotifications = [
         {
           type: 'routine',
@@ -339,75 +345,73 @@ function Notificaciones() {
 
   return (
     <div className="app-page-container">
-      <div className="app-page-content notificaciones-content">
+      <div className="app-page-content app-page-content-wide crud-page-content notificaciones-content">
         {/* Toolbar */}
-        <div className="notificaciones-toolbar">
+        <div className="app-toolbar">
           <button
-            className="notificaciones-toolbar-button"
+            className="app-toolbar-button"
             onClick={() => navigate('/')}
-            aria-label="Volver"
+            aria-label="Volver al inicio"
             type="button"
           >
-            <ArrowBackIcon className="notificaciones-toolbar-icon" />
+            <ArrowBackIcon className="app-toolbar-icon" />
           </button>
 
-          <div className="notificaciones-toolbar-menu-container" ref={menuRef}>
-            <button
-              className="notificaciones-toolbar-button"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label="Opciones"
-              aria-expanded={isMenuOpen}
-              type="button"
-            >
-              <MoreVertIcon className="notificaciones-toolbar-icon" />
-            </button>
-            {isMenuOpen && (
-              <div className="notificaciones-menu">
+          <div className="app-toolbar-menu-container" ref={menuRef}>
+            {isDebugToolsEnabled() && (
+              <>
                 <button
-                  className="notificaciones-menu-item"
-                  onClick={() => {
-                    handleMarkAllAsRead()
-                  }}
+                  className="app-toolbar-button"
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  aria-label="Opciones de depuración"
+                  aria-expanded={isMenuOpen}
                   type="button"
-                  disabled={unreadCount === 0}
                 >
-                  <CheckCircleIcon className="notificaciones-menu-icon" />
-                  <span>Marcar todas como leídas</span>
+                  <MoreVertIcon className="app-toolbar-icon" />
                 </button>
-                <button
-                  className="notificaciones-menu-item notificaciones-menu-item-danger"
-                  onClick={() => {
-                    handleDeleteAll()
-                  }}
-                  type="button"
-                  disabled={notifications.length === 0}
-                >
-                  <DeleteIcon className="notificaciones-menu-icon" />
-                  <span>Eliminar todas</span>
-                </button>
-                {api.isTestUser() && (
-                  <button
-                    className="notificaciones-menu-item"
-                    onClick={() => {
-                      setIsDebugModalOpen(true)
-                      setIsMenuOpen(false)
-                    }}
-                    type="button"
-                  >
-                    <span>🐛 Debug</span>
-                  </button>
+                {isMenuOpen && (
+                  <div className="crud-dropdown-menu">
+                    <button
+                      className="crud-dropdown-menu-item"
+                      onClick={() => {
+                        setIsDebugModalOpen(true)
+                        setIsMenuOpen(false)
+                      }}
+                      type="button"
+                    >
+                      <span>🐛 Debug</span>
+                    </button>
+                  </div>
                 )}
-              </div>
+              </>
             )}
           </div>
         </div>
 
-        <h1 className="notificaciones-page-title">Notificaciones</h1>
-        {unreadCount > 0 && (
-          <p className="notificaciones-page-subtitle">
-            {unreadCount} {unreadCount === 1 ? 'notificación no leída' : 'notificaciones no leídas'}
-          </p>
-        )}
+        <h1 className="app-page-title">Notificaciones</h1>
+
+        <div className="crud-summary-strip" role="region" aria-label="Resumen de notificaciones">
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Total</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--info">
+              {stripStats === null ? '…' : stripStats.total}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">No leídas</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--expense">
+              {stripStats === null ? '…' : stripStats.unread}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Leídas</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--available">
+              {stripStats === null ? '…' : stripStats.read}
+            </span>
+          </div>
+        </div>
 
         {/* Filtros */}
         <div className="notificaciones-filters">
@@ -423,7 +427,7 @@ function Notificaciones() {
             onClick={() => setFilter('unread')}
             type="button"
           >
-            No leídas ({notifications.filter(n => !n.is_read).length})
+            No leídas ({unreadCount})
           </button>
           <button
             className={`notificaciones-filter-button ${filter === 'read' ? 'active' : ''}`}
@@ -434,14 +438,51 @@ function Notificaciones() {
           </button>
         </div>
 
+        <div className="notificaciones-bulk-actions">
+          <button
+            type="button"
+            className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+            onClick={() => void handleMarkAllAsRead()}
+            disabled={unreadCount === 0 || isLoading}
+            aria-label="Marcar todas las notificaciones como leídas"
+          >
+            <CheckCircleIcon aria-hidden="true" />
+            Marcar todas como leídas
+          </button>
+          {totalCount > 0 && (
+            <button
+              type="button"
+              className="btn-base btn-block btn-submit notificaciones-bulk-danger-button"
+              onClick={() => void handleDeleteAll()}
+              disabled={isLoading}
+              aria-label="Eliminar todas las notificaciones"
+            >
+              <DeleteIcon aria-hidden="true" />
+              Eliminar todas
+            </button>
+          )}
+        </div>
+
         {/* Lista de Notificaciones */}
-        {isLoading ? (
-          <div className="notificaciones-empty-state">
-            <p>Cargando notificaciones...</p>
+        {isLoading && notifications.length === 0 ? (
+          <div className="glass-group">
+            <ListSkeleton variant="inset-row" count={5} aria-label="Cargando notificaciones" />
           </div>
         ) : error ? (
-          <div className="notificaciones-empty-state">
-            <p>{error}</p>
+          <div className="loader-container">
+            <div className="loader finanzas-stats-error-panel">
+              <p className="loader-text loader-text--error" role="alert">
+                {error}
+              </p>
+              <button
+                type="button"
+                className="btn-base btn-secondary finanzas-stats-retry-button"
+                onClick={() => void loadNotifications()}
+                aria-label="Reintentar cargar notificaciones"
+              >
+                <span>Reintentar</span>
+              </button>
+            </div>
           </div>
         ) : notifications.length === 0 ? (
           <div className="notificaciones-empty-state">
@@ -453,33 +494,36 @@ function Notificaciones() {
                   ? 'No hay notificaciones leídas'
                   : 'No hay notificaciones'}
             </p>
+            {filter === 'all' && (
+              <p className="empty-state-subtext">
+                Las alertas de rutinas, presupuestos y más aparecerán aquí.
+              </p>
+            )}
           </div>
         ) : (
           <div className="notificaciones-list">
-            <div className="notificaciones-group">
+            <div className="glass-group">
               {notifications.map(notification => (
                 <div
                   key={notification.id}
-                  className={`notificaciones-item ${notification.is_read ? 'read' : 'unread'}`}
+                  className={`crud-inset-row crud-row-accent-purple ${notification.is_read ? 'crud-inset-row--read' : 'crud-inset-row--unread'}`}
                 >
-                  <div className="notificaciones-item-content">
-                    <div className="notificaciones-item-header">
-                      <div className="notificaciones-item-title-section">
+                  <div className="crud-row-content">
+                    <div className="crud-row-header">
+                      <div className="crud-row-title-section">
                         <div
                           className="notificaciones-item-priority-indicator"
                           style={{ backgroundColor: getPriorityColor(notification.priority) }}
                         />
-                        <h3 className="notificaciones-item-title">{notification.title}</h3>
+                        <h3 className="crud-row-title">{notification.title}</h3>
                       </div>
                       <div className="notificaciones-item-actions">
                         <button
                           className="notificaciones-item-action-button"
                           onClick={() => handleMarkAsRead(notification.id, !notification.is_read)}
-                          aria-label={
-                            notification.is_read ? 'Marcar como no leída' : 'Marcar como leída'
-                          }
+                          aria-label={notification.is_read ? 'Marcar como no leída' : 'Marcar como leída'}
                           type="button"
-                          disabled={isLoading}
+                          disabled={isLoading && notifications.length === 0}
                         >
                           {notification.is_read ? (
                             <CheckCircleIcon className="notificaciones-item-action-icon" />
@@ -492,19 +536,17 @@ function Notificaciones() {
                           onClick={() => handleDelete(notification.id)}
                           aria-label="Eliminar"
                           type="button"
-                          disabled={isLoading}
+                          disabled={isLoading && notifications.length === 0}
                         >
                           <DeleteIcon className="notificaciones-item-action-icon" />
                         </button>
                       </div>
                     </div>
-                    <p className="notificaciones-item-message">{notification.message}</p>
+                    <p className="crud-row-preview">{notification.message}</p>
                     <div className="notificaciones-item-meta">
-                      <span className="notificaciones-item-time">
-                        {formatDate(notification.created_at)}
-                      </span>
+                      <span className="crud-row-meta">{formatDate(notification.created_at)}</span>
                       {notification.type && (
-                        <span className="notificaciones-item-type">{notification.type}</span>
+                        <span className="crud-row-meta">{notification.type}</span>
                       )}
                     </div>
                   </div>
@@ -515,13 +557,13 @@ function Notificaciones() {
         )}
 
         {/* Modal de Debug */}
-        {isDebugModalOpen && (
-          <div className="notificaciones-modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
-            <div className="notificaciones-modal" onClick={e => e.stopPropagation()}>
-              <div className="notificaciones-modal-header">
-                <h2 className="notificaciones-modal-title">Debug - Notificaciones</h2>
+        {isDebugModalOpen && isDebugToolsEnabled() && (
+          <ModalOverlay onClose={() => setIsDebugModalOpen(false)} className="modal-overlay">
+            <div className="modal-panel" onClick={e => e.stopPropagation()}>
+              <div className="modal-panel-header">
+                <h2 className="modal-panel-title" id="modal-panel-title-debug-notificaciones">Debug - Notificaciones</h2>
                 <button
-                  className="notificaciones-modal-close-button"
+                  className="modal-panel-close"
                   onClick={() => setIsDebugModalOpen(false)}
                   aria-label="Cerrar modal"
                   type="button"
@@ -573,7 +615,7 @@ function Notificaciones() {
                 </div>
               </div>
             </div>
-          </div>
+          </ModalOverlay>
         )}
       </div>
     </div>
@@ -581,3 +623,4 @@ function Notificaciones() {
 }
 
 export default Notificaciones
+

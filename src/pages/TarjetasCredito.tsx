@@ -9,10 +9,50 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import WarningIcon from '@mui/icons-material/Warning'
 import { api } from '../services/api'
+import { isDebugToolsEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
+import { emitTransactionSyncEvents } from '../utils/transactionMutation'
 import './AppPage.css'
 import './TarjetasCredito.css'
+
+function buildCutDate(cutDayInput: string): string {
+  if (cutDayInput.trim()) {
+    const cutDay = parseInt(cutDayInput.trim(), 10)
+    if (!isNaN(cutDay) && cutDay >= 1 && cutDay <= 31) {
+      const now = new Date()
+      const year = now.getFullYear()
+      const month = String(now.getMonth() + 1).padStart(2, '0')
+      const day = String(cutDay).padStart(2, '0')
+      return `${year}-${month}-${day}`
+    }
+  }
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  return `${year}-${month}-15`
+}
+
+function buildLinkedDebtPayload(params: {
+  nombre: string
+  banco: string
+  cupoNum: number
+  tasaNum: number
+  cupoUsadoNum: number
+  fechaCorte: string
+}) {
+  const baseAmount = params.cupoUsadoNum > 0 ? params.cupoUsadoNum : params.cupoNum
+  return {
+    value: params.cupoNum,
+    currency: 'COP',
+    concept: params.nombre.trim(),
+    owed: params.cupoUsadoNum > 0 ? params.cupoUsadoNum : 0,
+    interest_rate: params.tasaNum,
+    cut_date: buildCutDate(params.fechaCorte),
+    reference: `${params.banco.trim()} - ${params.nombre.trim()}`,
+    minimum_payment: Math.round(baseAmount * 0.05),
+  }
+}
 
 // Interfaz que coincide con la respuesta de la API (campos en inglés)
 interface CreditCardAPI {
@@ -447,13 +487,7 @@ function TarjetasCredito() {
       if (formData.fechaCorte.trim()) {
         const cutDay = parseInt(formData.fechaCorte.trim())
         if (!isNaN(cutDay) && cutDay >= 1 && cutDay <= 31) {
-          // El backend espera YYYY-MM-DD, pero solo usamos el día
-          // Usamos el mes/año actual para formar la fecha, aunque el backend probablemente solo use el día
-          const now = new Date()
-          const year = now.getFullYear()
-          const month = String(now.getMonth() + 1).padStart(2, '0')
-          const day = String(cutDay).padStart(2, '0')
-          cardData.cut_date = `${year}-${month}-${day}`
+          cardData.cut_date = buildCutDate(formData.fechaCorte)
         }
       }
 
@@ -479,59 +513,25 @@ function TarjetasCredito() {
         }
         handleCloseDetailModal()
       } else {
-        // Agregar nueva tarjeta
-        await api.createCreditCard(cardData)
+        await api.createCreditCardWithDebt({
+          ...cardData,
+          create_linked_debt: true,
+          debt: buildLinkedDebtPayload({
+            nombre: formData.nombre,
+            banco: formData.banco,
+            cupoNum,
+            tasaNum,
+            cupoUsadoNum,
+            fechaCorte: formData.fechaCorte,
+          }),
+        })
 
-        // Crear deuda asociada automáticamente
-        try {
-          const debtData: any = {
-            value: cupoNum,
-            currency: 'COP',
-            concept: formData.nombre.trim(),
-            owed: cupoUsadoNum > 0 ? cupoUsadoNum : 0,
-            interest_rate: tasaNum,
-          }
-
-          // Agregar fecha de corte si existe
-          if (formData.fechaCorte.trim()) {
-            const cutDay = parseInt(formData.fechaCorte.trim())
-            if (!isNaN(cutDay) && cutDay >= 1 && cutDay <= 31) {
-              // Usar el mes/año actual para formar la fecha
-              const now = new Date()
-              const year = now.getFullYear()
-              const month = String(now.getMonth() + 1).padStart(2, '0')
-              const day = String(cutDay).padStart(2, '0')
-              debtData.cut_date = `${year}-${month}-${day}`
-            }
-          } else {
-            // Si no hay fecha de corte, usar el día 15 del mes actual como default
-            const now = new Date()
-            const year = now.getFullYear()
-            const month = String(now.getMonth() + 1).padStart(2, '0')
-            debtData.cut_date = `${year}-${month}-15`
-          }
-
-          // Agregar referencia con el nombre del banco
-          debtData.reference = `${formData.banco.trim()} - ${formData.nombre.trim()}`
-
-          // Calcular pago mínimo como 5% del cupo usado (o del cupo total si no hay uso)
-          const baseAmount = cupoUsadoNum > 0 ? cupoUsadoNum : cupoNum
-          debtData.minimum_payment = Math.round(baseAmount * 0.05)
-
-          await api.createDebt(debtData)
-          console.log('Deuda creada automáticamente para la tarjeta:', formData.nombre.trim())
-        } catch (debtError: any) {
-          console.error('Error al crear deuda asociada:', debtError)
-          // No bloqueamos la creación de la tarjeta si falla la deuda
-          // Solo mostramos un warning en consola
-        }
-
-        // Recargar tarjetas después de crear
         const response = await api.getCreditCards()
         if (response.credit_cards && Array.isArray(response.credit_cards)) {
           const mappedCards = response.credit_cards.map(card => mapCardFromAPI(card))
           setCards(mappedCards)
         }
+        emitTransactionSyncEvents()
         handleCloseModal()
       }
     } catch (err: any) {
@@ -690,52 +690,29 @@ function TarjetasCredito() {
 
     try {
       setIsLoading(true)
-      let createdDebts = 0
-      let failedDebts = 0
 
       for (const card of testCards) {
-        // Crear la tarjeta
-        await api.createCreditCard(card)
-
-        // Crear la deuda asociada automáticamente
-        try {
-          const debtData: any = {
-            value: card.credit_limit,
-            currency: 'COP',
-            concept: card.name,
-            owed: card.used_credit || 0,
-            interest_rate: card.monthly_rate,
-          }
-
-          // Agregar fecha de corte si existe
-          if (card.cut_date) {
-            debtData.cut_date = card.cut_date
-          } else {
-            // Si no hay fecha de corte, usar el día 15 del mes actual como default
-            const now = new Date()
-            const year = now.getFullYear()
-            const month = String(now.getMonth() + 1).padStart(2, '0')
-            debtData.cut_date = `${year}-${month}-15`
-          }
-
-          // Agregar referencia con el nombre del banco
-          debtData.reference = `${card.bank} - ${card.name}`
-
-          // Calcular pago mínimo como 5% del cupo usado (o del cupo total si no hay uso)
-          const baseAmount = card.used_credit > 0 ? card.used_credit : card.credit_limit
-          debtData.minimum_payment = Math.round(baseAmount * 0.05)
-
-          await api.createDebt(debtData)
-          createdDebts++
-          console.log('Deuda creada automáticamente para la tarjeta:', card.name)
-        } catch (debtError: any) {
-          console.error('Error al crear deuda asociada para', card.name, ':', debtError)
-          failedDebts++
-          // No bloqueamos la creación de la tarjeta si falla la deuda
-        }
+        await api.createCreditCardWithDebt({
+          name: card.name,
+          bank: card.bank,
+          credit_limit: card.credit_limit,
+          monthly_rate: card.monthly_rate,
+          management_fee: card.management_fee,
+          cut_date: card.cut_date,
+          used_credit: card.used_credit,
+          benefits: card.benefits,
+          create_linked_debt: true,
+          debt: buildLinkedDebtPayload({
+            nombre: card.name,
+            banco: card.bank,
+            cupoNum: card.credit_limit,
+            tasaNum: card.monthly_rate,
+            cupoUsadoNum: card.used_credit || 0,
+            fechaCorte: card.cut_date?.split('-')[2] ?? '15',
+          }),
+        })
       }
 
-      // Recargar tarjetas después de crear todas
       const response = await api.getCreditCards()
       if (response.credit_cards && Array.isArray(response.credit_cards)) {
         const mappedCards = response.credit_cards.map(card => mapCardFromAPI(card))
@@ -743,11 +720,11 @@ function TarjetasCredito() {
       }
 
       setIsDebugModalOpen(false)
-      const message = `${testCards.length} tarjetas de crédito de prueba creadas exitosamente`
-      const debtMessage = createdDebts > 0 ? `\n${createdDebts} deudas asociadas creadas.` : ''
-      const errorMessage =
-        failedDebts > 0 ? `\n⚠️ ${failedDebts} deudas no pudieron crearse (revisa la consola).` : ''
-      showNotification(message + debtMessage + errorMessage, 'success')
+      showNotification(
+        `${testCards.length} tarjetas de crédito de prueba creadas exitosamente`,
+        'success'
+      )
+      emitTransactionSyncEvents()
     } catch (err: any) {
       console.error('Error al crear tarjetas de prueba:', err)
       const errorMessage = getTranslatedErrorMessage(
@@ -1054,53 +1031,32 @@ function TarjetasCredito() {
                   <ArrowBackIcon className="tarjetas-credito-toolbar-icon" />
                 </button>
                 <div className="tarjetas-credito-toolbar-menu-container" ref={menuRef}>
-                  <button
-                    className="tarjetas-credito-toolbar-button"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    aria-label="Opciones"
-                    aria-expanded={isMenuOpen}
-                    type="button"
-                  >
-                    <MoreVertIcon className="tarjetas-credito-toolbar-icon" />
-                  </button>
-                  {isMenuOpen && (
-                    <div className="tarjetas-credito-menu">
+                  {isDebugToolsEnabled() && (
+                    <>
                       <button
-                        className="tarjetas-credito-menu-item"
-                        onClick={() => {
-                          setIsMenuOpen(false)
-                          handleOpenModal()
-                        }}
+                        className="tarjetas-credito-toolbar-button"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        aria-label="Opciones de depuración"
+                        aria-expanded={isMenuOpen}
                         type="button"
                       >
-                        <AddIcon className="tarjetas-credito-menu-icon" />
-                        <span>Agregar Tarjeta</span>
+                        <MoreVertIcon className="tarjetas-credito-toolbar-icon" />
                       </button>
-                      {cards.some(card => card.beneficios.length > 0) && (
-                        <button
-                          className="tarjetas-credito-menu-item"
-                          onClick={() => {
-                            setIsMenuOpen(false)
-                            handleShowAllBenefits()
-                          }}
-                          type="button"
-                        >
-                          <span>Ver Todos los Beneficios</span>
-                        </button>
+                      {isMenuOpen && (
+                        <div className="tarjetas-credito-menu">
+                          <button
+                            className="tarjetas-credito-menu-item"
+                            onClick={() => {
+                              setIsMenuOpen(false)
+                              setIsDebugModalOpen(true)
+                            }}
+                            type="button"
+                          >
+                            <span>🐛 Debug</span>
+                          </button>
+                        </div>
                       )}
-                      {api.isTestUser() && (
-                        <button
-                          className="tarjetas-credito-menu-item"
-                          onClick={() => {
-                            setIsMenuOpen(false)
-                            setIsDebugModalOpen(true)
-                          }}
-                          type="button"
-                        >
-                          <span>🐛 Debug</span>
-                        </button>
-                      )}
-                    </div>
+                    </>
                   )}
                 </div>
               </div>
@@ -1108,23 +1064,45 @@ function TarjetasCredito() {
               {/* Encabezado de Sección - HIG: Clear Navigation */}
               <h1 className="tarjetas-credito-page-title">Tarjetas de Crédito</h1>
 
-              {/* Resumen de cupos - HIG: Relevant Information Highlights */}
-              {cards.length > 0 && (
-                <div className="credit-summary-block">
-                  <div className="summary-item">
-                    <span className="summary-label">Cupo Total</span>
-                    <span className="summary-value">
-                      {formatPrice(calculateTotalCreditLimit())}
-                    </span>
-                  </div>
-                  <div className="summary-separator"></div>
-                  <div className="summary-item">
-                    <span className="summary-label">Disponible</span>
-                    <span className="summary-value available">
-                      {formatPrice(calculateTotalAvailableCredit())}
-                    </span>
-                  </div>
+              <div
+                className="crud-summary-strip"
+                role="region"
+                aria-label="Resumen de cupos"
+              >
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Cupo total</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
+                    {formatPrice(calculateTotalCreditLimit())}
+                  </span>
                 </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Disponible</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--available">
+                    {formatPrice(calculateTotalAvailableCredit())}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+                onClick={handleOpenModal}
+                aria-label="Agregar tarjeta de crédito"
+              >
+                <AddIcon aria-hidden="true" />
+                Agregar tarjeta
+              </button>
+
+              {cards.some(card => card.beneficios.length > 0) && (
+                <button
+                  type="button"
+                  className="btn-base btn-secondary btn-block btn-submit"
+                  onClick={handleShowAllBenefits}
+                  aria-label="Ver todos los beneficios"
+                >
+                  Ver todos los beneficios
+                </button>
               )}
 
               {/* Advertencia de Uso Responsable - HIG: Clear Feedback */}
@@ -1147,7 +1125,7 @@ function TarjetasCredito() {
                 <div className="empty-state">
                   <CreditCardIcon className="empty-icon" />
                   <p className="empty-text">No hay tarjetas de crédito agregadas</p>
-                  <p className="empty-subtext">Agrega tu primera tarjeta de crédito</p>
+                  <p className="empty-subtext">Usa el botón de arriba para agregar la primera</p>
                 </div>
               ) : (
                 <div className="cards-list">
@@ -1276,8 +1254,8 @@ function TarjetasCredito() {
               </div>
             </div>
             <form className="modal-form" onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label htmlFor="nombre">Nombre</label>
+              <div className="form-group-base">
+                <label htmlFor="nombre" className="form-label-base">Nombre</label>
                 <input
                   type="text"
                   id="nombre"
@@ -1286,19 +1264,19 @@ function TarjetasCredito() {
                   onChange={handleChange}
                   required
                   placeholder="Ej: Visa Gold"
-                  className={formErrors.nombre ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.nombre ? 'input-error' : ''}`}
                 />
                 {formErrors.nombre && <span className="error-message">{formErrors.nombre}</span>}
               </div>
-              <div className="form-group">
-                <label htmlFor="banco">Banco Emisor</label>
+              <div className="form-group-base">
+                <label htmlFor="banco" className="form-label-base">Banco Emisor</label>
                 <select
                   id="banco"
                   name="banco"
                   value={formData.banco}
                   onChange={handleChange}
                   required
-                  className={formErrors.banco ? 'input-error form-select' : 'form-select'}
+                  className={`form-input-base ${`form-select-base ${formErrors.banco ? 'input-error' : ''}`}`}
                 >
                   <option value="">Selecciona un banco</option>
                   {bancos.map(banco => (
@@ -1309,8 +1287,8 @@ function TarjetasCredito() {
                 </select>
                 {formErrors.banco && <span className="error-message">{formErrors.banco}</span>}
               </div>
-              <div className="form-group">
-                <label htmlFor="cupo">Cupo de Crédito (COP)</label>
+              <div className="form-group-base">
+                <label htmlFor="cupo" className="form-label-base">Cupo de Crédito (COP)</label>
                 <input
                   type="number"
                   id="cupo"
@@ -1321,12 +1299,12 @@ function TarjetasCredito() {
                   step="0.01"
                   min="0"
                   placeholder="0.00"
-                  className={formErrors.cupo ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.cupo ? 'input-error' : ''}`}
                 />
                 {formErrors.cupo && <span className="error-message">{formErrors.cupo}</span>}
               </div>
-              <div className="form-group">
-                <label htmlFor="cupoUsado">Cupo Usado (COP) - Opcional</label>
+              <div className="form-group-base">
+                <label htmlFor="cupoUsado" className="form-label-base">Cupo Usado (COP) - Opcional</label>
                 <input
                   type="number"
                   id="cupoUsado"
@@ -1336,15 +1314,15 @@ function TarjetasCredito() {
                   step="0.01"
                   min="0"
                   placeholder="0.00"
-                  className={formErrors.cupoUsado ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.cupoUsado ? 'input-error' : ''}`}
                 />
                 {formErrors.cupoUsado && (
                   <span className="error-message">{formErrors.cupoUsado}</span>
                 )}
                 <p className="form-hint">Monto del cupo que ya has utilizado</p>
               </div>
-              <div className="form-group">
-                <label htmlFor="tasaMensual">Tasa Mensual (%)</label>
+              <div className="form-group-base">
+                <label htmlFor="tasaMensual" className="form-label-base">Tasa Mensual (%)</label>
                 <input
                   type="number"
                   id="tasaMensual"
@@ -1355,14 +1333,14 @@ function TarjetasCredito() {
                   step="0.01"
                   min="0"
                   placeholder="0.00"
-                  className={formErrors.tasaMensual ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.tasaMensual ? 'input-error' : ''}`}
                 />
                 {formErrors.tasaMensual && (
                   <span className="error-message">{formErrors.tasaMensual}</span>
                 )}
               </div>
-              <div className="form-group">
-                <label htmlFor="cuotaManejo">Cuota de Manejo (COP) - Opcional</label>
+              <div className="form-group-base">
+                <label htmlFor="cuotaManejo" className="form-label-base">Cuota de Manejo (COP) - Opcional</label>
                 <input
                   type="number"
                   id="cuotaManejo"
@@ -1372,14 +1350,14 @@ function TarjetasCredito() {
                   step="0.01"
                   min="0"
                   placeholder="0.00"
-                  className={formErrors.cuotaManejo ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.cuotaManejo ? 'input-error' : ''}`}
                 />
                 {formErrors.cuotaManejo && (
                   <span className="error-message">{formErrors.cuotaManejo}</span>
                 )}
               </div>
-              <div className="form-group">
-                <label htmlFor="fechaCorte">Día de Corte (1-31) - Opcional</label>
+              <div className="form-group-base">
+                <label htmlFor="fechaCorte" className="form-label-base">Día de Corte (1-31) - Opcional</label>
                 <input
                   type="number"
                   id="fechaCorte"
@@ -1389,7 +1367,7 @@ function TarjetasCredito() {
                   min="1"
                   max="31"
                   placeholder="Ej: 15"
-                  className={formErrors.fechaCorte ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.fechaCorte ? 'input-error' : ''}`}
                 />
                 {formErrors.fechaCorte && (
                   <span className="error-message">{formErrors.fechaCorte}</span>
@@ -1399,8 +1377,8 @@ function TarjetasCredito() {
                   mes)
                 </p>
               </div>
-              <div className="form-group">
-                <label htmlFor="beneficios">Beneficios - Opcional (separados por comas)</label>
+              <div className="form-group-base">
+                <label htmlFor="beneficios" className="form-label-base">Beneficios - Opcional (separados por comas)</label>
                 <textarea
                   id="beneficios"
                   name="beneficios"
@@ -1408,7 +1386,7 @@ function TarjetasCredito() {
                   onChange={handleChange}
                   placeholder="Ej: Millas, Cashback 2%, Seguro de viaje"
                   rows={3}
-                  className={formErrors.beneficios ? 'input-error' : ''}
+                  className={`form-textarea-base ${`form-input-base ${formErrors.beneficios ? 'input-error' : ''}`}`}
                 />
                 {formErrors.beneficios && (
                   <span className="error-message">{formErrors.beneficios}</span>
@@ -1559,8 +1537,8 @@ function TarjetasCredito() {
               </>
             ) : (
               <form className="modal-form" onSubmit={handleSubmit}>
-                <div className="form-group">
-                  <label htmlFor="edit-nombre">Nombre</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-nombre" className="form-label-base">Nombre</label>
                   <input
                     type="text"
                     id="edit-nombre"
@@ -1569,19 +1547,19 @@ function TarjetasCredito() {
                     onChange={handleChange}
                     required
                     placeholder="Ej: Visa Gold"
-                    className={formErrors.nombre ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.nombre ? 'input-error' : ''}`}
                   />
                   {formErrors.nombre && <span className="error-message">{formErrors.nombre}</span>}
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-banco">Banco Emisor</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-banco" className="form-label-base">Banco Emisor</label>
                   <select
                     id="edit-banco"
                     name="banco"
                     value={formData.banco}
                     onChange={handleChange}
                     required
-                    className="form-select disabled-input"
+                    className="form-select-base disabled-input"
                     disabled
                   >
                     <option value="">Selecciona un banco</option>
@@ -1593,8 +1571,8 @@ function TarjetasCredito() {
                   </select>
                   <p className="form-hint">El banco no se puede modificar</p>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-cupo">Cupo de Crédito (COP)</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-cupo" className="form-label-base">Cupo de Crédito (COP)</label>
                   <input
                     type="number"
                     id="edit-cupo"
@@ -1605,12 +1583,12 @@ function TarjetasCredito() {
                     step="0.01"
                     min="0"
                     placeholder="0.00"
-                    className={formErrors.cupo ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.cupo ? 'input-error' : ''}`}
                   />
                   {formErrors.cupo && <span className="error-message">{formErrors.cupo}</span>}
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-cupoUsado">Cupo Usado (COP) - Opcional</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-cupoUsado" className="form-label-base">Cupo Usado (COP) - Opcional</label>
                   <input
                     type="number"
                     id="edit-cupoUsado"
@@ -1620,15 +1598,15 @@ function TarjetasCredito() {
                     step="0.01"
                     min="0"
                     placeholder="0.00"
-                    className={formErrors.cupoUsado ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.cupoUsado ? 'input-error' : ''}`}
                   />
                   {formErrors.cupoUsado && (
                     <span className="error-message">{formErrors.cupoUsado}</span>
                   )}
                   <p className="form-hint">Monto del cupo que ya has utilizado</p>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-tasaMensual">Tasa Mensual (%)</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-tasaMensual" className="form-label-base">Tasa Mensual (%)</label>
                   <input
                     type="number"
                     id="edit-tasaMensual"
@@ -1639,14 +1617,14 @@ function TarjetasCredito() {
                     step="0.01"
                     min="0"
                     placeholder="0.00"
-                    className={formErrors.tasaMensual ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.tasaMensual ? 'input-error' : ''}`}
                   />
                   {formErrors.tasaMensual && (
                     <span className="error-message">{formErrors.tasaMensual}</span>
                   )}
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-cuotaManejo">Cuota de Manejo (COP) - Opcional</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-cuotaManejo" className="form-label-base">Cuota de Manejo (COP) - Opcional</label>
                   <input
                     type="number"
                     id="edit-cuotaManejo"
@@ -1656,14 +1634,14 @@ function TarjetasCredito() {
                     step="0.01"
                     min="0"
                     placeholder="0.00"
-                    className={formErrors.cuotaManejo ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.cuotaManejo ? 'input-error' : ''}`}
                   />
                   {formErrors.cuotaManejo && (
                     <span className="error-message">{formErrors.cuotaManejo}</span>
                   )}
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-fechaCorte">Día de Corte (1-31) - Opcional</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-fechaCorte" className="form-label-base">Día de Corte (1-31) - Opcional</label>
                   <input
                     type="number"
                     id="edit-fechaCorte"
@@ -1673,7 +1651,7 @@ function TarjetasCredito() {
                     min="1"
                     max="31"
                     placeholder="Ej: 15"
-                    className={formErrors.fechaCorte ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.fechaCorte ? 'input-error' : ''}`}
                   />
                   {formErrors.fechaCorte && (
                     <span className="error-message">{formErrors.fechaCorte}</span>
@@ -1683,8 +1661,8 @@ function TarjetasCredito() {
                     cada mes)
                   </p>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-beneficios">
+                <div className="form-group-base">
+                  <label htmlFor="edit-beneficios" className="form-label-base">
                     Beneficios - Opcional (separados por comas)
                   </label>
                   <textarea
@@ -1694,7 +1672,7 @@ function TarjetasCredito() {
                     onChange={handleChange}
                     placeholder="Ej: Millas, Cashback 2%, Seguro de viaje"
                     rows={3}
-                    className={formErrors.beneficios ? 'input-error' : ''}
+                    className={`form-textarea-base ${`form-input-base ${formErrors.beneficios ? 'input-error' : ''}`}`}
                   />
                   {formErrors.beneficios && (
                     <span className="error-message">{formErrors.beneficios}</span>

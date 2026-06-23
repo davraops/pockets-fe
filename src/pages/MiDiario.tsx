@@ -1,19 +1,21 @@
 import { useState, useEffect, useRef } from 'react'
+import { backToHubLabel } from '../constants/hubLabels'
 import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import BookIcon from '@mui/icons-material/Book'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import MoreVertIcon from '@mui/icons-material/MoreVert'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment'
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import { api } from '../services/api'
 import { useNotification } from '../contexts/NotificationContext'
+import { useConfirm } from '../contexts/ConfirmContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
+import ModalOverlay from '../components/ModalOverlay'
+import ListSkeleton from '../components/ListSkeleton'
 import './MiDiario.css'
+import { devError, devLog } from '../utils/debugTools'
 
 interface DiaryEntryAPI {
   id: string
@@ -26,14 +28,15 @@ interface DiaryEntryAPI {
 function MiDiario() {
   const navigate = useNavigate()
   const { showNotification } = useNotification()
+  const { confirm } = useConfirm()
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [selectedEntry, setSelectedEntry] = useState<DiaryEntryAPI | null>(null)
   const [entries, setEntries] = useState<DiaryEntryAPI[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
+  const entryDateRef = useRef<HTMLInputElement>(null)
+  const contentRef = useRef<HTMLTextAreaElement>(null)
   const [formData, setFormData] = useState({
     entry_date: '',
     content: '',
@@ -78,7 +81,7 @@ function MiDiario() {
     // Calcular racha actual (desde hoy o ayer hacia atrás)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-
+    
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
 
@@ -110,9 +113,8 @@ function MiDiario() {
 
     // Contar días consecutivos desde startDate hacia atrás
     let streak = 0
-    const checkDate = new Date(startDate)
+    let checkDate = new Date(startDate)
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       const checkDateStr = checkDate.toISOString().split('T')[0]
       const hasEntry = sortedDates.some(date => {
@@ -140,14 +142,14 @@ function MiDiario() {
 
     // Ordenar de más antiguo a más reciente para calcular racha más larga
     const datesAsc = [...sortedDates].sort((a, b) => a.getTime() - b.getTime())
-
+    
     let longestStreakCount = 1
     let currentStreakCount = 1
 
     for (let i = 1; i < datesAsc.length; i++) {
       const prevDate = new Date(datesAsc[i - 1])
       const currDate = new Date(datesAsc[i])
-
+      
       // Calcular diferencia en días
       const diffTime = currDate.getTime() - prevDate.getTime()
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
@@ -165,30 +167,12 @@ function MiDiario() {
     setLongestStreak(longestStreakCount)
   }
 
-  // Cerrar menú al hacer clic fuera
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement
-      if (isMenuOpen && !target.closest('.midiario-toolbar-menu-container')) {
-        setIsMenuOpen(false)
-      }
-    }
-
-    if (isMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isMenuOpen])
-
   const loadEntries = async () => {
     try {
       setIsLoading(true)
       setError(null)
       const response = await api.getDiaryEntries()
-      console.log('🔵 GET /diary-entries - Respuesta:', response)
+      devLog('🔵 GET /diary-entries - Respuesta:', response)
 
       if (response.entries && Array.isArray(response.entries)) {
         // Ordenar por fecha descendente (más recientes primero)
@@ -200,7 +184,7 @@ function MiDiario() {
         setEntries([])
       }
     } catch (err: any) {
-      console.error('Error al cargar entradas de diario:', err)
+      devError('Error al cargar entradas de diario:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al cargar las entradas de diario. Por favor, intenta de nuevo.'
@@ -300,6 +284,15 @@ function MiDiario() {
     }
 
     setFormErrors(errors)
+    if (Object.keys(errors).length > 0) {
+      queueMicrotask(() => {
+        if (errors.entry_date) {
+          entryDateRef.current?.focus()
+        } else if (errors.content) {
+          contentRef.current?.focus()
+        }
+      })
+    }
     return Object.keys(errors).length === 0
   }
 
@@ -320,9 +313,9 @@ function MiDiario() {
 
       if (selectedEntry) {
         // Modo edición
-        console.log('🟡 PUT /diary-entries/' + selectedEntry.id + ' - Payload:', entryData)
+        devLog('🟡 PUT /diary-entries/' + selectedEntry.id + ' - Payload:', entryData)
         const updateResponse = await api.updateDiaryEntry(selectedEntry.id, entryData)
-        console.log('🟢 PUT /diary-entries/' + selectedEntry.id + ' - Respuesta:', updateResponse)
+        devLog('🟢 PUT /diary-entries/' + selectedEntry.id + ' - Respuesta:', updateResponse)
 
         await loadEntries()
 
@@ -339,16 +332,16 @@ function MiDiario() {
         showNotification('Entrada de diario actualizada exitosamente', 'success')
       } else {
         // Modo creación
-        console.log('🟢 POST /diary-entries - Payload:', entryData)
+        devLog('🟢 POST /diary-entries - Payload:', entryData)
         const createResponse = await api.createDiaryEntry(entryData)
-        console.log('🟢 POST /diary-entries - Respuesta:', createResponse)
+        devLog('🟢 POST /diary-entries - Respuesta:', createResponse)
 
         await loadEntries()
         handleCloseDetailModal()
         showNotification('Entrada de diario creada exitosamente', 'success')
       }
     } catch (err: any) {
-      console.error('Error al guardar entrada de diario:', err)
+      devError('Error al guardar entrada de diario:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al guardar la entrada de diario. Por favor, intenta de nuevo.'
@@ -364,7 +357,7 @@ function MiDiario() {
       return
     }
 
-    if (!window.confirm('¿Estás seguro de que deseas eliminar esta entrada de diario?')) {
+    if (!(await confirm({ message: '¿Estás seguro de que deseas eliminar esta entrada de diario?', variant: 'danger' }))) {
       return
     }
 
@@ -375,7 +368,7 @@ function MiDiario() {
       handleCloseDetailModal()
       await loadEntries()
     } catch (err: any) {
-      console.error('Error al eliminar entrada de diario:', err)
+      devError('Error al eliminar entrada de diario:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al eliminar la entrada de diario. Por favor, intenta de nuevo.'
@@ -405,112 +398,108 @@ function MiDiario() {
     })
   }
 
+  const highlights = {
+    total: entries.length,
+    rachaActual: currentStreak,
+    rachaLarga: longestStreak,
+  }
+
   return (
     <>
       <div className="app-page-container">
-        <div className="app-page-content midiario-content">
+        <div className="app-page-content app-page-content-wide crud-page-content midiario-content">
           {/* Toolbar */}
-          <div className="midiario-toolbar">
+          <div className="app-toolbar">
             <button
-              className="midiario-toolbar-button"
+              className="app-toolbar-button"
               onClick={() => navigate('/tiempo')}
-              aria-label="Volver"
+              aria-label={backToHubLabel('tiempo')}
               type="button"
             >
-              <ArrowBackIcon className="midiario-toolbar-icon" />
+              <ArrowBackIcon className="app-toolbar-icon" />
             </button>
 
-            <div className="midiario-toolbar-menu-container" ref={menuRef}>
-              <button
-                className="midiario-toolbar-button"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                aria-label="Opciones"
-                aria-expanded={isMenuOpen}
-                type="button"
-              >
-                <MoreVertIcon className="midiario-toolbar-icon" />
-              </button>
-              {isMenuOpen && (
-                <div className="midiario-menu">
-                  <button
-                    className="midiario-menu-item"
-                    onClick={() => {
-                      handleOpenCreateModal()
-                      setIsMenuOpen(false)
-                    }}
-                    type="button"
-                  >
-                    <AddIcon className="midiario-menu-icon" />
-                    <span>Nueva Entrada</span>
-                  </button>
-                </div>
-              )}
+          </div>
+
+          <h1 className="app-page-title">Mi Diario</h1>
+
+          <div className="crud-summary-strip" role="region" aria-label="Resumen del diario">
+            <div className="crud-summary-strip-item">
+              <span className="crud-summary-strip-label">Entradas</span>
+              <span className="crud-summary-strip-value crud-summary-strip-value--info">
+                {highlights.total}
+              </span>
+            </div>
+            <div className="crud-summary-strip-separator" aria-hidden="true" />
+            <div className="crud-summary-strip-item">
+              <span className="crud-summary-strip-label">Racha actual</span>
+              <span className="crud-summary-strip-value crud-summary-strip-value--available">
+                {highlights.rachaActual}
+              </span>
+            </div>
+            <div className="crud-summary-strip-separator" aria-hidden="true" />
+            <div className="crud-summary-strip-item">
+              <span className="crud-summary-strip-label">Récord</span>
+              <span className="crud-summary-strip-value crud-summary-strip-value--info">
+                {highlights.rachaLarga}
+              </span>
             </div>
           </div>
 
-          <h1 className="midiario-page-title">Mi Diario</h1>
-          <p className="midiario-page-subtitle">Reflexiona sobre tus días</p>
-
-          {/* Streak Highlight */}
-          {(currentStreak > 0 || longestStreak > 0) && (
-            <div className="midiario-streak-container">
-              <div className="midiario-streak-item">
-                <LocalFireDepartmentIcon className="midiario-streak-icon" />
-                <div className="midiario-streak-info">
-                  <span className="midiario-streak-label">Racha Actual</span>
-                  <span className="midiario-streak-value">
-                    {currentStreak} {currentStreak === 1 ? 'día' : 'días'}
-                  </span>
-                </div>
-              </div>
-              {longestStreak > 0 && (
-                <>
-                  <div className="midiario-streak-divider"></div>
-                  <div className="midiario-streak-item">
-                    <EmojiEventsIcon className="midiario-streak-icon" />
-                    <div className="midiario-streak-info">
-                      <span className="midiario-streak-label">Racha Más Larga</span>
-                      <span className="midiario-streak-value">
-                        {longestStreak} {longestStreak === 1 ? 'día' : 'días'}
-                      </span>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
+          <button
+            type="button"
+            className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+            onClick={handleOpenCreateModal}
+            aria-label="Nueva entrada de diario"
+          >
+            <AddIcon aria-hidden={true} />
+            Nueva entrada
+          </button>
 
           {/* Lista de Entradas */}
-          {isLoading ? (
-            <div className="midiario-empty-state">
-              <p>Cargando entradas...</p>
+          {isLoading && entries.length === 0 ? (
+            <div className="glass-group">
+              <ListSkeleton variant="inset-row" count={4} aria-label="Cargando entradas de diario" />
             </div>
-          ) : error ? (
-            <div className="midiario-empty-state">
-              <p>{error}</p>
+          ) : error && entries.length === 0 ? (
+            <div className="loader-container">
+              <div className="loader finanzas-stats-error-panel">
+                <p className="loader-text loader-text--error" role="alert">
+                  {error}
+                </p>
+                <button
+                  type="button"
+                  className="btn-base btn-secondary finanzas-stats-retry-button"
+                  onClick={() => void loadEntries()}
+                  aria-label="Reintentar cargar entradas"
+                >
+                  <span>Reintentar</span>
+                </button>
+              </div>
             </div>
           ) : entries.length === 0 ? (
-            <div className="midiario-empty-state">
+            <div className="empty-state">
               <BookIcon className="empty-state-icon" />
-              <p className="empty-state-text">No hay entradas de diario aún.</p>
+              <p className="empty-text">No hay entradas de diario aún</p>
+              <p className="empty-subtext">Usa el botón de arriba para escribir la primera</p>
             </div>
           ) : (
             <div className="midiario-list">
-              <div className="midiario-group">
+              <div className="glass-group">
                 {entries.map(entry => (
                   <button
                     key={entry.id}
-                    className="midiario-row"
+                    className="crud-inset-row crud-row-accent-purple"
                     onClick={() => handleOpenDetailModal(entry)}
                     type="button"
                   >
-                    <div className="midiario-row-content">
-                      <div className="midiario-row-header">
-                        <h3 className="midiario-row-title">{formatDate(entry.entry_date)}</h3>
-                        <ChevronRightIcon className="midiario-row-chevron" />
+                    <div className="crud-row-content">
+                      <div className="crud-row-header">
+                        <span className="crud-row-title">{formatDate(entry.entry_date)}</span>
+                        <ChevronRightIcon className="crud-row-chevron" />
                       </div>
-                      <p className="midiario-row-preview">{entry.content}</p>
-                      <span className="midiario-row-date">{formatDateShort(entry.entry_date)}</span>
+                      <p className="crud-row-preview">{entry.content}</p>
+                      <span className="crud-row-meta">{formatDateShort(entry.entry_date)}</span>
                     </div>
                   </button>
                 ))}
@@ -522,15 +511,11 @@ function MiDiario() {
 
       {/* Modal de Detalle/Edición/Creación */}
       {isDetailModalOpen && (
-        <div className="midiario-modal-overlay" onClick={handleCloseDetailModal}>
-          <div className="midiario-modal" onClick={e => e.stopPropagation()}>
-            <div className="midiario-modal-header">
-              <h2 className="midiario-modal-title">
-                {selectedEntry
-                  ? isEditMode
-                    ? 'Editar Entrada'
-                    : formatDate(selectedEntry.entry_date)
-                  : 'Nueva Entrada'}
+        <ModalOverlay onClose={handleCloseDetailModal} className="modal-overlay">
+          <div className="modal-panel" onClick={e => e.stopPropagation()}>
+            <div className="modal-panel-header">
+              <h2 className="modal-panel-title" id="modal-panel-title-selectedentry-iseditmode-editar-entrada-formatdate-selectedentry-entry-date-nueva-entrada">
+                {selectedEntry ? (isEditMode ? 'Editar Entrada' : formatDate(selectedEntry.entry_date)) : 'Nueva Entrada'}
               </h2>
               <div className="midiario-modal-actions">
                 {selectedEntry && !isEditMode && (
@@ -563,7 +548,7 @@ function MiDiario() {
                   </>
                 )}
                 <button
-                  className="midiario-modal-close-button"
+                  className="modal-panel-close"
                   onClick={handleCloseDetailModal}
                   aria-label="Cerrar"
                   type="button"
@@ -573,42 +558,51 @@ function MiDiario() {
               </div>
             </div>
 
-            {isEditMode || !selectedEntry ? (
-              <form onSubmit={handleSubmit} className="midiario-modal-form">
-                <div className="midiario-form-group">
+            {(isEditMode || !selectedEntry) ? (
+              <form onSubmit={handleSubmit} className="midiario-modal-form" noValidate>
+                <div className="form-group-base">
                   <label htmlFor="entry_date" className="midiario-form-label">
                     Fecha *
                   </label>
                   <input
+                    ref={entryDateRef}
                     type="date"
                     id="entry_date"
                     name="entry_date"
                     value={formData.entry_date}
                     onChange={handleChange}
-                    className={`midiario-form-input ${formErrors.entry_date ? 'error' : ''}`}
-                    required
+                    className={`form-input-base ${formErrors.entry_date  ? 'input-error' : ''}`}
+                    autoFocus={!selectedEntry}
+                    aria-invalid={!!formErrors.entry_date}
+                    {...(formErrors.entry_date ? { 'aria-describedby': 'entry-date-error' } : {})}
                   />
                   {formErrors.entry_date && (
-                    <span className="midiario-form-error">{formErrors.entry_date}</span>
+                    <span id="entry-date-error" className="midiario-form-error" role="alert">
+                      {formErrors.entry_date}
+                    </span>
                   )}
                 </div>
 
-                <div className="midiario-form-group">
+                <div className="form-group-base">
                   <label htmlFor="content" className="midiario-form-label">
                     Contenido *
                   </label>
                   <textarea
+                    ref={contentRef}
                     id="content"
                     name="content"
                     value={formData.content}
                     onChange={handleChange}
-                    className={`midiario-form-textarea ${formErrors.content ? 'error' : ''}`}
+                    className={`form-textarea-base ${formErrors.content  ? 'input-error' : ''}`}
                     rows={10}
-                    required
                     placeholder="Escribe sobre tu día..."
+                    aria-invalid={!!formErrors.content}
+                    {...(formErrors.content ? { 'aria-describedby': 'content-error' } : {})}
                   />
                   {formErrors.content && (
-                    <span className="midiario-form-error">{formErrors.content}</span>
+                    <span id="content-error" className="midiario-form-error" role="alert">
+                      {formErrors.content}
+                    </span>
                   )}
                 </div>
 
@@ -627,12 +621,9 @@ function MiDiario() {
                     disabled={isLoading}
                   >
                     {isLoading
-                      ? selectedEntry
-                        ? 'Guardando...'
-                        : 'Creando...'
-                      : selectedEntry
-                        ? 'Guardar Cambios'
-                        : 'Crear Entrada'}
+                      ? (selectedEntry ? 'Guardando...' : 'Creando...')
+                      : (selectedEntry ? 'Guardar Cambios' : 'Crear Entrada')
+                    }
                   </button>
                 </div>
               </form>
@@ -644,10 +635,11 @@ function MiDiario() {
               </div>
             )}
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </>
   )
 }
 
 export default MiDiario
+

@@ -8,10 +8,16 @@ import SaveIcon from '@mui/icons-material/Save'
 import FolderIcon from '@mui/icons-material/Folder'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
+import WarningIcon from '@mui/icons-material/Warning'
+import SyncIcon from '@mui/icons-material/Sync'
 import { api } from '../services/api'
+import { devError, isDebugToolsEnabled, isDestructiveDebugEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
+import { useConfirm } from '../contexts/ConfirmContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
+import ModalOverlay from '../components/ModalOverlay'
+import ListSkeleton from '../components/ListSkeleton'
 import './DiseñadorPresupuestos.css'
 
 interface BudgetItem {
@@ -47,6 +53,7 @@ interface BudgetDraft {
 function DiseñadorPresupuestos() {
   const navigate = useNavigate()
   const { showNotification } = useNotification()
+  const { confirm } = useConfirm()
   const [items, setItems] = useState<BudgetItem[]>([])
   const [formData, setFormData] = useState({
     name: '',
@@ -56,10 +63,12 @@ function DiseñadorPresupuestos() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [categories, setCategories] = useState<string[]>([])
   const [categoryTotals, setCategoryTotals] = useState<CategoryTotal[]>([])
+  const [loadedDraftId, setLoadedDraftId] = useState<string | null>(null)
   const [draftName, setDraftName] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [drafts, setDrafts] = useState<BudgetDraft[]>([])
   const [isLoadingDrafts, setIsLoadingDrafts] = useState(false)
+  const [draftsLoadError, setDraftsLoadError] = useState<string | null>(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [isDebugLoading, setIsDebugLoading] = useState(false)
@@ -192,8 +201,8 @@ function DiseñadorPresupuestos() {
     })
   }
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este item?')) {
+  const handleDelete = async (id: string) => {
+    if ((await confirm({ message: '¿Estás seguro de que quieres eliminar este item?', variant: 'danger' }))) {
       setItems(prev => prev.filter(item => item.id !== id))
       showNotification('Item eliminado', 'success')
     }
@@ -202,6 +211,7 @@ function DiseñadorPresupuestos() {
   const loadDrafts = async () => {
     try {
       setIsLoadingDrafts(true)
+      setDraftsLoadError(null)
       const response = await api.getBudgetDrafts()
       if (response.drafts && Array.isArray(response.drafts)) {
         // Ordenar por fecha de creación (más recientes primero)
@@ -211,10 +221,18 @@ function DiseñadorPresupuestos() {
           return dateB - dateA
         })
         setDrafts(sortedDrafts)
+      } else {
+        setDrafts([])
       }
     } catch (err: any) {
-      // No mostrar error si no hay borradores, solo log
-      console.error('Error al cargar borradores:', err)
+      devError('Error al cargar borradores:', err)
+      setDrafts([])
+      setDraftsLoadError(
+        getTranslatedErrorMessage(
+          err,
+          'Error al cargar los borradores. Por favor, intenta de nuevo.'
+        )
+      )
     } finally {
       setIsLoadingDrafts(false)
     }
@@ -222,9 +240,9 @@ function DiseñadorPresupuestos() {
 
   const handleLoadDraft = (draft: BudgetDraft) => {
     if (draft.data && draft.data.items && Array.isArray(draft.data.items)) {
-      // Restaurar items del borrador
       setItems(draft.data.items)
       setDraftName(draft.name)
+      setLoadedDraftId(draft.id)
       showNotification(`Borrador "${draft.name}" cargado`, 'success')
       // Scroll al inicio para ver los items cargados
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -234,12 +252,15 @@ function DiseñadorPresupuestos() {
   }
 
   const handleDeleteDraft = async (draftId: string, draftName: string) => {
-    if (!window.confirm(`¿Estás seguro de que quieres eliminar el borrador "${draftName}"?`)) {
+    if (!(await confirm({ message: `¿Estás seguro de que quieres eliminar el borrador "${draftName}"?`, variant: 'danger' }))) {
       return
     }
 
     try {
       await api.deleteBudgetDraft(draftId)
+      if (loadedDraftId === draftId) {
+        setLoadedDraftId(null)
+      }
       showNotification('Borrador eliminado', 'success')
       await loadDrafts()
     } catch (err: any) {
@@ -252,6 +273,7 @@ function DiseñadorPresupuestos() {
   }
 
   const handleDebugCreateDrafts = async () => {
+    if (!isDebugToolsEnabled()) return
     try {
       setIsDebugLoading(true)
       const demoDrafts = [
@@ -309,11 +331,8 @@ function DiseñadorPresupuestos() {
   }
 
   const handleDebugDeleteAll = async () => {
-    if (
-      !window.confirm(
-        '¿Estás seguro de que quieres eliminar TODOS los borradores? Esta acción es irreversible.'
-      )
-    ) {
+    if (!isDebugToolsEnabled()) return
+    if (!(await confirm({ message: '¿Estás seguro de que quieres eliminar TODOS los borradores? Esta acción es irreversible.', variant: 'danger' }))) {
       return
     }
 
@@ -363,12 +382,17 @@ function DiseñadorPresupuestos() {
         },
       }
 
-      await api.createBudgetDraft(draftData)
-      showNotification('Borrador guardado exitosamente', 'success')
-
+      if (loadedDraftId) {
+        await api.updateBudgetDraft(loadedDraftId, draftData)
+        showNotification('Borrador actualizado exitosamente', 'success')
+      } else {
+        await api.createBudgetDraft(draftData)
+        showNotification('Borrador guardado exitosamente', 'success')
+      }
+      
       // Recargar lista de borradores
       await loadDrafts()
-
+      
       // Limpiar después de guardar (opcional - comentado para que el usuario pueda seguir editando)
       // setItems([])
       // setDraftName('')
@@ -398,35 +422,36 @@ function DiseñadorPresupuestos() {
   }
 
   const grandTotal = items.reduce((sum, item) => sum + item.value, 0)
+  const uniqueCategories = new Set(items.map(item => item.category)).size
 
   return (
     <div className="app-page-container">
-      <div className="app-page-content diseñador-content">
+      <div className="app-page-content app-page-content-wide crud-page-content diseñador-content">
         {/* Toolbar */}
-        <div className="diseñador-toolbar">
+        <div className="app-toolbar">
           <button
-            className="diseñador-toolbar-button"
+            className="app-toolbar-button"
             onClick={() => navigate('/finanzas')}
             aria-label="Volver"
             type="button"
           >
-            <ArrowBackIcon className="diseñador-toolbar-icon" />
+            <ArrowBackIcon className="app-toolbar-icon" />
           </button>
-          {api.isTestUser() && (
-            <div className="diseñador-toolbar-menu-container" ref={menuRef}>
+          {isDebugToolsEnabled() && (
+            <div className="app-toolbar-menu-container" ref={menuRef}>
               <button
-                className="diseñador-toolbar-button"
+                className="app-toolbar-button"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 aria-label="Opciones"
                 aria-expanded={isMenuOpen}
                 type="button"
               >
-                <MoreVertIcon className="diseñador-toolbar-icon" />
+                <MoreVertIcon className="app-toolbar-icon" />
               </button>
               {isMenuOpen && (
-                <div className="diseñador-menu">
+                <div className="crud-dropdown-menu">
                   <button
-                    className="diseñador-menu-item"
+                    className="crud-dropdown-menu-item"
                     onClick={() => {
                       setIsMenuOpen(false)
                       setIsDebugModalOpen(true)
@@ -441,17 +466,50 @@ function DiseñadorPresupuestos() {
           )}
         </div>
 
-        <h1 className="diseñador-page-title">Diseñador de Presupuestos</h1>
-        <p className="diseñador-page-subtitle">
-          Agrega items con nombre, valor y categoría. Las categorías se convertirán en presupuestos.
-        </p>
+        <h1 className="app-page-title">Diseñador de Presupuestos</h1>
+
+        <div
+          className="crud-summary-strip"
+          role="region"
+          aria-label="Resumen del diseñador"
+        >
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Items</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--info">
+              {items.length}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Categorías</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--available">
+              {uniqueCategories}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item crud-summary-strip-item--emphasis">
+            <span className="crud-summary-strip-label">Total</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--expense">
+              {formatCurrency(grandTotal)}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Borradores</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--info">
+              {drafts.length}
+            </span>
+          </div>
+        </div>
 
         {/* Formulario para agregar items */}
         <div className="diseñador-form-section">
-          <h2 className="diseñador-section-title">{editingId ? 'Editar Item' : 'Agregar Item'}</h2>
+          <h2 className="diseñador-section-title">
+            {editingId ? 'Editar Item' : 'Agregar Item'}
+          </h2>
           <form onSubmit={handleSubmit} className="diseñador-form">
-            <div className="diseñador-form-group">
-              <label htmlFor="name" className="diseñador-form-label">
+            <div className="form-group-base form-group-base--compact">
+              <label htmlFor="name" className="form-label-base form-label-base--inline">
                 Nombre *
               </label>
               <input
@@ -460,14 +518,14 @@ function DiseñadorPresupuestos() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="diseñador-form-input"
+                className="form-input-base"
                 placeholder="Ej: Arriendo, Comida, Transporte..."
                 required
               />
             </div>
 
-            <div className="diseñador-form-group">
-              <label htmlFor="value" className="diseñador-form-label">
+            <div className="form-group-base form-group-base--compact">
+              <label htmlFor="value" className="form-label-base form-label-base--inline">
                 Valor (COP) *
               </label>
               <input
@@ -476,7 +534,7 @@ function DiseñadorPresupuestos() {
                 name="value"
                 value={formData.value}
                 onChange={handleChange}
-                className="diseñador-form-input"
+                className="form-input-base"
                 placeholder="0"
                 min="0"
                 step="1000"
@@ -484,8 +542,8 @@ function DiseñadorPresupuestos() {
               />
             </div>
 
-            <div className="diseñador-form-group">
-              <label htmlFor="category" className="diseñador-form-label">
+            <div className="form-group-base form-group-base--compact">
+              <label htmlFor="category" className="form-label-base form-label-base--inline">
                 Categoría *
               </label>
               <input
@@ -494,7 +552,7 @@ function DiseñadorPresupuestos() {
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
-                className="diseñador-form-input"
+                className="form-input-base"
                 placeholder="Ej: Vivienda, Alimentación, Transporte..."
                 list="categories-list"
                 required
@@ -516,7 +574,10 @@ function DiseñadorPresupuestos() {
                   Cancelar
                 </button>
               )}
-              <button type="submit" className="diseñador-form-button diseñador-form-button-primary">
+              <button
+                type="submit"
+                className="diseñador-form-button diseñador-form-button-primary"
+              >
                 {editingId ? 'Actualizar' : 'Agregar'}
               </button>
             </div>
@@ -572,7 +633,9 @@ function DiseñadorPresupuestos() {
                 <div key={catTotal.category} className="diseñador-total-item">
                   <div className="diseñador-total-header">
                     <h3 className="diseñador-total-category">{catTotal.category}</h3>
-                    <span className="diseñador-total-value">{formatCurrency(catTotal.total)}</span>
+                    <span className="diseñador-total-value">
+                      {formatCurrency(catTotal.total)}
+                    </span>
                   </div>
                   <p className="diseñador-total-items">
                     {catTotal.items.length} {catTotal.items.length === 1 ? 'item' : 'items'}
@@ -588,10 +651,12 @@ function DiseñadorPresupuestos() {
         )}
 
         {/* Borradores Guardados */}
-        {drafts.length > 0 && (
+        {(drafts.length > 0 || draftsLoadError) && (
           <div className="diseñador-drafts-section">
             <div className="diseñador-section-header">
-              <h2 className="diseñador-section-title">Borradores Guardados ({drafts.length})</h2>
+              <h2 className="diseñador-section-title">
+                Borradores Guardados{drafts.length > 0 ? ` (${drafts.length})` : ''}
+              </h2>
               <button
                 className="diseñador-refresh-button"
                 onClick={loadDrafts}
@@ -603,8 +668,15 @@ function DiseñadorPresupuestos() {
               </button>
             </div>
             {isLoadingDrafts ? (
-              <div className="diseñador-loading">
-                <p>Cargando borradores...</p>
+              <ListSkeleton variant="inset-row" count={3} aria-label="Cargando borradores" />
+            ) : draftsLoadError && drafts.length === 0 ? (
+              <div className="diseñador-empty-state diseñador-error-state" role="alert">
+                <WarningIcon className="diseñador-error-icon" aria-hidden="true" />
+                <p className="diseñador-empty-text">{draftsLoadError}</p>
+                <button className="diseñador-retry-button" onClick={loadDrafts} type="button">
+                  <SyncIcon aria-hidden="true" />
+                  <span>Reintentar</span>
+                </button>
               </div>
             ) : (
               <div className="diseñador-drafts-list">
@@ -619,8 +691,7 @@ function DiseñadorPresupuestos() {
                       <div className="diseñador-draft-info">
                         {draft.data.items && (
                           <span className="diseñador-draft-meta">
-                            {draft.data.items.length}{' '}
-                            {draft.data.items.length === 1 ? 'item' : 'items'}
+                            {draft.data.items.length} {draft.data.items.length === 1 ? 'item' : 'items'}
                           </span>
                         )}
                         {draft.data.total && (
@@ -635,16 +706,14 @@ function DiseñadorPresupuestos() {
                           <>
                             <span className="diseñador-draft-separator">•</span>
                             <span className="diseñador-draft-meta">
-                              {draft.data.categories.length}{' '}
-                              {draft.data.categories.length === 1 ? 'categoría' : 'categorías'}
+                              {draft.data.categories.length} {draft.data.categories.length === 1 ? 'categoría' : 'categorías'}
                             </span>
                           </>
                         )}
                       </div>
                       {draft.created_at && (
                         <p className="diseñador-draft-date">
-                          Creado:{' '}
-                          {new Date(draft.created_at).toLocaleDateString('es-ES', {
+                          Creado: {new Date(draft.created_at).toLocaleDateString('es-ES', {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric',
@@ -654,7 +723,7 @@ function DiseñadorPresupuestos() {
                     </div>
                     <button
                       className="diseñador-draft-delete"
-                      onClick={e => {
+                      onClick={(e) => {
                         e.stopPropagation()
                         handleDeleteDraft(draft.id, draft.name)
                       }}
@@ -679,7 +748,7 @@ function DiseñadorPresupuestos() {
                 type="text"
                 value={draftName}
                 onChange={e => setDraftName(e.target.value)}
-                className="diseñador-form-input"
+                className="form-input-base"
                 placeholder="Nombre del borrador (ej: Presupuesto Enero 2024)"
               />
               <button
@@ -689,7 +758,11 @@ function DiseñadorPresupuestos() {
                 type="button"
               >
                 <SaveIcon className="diseñador-save-icon" />
-                {isSaving ? 'Guardando...' : 'Guardar Borrador'}
+                {isSaving
+                  ? 'Guardando...'
+                  : loadedDraftId
+                    ? 'Actualizar Borrador'
+                    : 'Guardar Borrador'}
               </button>
             </div>
           </div>
@@ -697,21 +770,20 @@ function DiseñadorPresupuestos() {
 
         {/* Empty state */}
         {items.length === 0 && drafts.length === 0 && (
-          <div className="diseñador-empty-state">
-            <p className="diseñador-empty-text">
-              Agrega items para comenzar a diseñar tu presupuesto
-            </p>
+          <div className="empty-state">
+            <p className="empty-text">Agrega items en el formulario de arriba para comenzar</p>
+            <p className="empty-subtext">Las categorías se convertirán en presupuestos al guardar</p>
           </div>
         )}
 
         {/* Modal de Debug */}
-        {isDebugModalOpen && (
-          <div className="diseñador-modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
-            <div className="diseñador-modal" onClick={e => e.stopPropagation()}>
-              <div className="diseñador-modal-header">
-                <h2 className="diseñador-modal-title">🐛 Debug - Diseñador de Presupuestos</h2>
+        {isDebugModalOpen && isDebugToolsEnabled() && (
+          <ModalOverlay onClose={() => setIsDebugModalOpen(false)} className="modal-overlay">
+            <div className="modal-panel" onClick={e => e.stopPropagation()}>
+              <div className="modal-panel-header">
+                <h2 className="modal-panel-title" id="modal-panel-title-debug-dise-ador-de-presupuestos">🐛 Debug - Diseñador de Presupuestos</h2>
                 <button
-                  className="diseñador-modal-close"
+                  className="modal-panel-close"
                   onClick={() => setIsDebugModalOpen(false)}
                   aria-label="Cerrar"
                   type="button"
@@ -719,7 +791,7 @@ function DiseñadorPresupuestos() {
                   ×
                 </button>
               </div>
-              <div className="diseñador-modal-content">
+              <div className="modal-panel-content">
                 <div className="debug-options">
                   <button
                     className="debug-option-button"
@@ -752,7 +824,7 @@ function DiseñadorPresupuestos() {
                 </div>
               </div>
             </div>
-          </div>
+          </ModalOverlay>
         )}
       </div>
     </div>
@@ -760,3 +832,4 @@ function DiseñadorPresupuestos() {
 }
 
 export default DiseñadorPresupuestos
+

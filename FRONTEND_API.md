@@ -3786,11 +3786,35 @@ await createTransaction({
   - `debtor_id` solo se permite para transacciones tipo "ingreso"
 - **Para transacciones de tipo "ahorro"**: Solo se permite `bank_account_id` (no se puede usar `credit_card_id`, `debt_id` ni `debtor_id`)
 
-**⚠️ Actualización Manual Requerida:**
-- Después de crear/actualizar/eliminar una transacción, el frontend DEBE actualizar manualmente:
-  - El `balance` de la cuenta bancaria si la transacción tiene `bank_account_id` (`PUT /bank-accounts/{id}`)
-  - El `used_credit` de la tarjeta de crédito si la transacción tiene `credit_card_id` (`PUT /credit-cards/{id}`)
-  - El `total_spent` del presupuesto si la transacción tiene `budget_id` (`PUT /budgets/{id}`)
+**✅ Side-effects atómicos (pockets-core):**
+- `POST`, `PUT` y `DELETE` de transacciones aplican y revierten side-effects en **una transacción DB** (rollback si falla).
+- El frontend **no** orquesta balances, cupos, deudas, presupuestos ni proyectos tras mutar transacciones.
+- Tras mutar, el FE recarga datos y emite `financeEvents` vía `emitTransactionSyncEvents()`.
+
+**Entidades actualizadas automáticamente:**
+- `bank_accounts.balance`
+- `credit_cards.used_credit` (+ deuda asociada por nombre de tarjeta)
+- `debts.owed` (pago de deuda o compra con tarjeta)
+- `debtors.total_paid`
+- `budgets.total_spent`
+- `projects.current_amount` (ahorro con proyecto)
+
+**Respuesta (POST / PUT / DELETE):** incluye `affected` con entidades tocadas (opcional para el FE; hoy recargamos vía GET):
+
+```json
+{
+  "message": "Transaction created successfully",
+  "transaction": { "...": "..." },
+  "affected": {
+    "bank_accounts": [],
+    "credit_cards": [],
+    "debts": [],
+    "debtors": [],
+    "budgets": [],
+    "projects": []
+  }
+}
+```
 
 **Error Response (400) - Presupuesto Excedido:**
 ```json
@@ -3956,14 +3980,7 @@ const budgetTransactions = await getTransactions({
 ---
 
 #### DELETE /transactions/{id}
-Eliminar una transacción específica.
-
-**⚠️ IMPORTANTE**: Después de eliminar una transacción, el frontend DEBE revertir manualmente:
-- El `balance` de la cuenta bancaria:
-  - Si era **ingreso**: Resta el monto (`balance = balance - amount`)
-  - Si era **egreso/ahorro**: Suma el monto (`balance = balance + amount`)
-- El `total_spent` del presupuesto (si tenía `budget_id`):
-  - Resta el monto (`total_spent = total_spent - amount`)
+Eliminar una transacción específica. El backend revierte side-effects y borra la fila en una sola transacción DB.
 
 **URL:** `DELETE ${API_URL}/transactions/{id}`
 
@@ -6801,6 +6818,59 @@ link.click();
 
 ---
 
+#### PUT /files/{id}
+Actualizar metadatos de un archivo (`title` y/o `description`). No modifica el objeto en S3.
+
+**URL:** `PUT ${API_LIFESTYLE}/files/{id}`
+
+**Request Body:**
+```json
+{
+  "title": "Contrato de arrendamiento (firmado)",
+  "description": "Versión final 2024"
+}
+```
+
+**Ejemplo JavaScript:**
+```javascript
+const updateFile = async (fileId, data) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_LIFESTYLE}/files/${fileId}`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+};
+```
+
+**Response (200):**
+```json
+{
+  "message": "File updated successfully",
+  "file": {
+    "id": "uuid-here",
+    "title": "Contrato de arrendamiento (firmado)",
+    "description": "Versión final 2024",
+    "file_name": "contrato.pdf",
+    "file_size": 1048576,
+    "mime_type": "application/pdf",
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-16T14:00:00Z"
+  }
+}
+```
+
+**Errores:**
+- `400`: Sin campos editables o `title` vacío
+- `401`: Token inválido o faltante
+- `404`: Archivo no existe o no pertenece al usuario
+
+---
+
 #### DELETE /files/{id}
 Eliminar un archivo (de S3 y de la base de datos).
 
@@ -9413,18 +9483,9 @@ const handleApiCall = async (apiFunction) => {
 
 ## Notas Importantes
 
-1. **Balance Manual**: Los balances de las cuentas bancarias NO se actualizan automáticamente. El frontend debe actualizar manualmente el balance de la cuenta bancaria cuando se crean, actualizan o eliminan transacciones:
-   - **Ingreso**: Suma el monto al balance (`balance = balance + amount`)
-   - **Egreso/Ahorro**: Resta el monto del balance (`balance = balance - amount`)
-   - Usa el endpoint `PUT /bank-accounts/{id}` para actualizar el balance
+1. **Side-effects de transacciones (atómico)**: `POST`, `PUT` y `DELETE /transactions` actualizan automáticamente balances, cupos, deudas, deudores, presupuestos y proyectos. El frontend solo llama al endpoint de transacciones y recarga datos; **no** use `PUT /bank-accounts` ni `PUT /budgets` para compensar movimientos del ledger.
 
-2. **Total Gastado Manual**: El campo `total_spent` de los presupuestos NO se actualiza automáticamente. El frontend debe actualizar manualmente el `total_spent` cuando se crean, actualizan o eliminan transacciones de tipo "egreso" o "ahorro" con `budget_id`:
-   - **Crear transacción**: Suma el monto al `total_spent` (`total_spent = total_spent + amount`)
-   - **Eliminar transacción**: Resta el monto del `total_spent` (`total_spent = total_spent - amount`)
-   - **Actualizar transacción**: Revierte el monto anterior y aplica el nuevo monto
-   - Usa el endpoint `PUT /budgets/{id}` para actualizar el `total_spent`
-
-3. **Validación de Presupuestos**: 
+2. **Edición directa de entidades**: `PUT /bank-accounts`, `PUT /budgets`, etc. siguen siendo válidos para **editar** cuentas o presupuestos desde sus pantallas CRUD, no para reflejar transacciones. 
    - Los egresos pueden crearse con o sin `budget_id`. Si se proporciona `budget_id`, se valida que el presupuesto exista, pertenezca al usuario y que la transacción no exceda el `max_amount` del presupuesto.
    - Si un egreso tiene `budget_id` y se intenta crear una transacción que exceda el límite del presupuesto, se recibirá un error 400.
    - Los egresos sin `budget_id` se crean normalmente sin validación de presupuesto.

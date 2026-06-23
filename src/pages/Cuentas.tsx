@@ -9,6 +9,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { api } from '../services/api'
+import { isDebugToolsEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
@@ -704,41 +705,32 @@ function Cuentas() {
                   <ArrowBackIcon className="cuentas-toolbar-icon" />
                 </button>
                 <div className="cuentas-toolbar-menu-container">
-                  <button
-                    className="cuentas-toolbar-button"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    aria-label="Opciones"
-                    aria-expanded={isMenuOpen}
-                    type="button"
-                  >
-                    <MoreVertIcon className="cuentas-toolbar-icon" />
-                  </button>
-                  {isMenuOpen && (
-                    <div className="cuentas-menu">
+                  {isDebugToolsEnabled() && (
+                    <>
                       <button
-                        className="cuentas-menu-item"
-                        onClick={() => {
-                          setIsMenuOpen(false)
-                          handleOpenModal()
-                        }}
+                        className="cuentas-toolbar-button"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        aria-label="Opciones de depuración"
+                        aria-expanded={isMenuOpen}
                         type="button"
                       >
-                        <AddIcon className="cuentas-menu-icon" />
-                        <span>Agregar Cuenta</span>
+                        <MoreVertIcon className="cuentas-toolbar-icon" />
                       </button>
-                      {api.isTestUser() && (
-                        <button
-                          className="cuentas-menu-item"
-                          onClick={() => {
-                            setIsMenuOpen(false)
-                            setIsDebugModalOpen(true)
-                          }}
-                          type="button"
-                        >
-                          <span>🐛 Debug</span>
-                        </button>
+                      {isMenuOpen && (
+                        <div className="cuentas-menu">
+                          <button
+                            className="cuentas-menu-item"
+                            onClick={() => {
+                              setIsMenuOpen(false)
+                              setIsDebugModalOpen(true)
+                            }}
+                            type="button"
+                          >
+                            <span>🐛 Debug</span>
+                          </button>
+                        </div>
                       )}
-                    </div>
+                    </>
                   )}
                 </div>
               </div>
@@ -746,35 +738,44 @@ function Cuentas() {
               {/* Encabezado de Sección - HIG: Clear Navigation */}
               <h1 className="cuentas-page-title">Cuentas</h1>
 
-              {/* Tasas de cambio y Total */}
-              <div className="exchange-rates-block">
-                <div className="exchange-rate-item">
-                  <span className="exchange-rate-label">USD</span>
-                  <span className="exchange-rate-value">
+              <div className="crud-summary-strip" role="region" aria-label="Resumen de cuentas">
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">USD</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
                     {exchangeRates.USD.toLocaleString('es-CO')} COP
                   </span>
                 </div>
-                <div className="exchange-rate-separator"></div>
-                <div className="exchange-rate-item">
-                  <span className="exchange-rate-label">EUR</span>
-                  <span className="exchange-rate-value">
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">EUR</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
                     {exchangeRates.EUR.toLocaleString('es-CO')} COP
                   </span>
                 </div>
-                <div className="exchange-rate-separator separator-after-eur"></div>
-                <div className="exchange-rate-item total-cop">
-                  <span className="exchange-rate-label">Total</span>
-                  <span className="exchange-rate-value total-value">
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Total</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--available">
                     {formatBalance(calculateTotalCOP(), 'COP')}
                   </span>
                 </div>
               </div>
 
+              <button
+                type="button"
+                className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+                onClick={handleOpenModal}
+                aria-label="Agregar cuenta bancaria"
+              >
+                <AddIcon aria-hidden="true" />
+                Agregar cuenta
+              </button>
+
               {accounts.length === 0 ? (
                 <div className="empty-state">
                   <AccountBalanceWalletIcon className="empty-icon" />
                   <p className="empty-text">No hay cuentas agregadas</p>
-                  <p className="empty-subtext">Agrega tu primera cuenta bancaria</p>
+                  <p className="empty-subtext">Usa el botón de arriba para crear la primera</p>
                 </div>
               ) : (
                 <div className="accounts-list">
@@ -844,8 +845,8 @@ function Cuentas() {
               </button>
             </div>
             <form className="modal-form" onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label htmlFor="nombre">Nombre</label>
+              <div className="form-group-base">
+                <label htmlFor="nombre" className="form-label-base">Nombre</label>
                 <input
                   type="text"
                   id="nombre"
@@ -854,19 +855,19 @@ function Cuentas() {
                   onChange={handleChange}
                   required
                   placeholder="Ej: Cuenta Principal"
-                  className={formErrors.nombre ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.nombre ? 'input-error' : ''}`}
                 />
                 {formErrors.nombre && <span className="error-message">{formErrors.nombre}</span>}
               </div>
-              <div className="form-group">
-                <label htmlFor="banco">Banco</label>
+              <div className="form-group-base">
+                <label htmlFor="banco" className="form-label-base">Banco</label>
                 <select
                   id="banco"
                   name="banco"
                   value={formData.banco}
                   onChange={handleChange}
                   required
-                  className="form-select"
+                  className="form-select-base"
                 >
                   <option value="">Selecciona un banco</option>
                   {bancos.map(banco => (
@@ -876,8 +877,8 @@ function Cuentas() {
                   ))}
                 </select>
               </div>
-              <div className="form-group">
-                <label htmlFor="numeroCuenta">Número de Cuenta</label>
+              <div className="form-group-base">
+                <label htmlFor="numeroCuenta" className="form-label-base">Número de Cuenta</label>
                 <input
                   type="text"
                   id="numeroCuenta"
@@ -886,14 +887,14 @@ function Cuentas() {
                   onChange={handleChange}
                   required
                   placeholder="Ej: 1234567890"
-                  className={formErrors.numeroCuenta ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.numeroCuenta ? 'input-error' : ''}`}
                 />
                 {formErrors.numeroCuenta && (
                   <span className="error-message">{formErrors.numeroCuenta}</span>
                 )}
               </div>
-              <div className="form-group">
-                <label htmlFor="balanceInicial">Balance Inicial</label>
+              <div className="form-group-base">
+                <label htmlFor="balanceInicial" className="form-label-base">Balance Inicial</label>
                 <input
                   type="number"
                   id="balanceInicial"
@@ -987,8 +988,8 @@ function Cuentas() {
               </>
             ) : (
               <form className="modal-form" onSubmit={handleSubmit}>
-                <div className="form-group">
-                  <label htmlFor="edit-nombre">Nombre</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-nombre" className="form-label-base">Nombre</label>
                   <input
                     type="text"
                     id="edit-nombre"
@@ -997,19 +998,19 @@ function Cuentas() {
                     onChange={handleChange}
                     required
                     placeholder="Ej: Cuenta Principal"
-                    className={formErrors.nombre ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.nombre ? 'input-error' : ''}`}
                   />
                   {formErrors.nombre && <span className="error-message">{formErrors.nombre}</span>}
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-banco">Banco</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-banco" className="form-label-base">Banco</label>
                   <select
                     id="edit-banco"
                     name="banco"
                     value={formData.banco}
                     onChange={handleChange}
                     required
-                    className="form-select disabled-input"
+                    className="form-select-base disabled-input"
                     disabled
                   >
                     <option value="">Selecciona un banco</option>
@@ -1021,8 +1022,8 @@ function Cuentas() {
                   </select>
                   <p className="form-hint">El banco no se puede modificar</p>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-numeroCuenta">Número de Cuenta</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-numeroCuenta" className="form-label-base">Número de Cuenta</label>
                   <input
                     type="text"
                     id="edit-numeroCuenta"
@@ -1031,14 +1032,14 @@ function Cuentas() {
                     onChange={handleChange}
                     required
                     placeholder="Ej: 1234567890"
-                    className={formErrors.numeroCuenta ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.numeroCuenta ? 'input-error' : ''}`}
                   />
                   {formErrors.numeroCuenta && (
                     <span className="error-message">{formErrors.numeroCuenta}</span>
                   )}
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-balanceInicial">Balance</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-balanceInicial" className="form-label-base">Balance</label>
                   <div className="balance-input-wrapper">
                     <input
                       type="text"

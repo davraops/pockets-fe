@@ -11,8 +11,10 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { api } from '../services/api'
+import { isDebugToolsEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
+import { emitTransactionSyncEvents } from '../utils/transactionMutation'
 import './AppPage.css'
 import './Transacciones.css'
 
@@ -47,6 +49,9 @@ interface Transaction {
   presupuestoId: string | null
   cuentaBancariaNombre?: string
   presupuestoNombre?: string
+  creditCardId?: string | null
+  debtId?: string | null
+  debtorId?: string | null
 }
 
 interface BankAccount {
@@ -149,9 +154,14 @@ function Transacciones() {
       descripcion: apiTransaction.description,
       categoria: apiTransaction.category,
       moneda: apiTransaction.currency,
-      cuentaBancariaId: apiTransaction.bank_account_id,
+      cuentaBancariaId: apiTransaction.bank_account_id || '',
       presupuestoId: apiTransaction.budget_id,
-      cuentaBancariaNombre: accountsMap.get(apiTransaction.bank_account_id),
+      creditCardId: apiTransaction.credit_card_id,
+      debtId: apiTransaction.debt_id,
+      debtorId: apiTransaction.debtor_id,
+      cuentaBancariaNombre: apiTransaction.bank_account_id
+        ? accountsMap.get(apiTransaction.bank_account_id)
+        : undefined,
       presupuestoNombre: apiTransaction.budget_id
         ? budgetsMap.get(apiTransaction.budget_id)
         : undefined,
@@ -176,12 +186,7 @@ function Transacciones() {
               id: acc.id,
               nombre: acc.account_name,
               currency: acc.currency || 'COP',
-              balance: parseFloat(
-                acc.balance?.original?.amount ||
-                  acc.balance?.amount ||
-                  acc.balance?.cop?.amount ||
-                  '0'
-              ),
+              balance: parseFloat(acc.balance?.original?.amount || acc.balance?.amount || acc.balance?.cop?.amount || '0'),
             })
           })
         }
@@ -290,10 +295,7 @@ function Transacciones() {
         }
       } catch (err: any) {
         console.error('Error al cargar datos:', err)
-        const errorMessage = getTranslatedErrorMessage(
-          err,
-          'Error al cargar las transacciones. Por favor, intenta de nuevo.'
-        )
+        const errorMessage = getTranslatedErrorMessage(err, 'Error al cargar las transacciones. Por favor, intenta de nuevo.')
         setError(errorMessage)
         setTransactions([])
       } finally {
@@ -422,398 +424,38 @@ function Transacciones() {
       descripcion: selectedTransaction.descripcion,
       categoria: selectedTransaction.categoria,
       moneda: selectedTransaction.moneda,
-      cuentaBancariaId: selectedTransaction.cuentaBancariaId,
+      cuentaBancariaId: selectedTransaction.cuentaBancariaId || '',
       presupuestoId: selectedTransaction.presupuestoId || '',
       bolsillo: '',
-      isDebtPayment: false,
-      debtId: '',
-      isCreditCardPayment: false,
-      creditCardId: '',
-      isDebtorPayment: false,
-      debtorId: '',
+      isDebtPayment: Boolean(selectedTransaction.debtId),
+      debtId: selectedTransaction.debtId || '',
+      isCreditCardPayment: Boolean(selectedTransaction.creditCardId),
+      creditCardId: selectedTransaction.creditCardId || '',
+      isDebtorPayment: Boolean(selectedTransaction.debtorId),
+      debtorId: selectedTransaction.debtorId || '',
     })
   }
 
   const handleDeleteClick = async () => {
     if (!selectedTransaction) return
 
-    if (window.confirm('¿Estás seguro de que quieres eliminar esta transacción?')) {
-      try {
-        setIsLoading(true)
+    if (!window.confirm('¿Estás seguro de que quieres eliminar esta transacción?')) return
 
-        // Obtener la transacción completa para saber qué revertir
-        let tx: any
-        try {
-          const transactionResponse = await api.getTransactions({ id: selectedTransaction.id })
-          if (!transactionResponse.transactions || transactionResponse.transactions.length === 0) {
-            throw new Error('Transaction not found')
-          }
-          tx = transactionResponse.transactions[0]
-        } catch (err: any) {
-          console.error('Error al obtener transacción:', err)
-          const errorMessage = getTranslatedErrorMessage(
-            err,
-            'Error al obtener la transacción. Por favor, intenta de nuevo.'
-          )
-          throw new Error(errorMessage)
-        }
-
-        // Guardar valores originales para rollback
-        const monto = parseFloat(tx.amount.toString())
-        let originalBudgetTotalSpent: number | null = null
-        let originalAccountBalance: number | null = null
-        let originalCreditCardUsedCredit: number | null = null
-        let originalDebtOwed: number | null = null
-        let originalProjectCurrentAmount: number | null = null
-        let projectId: string | null = null
-        let budgetUpdated = false
-        let accountUpdated = false
-        let creditCardUpdated = false
-        let debtUpdated = false
-        let projectUpdated = false
-
-        // Obtener valores originales antes de hacer cambios
-        if (tx.budget_id && (tx.type === 'egreso' || tx.type === 'ahorro')) {
-          const budgetResponse = await api.getBudgets(tx.budget_id)
-          if (budgetResponse.budgets && budgetResponse.budgets.length > 0) {
-            originalBudgetTotalSpent = parseFloat(budgetResponse.budgets[0].total_spent.toString())
-          }
-        }
-
-        // Solo obtener balance de cuenta bancaria si NO es un pago con tarjeta de crédito
-        // (los pagos con tarjeta de crédito tienen bank_account_id = null)
-        if (tx.bank_account_id && tx.bank_account_id !== null) {
-          const bankAccountResponse = await api.getBankAccounts(tx.bank_account_id)
-          if (bankAccountResponse.accounts && bankAccountResponse.accounts.length > 0) {
-            originalAccountBalance = parseFloat(
-              bankAccountResponse.accounts[0].balance.original.amount
-            )
-          }
-        }
-
-        // Si es un pago con tarjeta de crédito, obtener el used_credit original
-        if (tx.credit_card_id && tx.type === 'egreso') {
-          const creditCardResponse = await api.getCreditCards(tx.credit_card_id)
-          if (creditCardResponse.credit_cards && creditCardResponse.credit_cards.length > 0) {
-            originalCreditCardUsedCredit = parseFloat(
-              creditCardResponse.credit_cards[0].used_credit?.toString() || '0'
-            )
-          }
-        }
-
-        // Si es un pago de deuda, obtener el owed original
-        if (tx.debt_id && tx.type === 'egreso') {
-          const debtResponse = await api.getDebts(tx.debt_id)
-          if (debtResponse.debts && debtResponse.debts.length > 0) {
-            originalDebtOwed = parseFloat(debtResponse.debts[0].owed?.toString() || '0')
-          }
-        }
-
-        // Si es un ahorro, obtener el current_amount original del proyecto asociado
-        if (tx.type === 'ahorro' && tx.budget_id) {
-          try {
-            const projectsResponse = await api.getProjects()
-            if (projectsResponse.projects && Array.isArray(projectsResponse.projects)) {
-              const project = projectsResponse.projects.find(
-                (p: any) => p.budget_id === tx.budget_id
-              )
-              if (project) {
-                projectId = project.id
-                originalProjectCurrentAmount = parseFloat(project.current_amount?.toString() || '0')
-              }
-            }
-          } catch (err) {
-            console.error('Error al obtener proyecto para rollback:', err)
-          }
-        }
-
-        try {
-          // 1. PRIMERO: Eliminar la transacción
-          console.log('Eliminando transacción:', selectedTransaction.id)
-          await api.deleteTransaction(selectedTransaction.id)
-          console.log('Transacción eliminada exitosamente')
-
-          // 2. SEGUNDO: Revertir balance de cuenta bancaria (solo si tiene bank_account_id)
-          if (tx.bank_account_id && originalAccountBalance !== null) {
-            let newBalance = originalAccountBalance
-
-            if (tx.type === 'ingreso') {
-              newBalance -= monto // Revertir ingreso: restar el monto
-            } else if (tx.type === 'egreso' || tx.type === 'ahorro') {
-              newBalance += monto // Revertir egreso/ahorro: sumar el monto
-            }
-
-            console.log(
-              'Revirtiendo balance de cuenta bancaria:',
-              tx.bank_account_id,
-              'De:',
-              originalAccountBalance,
-              'A:',
-              newBalance
-            )
-            await api.updateBankAccount(tx.bank_account_id, {
-              balance: newBalance,
-            })
-            accountUpdated = true
-            console.log('Balance de cuenta bancaria revertido exitosamente')
-          } else if (tx.credit_card_id) {
-            console.log(
-              'No se revierte balance de cuenta bancaria porque es un pago con tarjeta de crédito'
-            )
-          }
-
-          // 2b. Revertir used_credit de la tarjeta de crédito si tiene credit_card_id
-          if (tx.credit_card_id && tx.type === 'egreso' && originalCreditCardUsedCredit !== null) {
-            const nuevoUsedCredit = Math.max(0, originalCreditCardUsedCredit - monto)
-            console.log(
-              'Revirtiendo used_credit de tarjeta de crédito:',
-              tx.credit_card_id,
-              'De:',
-              originalCreditCardUsedCredit,
-              'A:',
-              nuevoUsedCredit
-            )
-            await api.updateCreditCard(tx.credit_card_id, {
-              used_credit: nuevoUsedCredit,
-            })
-            creditCardUpdated = true
-            console.log('Used_credit de tarjeta de crédito revertido exitosamente')
-
-            // También revertir la deuda asociada si existe
-            // Ya tenemos la respuesta de la tarjeta de crédito de arriba, pero la necesitamos aquí también
-            const creditCardResponse = await api.getCreditCards(tx.credit_card_id)
-            if (creditCardResponse.credit_cards && creditCardResponse.credit_cards.length > 0) {
-              const cardName = creditCardResponse.credit_cards[0].name
-              const associatedDebt = debts.find(d => d.concepto === cardName)
-              if (associatedDebt) {
-                const adeudadoActual = parseFloat(String(associatedDebt.adeudado || 0))
-                const nuevoAdeudado = Math.max(0, adeudadoActual - monto)
-                console.log(
-                  'Revirtiendo deuda asociada:',
-                  associatedDebt.id,
-                  'De:',
-                  adeudadoActual,
-                  'A:',
-                  nuevoAdeudado
-                )
-                await api.updateDebt(associatedDebt.id, {
-                  owed: nuevoAdeudado,
-                })
-                console.log('Deuda asociada revertida exitosamente')
-                window.dispatchEvent(new Event('debtsUpdated'))
-              }
-            }
-          }
-
-          // 2c. Revertir pago de deuda si la transacción tiene debt_id
-          if (tx.debt_id && tx.type === 'egreso') {
-            // Obtener la deuda actual para saber el monto adeudado
-            const debtResponse = await api.getDebts(tx.debt_id)
-            if (debtResponse.debts && debtResponse.debts.length > 0) {
-              const debt = debtResponse.debts[0]
-              const adeudadoActual = parseFloat(String(debt.owed || 0))
-              const nuevoAdeudado = adeudadoActual + monto
-
-              console.log('Revirtiendo pago de deuda:', {
-                debtId: tx.debt_id,
-                concepto: debt.concept || debt.concepto,
-                adeudadoActual,
-                montoTransaccion: monto,
-                nuevoAdeudado,
-              })
-
-              await api.updateDebt(tx.debt_id, {
-                owed: nuevoAdeudado,
-              })
-              debtUpdated = true
-              console.log('Pago de deuda revertido exitosamente')
-              window.dispatchEvent(new Event('debtsUpdated'))
-            }
-          }
-
-          // 2d. Revertir pago de deudor si la transacción tiene debtor_id
-          if (tx.debtor_id && tx.type === 'ingreso') {
-            // Obtener el deudor actual para saber el total pagado
-            const debtorResponse = await api.getDebtors(tx.debtor_id)
-            if (debtorResponse.debtors && debtorResponse.debtors.length > 0) {
-              const debtor = debtorResponse.debtors[0]
-              const totalPagadoActual = parseFloat(String(debtor.total_paid || 0))
-              const nuevoTotalPagado = Math.max(0, totalPagadoActual - monto) // No puede ser negativo
-
-              console.log('Revirtiendo pago de deudor:', {
-                debtorId: tx.debtor_id,
-                nombre: debtor.debtor_name,
-                totalPagadoActual,
-                montoTransaccion: monto,
-                nuevoTotalPagado,
-              })
-
-              await api.updateDebtor(tx.debtor_id, {
-                total_paid: nuevoTotalPagado,
-              })
-              console.log('Pago de deudor revertido exitosamente')
-              window.dispatchEvent(new Event('debtorsUpdated'))
-            }
-          }
-
-          // 3. TERCERO: Recalcular total_spent del presupuesto usando el endpoint de recalculate
-          // Esto es necesario porque el backend no acepta total_spent directamente en PUT /budgets/{id}
-          // El recalculate automáticamente excluirá la transacción eliminada
-          if (tx.budget_id && (tx.type === 'egreso' || tx.type === 'ahorro')) {
-            console.log('Recalculando presupuesto después de eliminar transacción:', tx.budget_id)
-            await api.recalculateBudget(tx.budget_id)
-            console.log('Presupuesto recalculado exitosamente')
-            budgetUpdated = true
-
-            // Verificar que el presupuesto se actualizó correctamente
-            const verifyResponse = await api.getBudgets(tx.budget_id)
-            if (verifyResponse.budgets && verifyResponse.budgets.length > 0) {
-              const updatedBudget = verifyResponse.budgets[0]
-              const expectedTotalSpent =
-                originalBudgetTotalSpent !== null
-                  ? Math.max(0, originalBudgetTotalSpent - monto)
-                  : 0
-              console.log('Presupuesto después de recalcular:', {
-                id: tx.budget_id,
-                name: updatedBudget.name,
-                total_spent: updatedBudget.total_spent,
-                expected_total_spent: expectedTotalSpent,
-              })
-
-              if (
-                Math.abs(parseFloat(updatedBudget.total_spent.toString()) - expectedTotalSpent) >
-                0.01
-              ) {
-                console.warn(
-                  '⚠️ El total_spent no coincide con el valor esperado después de recalcular'
-                )
-              } else {
-                console.log('✅ Presupuesto recalculado correctamente en el backend')
-              }
-            }
-          }
-
-          // 3b. Si es un ahorro eliminado, revertir el current_amount del proyecto asociado
-          if (tx.type === 'ahorro' && projectId && originalProjectCurrentAmount !== null) {
-            try {
-              const newCurrentAmount = Math.max(0, originalProjectCurrentAmount - monto)
-
-              console.log('Revirtiendo current_amount del proyecto:', {
-                projectId,
-                currentAmountOriginal: originalProjectCurrentAmount,
-                montoTransaccion: monto,
-                newCurrentAmount,
-              })
-
-              await api.updateProject(projectId, {
-                current_amount: newCurrentAmount,
-              })
-
-              projectUpdated = true
-              console.log('✅ Proyecto revertido exitosamente')
-              window.dispatchEvent(new Event('projectsUpdated'))
-            } catch (projectErr: any) {
-              console.error('Error al revertir proyecto:', projectErr)
-              // Continuar aunque falle, ya que la transacción ya fue eliminada
-            }
-          }
-
-          // Recargar transacciones después de eliminar
-          await reloadTransactions()
-
-          // Disparar evento para actualizar presupuestos si se actualizó uno
-          if (budgetUpdated) {
-            console.log('Disparando evento budgetsUpdated. budgetId:', tx.budget_id)
-            setTimeout(() => {
-              window.dispatchEvent(new Event('budgetsUpdated'))
-              console.log('Evento budgetsUpdated disparado')
-            }, 100)
-          }
-
-          handleCloseDetailModal()
-          showSuccess('Transacción eliminada exitosamente')
-        } catch (err: any) {
-          console.error('Error al eliminar transacción:', err)
-
-          // ROLLBACK: Si falló después de eliminar la transacción, revertir los cambios
-          // Nota: La transacción ya fue eliminada, así que no podemos revertirla
-          // Solo podemos revertir los cambios en cuenta, tarjeta de crédito y presupuesto
-          try {
-            // Revertir cuenta bancaria si se actualizó
-            if (accountUpdated && tx.bank_account_id && originalAccountBalance !== null) {
-              console.log('Haciendo rollback de la cuenta bancaria:', tx.bank_account_id)
-              await api.updateBankAccount(tx.bank_account_id, {
-                balance: originalAccountBalance,
-              })
-              console.log('Rollback de cuenta bancaria completado')
-            }
-
-            // Revertir tarjeta de crédito si se actualizó
-            if (creditCardUpdated && tx.credit_card_id && originalCreditCardUsedCredit !== null) {
-              console.log(
-                'Haciendo rollback del used_credit de la tarjeta de crédito:',
-                tx.credit_card_id
-              )
-              await api.updateCreditCard(tx.credit_card_id, {
-                used_credit: originalCreditCardUsedCredit,
-              })
-              console.log('Rollback de tarjeta de crédito completado')
-            }
-
-            // Revertir deuda si se actualizó
-            if (debtUpdated && tx.debt_id && originalDebtOwed !== null) {
-              console.log('Haciendo rollback del pago de deuda:', tx.debt_id)
-              await api.updateDebt(tx.debt_id, {
-                owed: originalDebtOwed,
-              })
-              console.log('Rollback de deuda completado')
-            }
-
-            // Revertir proyecto si se actualizó
-            if (projectUpdated && projectId && originalProjectCurrentAmount !== null) {
-              console.log('Haciendo rollback del proyecto:', projectId)
-              await api.updateProject(projectId, {
-                current_amount: originalProjectCurrentAmount,
-              })
-              console.log('Rollback de proyecto completado')
-            }
-
-            // Revertir presupuesto: recalcular el presupuesto
-            // Esto debería restaurar el total_spent original porque la transacción ya fue eliminada
-            if (budgetUpdated && tx.budget_id) {
-              console.log('Haciendo rollback del presupuesto (recalculando):', tx.budget_id)
-              await api.recalculateBudget(tx.budget_id)
-              console.log('Rollback de presupuesto completado (recalculado)')
-            }
-          } catch (rollbackErr: any) {
-            console.error('Error al hacer rollback:', rollbackErr)
-            showError(
-              'Error crítico: La transacción fue eliminada pero hubo un error al revertir los cambios. Por favor, verifica manualmente la cuenta bancaria, tarjeta de crédito, deuda y presupuesto.'
-            )
-          }
-
-          throw err // Re-lanzar el error original
-        }
-      } catch (err: any) {
-        console.error('Error completo al eliminar transacción:', err)
-        console.error('Error response:', err.response)
-        console.error('Error data:', err.data)
-        console.error('Error message:', err.message)
-
-        let errorMessage = getTranslatedErrorMessage(
-          err,
-          'Error al eliminar la transacción. Por favor, intenta de nuevo.'
-        )
-        if (err.response?.status) {
-          errorMessage = `Error ${err.response.status} - ${err.response.statusText || 'Error desconocido'}`
-        } else if (typeof err === 'string') {
-          errorMessage = err
-        }
-
-        showNotification(errorMessage, 'error')
-      } finally {
-        setIsLoading(false)
-      }
+    try {
+      setIsLoading(true)
+      await api.deleteTransaction(selectedTransaction.id)
+      await reloadTransactions()
+      emitTransactionSyncEvents()
+      handleCloseDetailModal()
+      showSuccess('Transacción eliminada exitosamente')
+    } catch (err: any) {
+      console.error('Error al eliminar transacción:', err)
+      showNotification(
+        getTranslatedErrorMessage(err, 'Error al eliminar la transacción. Por favor, intenta de nuevo.'),
+        'error'
+      )
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -1108,437 +750,57 @@ function Transacciones() {
         transactionData.debtor_id = null
       }
 
-      // Agregar información sobre tarjeta de crédito si es un pago con tarjeta
-      if (formData.tipo === 'egreso' && formData.isCreditCardPayment && formData.creditCardId) {
-        const selectedCard = creditCards.find(c => c.id === formData.creditCardId)
-        console.log('=== PAYLOAD DE TRANSACCIÓN CON TARJETA DE CRÉDITO ===')
-        console.log(
-          'Tarjeta seleccionada:',
-          selectedCard ? `${selectedCard.nombre} (${selectedCard.banco})` : 'No encontrada'
-        )
-        console.log('Cupo usado antes:', selectedCard ? selectedCard.cupoUsado : 'N/A')
-        console.log('Cupo disponible antes:', selectedCard ? selectedCard.cupoDisponible : 'N/A')
-        console.log('Monto de la transacción:', monto)
-        console.log(
-          'Cupo usado después (calculado):',
-          selectedCard ? selectedCard.cupoUsado + monto : 'N/A'
-        )
-        console.log('Payload completo:')
-      } else {
-        console.log('=== PAYLOAD DE TRANSACCIÓN ===')
-      }
-      console.log(JSON.stringify(transactionData, null, 2))
+      const successMessage =
+        isEditMode && selectedTransaction
+          ? 'Transacción actualizada exitosamente'
+          : 'Transacción creada exitosamente'
 
       if (isEditMode && selectedTransaction) {
-        // Nota: La API no tiene PUT, pero podemos implementarlo si existe
-        showNotification('Funcionalidad de edición pendiente de implementar en la API', 'warning')
-        handleCloseModal()
+        await api.updateTransaction(selectedTransaction.id, transactionData)
       } else {
-        // Crear nueva transacción con rollback manual
-        let budgetUpdated = false
-        let accountUpdated = false
-        let projectUpdated = false
-        let debtorUpdated = false
-        let originalBudgetTotalSpent: number | null = null
-        let originalAccountBalance: number | null = null
-        let originalProjectCurrentAmount: number | null = null
-        let originalDebtorTotalPaid: number | null = null
-        let budgetId: string | null = null
-        let accountId: string | null = null
-        let projectId: string | null = null
-        let debtorId: string | null = null
-
-        try {
-          // Guardar valores originales para rollback si es necesario
-          if (
-            transactionData.budget_id &&
-            (formData.tipo === 'egreso' || formData.tipo === 'ahorro')
-          ) {
-            budgetId = transactionData.budget_id
-            const budgetResponse = await api.getBudgets(budgetId)
-            if (budgetResponse.budgets && budgetResponse.budgets.length > 0) {
-              const budget = budgetResponse.budgets[0]
-              originalBudgetTotalSpent = parseFloat(budget.total_spent.toString())
-            }
-          }
-
-          // Solo obtener balance de cuenta bancaria si NO es un pago con tarjeta de crédito
-          // (los pagos con tarjeta de crédito no tienen bank_account_id)
-          if (!(formData.tipo === 'egreso' && formData.isCreditCardPayment)) {
-            accountId = transactionData.bank_account_id
-            if (accountId) {
-              const bankAccountResponse = await api.getBankAccounts(accountId)
-              if (bankAccountResponse.accounts && bankAccountResponse.accounts.length > 0) {
-                const account = bankAccountResponse.accounts[0]
-                originalAccountBalance = parseFloat(account.balance.original.amount)
-              }
-            }
-          }
-
-          // 1. PRIMERO: Crear la transacción
-          console.log('Creando transacción...')
-          await api.createTransaction(transactionData)
-          console.log('Transacción creada exitosamente')
-
-          // 2. SEGUNDO: Actualizar used_credit de la tarjeta de crédito si tiene credit_card_id
-          // Según la documentación actualizada del backend, esto debe hacerse después de crear la transacción
-          if (
-            transactionData.credit_card_id &&
-            formData.tipo === 'egreso' &&
-            formData.isCreditCardPayment &&
-            formData.creditCardId
-          ) {
-            const selectedCard = creditCards.find(c => c.id === formData.creditCardId)
-            if (selectedCard) {
-              // Incrementar el cupo usado de la tarjeta
-              const nuevoCupoUsado = selectedCard.cupoUsado + monto
-              console.log(
-                'Actualizando used_credit de tarjeta de crédito:',
-                formData.creditCardId,
-                'De:',
-                selectedCard.cupoUsado,
-                'A:',
-                nuevoCupoUsado
-              )
-              await api.updateCreditCard(formData.creditCardId, {
-                used_credit: nuevoCupoUsado,
-              })
-              console.log('Used_credit de tarjeta de crédito actualizado exitosamente')
-
-              // Buscar la deuda asociada por concepto (nombre de la tarjeta)
-              const associatedDebt = debts.find(d => d.concepto === selectedCard.nombre)
-              if (associatedDebt) {
-                // Incrementar el monto adeudado
-                // Asegurar que adeudado sea un número válido (default: 0)
-                const adeudadoActual = parseFloat(String(associatedDebt.adeudado || 0))
-                const nuevoAdeudado = adeudadoActual + monto
-
-                // Validar que el nuevo monto adeudado sea un número positivo válido
-                if (isNaN(nuevoAdeudado) || nuevoAdeudado < 0 || !isFinite(nuevoAdeudado)) {
-                  console.error('Error: nuevoAdeudado no es válido:', {
-                    nuevoAdeudado,
-                    adeudadoActual,
-                    monto,
-                    adeudadoOriginal: associatedDebt.adeudado,
-                    tipoAdeudado: typeof associatedDebt.adeudado,
-                  })
-                  throw new Error(
-                    `Error al calcular el nuevo monto adeudado. Valor inválido: ${nuevoAdeudado}`
-                  )
-                }
-
-                console.log('Actualizando deuda asociada:', {
-                  debtId: associatedDebt.id,
-                  adeudadoActual,
-                  monto,
-                  nuevoAdeudado,
-                  tipoNuevoAdeudado: typeof nuevoAdeudado,
-                })
-
-                await api.updateDebt(associatedDebt.id, {
-                  owed: nuevoAdeudado,
-                })
-                console.log('Deuda asociada actualizada exitosamente')
-                // Disparar evento para actualizar tarjetas de crédito
-                window.dispatchEvent(new Event('debtsUpdated'))
-              }
-            }
-          }
-
-          // 3. TERCERO: Actualizar balance de cuenta bancaria manualmente
-          // NO actualizar el balance si es un pago con tarjeta de crédito (el dinero no sale de la cuenta bancaria)
-          if (
-            originalAccountBalance !== null &&
-            accountId &&
-            !(formData.tipo === 'egreso' && formData.isCreditCardPayment)
-          ) {
-            let newBalance = originalAccountBalance
-
-            if (formData.tipo === 'ingreso') {
-              newBalance += monto
-            } else if (formData.tipo === 'egreso' || formData.tipo === 'ahorro') {
-              newBalance -= monto
-            }
-
-            console.log(
-              'Actualizando balance de cuenta bancaria:',
-              accountId,
-              'De:',
-              originalAccountBalance,
-              'A:',
-              newBalance
-            )
-            await api.updateBankAccount(accountId, {
-              balance: newBalance,
-            })
-            accountUpdated = true
-            console.log('Balance de cuenta bancaria actualizado exitosamente')
-          } else if (formData.tipo === 'egreso' && formData.isCreditCardPayment) {
-            console.log(
-              'No se actualiza el balance de cuenta bancaria porque es un pago con tarjeta de crédito'
-            )
-          }
-
-          // 4. CUARTO: Recalcular total_spent del presupuesto usando el endpoint de recalculate
-          // Esto es necesario porque el backend no acepta total_spent directamente en PUT /budgets/{id}
-          if (
-            transactionData.budget_id &&
-            (formData.tipo === 'egreso' || formData.tipo === 'ahorro')
-          ) {
-            budgetId = transactionData.budget_id
-            console.log('Recalculando presupuesto:', budgetId)
-            await api.recalculateBudget(budgetId)
-            console.log('Presupuesto recalculado exitosamente')
-            budgetUpdated = true
-
-            // Verificar que el presupuesto se actualizó correctamente
-            const verifyResponse = await api.getBudgets(budgetId)
-            if (verifyResponse.budgets && verifyResponse.budgets.length > 0) {
-              const updatedBudget = verifyResponse.budgets[0]
-              const expectedTotalSpent =
-                originalBudgetTotalSpent !== null ? originalBudgetTotalSpent + monto : monto
-              console.log('Presupuesto después de recalcular:', {
-                id: budgetId,
-                name: updatedBudget.name,
-                total_spent: updatedBudget.total_spent,
-                expected_total_spent: expectedTotalSpent,
-              })
-
-              if (
-                Math.abs(parseFloat(updatedBudget.total_spent.toString()) - expectedTotalSpent) >
-                0.01
-              ) {
-                console.warn(
-                  '⚠️ El total_spent no coincide con el valor esperado después de recalcular'
-                )
-              } else {
-                console.log('✅ Presupuesto recalculado correctamente en el backend')
-              }
-            }
-          }
-
-          // 5. QUINTO: Si es un ahorro, actualizar el current_amount del proyecto asociado
-          if (formData.tipo === 'ahorro' && transactionData.budget_id) {
-            try {
-              // Buscar el proyecto que tiene este budget_id
-              const projectsResponse = await api.getProjects()
-              let projectToUpdate: any = null
-
-              if (projectsResponse.projects && Array.isArray(projectsResponse.projects)) {
-                projectToUpdate = projectsResponse.projects.find(
-                  (p: any) => p.budget_id === transactionData.budget_id
-                )
-              }
-
-              if (projectToUpdate) {
-                projectId = projectToUpdate.id
-                const currentAmount = parseFloat(projectToUpdate.current_amount?.toString() || '0')
-                originalProjectCurrentAmount = currentAmount
-                const newCurrentAmount = currentAmount + monto
-
-                console.log('Actualizando current_amount del proyecto:', {
-                  projectId: projectToUpdate.id,
-                  proyectoNombre: projectToUpdate.name,
-                  currentAmountActual: currentAmount,
-                  montoTransaccion: monto,
-                  newCurrentAmount,
-                })
-
-                await api.updateProject(projectToUpdate.id, {
-                  current_amount: newCurrentAmount,
-                })
-
-                projectUpdated = true
-                console.log('✅ Proyecto actualizado exitosamente')
-                // Disparar evento para actualizar proyectos en otros componentes
-                window.dispatchEvent(new Event('projectsUpdated'))
-              } else {
-                console.warn(
-                  '⚠️ No se encontró proyecto asociado al budget_id:',
-                  transactionData.budget_id
-                )
-              }
-            } catch (projectErr: any) {
-              console.error('Error al actualizar proyecto:', projectErr)
-              // No lanzar error, solo registrar, ya que la transacción ya fue creada
-              // El rollback manejará esto si es necesario
-            }
-          }
-
-          // Si es un pago de deuda (no con tarjeta de crédito), actualizar el monto adeudado
-          if (
-            formData.tipo === 'egreso' &&
-            formData.isDebtPayment &&
-            formData.debtId &&
-            !formData.isCreditCardPayment
-          ) {
-            const selectedDebt = debts.find(d => d.id === formData.debtId)
-            if (selectedDebt) {
-              // Convertir el monto del pago a la moneda de la deuda si es necesario
-              // Por ahora asumimos que están en la misma moneda
-              // Asegurar que adeudado sea un número válido (default: 0)
-              const adeudadoActual = parseFloat(selectedDebt.adeudado.toString()) || 0
-              const nuevoAdeudado = Math.max(0, adeudadoActual - monto) // Asegurar que sea positivo
-
-              console.log('Actualizando deuda por pago:', {
-                debtId: formData.debtId,
-                adeudadoActual,
-                monto,
-                nuevoAdeudado,
-              })
-
-              await api.updateDebt(formData.debtId, {
-                owed: nuevoAdeudado,
-              })
-              console.log('Deuda actualizada exitosamente')
-              // Disparar evento para actualizar tarjetas de crédito
-              window.dispatchEvent(new Event('debtsUpdated'))
-            }
-          }
-
-          // Si es un ingreso de pago de deudor, actualizar el total_paid del deudor
-          if (formData.tipo === 'ingreso' && formData.isDebtorPayment && formData.debtorId) {
-            debtorId = formData.debtorId
-            const selectedDebtor = debtors.find(d => d.id === formData.debtorId)
-            if (selectedDebtor) {
-              // Guardar valor original para rollback
-              originalDebtorTotalPaid = parseFloat(selectedDebtor.totalPagado.toString()) || 0
-
-              // Incrementar el total pagado del deudor
-              const totalPagadoActual = originalDebtorTotalPaid
-              const nuevoTotalPagado = Math.min(selectedDebtor.valor, totalPagadoActual + monto) // No puede exceder el valor total
-
-              console.log('Actualizando total_paid del deudor:', {
-                debtorId: formData.debtorId,
-                nombre: selectedDebtor.nombre,
-                totalPagadoActual,
-                monto,
-                nuevoTotalPagado,
-                valorTotal: selectedDebtor.valor,
-              })
-
-              await api.updateDebtor(formData.debtorId, {
-                total_paid: nuevoTotalPagado,
-              })
-              debtorUpdated = true
-              console.log('Total pagado del deudor actualizado exitosamente')
-              // Disparar evento para actualizar deudores en otros componentes
-              window.dispatchEvent(new Event('debtorsUpdated'))
-            }
-          }
-
-          // Cerrar el modal primero para dar feedback inmediato al usuario
-          setIsModalOpen(false)
-          setIsEditMode(false)
-          setSelectedTransaction(null)
-          // Resetear el formulario
-          setFormData({
-            fecha: new Date().toISOString().split('T')[0],
-            tipo: 'egreso',
-            monto: '',
-            descripcion: '',
-            categoria: '',
-            moneda: 'COP',
-            cuentaBancariaId: '',
-            presupuestoId: '',
-            bolsillo: '',
-            isDebtPayment: false,
-            debtId: '',
-            isCreditCardPayment: false,
-            creditCardId: '',
-            isDebtorPayment: false,
-            debtorId: '',
-          })
-          setFormErrors({
-            monto: '',
-            descripcion: '',
-            categoria: '',
-            cuentaBancariaId: '',
-            presupuestoId: '',
-            debtId: '',
-            creditCardId: '',
-            debtorId: '',
-          })
-
-          // Recargar transacciones después de cerrar el modal
-          await reloadTransactions()
-
-          // Disparar evento para actualizar presupuestos si se actualizó uno
-          if (budgetUpdated) {
-            console.log('Disparando evento budgetsUpdated. budgetId:', budgetId)
-            // Pequeño delay para asegurar que el backend haya procesado la actualización
-            setTimeout(() => {
-              window.dispatchEvent(new Event('budgetsUpdated'))
-              console.log('Evento budgetsUpdated disparado')
-            }, 100)
-          } else {
-            console.log('No se dispara evento budgetsUpdated porque budgetUpdated es false')
-          }
-        } catch (err: any) {
-          console.error('Error al guardar transacción:', err)
-
-          // ROLLBACK: Revertir cambios si algo falló
-          // Nota: Como ahora creamos la transacción primero, si algo falla después,
-          // necesitamos eliminar la transacción y recalcular el presupuesto
-          try {
-            // Revertir cuenta bancaria si se actualizó (esto debe hacerse primero)
-            if (accountUpdated && accountId && originalAccountBalance !== null) {
-              console.log('Haciendo rollback de la cuenta bancaria:', accountId)
-              await api.updateBankAccount(accountId, {
-                balance: originalAccountBalance,
-              })
-              console.log('Rollback de cuenta bancaria completado')
-            }
-
-            // Revertir proyecto si se actualizó
-            if (projectUpdated && projectId && originalProjectCurrentAmount !== null) {
-              console.log('Haciendo rollback del proyecto:', projectId)
-              await api.updateProject(projectId, {
-                current_amount: originalProjectCurrentAmount,
-              })
-              console.log('Rollback de proyecto completado')
-            }
-
-            // Revertir presupuesto: si la transacción fue creada, recalcular el presupuesto
-            // Esto debería revertir el total_spent automáticamente
-            if (budgetUpdated && budgetId) {
-              console.log('Haciendo rollback del presupuesto (recalculando):', budgetId)
-              await api.recalculateBudget(budgetId)
-              console.log('Rollback de presupuesto completado (recalculado)')
-            }
-
-            // Revertir deudor si se actualizó
-            if (debtorUpdated && debtorId && originalDebtorTotalPaid !== null) {
-              console.log('Haciendo rollback del total_paid del deudor:', debtorId)
-              await api.updateDebtor(debtorId, {
-                total_paid: originalDebtorTotalPaid,
-              })
-              console.log('Rollback de deudor completado')
-            }
-          } catch (rollbackErr: any) {
-            console.error('Error al hacer rollback:', rollbackErr)
-            showError(
-              'Error crítico: La transacción falló y hubo un error al revertir los cambios. Por favor, verifica manualmente el presupuesto y la cuenta bancaria.'
-            )
-          }
-
-          const errorMessage = getTranslatedErrorMessage(
-            err,
-            'Error al guardar la transacción. Por favor, intenta de nuevo.'
-          )
-          showError(errorMessage)
-        } finally {
-          setIsLoading(false)
-          setIsSubmitting(false)
-        }
+        await api.createTransaction(transactionData)
       }
+
+      setIsModalOpen(false)
+      setIsEditMode(false)
+      setSelectedTransaction(null)
+      setFormData({
+        fecha: new Date().toISOString().split('T')[0],
+        tipo: 'egreso',
+        monto: '',
+        descripcion: '',
+        categoria: '',
+        moneda: 'COP',
+        cuentaBancariaId: '',
+        presupuestoId: '',
+        bolsillo: '',
+        isDebtPayment: false,
+        debtId: '',
+        isCreditCardPayment: false,
+        creditCardId: '',
+        isDebtorPayment: false,
+        debtorId: '',
+      })
+      setFormErrors({
+        monto: '',
+        descripcion: '',
+        categoria: '',
+        cuentaBancariaId: '',
+        presupuestoId: '',
+        debtId: '',
+        creditCardId: '',
+        debtorId: '',
+      })
+
+      await reloadTransactions()
+      emitTransactionSyncEvents()
+      showSuccess(successMessage)
     } catch (err: any) {
       console.error('Error al guardar transacción:', err)
-      const errorMessage = getTranslatedErrorMessage(
-        err,
-        'Error al guardar la transacción. Por favor, intenta de nuevo.'
+      showError(
+        getTranslatedErrorMessage(err, 'Error al guardar la transacción. Por favor, intenta de nuevo.')
       )
-      showError(errorMessage)
+    } finally {
       setIsLoading(false)
       setIsSubmitting(false)
     }
@@ -1716,82 +978,14 @@ function Transacciones() {
     ) {
       try {
         setIsLoading(true)
-
-        // Primero obtener todas las transacciones para saber qué revertir
-        const allTransactionsResponse = await api.getTransactions()
-        const allTransactions = allTransactionsResponse.transactions || []
-
-        // Eliminar todas las transacciones usando el endpoint DELETE /transactions/all
         await api.deleteAllTransactions()
-
-        // Agrupar por cuenta bancaria y presupuesto para calcular cambios
-        const balanceChanges: Record<string, number> = {}
-        const budgetChanges: Record<string, number> = {}
-
-        allTransactions.forEach((tx: any) => {
-          // Calcular cambios de balance
-          if (!balanceChanges[tx.bank_account_id]) {
-            balanceChanges[tx.bank_account_id] = 0
-          }
-
-          if (tx.type === 'ingreso') {
-            balanceChanges[tx.bank_account_id] -= parseFloat(tx.amount.toString())
-          } else if (tx.type === 'egreso' || tx.type === 'ahorro') {
-            balanceChanges[tx.bank_account_id] += parseFloat(tx.amount.toString())
-          }
-
-          // Calcular cambios de presupuesto
-          if (tx.budget_id) {
-            if (!budgetChanges[tx.budget_id]) {
-              budgetChanges[tx.budget_id] = 0
-            }
-            budgetChanges[tx.budget_id] -= parseFloat(tx.amount.toString())
-          }
-        })
-
-        // Aplicar cambios de balance
-        for (const [accountId, change] of Object.entries(balanceChanges)) {
-          try {
-            const accountResponse = await api.getBankAccounts(accountId)
-            if (accountResponse.accounts && accountResponse.accounts.length > 0) {
-              const account = accountResponse.accounts[0]
-              const currentBalance = parseFloat(account.balance.original.amount)
-              await api.updateBankAccount(accountId, {
-                balance: currentBalance + change,
-              })
-            }
-          } catch (err: any) {
-            console.error(`Error al actualizar balance de cuenta ${accountId}:`, err)
-          }
-        }
-
-        // Actualizar presupuestos afectados
-        for (const [budgetId, change] of Object.entries(budgetChanges)) {
-          try {
-            const budgetResponse = await api.getBudgets(budgetId)
-            if (budgetResponse.budgets && budgetResponse.budgets.length > 0) {
-              const budget = budgetResponse.budgets[0]
-              const currentTotalSpent = parseFloat(budget.total_spent.toString())
-              // El backend requiere name o max_amount, así que incluimos el name del presupuesto
-              await api.updateBudget(budgetId, {
-                name: budget.name,
-                total_spent: Math.max(0, currentTotalSpent + change),
-              })
-            }
-          } catch (err: any) {
-            console.error(`Error al actualizar presupuesto ${budgetId}:`, err)
-          }
-        }
-
         await reloadTransactions()
+        emitTransactionSyncEvents()
         setIsDebugModalOpen(false)
         showNotification('Todas las transacciones han sido eliminadas exitosamente.', 'success')
       } catch (err: any) {
         console.error('Error al eliminar todas las transacciones:', err)
-        const errorMessage = getTranslatedErrorMessage(
-          err,
-          'Error al eliminar todas las transacciones. Por favor, intenta de nuevo.'
-        )
+        const errorMessage = getTranslatedErrorMessage(err, 'Error al eliminar todas las transacciones. Por favor, intenta de nuevo.')
         showNotification(errorMessage, 'error')
       } finally {
         setIsLoading(false)
@@ -1801,10 +995,7 @@ function Transacciones() {
 
   const handleCreateDemoIncomes = async () => {
     if (accounts.length === 0) {
-      showNotification(
-        'No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.',
-        'warning'
-      )
+      showNotification('No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.', 'warning')
       return
     }
 
@@ -1845,14 +1036,6 @@ function Transacciones() {
       setIsLoading(true)
       const accountId = accounts[0].id
 
-      // Obtener cuenta bancaria para actualizar balance
-      const bankAccountResponse = await api.getBankAccounts(accountId)
-      let currentBalance = 0
-      if (bankAccountResponse.accounts && bankAccountResponse.accounts.length > 0) {
-        currentBalance = parseFloat(bankAccountResponse.accounts[0].balance.original.amount)
-      }
-
-      let totalAmount = 0
       for (const income of demoIncomes) {
         await api.createTransaction({
           date: income.date,
@@ -1863,23 +1046,15 @@ function Transacciones() {
           currency: 'COP',
           bank_account_id: accountId,
         })
-        totalAmount += income.amount
       }
 
-      // Actualizar balance manualmente
-      await api.updateBankAccount(accountId, {
-        balance: currentBalance + totalAmount,
-      })
-
       await reloadTransactions()
+      emitTransactionSyncEvents()
       setIsDebugModalOpen(false)
       showNotification(`${demoIncomes.length} ingresos demo creados exitosamente.`, 'success')
     } catch (err: any) {
       console.error('Error al crear ingresos demo:', err)
-      const errorMessage = getTranslatedErrorMessage(
-        err,
-        'Error al crear los ingresos demo. Por favor, intenta de nuevo.'
-      )
+      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear los ingresos demo. Por favor, intenta de nuevo.')
       showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
@@ -1888,10 +1063,7 @@ function Transacciones() {
 
   const handleCreateDemoExpenses = async () => {
     if (accounts.length === 0) {
-      showNotification(
-        'No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.',
-        'warning'
-      )
+      showNotification('No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.', 'warning')
       return
     }
 
@@ -1932,14 +1104,6 @@ function Transacciones() {
       setIsLoading(true)
       const accountId = accounts[0].id
 
-      // Obtener cuenta bancaria para actualizar balance
-      const bankAccountResponse = await api.getBankAccounts(accountId)
-      let currentBalance = 0
-      if (bankAccountResponse.accounts && bankAccountResponse.accounts.length > 0) {
-        currentBalance = parseFloat(bankAccountResponse.accounts[0].balance.original.amount)
-      }
-
-      let totalAmount = 0
       for (const expense of demoExpenses) {
         await api.createTransaction({
           date: expense.date,
@@ -1950,23 +1114,15 @@ function Transacciones() {
           currency: 'COP',
           bank_account_id: accountId,
         })
-        totalAmount += expense.amount
       }
 
-      // Actualizar balance manualmente
-      await api.updateBankAccount(accountId, {
-        balance: currentBalance - totalAmount,
-      })
-
       await reloadTransactions()
+      emitTransactionSyncEvents()
       setIsDebugModalOpen(false)
       showNotification(`${demoExpenses.length} egresos demo creados exitosamente.`, 'success')
     } catch (err: any) {
       console.error('Error al crear egresos demo:', err)
-      const errorMessage = getTranslatedErrorMessage(
-        err,
-        'Error al crear los egresos demo. Por favor, intenta de nuevo.'
-      )
+      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear los egresos demo. Por favor, intenta de nuevo.')
       showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
@@ -1975,17 +1131,11 @@ function Transacciones() {
 
   const handleCreateDemoCreditCardPayments = async () => {
     if (accounts.length === 0) {
-      showNotification(
-        'No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.',
-        'warning'
-      )
+      showNotification('No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.', 'warning')
       return
     }
     if (creditCards.length === 0) {
-      showNotification(
-        'No hay tarjetas de crédito disponibles. Crea al menos una tarjeta primero.',
-        'warning'
-      )
+      showNotification('No hay tarjetas de crédito disponibles. Crea al menos una tarjeta primero.', 'warning')
       return
     }
 
@@ -2012,18 +1162,7 @@ function Transacciones() {
 
     try {
       setIsLoading(true)
-      const accountId = accounts[0].id
       const card = creditCards[0]
-
-      // Obtener cuenta bancaria para actualizar balance
-      const bankAccountResponse = await api.getBankAccounts(accountId)
-      let currentBalance = 0
-      if (bankAccountResponse.accounts && bankAccountResponse.accounts.length > 0) {
-        currentBalance = parseFloat(bankAccountResponse.accounts[0].balance.original.amount)
-      }
-
-      let totalAmount = 0
-      let currentCupoUsado = card.cupoUsado
 
       for (const payment of demoPayments) {
         await api.createTransaction({
@@ -2033,34 +1172,13 @@ function Transacciones() {
           description: payment.description,
           category: payment.category,
           currency: 'COP',
-          bank_account_id: accountId,
-        })
-        totalAmount += payment.amount
-        currentCupoUsado += payment.amount
-      }
-
-      // Actualizar balance manualmente
-      await api.updateBankAccount(accountId, {
-        balance: currentBalance - totalAmount,
-      })
-
-      // Actualizar cupo usado de la tarjeta
-      await api.updateCreditCard(card.id, {
-        used_credit: currentCupoUsado,
-      })
-
-      // Buscar y actualizar deuda asociada si existe
-      const associatedDebt = debts.find(d => d.concepto === card.nombre)
-      if (associatedDebt) {
-        const nuevoAdeudado = associatedDebt.adeudado + totalAmount
-        await api.updateDebt(associatedDebt.id, {
-          owed: nuevoAdeudado,
+          bank_account_id: null,
+          credit_card_id: card.id,
         })
       }
 
-      // Recargar datos
       await reloadTransactions()
-      window.dispatchEvent(new Event('debtsUpdated'))
+      emitTransactionSyncEvents()
       setIsDebugModalOpen(false)
       showNotification(
         `${demoPayments.length} egresos con pago de tarjeta demo creados exitosamente.`,
@@ -2068,10 +1186,7 @@ function Transacciones() {
       )
     } catch (err: any) {
       console.error('Error al crear egresos con tarjeta demo:', err)
-      const errorMessage = getTranslatedErrorMessage(
-        err,
-        'Error al crear los egresos con tarjeta demo. Por favor, intenta de nuevo.'
-      )
+      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear los egresos con tarjeta demo. Por favor, intenta de nuevo.')
       showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
@@ -2080,10 +1195,7 @@ function Transacciones() {
 
   const handleCreateDemoDebtPayments = async () => {
     if (accounts.length === 0) {
-      showNotification(
-        'No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.',
-        'warning'
-      )
+      showNotification('No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.', 'warning')
       return
     }
     if (debts.length === 0) {
@@ -2111,16 +1223,6 @@ function Transacciones() {
       const accountId = accounts[0].id
       const debt = debts[0]
 
-      // Obtener cuenta bancaria para actualizar balance
-      const bankAccountResponse = await api.getBankAccounts(accountId)
-      let currentBalance = 0
-      if (bankAccountResponse.accounts && bankAccountResponse.accounts.length > 0) {
-        currentBalance = parseFloat(bankAccountResponse.accounts[0].balance.original.amount)
-      }
-
-      let totalAmount = 0
-      let currentAdeudado = debt.adeudado
-
       for (const payment of demoPayments) {
         await api.createTransaction({
           date: payment.date,
@@ -2130,24 +1232,12 @@ function Transacciones() {
           category: payment.category,
           currency: 'COP',
           bank_account_id: accountId,
+          debt_id: debt.id,
         })
-        totalAmount += payment.amount
-        currentAdeudado = Math.max(0, currentAdeudado - payment.amount)
       }
 
-      // Actualizar balance manualmente
-      await api.updateBankAccount(accountId, {
-        balance: currentBalance - totalAmount,
-      })
-
-      // Actualizar monto adeudado
-      await api.updateDebt(debt.id, {
-        owed: currentAdeudado,
-      })
-
-      // Recargar datos
       await reloadTransactions()
-      window.dispatchEvent(new Event('debtsUpdated'))
+      emitTransactionSyncEvents()
       setIsDebugModalOpen(false)
       showNotification(
         `${demoPayments.length} egresos con pago de deuda demo creados exitosamente.`,
@@ -2155,10 +1245,7 @@ function Transacciones() {
       )
     } catch (err: any) {
       console.error('Error al crear egresos con deuda demo:', err)
-      const errorMessage = getTranslatedErrorMessage(
-        err,
-        'Error al crear los egresos con deuda demo. Por favor, intenta de nuevo.'
-      )
+      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear los egresos con deuda demo. Por favor, intenta de nuevo.')
       showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
@@ -2167,17 +1254,11 @@ function Transacciones() {
 
   const handleCreateDemoSavings = async () => {
     if (accounts.length === 0) {
-      showNotification(
-        'No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.',
-        'warning'
-      )
+      showNotification('No hay cuentas bancarias disponibles. Crea al menos una cuenta primero.', 'warning')
       return
     }
     if (projectBudgets.length === 0) {
-      showNotification(
-        'No hay presupuestos asociados a proyectos. Crea al menos un proyecto primero.',
-        'warning'
-      )
+      showNotification('No hay presupuestos asociados a proyectos. Crea al menos un proyecto primero.', 'warning')
       return
     }
 
@@ -2198,32 +1279,6 @@ function Transacciones() {
       const accountId = accounts[0].id
       const budgetId = projectBudgets[0].id
 
-      // Obtener cuenta bancaria y presupuesto para actualizar balances
-      const bankAccountResponse = await api.getBankAccounts(accountId)
-      let currentBalance = 0
-      if (bankAccountResponse.accounts && bankAccountResponse.accounts.length > 0) {
-        currentBalance = parseFloat(bankAccountResponse.accounts[0].balance.original.amount)
-      }
-
-      const budgetResponse = await api.getBudgets(budgetId)
-      let currentTotalSpent = 0
-      if (budgetResponse.budgets && budgetResponse.budgets.length > 0) {
-        currentTotalSpent = parseFloat(budgetResponse.budgets[0].total_spent.toString())
-      }
-
-      // Obtener proyecto asociado al presupuesto
-      const projectsResponse = await api.getProjects()
-      let projectToUpdate: any = null
-      let currentProjectAmount = 0
-
-      if (projectsResponse.projects && Array.isArray(projectsResponse.projects)) {
-        projectToUpdate = projectsResponse.projects.find((p: any) => p.budget_id === budgetId)
-        if (projectToUpdate) {
-          currentProjectAmount = parseFloat(projectToUpdate.current_amount?.toString() || '0')
-        }
-      }
-
-      let totalAmount = 0
       for (const saving of demoSavings) {
         await api.createTransaction({
           date: saving.date,
@@ -2235,35 +1290,15 @@ function Transacciones() {
           bank_account_id: accountId,
           budget_id: budgetId,
         })
-        totalAmount += saving.amount
-      }
-
-      // Actualizar balance manualmente
-      await api.updateBankAccount(accountId, {
-        balance: currentBalance - totalAmount,
-      })
-
-      // Actualizar total_spent del presupuesto usando recalculate
-      await api.recalculateBudget(budgetId)
-
-      // Actualizar current_amount del proyecto si existe
-      if (projectToUpdate) {
-        const newProjectAmount = currentProjectAmount + totalAmount
-        await api.updateProject(projectToUpdate.id, {
-          current_amount: newProjectAmount,
-        })
-        window.dispatchEvent(new Event('projectsUpdated'))
       }
 
       await reloadTransactions()
+      emitTransactionSyncEvents()
       setIsDebugModalOpen(false)
       showNotification(`${demoSavings.length} ahorros demo creados exitosamente.`, 'success')
     } catch (err: any) {
       console.error('Error al crear ahorros demo:', err)
-      const errorMessage = getTranslatedErrorMessage(
-        err,
-        'Error al crear los ahorros demo. Por favor, intenta de nuevo.'
-      )
+      const errorMessage = getTranslatedErrorMessage(err, 'Error al crear los ahorros demo. Por favor, intenta de nuevo.')
       showNotification(errorMessage, 'error')
     } finally {
       setIsLoading(false)
@@ -2302,41 +1337,32 @@ function Transacciones() {
                   <ArrowBackIcon className="transacciones-toolbar-icon" />
                 </button>
                 <div className="transacciones-toolbar-menu-container" ref={menuRef}>
-                  <button
-                    className="transacciones-toolbar-button"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    aria-label="Opciones"
-                    aria-expanded={isMenuOpen}
-                    type="button"
-                  >
-                    <MoreVertIcon className="transacciones-toolbar-icon" />
-                  </button>
-                  {isMenuOpen && (
-                    <div className="transacciones-menu">
+                  {isDebugToolsEnabled() && (
+                    <>
                       <button
-                        className="transacciones-menu-item"
-                        onClick={() => {
-                          setIsMenuOpen(false)
-                          handleOpenModal()
-                        }}
+                        className="transacciones-toolbar-button"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        aria-label="Opciones de depuración"
+                        aria-expanded={isMenuOpen}
                         type="button"
                       >
-                        <AddIcon className="transacciones-menu-icon" />
-                        <span>Agregar Transacción</span>
+                        <MoreVertIcon className="transacciones-toolbar-icon" />
                       </button>
-                      {api.isTestUser() && (
-                        <button
-                          className="transacciones-menu-item"
-                          onClick={() => {
-                            setIsMenuOpen(false)
-                            setIsDebugModalOpen(true)
-                          }}
-                          type="button"
-                        >
-                          <span>🐛 Debug</span>
-                        </button>
+                      {isMenuOpen && (
+                        <div className="transacciones-menu">
+                          <button
+                            className="transacciones-menu-item"
+                            onClick={() => {
+                              setIsMenuOpen(false)
+                              setIsDebugModalOpen(true)
+                            }}
+                            type="button"
+                          >
+                            <span>🐛 Debug</span>
+                          </button>
+                        </div>
                       )}
-                    </div>
+                    </>
                   )}
                 </div>
               </div>
@@ -2344,44 +1370,61 @@ function Transacciones() {
               {/* Encabezado de Sección - HIG: Clear Navigation */}
               <h1 className="transacciones-page-title">Transacciones</h1>
 
-              {/* Resumen de transacciones */}
-              <div className="transactions-summary-block">
-                <div className="summary-item">
-                  <span className="summary-label">Ingresos</span>
-                  <span className="summary-value income">
+              <div
+                className="crud-summary-strip"
+                role="region"
+                aria-label="Resumen de transacciones"
+              >
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Ingresos</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--income">
                     {formatBalance(totals.ingresos, 'COP')}
                   </span>
                 </div>
-                <div className="summary-separator"></div>
-                <div className="summary-item">
-                  <span className="summary-label">Egresos</span>
-                  <span className="summary-value expense">
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Egresos</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--expense">
                     {formatBalance(totals.egresos, 'COP')}
                   </span>
                 </div>
-                <div className="summary-separator"></div>
-                <div className="summary-item total-balance">
-                  <span className="summary-label">Balance</span>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Balance</span>
                   <span
-                    className={`summary-value ${totals.balance >= 0 ? 'positive' : 'negative'}`}
+                    className={`crud-summary-strip-value ${
+                      totals.balance >= 0
+                        ? 'crud-summary-strip-value--positive'
+                        : 'crud-summary-strip-value--negative'
+                    }`}
                   >
                     {formatBalance(totals.balance, 'COP')}
                   </span>
                 </div>
-                <div className="summary-separator"></div>
-                <div className="summary-item">
-                  <span className="summary-label">Ahorro</span>
-                  <span className="summary-value savings">
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Ahorro</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--savings">
                     {formatBalance(totals.ahorros, 'COP')}
                   </span>
                 </div>
               </div>
 
+              <button
+                type="button"
+                className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+                onClick={handleOpenModal}
+                aria-label="Agregar transacción"
+              >
+                <AddIcon aria-hidden="true" />
+                Agregar transacción
+              </button>
+
               {transactions.length === 0 ? (
                 <div className="empty-state">
                   <SwapHorizIcon className="empty-icon" />
                   <p className="empty-text">No hay transacciones registradas</p>
-                  <p className="empty-subtext">Agrega tu primera transacción</p>
+                  <p className="empty-subtext">Usa el botón de arriba para registrar la primera</p>
                 </div>
               ) : (
                 <div className="transactions-list">
@@ -2553,15 +1596,15 @@ function Transacciones() {
               </div>
             ) : (
               <form className="modal-form" onSubmit={handleSubmit}>
-                <div className="form-group">
-                  <label htmlFor="tipo">Tipo</label>
+                <div className="form-group-base">
+                  <label htmlFor="tipo" className="form-label-base">Tipo</label>
                   <select
                     id="tipo"
                     name="tipo"
                     value={formData.tipo}
                     onChange={handleChange}
                     required
-                    className="form-select"
+                    className="form-select-base"
                   >
                     <option value="ingreso">Ingreso</option>
                     <option value="egreso">Egreso</option>
@@ -2569,7 +1612,7 @@ function Transacciones() {
                   </select>
                 </div>
                 {formData.tipo === 'ingreso' && (
-                  <div className="form-group checkbox-group">
+                  <div className="form-group-base checkbox-group">
                     <label htmlFor="isDebtorPayment" className="checkbox-label">
                       <input
                         type="checkbox"
@@ -2583,15 +1626,15 @@ function Transacciones() {
                   </div>
                 )}
                 {formData.tipo === 'ingreso' && formData.isDebtorPayment && (
-                  <div className="form-group">
-                    <label htmlFor="debtorId">Deudor *</label>
+                  <div className="form-group-base">
+                    <label htmlFor="debtorId" className="form-label-base">Deudor *</label>
                     <select
                       id="debtorId"
                       name="debtorId"
                       value={formData.debtorId}
                       onChange={handleChange}
                       required
-                      className="form-select"
+                      className="form-select-base"
                     >
                       <option value="">Selecciona un deudor</option>
                       {debtors.map(debtor => (
@@ -2606,8 +1649,8 @@ function Transacciones() {
                     )}
                   </div>
                 )}
-                <div className="form-group">
-                  <label htmlFor="fecha">Fecha</label>
+                <div className="form-group-base">
+                  <label htmlFor="fecha" className="form-label-base">Fecha</label>
                   <input
                     type="date"
                     id="fecha"
@@ -2620,8 +1663,8 @@ function Transacciones() {
                 {formData.tipo !== 'ahorro' &&
                   !(formData.tipo === 'ingreso' && formData.isDebtorPayment) && (
                     <>
-                      <div className="form-group">
-                        <label htmlFor="descripcion">Descripción</label>
+                      <div className="form-group-base">
+                        <label htmlFor="descripcion" className="form-label-base">Descripción</label>
                         <input
                           type="text"
                           id="descripcion"
@@ -2630,14 +1673,14 @@ function Transacciones() {
                           onChange={handleChange}
                           required
                           placeholder="Ej: Compra de supermercado"
-                          className={formErrors.descripcion ? 'input-error' : ''}
+                          className={`form-input-base ${formErrors.descripcion ? 'input-error' : ''}`}
                         />
                         {formErrors.descripcion && (
                           <span className="error-message">{formErrors.descripcion}</span>
                         )}
                       </div>
-                      <div className="form-group">
-                        <label htmlFor="categoria">Categoría</label>
+                      <div className="form-group-base">
+                        <label htmlFor="categoria" className="form-label-base">Categoría</label>
                         <input
                           type="text"
                           id="categoria"
@@ -2646,7 +1689,7 @@ function Transacciones() {
                           onChange={handleChange}
                           required
                           placeholder="Ej: Compras, Salario, etc."
-                          className={formErrors.categoria ? 'input-error' : ''}
+                          className={`form-input-base ${formErrors.categoria ? 'input-error' : ''}`}
                         />
                         {formErrors.categoria && (
                           <span className="error-message">{formErrors.categoria}</span>
@@ -2654,8 +1697,8 @@ function Transacciones() {
                       </div>
                     </>
                   )}
-                <div className="form-group">
-                  <label htmlFor="monto">Monto</label>
+                <div className="form-group-base">
+                  <label htmlFor="monto" className="form-label-base">Monto</label>
                   <input
                     type="number"
                     id="monto"
@@ -2666,19 +1709,19 @@ function Transacciones() {
                     step="0.01"
                     min="0.01"
                     placeholder="0.00"
-                    className={formErrors.monto ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.monto ? 'input-error' : ''}`}
                   />
                   {formErrors.monto && <span className="error-message">{formErrors.monto}</span>}
                 </div>
-                <div className="form-group">
-                  <label htmlFor="moneda">Moneda</label>
+                <div className="form-group-base">
+                  <label htmlFor="moneda" className="form-label-base">Moneda</label>
                   <select
                     id="moneda"
                     name="moneda"
                     value={formData.moneda}
                     onChange={handleChange}
                     required
-                    className="form-select"
+                    className="form-select-base"
                   >
                     <option value="COP">COP</option>
                     <option value="USD">USD</option>
@@ -2687,7 +1730,7 @@ function Transacciones() {
                 </div>
 
                 {formData.tipo === 'egreso' && (
-                  <div className="form-group checkbox-group">
+                  <div className="form-group-base checkbox-group">
                     <label htmlFor="isCreditCardPayment" className="checkbox-label">
                       <input
                         type="checkbox"
@@ -2720,17 +1763,15 @@ function Transacciones() {
                 {formData.tipo === 'egreso' &&
                   formData.isCreditCardPayment &&
                   creditCards.length > 0 && (
-                    <div className="form-group">
-                      <label htmlFor="creditCardId">Tarjeta de Crédito</label>
+                    <div className="form-group-base">
+                      <label htmlFor="creditCardId" className="form-label-base">Tarjeta de Crédito</label>
                       <select
                         id="creditCardId"
                         name="creditCardId"
                         value={formData.creditCardId}
                         onChange={handleChange}
                         required
-                        className={
-                          formErrors.creditCardId ? 'input-error form-select' : 'form-select'
-                        }
+                        className={`form-input-base ${`form-select-base ${formErrors.creditCardId ? 'input-error' : ''}`}`}
                       >
                         <option value="">Selecciona una tarjeta</option>
                         {creditCards.map(card => (
@@ -2747,8 +1788,8 @@ function Transacciones() {
                   )}
 
                 {(!formData.isCreditCardPayment || formData.tipo === 'ahorro') && (
-                  <div className="form-group">
-                    <label htmlFor="cuentaBancariaId">Cuenta Bancaria</label>
+                  <div className="form-group-base">
+                    <label htmlFor="cuentaBancariaId" className="form-label-base">Cuenta Bancaria</label>
                     {accounts.filter(account => account.currency === formData.moneda).length ===
                     0 ? (
                       <div className="no-accounts-message">
@@ -2764,9 +1805,7 @@ function Transacciones() {
                         value={formData.cuentaBancariaId}
                         onChange={handleChange}
                         required
-                        className={
-                          formErrors.cuentaBancariaId ? 'input-error form-select' : 'form-select'
-                        }
+                        className={`form-input-base ${`form-select-base ${formErrors.cuentaBancariaId ? 'input-error' : ''}`}`}
                       >
                         <option value="">Selecciona una cuenta</option>
                         {accounts
@@ -2788,7 +1827,7 @@ function Transacciones() {
                 {formData.tipo === 'egreso' && !formData.isCreditCardPayment && (
                   <>
                     {debts.length > 0 && (
-                      <div className="form-group checkbox-group">
+                      <div className="form-group-base checkbox-group">
                         <label htmlFor="isDebtPayment" className="checkbox-label">
                           <input
                             type="checkbox"
@@ -2803,15 +1842,15 @@ function Transacciones() {
                     )}
 
                     {formData.isDebtPayment && debts.length > 0 ? (
-                      <div className="form-group">
-                        <label htmlFor="debtId">Deuda a pagar</label>
+                      <div className="form-group-base">
+                        <label htmlFor="debtId" className="form-label-base">Deuda a pagar</label>
                         <select
                           id="debtId"
                           name="debtId"
                           value={formData.debtId}
                           onChange={handleChange}
                           required
-                          className={formErrors.debtId ? 'input-error form-select' : 'form-select'}
+                          className={`form-input-base ${`form-select-base ${formErrors.debtId ? 'input-error' : ''}`}`}
                         >
                           <option value="">Selecciona una deuda</option>
                           {debts.map(debt => (
@@ -2826,16 +1865,14 @@ function Transacciones() {
                         )}
                       </div>
                     ) : (
-                      <div className="form-group">
-                        <label htmlFor="presupuestoId">Presupuesto</label>
+                      <div className="form-group-base">
+                        <label htmlFor="presupuestoId" className="form-label-base">Presupuesto</label>
                         <select
                           id="presupuestoId"
                           name="presupuestoId"
                           value={formData.presupuestoId}
                           onChange={handleChange}
-                          className={
-                            formErrors.presupuestoId ? 'input-error form-select' : 'form-select'
-                          }
+                          className={`form-input-base ${`form-select-base ${formErrors.presupuestoId ? 'input-error' : ''}`}`}
                         >
                           <option value="">Selecciona un presupuesto</option>
                           {budgets.map(budget => (
@@ -2854,17 +1891,15 @@ function Transacciones() {
 
                 {formData.tipo === 'ahorro' && (
                   <>
-                    <div className="form-group">
-                      <label htmlFor="presupuestoId-ahorro">Presupuesto del Proyecto *</label>
+                    <div className="form-group-base">
+                      <label htmlFor="presupuestoId-ahorro" className="form-label-base">Presupuesto del Proyecto *</label>
                       <select
                         id="presupuestoId-ahorro"
                         name="presupuestoId"
                         value={formData.presupuestoId}
                         onChange={handleChange}
                         required
-                        className={
-                          formErrors.presupuestoId ? 'input-error form-select' : 'form-select'
-                        }
+                        className={`form-input-base ${`form-select-base ${formErrors.presupuestoId ? 'input-error' : ''}`}`}
                       >
                         <option value="">Selecciona un presupuesto asociado a un proyecto</option>
                         {projectBudgets.map(budget => (

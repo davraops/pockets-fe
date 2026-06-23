@@ -1,0 +1,89 @@
+/* CRUD list rows — inset items inside .glass-group */
+
+.crud-inset-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  min-height: 72px;
+  background: transparent;
+  border: none;
+  border-left: 3px solid var(--row-accent, var(--row-accent-default));
+  border-bottom: 1px solid var(--border-glass-light);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+  width: 100%;
+  font-family: var(--font-family);
+  position: relative;
+}
+
+.crud-inset-row--tall {
+  min-height: 88px;
+}
+
+.crud-inset-row:last-child {
+  border-bottom: none;
+}
+
+.crud-inset-row:hover:not(:disabled) {
+  background: var(--bg-glass-light);
+  border-left-color: var(--row-accent-hover, var(--row-accent, var(--row-accent-default-hover)));
+  box-shadow: 0 4px 16px 0 color-mix(in srgb, var(--row-accent-default) 40%, transparent), var(--shadow-sm);
+}
+
+.crud-inset-row:active:not(:disabled) {
+  background: var(--bg-glass-hover);
+  transition: background-color var(--transition-fast);
+}
+
+.crud-inset-row:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color-strong);
+  outline-offset: var(--focus-outline-offset-inset);
+  z-index: 1;
+}
+
+.crud-inset-row:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Row content hierarchy */
+.crud-row-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.crud-row-main,
+.crud-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+.crud-row-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: 1.4;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  margin: 0;
+}
+
+.crud-row-chevron {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-lg) !important;
+  width: var(--font-size-lg) !important;
+  height: var(--font-size-lg) !important;
+  flex-shrink: 0;
+  margin-left: var(--spacing-xs);
+}

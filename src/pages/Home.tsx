@@ -1,122 +1,259 @@
-import '../App.css'
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
 import BuildIcon from '@mui/icons-material/Build'
 import SpaIcon from '@mui/icons-material/Spa'
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive'
 import GavelIcon from '@mui/icons-material/Gavel'
 import WorkIcon from '@mui/icons-material/Work'
+import SettingsIcon from '@mui/icons-material/Settings'
 import LogoutIcon from '@mui/icons-material/Logout'
+import ThemeToggle from '../components/ThemeToggle'
 import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import { api } from '../services/api'
+import {
+  fetchUserDisplayName,
+  getCachedDisplayName,
+  getDisplayNameFallback,
+} from '../utils/userDisplayName'
+import { useConfirm } from '../contexts/ConfirmContext'
+import { sectionColor } from '../constants/sectionColors'
 
-interface App {
+interface LauncherApp {
   id: string
   name: string
-  hasIcon: boolean
-  Icon?: React.ComponentType<any>
+  Icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' | 'false' }>
   color: string
   path: string
 }
 
-const apps: App[] = [
+const launcherApps: LauncherApp[] = [
   {
-    id: '1',
+    id: 'finanzas',
     name: 'Finanzas',
-    hasIcon: true,
     Icon: AccountBalanceIcon,
-    color: '#34C759',
+    color: sectionColor.finanzas,
     path: '/finanzas',
   },
   {
-    id: '2',
+    id: 'utilidades',
     name: 'Utilidades',
-    hasIcon: true,
     Icon: BuildIcon,
-    color: '#007AFF',
+    color: sectionColor.utilidades,
     path: '/registros',
   },
   {
-    id: '3',
+    id: 'lifestyle',
     name: 'Lifestyle',
-    hasIcon: true,
     Icon: SpaIcon,
-    color: '#FF9500',
+    color: sectionColor.lifestyle,
     path: '/tiempo',
   },
   {
-    id: '5',
+    id: 'justicia',
     name: 'Justicia',
-    hasIcon: true,
     Icon: GavelIcon,
-    color: '#5856D6',
+    color: sectionColor.justicia,
     path: '/justicia',
   },
   {
-    id: '6',
+    id: 'trabajo',
     name: 'Trabajo',
-    hasIcon: true,
     Icon: WorkIcon,
-    color: '#FF9500',
+    color: sectionColor.trabajo,
     path: '/trabajo',
   },
-  { id: 'logout', name: 'Salir', hasIcon: true, Icon: LogoutIcon, color: '#FF3B30', path: '' },
+  {
+    id: 'ajustes',
+    name: 'Ajustes',
+    Icon: SettingsIcon,
+    color: sectionColor.muted,
+    path: '/ajustes',
+  },
 ]
+
+type BadgeStatus = 'loading' | 'ready' | 'error'
+
+function getNotificationsAriaLabel(
+  unreadCount: number,
+  badgeStatus: BadgeStatus,
+  isBadgeRefreshing: boolean
+): string {
+  if (badgeStatus === 'error') {
+    return 'Notificaciones. Conteo de no leídas no disponible'
+  }
+  if (badgeStatus === 'loading' || isBadgeRefreshing) {
+    return 'Notificaciones. Actualizando conteo de no leídas'
+  }
+  if (unreadCount > 0) {
+    return `Notificaciones. ${unreadCount} notificaciones no leídas`
+  }
+  return 'Notificaciones'
+}
 
 function Home() {
   const navigate = useNavigate()
+  const { confirm } = useConfirm()
+  const [displayName, setDisplayName] = useState(() => getDisplayNameFallback() ?? '')
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [badgeStatus, setBadgeStatus] = useState<BadgeStatus>('loading')
+  const [isBadgeRefreshing, setIsBadgeRefreshing] = useState(false)
 
-  const handleAppClick = (app: App) => {
-    if (app.id === 'logout') {
-      api.logout()
-      navigate('/login', { replace: true })
-    } else {
-      navigate(app.path)
+  useEffect(() => {
+    document.title = 'Pockets'
+  }, [])
+
+  useEffect(() => {
+    const syncDisplayName = () => {
+      void fetchUserDisplayName().then(name => {
+        setDisplayName(name ?? '')
+      })
     }
+
+    const handleDisplayNameUpdate = (event: Event) => {
+      const detail = (event as CustomEvent<{ displayName: string | null }>).detail
+      if (detail?.displayName) {
+        setDisplayName(detail.displayName)
+      } else {
+        setDisplayName(getCachedDisplayName() ?? api.getCurrentUsername() ?? '')
+      }
+    }
+
+    syncDisplayName()
+    window.addEventListener('pockets:auth-login', syncDisplayName)
+    window.addEventListener('pockets:user-details-updated', handleDisplayNameUpdate)
+
+    return () => {
+      window.removeEventListener('pockets:auth-login', syncDisplayName)
+      window.removeEventListener('pockets:user-details-updated', handleDisplayNameUpdate)
+    }
+  }, [])
+
+  useEffect(() => {
+    const loadUnreadNotifications = async (refresh = false) => {
+      if (refresh) {
+        setIsBadgeRefreshing(true)
+      } else {
+        setBadgeStatus('loading')
+      }
+
+      try {
+        const response = await api.getNotifications()
+        if (response.unread_count !== undefined) {
+          setUnreadCount(response.unread_count)
+        } else if (response.notifications && Array.isArray(response.notifications)) {
+          setUnreadCount(response.notifications.filter((n: { is_read: boolean }) => !n.is_read).length)
+        } else {
+          setUnreadCount(0)
+        }
+        setBadgeStatus('ready')
+      } catch {
+        setUnreadCount(0)
+        setBadgeStatus('error')
+      } finally {
+        if (refresh) {
+          setIsBadgeRefreshing(false)
+        }
+      }
+    }
+
+    void loadUnreadNotifications()
+    const interval = setInterval(() => void loadUnreadNotifications(true), 30000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const handleAppClick = (app: LauncherApp) => {
+    navigate(app.path)
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent, app: App) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      handleAppClick(app)
+  const handleLogout = async () => {
+    if (
+      !(await confirm({
+        message: '¿Cerrar sesión en Pockets?',
+        confirmLabel: 'Salir',
+        cancelLabel: 'Cancelar',
+      }))
+    ) {
+      return
     }
+    api.logout()
+    navigate('/login', { replace: true })
   }
 
   return (
-    <div className="app-container">
-      <div className="glass-menu">
-        <h1 className="home-title" aria-label="Aplicaciones disponibles">
-          Aplicaciones
-        </h1>
-        <div className="apps-grid" role="grid" aria-label="Grid de aplicaciones">
-          {apps.map(app => {
-            const IconComponent = app.Icon
-            const isLogout = app.id === 'logout'
-            return (
-              <button
-                key={app.id}
-                className={`app-icon ${isLogout ? 'app-icon-logout' : ''}`}
-                style={{ '--app-color': app.color } as React.CSSProperties}
-                onClick={() => handleAppClick(app)}
-                onKeyDown={e => handleKeyDown(e, app)}
-                aria-label={`${app.name}${isLogout ? '. Cerrar sesión' : ''}`}
-                aria-describedby={app.name ? `app-name-${app.id}` : undefined}
-                type="button"
-              >
-                <div className="app-icon-wrapper">
-                  <div className="app-icon-bg" style={{ backgroundColor: app.color }}>
-                    {app.hasIcon && IconComponent && (
-                      <IconComponent className="app-material-icon" aria-hidden="true" />
-                    )}
-                  </div>
-                </div>
-                {app.name && (
-                  <span className="app-name" id={`app-name-${app.id}`}>
-                    {app.name}
-                  </span>
-                )}
-              </button>
-            )
-          })}
+    <div className="hub-shell">
+      <div className="hub-card">
+        <div className="hub-card-top-toolbar">
+          <ThemeToggle />
+          <button
+            type="button"
+            className="hub-toolbar-icon-button"
+            onClick={() => navigate('/notificaciones')}
+            aria-label={getNotificationsAriaLabel(unreadCount, badgeStatus, isBadgeRefreshing)}
+          >
+            <span className="hub-toolbar-icon-wrapper">
+              <NotificationsActiveIcon className="hub-toolbar-icon" aria-hidden={true} />
+              {(badgeStatus === 'loading' || isBadgeRefreshing) && (
+                <span className="app-icon-badge app-icon-badge-loading" aria-hidden="true" />
+              )}
+              {badgeStatus === 'ready' && unreadCount > 0 && !isBadgeRefreshing && (
+                <span className="app-icon-badge" aria-hidden="true">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+              {badgeStatus === 'error' && !isBadgeRefreshing && (
+                <span className="app-icon-badge app-icon-badge-unavailable" aria-hidden="true" />
+              )}
+            </span>
+          </button>
         </div>
+
+        <header className="hub-card-header">
+          <h1 className="auth-card-title">
+            <span className="auth-card-title-brand">Pockets</span>
+            <span className="auth-card-title-sep" aria-hidden="true">
+              —
+            </span>
+            Aplicaciones
+          </h1>
+          {displayName && <p className="hub-greeting">Hola, {displayName}</p>}
+        </header>
+
+        <div className="hub-card-scroll">
+          <nav className="hub-launcher-grid" aria-label="Aplicaciones de Pockets">
+            {launcherApps.map(app => {
+              const IconComponent = app.Icon
+              return (
+                <button
+                  key={app.id}
+                  className="app-icon"
+                  style={{ '--app-color': app.color } as React.CSSProperties}
+                  onClick={() => handleAppClick(app)}
+                  aria-label={app.name}
+                  type="button"
+                >
+                  <div className="app-icon-wrapper">
+                    <div className="app-icon-bg">
+                      <IconComponent className="app-material-icon" aria-hidden={true} />
+                    </div>
+                  </div>
+                  <span className="app-name">{app.name}</span>
+                </button>
+              )
+            })}
+          </nav>
+        </div>
+
+        <footer className="hub-card-footer">
+          <button
+            type="button"
+            className="btn-base btn-secondary btn-block hub-logout-button"
+            onClick={() => void handleLogout()}
+            aria-label="Salir. Cerrar sesión"
+          >
+            <LogoutIcon aria-hidden={true} />
+            Salir
+          </button>
+        </footer>
       </div>
     </div>
   )

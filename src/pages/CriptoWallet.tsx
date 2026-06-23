@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
@@ -9,8 +9,10 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import SyncIcon from '@mui/icons-material/Sync'
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
 import { api } from '../services/api'
+import { isDebugToolsEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
+import ListSkeleton from '../components/ListSkeleton'
 import './AppPage.css'
 import './CriptoWallet.css'
 
@@ -31,6 +33,7 @@ function CriptoWallet() {
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
   const [selectedWallet, setSelectedWallet] = useState<Wallet | null>(null)
   const [wallets, setWallets] = useState<Wallet[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -46,43 +49,55 @@ function CriptoWallet() {
     address: '',
   })
 
-  // Cargar wallets desde la API
+  const loadWallets = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await api.getWallets()
+      if (response.wallets && Array.isArray(response.wallets)) {
+        setWallets(response.wallets)
+      } else {
+        setWallets([])
+      }
+    } catch (err: any) {
+      console.error('Error al cargar wallets:', err)
+      if (err.response?.status === 500) {
+        console.warn(
+          'Endpoint de wallets devuelve 500. Puede que no esté implementado aún en el backend.'
+        )
+        setWallets([])
+      } else {
+        const errorMessage =
+          err.data?.error ||
+          err.data?.message ||
+          'Error al cargar las wallets. Por favor, intenta de nuevo.'
+        setError(errorMessage)
+        setWallets([])
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
-    const loadWallets = async () => {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const response = await api.getWallets()
-        if (response.wallets && Array.isArray(response.wallets)) {
-          setWallets(response.wallets)
-        } else {
-          setWallets([])
-        }
-      } catch (err: any) {
-        console.error('Error al cargar wallets:', err)
-        // Si es un error 500, puede ser que el endpoint no esté implementado aún
-        // En ese caso, simplemente mostramos lista vacía sin error
-        if (err.response?.status === 500) {
-          console.warn(
-            'Endpoint de wallets devuelve 500. Puede que no esté implementado aún en el backend.'
-          )
-          setWallets([])
-          // No mostramos error al usuario si es 500, solo lista vacía
-        } else {
-          const errorMessage =
-            err.data?.error ||
-            err.data?.message ||
-            'Error al cargar las wallets. Por favor, intenta de nuevo.'
-          setError(errorMessage)
-          setWallets([])
-        }
-      } finally {
-        setIsLoading(false)
+    void loadWallets()
+  }, [loadWallets])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false)
       }
     }
 
-    loadWallets()
-  }, [])
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMenuOpen])
 
   const handleOpenWalletModal = () => {
     setIsWalletModalOpen(true)
@@ -356,118 +371,187 @@ function CriptoWallet() {
     })
   }
 
+  const calculateHighlights = () => {
+    const totalWallets = wallets.length
+    const distinctCryptos = new Set(wallets.map(w => w.crypto_name)).size
+    const bitcoinWallets = wallets.filter(w =>
+      w.crypto_name.toLowerCase().includes('bitcoin')
+    ).length
+    const ethereumWallets = wallets.filter(w =>
+      w.crypto_name.toLowerCase().includes('ethereum')
+    ).length
+
+    return { totalWallets, distinctCryptos, bitcoinWallets, ethereumWallets }
+  }
+
+  const highlights = calculateHighlights()
+
   return (
     <>
       <div className="app-page-container">
-        <div className="app-page-content cripto-wallet-content">
+        <div className="app-page-content app-page-content-wide crud-page-content cripto-wallet-content">
           {isLoading && wallets.length === 0 ? (
-            <div className="loader-container">
-              <div className="loader">
-                <div className="loader-spinner"></div>
-                <p className="loader-text">Cargando wallets...</p>
-              </div>
-            </div>
-          ) : error ? (
-            <div className="loader-container">
-              <div className="loader">
-                <p className="loader-text" style={{ color: 'rgba(255, 59, 48, 0.9)' }}>
-                  {error}
-                </p>
-              </div>
-            </div>
-          ) : (
             <>
-              {/* Toolbar - HIG: Navigation */}
-              <div className="cripto-wallet-toolbar">
+              <div className="app-toolbar">
                 <button
-                  className="cripto-wallet-toolbar-button"
+                  className="app-toolbar-button"
                   onClick={() => navigate('/finanzas')}
                   aria-label="Volver a Finanzas"
                   type="button"
                 >
-                  <ArrowBackIcon className="cripto-wallet-toolbar-icon" />
+                  <ArrowBackIcon className="app-toolbar-icon" />
                 </button>
-                <div className="cripto-wallet-toolbar-menu-container">
+              </div>
+              <h1 className="app-page-title">Cripto Wallet</h1>
+              <div className="crud-crypto-list">
+                <ListSkeleton variant="inset-row" count={4} aria-label="Cargando wallets" />
+              </div>
+            </>
+          ) : error && wallets.length === 0 ? (
+            <>
+              <div className="app-toolbar">
+                <button
+                  className="app-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="app-toolbar-icon" />
+                </button>
+              </div>
+              <h1 className="app-page-title">Cripto Wallet</h1>
+              <div className="loader-container">
+                <div className="loader finanzas-stats-error-panel">
+                  <p className="loader-text loader-text--error" role="alert">
+                    {error}
+                  </p>
                   <button
-                    className="cripto-wallet-toolbar-button"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    aria-label="Opciones"
-                    aria-expanded={isMenuOpen}
                     type="button"
+                    className="btn-base btn-secondary finanzas-stats-retry-button"
+                    onClick={() => void loadWallets()}
+                    aria-label="Reintentar cargar wallets"
                   >
-                    <MoreVertIcon className="cripto-wallet-toolbar-icon" />
+                    <span>Reintentar</span>
                   </button>
-                  {isMenuOpen && (
-                    <div className="cripto-wallet-menu">
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="app-toolbar">
+                <button
+                  className="app-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="app-toolbar-icon" />
+                </button>
+                <div className="app-toolbar-menu-container" ref={menuRef}>
+                  {isDebugToolsEnabled() && (
+                    <>
                       <button
-                        className="cripto-wallet-menu-item"
-                        onClick={() => {
-                          setIsMenuOpen(false)
-                          handleOpenWalletModal()
-                        }}
+                        className="app-toolbar-button"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        aria-label="Opciones de depuración"
+                        aria-expanded={isMenuOpen}
                         type="button"
                       >
-                        <AddIcon className="cripto-wallet-menu-icon" />
-                        <span>Agregar Wallet</span>
+                        <MoreVertIcon className="app-toolbar-icon" />
                       </button>
-                      {api.isTestUser() && (
-                        <button
-                          className="cripto-wallet-menu-item"
-                          onClick={() => {
-                            setIsMenuOpen(false)
-                            setIsDebugModalOpen(true)
-                          }}
-                          type="button"
-                        >
-                          <span>🐛 Debug</span>
-                        </button>
+                      {isMenuOpen && (
+                        <div className="crud-dropdown-menu">
+                          <button
+                            className="crud-dropdown-menu-item"
+                            onClick={() => {
+                              setIsDebugModalOpen(true)
+                              setIsMenuOpen(false)
+                            }}
+                            type="button"
+                          >
+                            <span>🐛 Debug</span>
+                          </button>
+                        </div>
                       )}
-                    </div>
+                    </>
                   )}
                 </div>
               </div>
 
-              {/* Encabezado de Sección - HIG: Clear Navigation */}
-              <h1 className="cripto-wallet-page-title">Cripto Wallet</h1>
+              <h1 className="app-page-title">Cripto Wallet</h1>
 
-              {/* Lista de Wallets */}
-              <div className="cripto-wallet-list">
-                {wallets.length === 0 ? (
-                  <div className="cripto-wallet-empty">
-                    <AccountBalanceWalletIcon className="cripto-wallet-empty-icon" />
-                    <p className="cripto-wallet-empty-text">No hay wallets registradas</p>
-                    <button
-                      className="cripto-wallet-empty-button"
-                      onClick={handleOpenWalletModal}
-                      type="button"
-                    >
-                      <AddIcon />
-                      <span>Agregar Wallet</span>
-                    </button>
-                  </div>
-                ) : (
-                  wallets.map(wallet => (
+              <div
+                className="crud-summary-strip"
+                role="region"
+                aria-label="Resumen de wallets"
+              >
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Total</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
+                    {highlights.totalWallets}
+                  </span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Criptos</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--available">
+                    {highlights.distinctCryptos}
+                  </span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Bitcoin</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
+                    {highlights.bitcoinWallets}
+                  </span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Ethereum</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
+                    {highlights.ethereumWallets}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+                onClick={handleOpenWalletModal}
+                aria-label="Agregar wallet"
+              >
+                <AddIcon aria-hidden={true} />
+                Agregar wallet
+              </button>
+
+              {wallets.length === 0 ? (
+                <div className="empty-state">
+                  <AccountBalanceWalletIcon className="empty-state-icon" />
+                  <p className="empty-text">No hay wallets registradas</p>
+                  <p className="empty-subtext">Usa el botón de arriba para agregar la primera</p>
+                </div>
+              ) : (
+                <div className="crud-crypto-list">
+                  {wallets.map(wallet => (
                     <button
                       key={wallet.id}
-                      className="cripto-wallet-row"
+                      className="crud-crypto-row"
                       onClick={() => handleOpenDetailModal(wallet)}
                       type="button"
+                      aria-label={`Ver detalles de ${wallet.wallet_name}`}
                     >
-                      <div className="cripto-wallet-row-content">
-                        <div className="cripto-wallet-row-header">
-                          <h3 className="cripto-wallet-row-title">{wallet.wallet_name}</h3>
-                          <ChevronRightIcon
-                            className="cripto-wallet-row-chevron"
-                            aria-hidden="true"
-                          />
+                      <div className="crud-row-content">
+                        <div className="crud-row-header">
+                          <span className="crud-row-title">{wallet.wallet_name}</span>
+                          <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
                         </div>
-                        <p className="cripto-wallet-row-subtitle">{wallet.crypto_name}</p>
-                        <p className="cripto-wallet-row-address">{wallet.address}</p>
+                        <p className="crud-row-meta">{wallet.crypto_name}</p>
+                        <p className="crud-row-meta cripto-wallet-row-address">{wallet.address}</p>
                       </div>
                     </button>
-                  ))
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
             </>
           )}
         </div>
@@ -489,8 +573,8 @@ function CriptoWallet() {
               </button>
             </div>
             <form className="modal-form" onSubmit={handleWalletSubmit}>
-              <div className="form-group">
-                <label htmlFor="wallet_name" className="form-label">
+              <div className="form-group-base">
+                <label htmlFor="wallet_name" className="form-label-base">
                   Nombre de la Wallet
                 </label>
                 <input
@@ -499,7 +583,7 @@ function CriptoWallet() {
                   name="wallet_name"
                   value={walletFormData.wallet_name}
                   onChange={handleWalletChange}
-                  className={formErrors.wallet_name ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.wallet_name ? 'input-error' : ''}`}
                   placeholder="Ej: Mi Wallet Bitcoin"
                   required
                 />
@@ -510,8 +594,8 @@ function CriptoWallet() {
                 )}
               </div>
 
-              <div className="form-group">
-                <label htmlFor="crypto_name" className="form-label">
+              <div className="form-group-base">
+                <label htmlFor="crypto_name" className="form-label-base">
                   Criptomoneda
                 </label>
                 <input
@@ -520,7 +604,7 @@ function CriptoWallet() {
                   name="crypto_name"
                   value={walletFormData.crypto_name}
                   onChange={handleWalletChange}
-                  className={formErrors.crypto_name ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.crypto_name ? 'input-error' : ''}`}
                   placeholder="Ej: Bitcoin, Ethereum, QRL"
                   required
                 />
@@ -531,8 +615,8 @@ function CriptoWallet() {
                 )}
               </div>
 
-              <div className="form-group">
-                <label htmlFor="address" className="form-label">
+              <div className="form-group-base">
+                <label htmlFor="address" className="form-label-base">
                   Dirección de la Wallet
                 </label>
                 <input
@@ -541,7 +625,7 @@ function CriptoWallet() {
                   name="address"
                   value={walletFormData.address}
                   onChange={handleWalletChange}
-                  className={formErrors.address ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.address ? 'input-error' : ''}`}
                   placeholder="Ej: 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
                   required
                 />

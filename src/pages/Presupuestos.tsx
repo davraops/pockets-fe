@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import CalculateIcon from '@mui/icons-material/Calculate'
@@ -10,9 +10,15 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { api } from '../services/api'
+import { devError, devLog, isDebugToolsEnabled, isDestructiveDebugEnabled } from '../utils/debugTools'
+import { subscribeFinanceEvent } from '../utils/financeEvents'
+import { emitTransactionSyncEvents } from '../utils/transactionMutation'
 import { useNotification } from '../contexts/NotificationContext'
+import { useConfirm } from '../contexts/ConfirmContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
+import ModalOverlay from '../components/ModalOverlay'
+import ListSkeleton from '../components/ListSkeleton'
 import './Presupuestos.css'
 
 // Interfaz que coincide con la respuesta de la API
@@ -45,6 +51,7 @@ interface Budget {
 function Presupuestos() {
   const navigate = useNavigate()
   const { showNotification } = useNotification()
+  const { confirm } = useConfirm()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
@@ -52,6 +59,7 @@ function Presupuestos() {
   const [isDeletedBudgetsModalOpen, setIsDeletedBudgetsModalOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null)
   const [budgets, setBudgets] = useState<Budget[]>([])
   const [deletedBudgets, setDeletedBudgets] = useState<Budget[]>([])
@@ -104,7 +112,7 @@ function Presupuestos() {
           setProjectBudgetIds(budgetIds)
         }
       } catch (err: any) {
-        console.error('Error al cargar proyectos:', err)
+        devError('Error al cargar proyectos:', err)
         // No mostrar error al usuario, solo continuar sin la información de proyectos
       }
     }
@@ -117,18 +125,18 @@ function Presupuestos() {
     setIsLoading(true)
     setError(null)
     try {
-      console.log('Recargando presupuestos...')
+      devLog('Recargando presupuestos...')
       const response = await api.getBudgets()
-      console.log('Respuesta de presupuestos:', response)
+      devLog('Respuesta de presupuestos:', response)
       if (response.budgets && Array.isArray(response.budgets)) {
         const mappedBudgets = response.budgets.map(mapBudgetFromAPI)
-        console.log('Presupuestos mapeados:', mappedBudgets)
+        devLog('Presupuestos mapeados:', mappedBudgets)
         setBudgets(mappedBudgets)
       } else {
         setBudgets([])
       }
     } catch (err: any) {
-      console.error('Error al cargar presupuestos:', err)
+      devError('Error al cargar presupuestos:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al cargar los presupuestos. Por favor, intenta de nuevo.'
@@ -147,19 +155,10 @@ function Presupuestos() {
 
   // Escuchar eventos de actualización de presupuestos desde otras páginas
   useEffect(() => {
-    const handleBudgetsUpdated = (event: Event) => {
-      console.log('Evento budgetsUpdated recibido, recargando presupuestos...', event)
-      console.log('Timestamp del evento:', new Date().toISOString())
+    return subscribeFinanceEvent('budgetsUpdated', () => {
+      devLog('Evento budgetsUpdated recibido, recargando presupuestos...')
       reloadBudgets()
-    }
-
-    console.log('Registrando listener para budgetsUpdated en Presupuestos')
-    window.addEventListener('budgetsUpdated', handleBudgetsUpdated)
-
-    return () => {
-      console.log('Removiendo listener para budgetsUpdated en Presupuestos')
-      window.removeEventListener('budgetsUpdated', handleBudgetsUpdated)
-    }
+    })
   }, [reloadBudgets])
 
   // Función para verificar si un presupuesto está asociado a un proyecto
@@ -223,9 +222,7 @@ function Presupuestos() {
     if (!selectedBudget) return
 
     if (
-      window.confirm(
-        '¿Estás seguro de que quieres eliminar este presupuesto? (Soft Delete - Se puede restaurar)'
-      )
+      (await confirm({ message: '¿Estás seguro de que quieres eliminar este presupuesto? (Soft Delete - Se puede restaurar)', variant: 'danger' }))
     ) {
       try {
         await api.deleteBudget(selectedBudget.id)
@@ -237,7 +234,7 @@ function Presupuestos() {
           'success'
         )
       } catch (err: any) {
-        console.error('Error al eliminar presupuesto:', err)
+        devError('Error al eliminar presupuesto:', err)
         const errorMessage = getTranslatedErrorMessage(
           err,
           'Error al eliminar el presupuesto. Por favor, intenta de nuevo.'
@@ -266,6 +263,7 @@ function Presupuestos() {
         setIsLoading(true)
         const response = await api.hardDeleteBudget(selectedBudget.id)
         await reloadBudgets()
+        emitTransactionSyncEvents()
         setIsDeleteModalOpen(false)
         handleCloseDetailModal()
         const deletedCount = response.deleted_transactions_count || 0
@@ -274,7 +272,7 @@ function Presupuestos() {
           'success'
         )
       } catch (err: any) {
-        console.error('Error al eliminar presupuesto:', err)
+        devError('Error al eliminar presupuesto:', err)
         const errorMessage = getTranslatedErrorMessage(
           err,
           'Error al eliminar el presupuesto. Por favor, intenta de nuevo.'
@@ -310,7 +308,7 @@ function Presupuestos() {
         }
       }
     } catch (err) {
-      console.error('Error al validar:', err)
+      devError('Error al validar:', err)
       // Continuar con la validación local como fallback
       const nombreExists = budgets.some(
         b =>
@@ -380,7 +378,7 @@ function Presupuestos() {
         handleCloseModal()
       }
     } catch (err: any) {
-      console.error('Error al guardar presupuesto:', err)
+      devError('Error al guardar presupuesto:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al guardar el presupuesto. Por favor, intenta de nuevo.'
@@ -526,7 +524,7 @@ function Presupuestos() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement
-      if (isMenuOpen && !target.closest('.presupuestos-toolbar-menu-container')) {
+      if (isMenuOpen && menuRef.current && !menuRef.current.contains(target)) {
         setIsMenuOpen(false)
       }
     }
@@ -555,7 +553,7 @@ function Presupuestos() {
         setDeletedBudgets([])
       }
     } catch (err: any) {
-      console.error('Error al cargar presupuestos eliminados:', err)
+      devError('Error al cargar presupuestos eliminados:', err)
       setDeletedBudgets([])
     } finally {
       setIsLoadingDeleted(false)
@@ -570,14 +568,14 @@ function Presupuestos() {
 
   // Restaurar presupuesto
   const handleRestoreBudget = async (budgetId: string) => {
-    if (window.confirm('¿Estás seguro de que quieres restaurar este presupuesto?')) {
+    if ((await confirm({ message: '¿Estás seguro de que quieres restaurar este presupuesto?', variant: 'danger' }))) {
       try {
         await api.restoreBudget(budgetId)
         await reloadBudgets()
         await loadDeletedBudgets()
         showNotification('Presupuesto restaurado exitosamente', 'success')
       } catch (err: any) {
-        console.error('Error al restaurar presupuesto:', err)
+        devError('Error al restaurar presupuesto:', err)
         const errorMessage = getTranslatedErrorMessage(
           err,
           'Error al restaurar el presupuesto. Por favor, intenta de nuevo.'
@@ -609,7 +607,7 @@ function Presupuestos() {
       setIsDebugModalOpen(false)
       showNotification('Presupuestos demo creados exitosamente', 'success')
     } catch (err: any) {
-      console.error('Error al crear presupuestos demo:', err)
+      devError('Error al crear presupuestos demo:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al crear los presupuestos demo. Por favor, intenta de nuevo.'
@@ -622,10 +620,9 @@ function Presupuestos() {
 
   // Función para eliminar todos los presupuestos (soft delete)
   const handleDeleteAllBudgets = async () => {
+    if (!isDestructiveDebugEnabled()) return
     if (
-      window.confirm(
-        '¿Estás seguro de que quieres eliminar TODOS los presupuestos? (Soft Delete - Se pueden restaurar)'
-      )
+      (await confirm({ message: '¿Estás seguro de que quieres eliminar TODOS los presupuestos? (Soft Delete - Se pueden restaurar)', variant: 'danger' }))
     ) {
       try {
         setIsLoading(true)
@@ -637,7 +634,7 @@ function Presupuestos() {
           'success'
         )
       } catch (err: any) {
-        console.error('Error al eliminar todos los presupuestos:', err)
+        devError('Error al eliminar todos los presupuestos:', err)
         const errorMessage = getTranslatedErrorMessage(
           err,
           'Error al eliminar los presupuestos. Por favor, intenta de nuevo.'
@@ -651,6 +648,7 @@ function Presupuestos() {
 
   // Función para hard delete de todos los presupuestos
   const handleHardDeleteAllBudgets = async () => {
+    if (!isDestructiveDebugEnabled()) return
     const confirmMessage =
       `⚠️ ADVERTENCIA CRÍTICA ⚠️\n\n` +
       `Estás a punto de realizar un HARD DELETE de TODOS los presupuestos. Esta acción es IRREVERSIBLE y eliminará:\n` +
@@ -667,13 +665,14 @@ function Presupuestos() {
         setIsLoading(true)
         await api.hardDeleteAllBudgets()
         await reloadBudgets()
+        emitTransactionSyncEvents()
         setIsDebugModalOpen(false)
         showNotification(
           'Todos los presupuestos y sus transacciones asociadas han sido eliminados permanentemente.',
           'success'
         )
       } catch (err: any) {
-        console.error('Error al eliminar todos los presupuestos:', err)
+        devError('Error al eliminar todos los presupuestos:', err)
         const errorMessage = getTranslatedErrorMessage(
           err,
           'Error al eliminar los presupuestos. Por favor, intenta de nuevo.'
@@ -690,121 +689,150 @@ function Presupuestos() {
   return (
     <>
       <div className="app-page-container">
-        <div className="app-page-content presupuestos-content">
+        <div className="app-page-content app-page-content-wide crud-page-content presupuestos-content">
           {isLoading ? (
-            <div className="loader-container">
-              <div className="loader">
-                <div className="loader-spinner"></div>
-                <p className="loader-text">Cargando presupuestos...</p>
-              </div>
-            </div>
-          ) : error ? (
-            <div className="loader-container">
-              <div className="loader">
-                <p className="loader-text" style={{ color: 'rgba(255, 59, 48, 0.9)' }}>
-                  {error}
-                </p>
-              </div>
-            </div>
-          ) : (
             <>
-              {/* Toolbar - HIG: Navigation */}
-              <div className="presupuestos-toolbar">
+              <div className="app-toolbar">
                 <button
-                  className="presupuestos-toolbar-button"
+                  className="app-toolbar-button"
                   onClick={() => navigate('/finanzas')}
                   aria-label="Volver a Finanzas"
                   type="button"
                 >
-                  <ArrowBackIcon className="presupuestos-toolbar-icon" />
+                  <ArrowBackIcon className="app-toolbar-icon" />
                 </button>
-                <div className="presupuestos-toolbar-menu-container">
+              </div>
+              <h1 className="app-page-title">Presupuestos</h1>
+              <div className="glass-group">
+                <ListSkeleton variant="inset-row" count={5} aria-label="Cargando presupuestos" />
+              </div>
+            </>
+          ) : error ? (
+            <>
+              <div className="app-toolbar">
+                <button
+                  className="app-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="app-toolbar-icon" />
+                </button>
+              </div>
+              <h1 className="app-page-title">Presupuestos</h1>
+              <div className="loader-container">
+                <div className="loader finanzas-stats-error-panel">
+                  <p className="loader-text loader-text--error" role="alert">
+                    {error}
+                  </p>
                   <button
-                    className="presupuestos-toolbar-button"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    aria-label="Opciones"
-                    aria-expanded={isMenuOpen}
                     type="button"
+                    className="btn-base btn-secondary finanzas-stats-retry-button"
+                    onClick={() => void reloadBudgets()}
+                    aria-label="Reintentar cargar presupuestos"
                   >
-                    <MoreVertIcon className="presupuestos-toolbar-icon" />
+                    <span>Reintentar</span>
                   </button>
-                  {isMenuOpen && (
-                    <div className="presupuestos-menu">
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Toolbar - HIG: Navigation */}
+              <div className="app-toolbar">
+                <button
+                  className="app-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="app-toolbar-icon" />
+                </button>
+                <button
+                  className="app-toolbar-button"
+                  onClick={() => void handleOpenDeletedBudgetsModal()}
+                  aria-label="Ver presupuestos eliminados"
+                  type="button"
+                >
+                  <ArchiveIcon className="app-toolbar-icon" />
+                </button>
+                <div className="app-toolbar-menu-container" ref={menuRef}>
+                  {isDebugToolsEnabled() && (
+                    <>
                       <button
-                        className="presupuestos-menu-item"
-                        onClick={() => {
-                          setIsMenuOpen(false)
-                          handleOpenModal()
-                        }}
+                        className="app-toolbar-button"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        aria-label="Opciones de depuración"
+                        aria-expanded={isMenuOpen}
                         type="button"
                       >
-                        <AddIcon className="presupuestos-menu-icon" />
-                        <span>Agregar Presupuesto</span>
+                        <MoreVertIcon className="app-toolbar-icon" />
                       </button>
-                      <button
-                        className="presupuestos-menu-item"
-                        onClick={() => {
-                          setIsMenuOpen(false)
-                          handleOpenDeletedBudgetsModal()
-                        }}
-                        type="button"
-                      >
-                        <ArchiveIcon className="presupuestos-menu-icon" />
-                        <span>Ver Presupuestos Eliminados</span>
-                      </button>
-                      {api.isTestUser() && (
-                        <button
-                          className="presupuestos-menu-item"
-                          onClick={() => {
-                            setIsMenuOpen(false)
-                            setIsDebugModalOpen(true)
-                          }}
-                          type="button"
-                        >
-                          <span>🐛 Debug</span>
-                        </button>
+                      {isMenuOpen && (
+                        <div className="crud-dropdown-menu">
+                          <button
+                            className="crud-dropdown-menu-item"
+                            onClick={() => {
+                              setIsMenuOpen(false)
+                              setIsDebugModalOpen(true)
+                            }}
+                            type="button"
+                          >
+                            <span>🐛 Debug</span>
+                          </button>
+                        </div>
                       )}
-                    </div>
+                    </>
                   )}
                 </div>
               </div>
 
               {/* Encabezado de Sección - HIG: Clear Navigation */}
-              <h1 className="presupuestos-page-title">Presupuestos</h1>
+              <h1 className="app-page-title">Presupuestos</h1>
 
               {/* Resumen de presupuestos */}
-              <div className="budgets-summary-block">
-                <div className="summary-item">
-                  <span className="summary-label">Total Presupuestado</span>
-                  <span className="summary-value">{formatBalance(calculateTotalBudgets())}</span>
+              <div className="crud-summary-strip crud-summary-strip--success" role="region" aria-label="Resumen de presupuestos">
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Total presupuestado</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
+                    {formatBalance(calculateTotalBudgets())}
+                  </span>
                 </div>
-                <div className="summary-separator"></div>
-                <div className="summary-item">
-                  <span className="summary-label">Total Gastado</span>
-                  <span className="summary-value">{formatBalance(calculateTotalSpent())}</span>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Total gastado</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--expense">
+                    {formatBalance(calculateTotalSpent())}
+                  </span>
                 </div>
-                <div className="summary-separator"></div>
-                <div className="summary-item">
-                  <span className="summary-label">Disponible</span>
-                  <span className="summary-value available">
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Disponible</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--available">
                     {formatBalance(calculateTotalBudgets() - calculateTotalSpent())}
                   </span>
                 </div>
               </div>
 
+              <button
+                type="button"
+                className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+                onClick={handleOpenModal}
+                aria-label="Agregar presupuesto"
+              >
+                <AddIcon aria-hidden={true} />
+                Agregar presupuesto
+              </button>
+
               {budgets.length === 0 ? (
-                <>
-                  <div className="empty-state">
-                    <CalculateIcon className="empty-icon" />
-                    <p className="empty-text">No hay presupuestos agregados</p>
-                    <p className="empty-subtext">Agrega tu primer presupuesto</p>
-                  </div>
-                </>
+                <div className="empty-state">
+                  <CalculateIcon className="empty-state-icon" />
+                  <p className="empty-text">No hay presupuestos agregados</p>
+                  <p className="empty-subtext">Usa el botón de arriba para crear el primero</p>
+                </div>
               ) : (
-                <>
-                  <div className="budgets-list">
-                    <div className="budgets-group">
-                      {[...budgets]
+                <div className="glass-group">
+                  {[...budgets]
                         .sort((a, b) => {
                           // Ordenar por porcentaje usado (mayor a menor) y luego por nombre
                           if (a.sobrePresupuesto !== b.sobrePresupuesto) {
@@ -828,7 +856,7 @@ function Presupuestos() {
                           return (
                             <button
                               key={budget.id}
-                              className="budget-row"
+                              className="crud-inset-row crud-row-accent-green crud-inset-row--tall"
                               onClick={() => handleOpenDetailModal(budget)}
                               onKeyDown={e => {
                                 if (e.key === 'Enter' || e.key === ' ') {
@@ -845,10 +873,10 @@ function Presupuestos() {
                                 } as React.CSSProperties
                               }
                             >
-                              <div className="budget-row-content">
-                                <div className="budget-row-main">
-                                  <span className="budget-row-title">{budget.nombre}</span>
-                                  <span className="budget-row-percentage">
+                              <div className="crud-row-content">
+                                <div className="crud-row-main">
+                                  <span className="crud-row-title">{budget.nombre}</span>
+                                  <span className="crud-row-value">
                                     {budget.sobrePresupuesto ? (
                                       <span className="budget-over">Sobre presupuesto</span>
                                     ) : (
@@ -856,18 +884,18 @@ function Presupuestos() {
                                     )}
                                   </span>
                                 </div>
-                                <div className="budget-row-secondary">
-                                  <span className="budget-row-periodicity">
+                                <div className="crud-row-secondary">
+                                  <span className="crud-row-meta">
                                     {getPeriodicityLabel(budget.periodicidad)}
                                   </span>
-                                  <span className="budget-row-amount">
+                                  <span className="crud-row-meta">
                                     {formatBalance(budget.totalGastado)} /{' '}
                                     {formatBalance(budget.montoMaximo)}
                                   </span>
                                 </div>
-                                <div className="budget-row-progress">
+                                <div className="crud-row-progress">
                                   <div
-                                    className="budget-row-progress-fill"
+                                    className="crud-row-progress-fill"
                                     style={{
                                       width: `${Math.min(budget.porcentajeUsado, 100)}%`,
                                       backgroundColor: progressColor,
@@ -875,13 +903,11 @@ function Presupuestos() {
                                   ></div>
                                 </div>
                               </div>
-                              <ChevronRightIcon className="budget-row-chevron" aria-hidden="true" />
+                              <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
                             </button>
                           )
                         })}
-                    </div>
-                  </div>
-                </>
+                </div>
               )}
 
               {/* Botón de volver */}
@@ -892,13 +918,11 @@ function Presupuestos() {
 
       {/* Modal para agregar presupuesto */}
       {isModalOpen && (
-        <div className="modal-overlay" onClick={handleCloseModal}>
+        <ModalOverlay onClose={handleCloseModal} className="modal-overlay">
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Nuevo Presupuesto</h2>
-              <button className="modal-close" onClick={handleCloseModal}>
-                ×
-              </button>
+              <h2 className="modal-title" id="modal-title-nuevo-presupuesto">Nuevo Presupuesto</h2>
+              <button className="modal-close" onClick={handleCloseModal} aria-label="Cerrar modal">×</button>
             </div>
             <form className="modal-form" onSubmit={handleSubmit}>
               <div className="form-group">
@@ -980,12 +1004,12 @@ function Presupuestos() {
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Modal de detalles */}
       {isDetailModalOpen && selectedBudget && (
-        <div className="modal-overlay" onClick={handleCloseDetailModal}>
+        <ModalOverlay onClose={handleCloseDetailModal} className="modal-overlay">
           <div
             className="modal-content detail-modal"
             onClick={e => e.stopPropagation()}
@@ -1000,7 +1024,7 @@ function Presupuestos() {
             }
           >
             <div className="modal-header">
-              <h2 className="modal-title">Detalles del Presupuesto</h2>
+              <h2 className="modal-title" id="modal-title-detalles-del-presupuesto">Detalles del Presupuesto</h2>
               <button
                 className="modal-close"
                 onClick={handleCloseDetailModal}
@@ -1212,20 +1236,20 @@ function Presupuestos() {
               </form>
             )}
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Modal de Debug */}
-      {isDebugModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
+      {isDebugModalOpen && isDebugToolsEnabled() && (
+        <ModalOverlay onClose={() => setIsDebugModalOpen(false)} className="modal-overlay">
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Debug - Presupuestos</h2>
+              <h2 className="modal-title" id="modal-title-debug-presupuestos">Debug - Presupuestos</h2>
               <button className="modal-close" onClick={() => setIsDebugModalOpen(false)}>
                 ×
               </button>
             </div>
-            <div className="debug-modal-content">
+            <div className="modal-panel-content">
               <div className="debug-options">
                 <button
                   className="debug-option-button create-demo"
@@ -1283,20 +1307,20 @@ function Presupuestos() {
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Modal de confirmación de eliminación */}
       {isDeleteModalOpen && selectedBudget && (
-        <div className="modal-overlay" onClick={() => setIsDeleteModalOpen(false)}>
+        <ModalOverlay onClose={() => setIsDeleteModalOpen(false)} className="modal-overlay">
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Eliminar Presupuesto</h2>
+              <h2 className="modal-title" id="modal-title-eliminar-presupuesto">Eliminar Presupuesto</h2>
               <button className="modal-close" onClick={() => setIsDeleteModalOpen(false)}>
                 ×
               </button>
             </div>
-            <div className="delete-modal-content">
+            <div className="modal-panel-content">
               <p className="delete-modal-text">
                 Selecciona el tipo de eliminación para el presupuesto{' '}
                 <strong>&quot;{selectedBudget.nombre}&quot;</strong>:
@@ -1343,30 +1367,25 @@ function Presupuestos() {
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Modal de presupuestos eliminados */}
       {isDeletedBudgetsModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsDeletedBudgetsModalOpen(false)}>
+        <ModalOverlay onClose={() => setIsDeletedBudgetsModalOpen(false)} className="modal-overlay">
           <div className="modal-content deleted-budgets-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Presupuestos Eliminados</h2>
+              <h2 className="modal-title" id="modal-title-presupuestos-eliminados">Presupuestos Eliminados</h2>
               <button className="modal-close" onClick={() => setIsDeletedBudgetsModalOpen(false)}>
                 ×
               </button>
             </div>
             <div className="deleted-budgets-content">
               {isLoadingDeleted ? (
-                <div className="loader-container">
-                  <div className="loader">
-                    <div className="loader-spinner"></div>
-                    <p className="loader-text">Cargando presupuestos eliminados...</p>
-                  </div>
-                </div>
+                <ListSkeleton variant="inset-row" count={3} aria-label="Cargando presupuestos eliminados" />
               ) : deletedBudgets.length === 0 ? (
                 <div className="empty-state">
-                  <ArchiveIcon className="empty-icon" />
+                  <ArchiveIcon className="empty-state-icon" />
                   <p className="empty-text">No hay presupuestos eliminados</p>
                   <p className="empty-subtext">Los presupuestos eliminados aparecerán aquí</p>
                 </div>
@@ -1433,7 +1452,7 @@ function Presupuestos() {
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </>
   )

@@ -1,183 +1,4 @@
-.deudas-content {
-  flex-direction: column;
-  gap: 0.75rem;
-  align-items: stretch;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-/* Toolbar - HIG: Navigation */
-.deudas-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
-  width: 100%;
-}
-
-.deudas-toolbar-menu-container {
-  position: relative;
-}
-
-/* Toolbar Button - HIG: Touch Target, Feedback */
-.deudas-toolbar-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  min-width: 48px;
-  min-height: 48px;
-  background: var(--bg-glass);
-  backdrop-filter: var(--backdrop-blur);
-  -webkit-backdrop-filter: var(--backdrop-blur);
-  border-radius: 50%;
-  border: 1px solid var(--border-glass);
-  box-shadow: var(--shadow-sm);
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  font-family: var(--font-family);
-}
-
-.deudas-toolbar-button:hover:not(:disabled) {
-  background: var(--bg-glass-hover);
-  border-color: var(--border-glass-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-.deudas-toolbar-button:active:not(:disabled) {
-  transform: translateY(0);
-  transition: transform var(--transition-fast);
-}
-
-.deudas-toolbar-button:focus-visible {
-  outline: 2px solid var(--accent-primary-border);
-  outline-offset: 2px;
-}
-
-.deudas-toolbar-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.deudas-toolbar-icon {
-  font-size: 1.5rem !important;
-  width: 1.5rem !important;
-  height: 1.5rem !important;
-  color: var(--text-primary);
-}
-
-[data-theme='light'] .deudas-toolbar-button {
-  background: var(--bg-glass);
-  border-color: var(--border-glass);
-}
-
-[data-theme='light'] .deudas-toolbar-button:hover:not(:disabled) {
-  background: var(--bg-glass-hover);
-  border-color: var(--border-glass-hover);
-}
-
-/* Page Title - HIG: Clear Navigation & Visual Hierarchy */
-.deudas-page-title {
-  font-size: 2.5rem; /* 40px - grande y prominente */
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-lg) 0;
-  letter-spacing: var(--letter-spacing-tight);
-  font-family: var(--font-family);
-  line-height: 1.2;
-  text-align: left;
-}
-
-[data-theme='light'] .deudas-page-title {
-  color: rgba(0, 0, 0, 0.95);
-}
-
-/* Options Menu - HIG: Clear Navigation */
-.deudas-menu {
-  position: absolute;
-  top: calc(100% + var(--spacing-xs));
-  right: 0;
-  background: var(--bg-glass);
-  backdrop-filter: var(--backdrop-blur);
-  -webkit-backdrop-filter: var(--backdrop-blur);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-glass);
-  box-shadow: var(--shadow-lg);
-  min-width: 220px;
-  z-index: 1000;
-  overflow: hidden;
-  font-family: var(--font-family);
-}
-
-.deudas-menu-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  width: 100%;
-  padding: var(--spacing-md) var(--spacing-lg);
-  min-height: 48px; /* HIG: Adequate touch target */
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--border-glass-light);
-  cursor: pointer;
-  color: var(--text-primary);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  font-family: var(--font-family);
-  transition: all var(--transition-base);
-  text-align: left;
-}
-
-.deudas-menu-item:last-child {
-  border-bottom: none;
-}
-
-.deudas-menu-item:hover:not(:disabled) {
-  background: var(--bg-glass-light);
-}
-
-.deudas-menu-item:active:not(:disabled) {
-  background: var(--bg-glass-hover);
-  transition: background-color var(--transition-fast);
-}
-
-.deudas-menu-item:focus-visible {
-  outline: 2px solid var(--accent-primary-border);
-  outline-offset: -2px;
-  z-index: 1;
-}
-
-.deudas-menu-item:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.deudas-menu-icon {
-  font-size: 1.25rem !important;
-  width: 1.25rem !important;
-  height: 1.25rem !important;
-  color: var(--text-primary);
-  flex-shrink: 0;
-}
-
-[data-theme='light'] .deudas-menu {
-  background: var(--bg-glass);
-  border-color: var(--border-glass);
-}
-
-[data-theme='light'] .deudas-menu-item {
-  color: rgba(0, 0, 0, 0.9);
-}
-
-[data-theme='light'] .deudas-menu-item:hover:not(:disabled) {
-  background: var(--bg-glass-light);
-}
+.deudas-content {}
 
 /* Debts Advice Banner - HIG: Clear Feedback */
 .debts-advice-banner {
@@ -185,24 +6,16 @@
   align-items: flex-start;
   gap: var(--spacing-md);
   padding: var(--spacing-md) var(--spacing-lg);
-  background: linear-gradient(135deg, rgba(0, 122, 255, 0.12) 0%, rgba(88, 86, 214, 0.08) 100%);
+  background: var(--surface-info-banner-bg);
   backdrop-filter: var(--backdrop-blur-light);
   -webkit-backdrop-filter: var(--backdrop-blur-light);
   border-radius: var(--radius-md);
-  border: 1px solid rgba(0, 122, 255, 0.25);
+  border: 1px solid var(--surface-info-banner-border);
   margin-bottom: var(--spacing-lg);
   box-shadow:
-    0 2px 8px rgba(0, 122, 255, 0.15),
+    var(--surface-info-banner-shadow),
     var(--shadow-sm);
   font-family: var(--font-family);
-}
-
-[data-theme='light'] .debts-advice-banner {
-  background: linear-gradient(135deg, rgba(0, 122, 255, 0.15) 0%, rgba(88, 86, 214, 0.1) 100%);
-  border-color: rgba(0, 122, 255, 0.35);
-  box-shadow:
-    0 2px 8px rgba(0, 122, 255, 0.15),
-    var(--shadow-sm);
 }
 
 .debts-advice-icon {
@@ -212,16 +25,11 @@
   flex-shrink: 0;
   width: 32px;
   height: 32px;
-  color: #007aff;
-  font-size: 1.5rem;
-  background: rgba(0, 122, 255, 0.15);
+  color: var(--surface-info-icon-color);
+  font-size: var(--font-size-xl);
+  background: var(--surface-info-icon-bg);
   border-radius: var(--radius-sm);
   padding: var(--spacing-xs);
-}
-
-[data-theme='light'] .debts-advice-icon {
-  color: #0051d5;
-  background: rgba(0, 122, 255, 0.2);
 }
 
 .debts-advice-content {
@@ -239,256 +47,22 @@
   font-family: var(--font-family);
 }
 
-[data-theme='light'] .debts-advice-text {
-  color: rgba(0, 0, 0, 0.9);
-}
-
 .debts-advice-text strong {
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
 }
 
-[data-theme='light'] .debts-advice-text strong {
-  color: rgba(0, 0, 0, 1);
-}
-
-/* Debts Summary Block - HIG: Relevant Information Highlights */
-.debts-summary-block {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-lg);
-  padding: var(--spacing-md) var(--spacing-xl);
-  background: linear-gradient(135deg, rgba(255, 59, 48, 0.1) 0%, rgba(255, 149, 0, 0.1) 100%);
-  backdrop-filter: var(--backdrop-blur-light);
-  -webkit-backdrop-filter: var(--backdrop-blur-light);
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 59, 48, 0.3);
-  margin-bottom: var(--spacing-lg);
-  margin-top: 0;
-  width: fit-content;
-  margin-left: auto;
-  margin-right: auto;
-  box-shadow:
-    0 4px 16px 0 rgba(255, 59, 48, 0.15),
-    var(--shadow-sm);
-  font-family: var(--font-family);
-  flex-wrap: wrap;
-}
-
-[data-theme='light'] .debts-summary-block {
-  background: linear-gradient(135deg, rgba(255, 59, 48, 0.08) 0%, rgba(255, 149, 0, 0.08) 100%);
-  border-color: rgba(255, 59, 48, 0.25);
-  box-shadow:
-    0 4px 16px 0 rgba(255, 59, 48, 0.1),
-    var(--shadow-sm);
-}
-
-.debts-summary-block .summary-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-xs);
-  flex: 0 1 auto;
-  min-width: 0;
-}
-
-.debts-summary-block .summary-label {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-secondary);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-family: var(--font-family);
-  line-height: 1.5;
-}
-
-[data-theme='light'] .debts-summary-block .summary-label {
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.debts-summary-block .summary-value {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-  font-family: var(--font-family);
-  letter-spacing: var(--letter-spacing-tight);
-  line-height: 1.3;
-}
-
-[data-theme='light'] .debts-summary-block .summary-value {
-  color: rgba(0, 0, 0, 0.9);
-}
-
-.debts-summary-block .summary-item:nth-child(1) .summary-value {
-  color: #ff3b30;
-}
-
-[data-theme='light'] .debts-summary-block .summary-item:nth-child(1) .summary-value {
-  color: #dc3545;
-}
-
-.debts-summary-block .summary-item:nth-child(2) .summary-value {
-  color: #0a84ff;
-}
-
-[data-theme='light'] .debts-summary-block .summary-item:nth-child(2) .summary-value {
-  color: #0051d5;
-}
-
-.debts-summary-block .summary-item:nth-child(3) .summary-value {
-  color: #ff9500;
-}
-
-[data-theme='light'] .debts-summary-block .summary-item:nth-child(3) .summary-value {
-  color: #fd7e14;
-}
-
-.debts-summary-block .summary-separator {
-  width: 1px;
-  height: 24px;
-  background: var(--border-glass-light);
-}
-
-.add-debt-button {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-lg);
-  background: var(--accent-danger);
-  backdrop-filter: var(--backdrop-blur);
-  -webkit-backdrop-filter: var(--backdrop-blur);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--accent-danger-border);
-  box-shadow: var(--shadow-sm);
-  color: var(--text-primary);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  font-family: var(--font-family);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  letter-spacing: var(--letter-spacing-tight);
-}
-
-.add-debt-button:hover {
-  background: var(--accent-danger-hover);
-  border-color: var(--accent-danger-border);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.add-debt-button:active {
-  transform: translateY(0);
-}
-
-.add-debt-button svg {
-  font-size: var(--font-size-xl);
-}
-
 /* Debts List - HIG: Efficient Information Presentation */
-.debts-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  width: 100%;
+.crud-card-row--debt.crud-card-row--paid-off {
+  border-left-color: var(--highlight-success-text);
 }
 
-.debt-row {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md) var(--spacing-lg);
-  min-height: 72px; /* HIG: Adequate touch target */
-  width: 100%;
-  background: var(--bg-glass);
-  backdrop-filter: var(--backdrop-blur);
-  -webkit-backdrop-filter: var(--backdrop-blur);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-glass);
-  box-shadow: var(--shadow-sm);
-  transition: all var(--transition-base);
-  position: relative;
-  overflow: hidden;
-  font-family: var(--font-family);
-  cursor: pointer;
-  text-align: left;
-  border-left: 4px solid var(--debt-color, #ff3b30);
-}
-
-.debt-row::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: var(--debt-color, #ff3b30);
-  opacity: 0.8;
-  border-radius: var(--radius-md) 0 0 var(--radius-md);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.debt-row.debt-paid-off {
-  border-left-color: #34c759;
-}
-
-.debt-row.debt-paid-off::before {
+.crud-card-row--debt.crud-card-row--paid-off::before {
   background: #34c759;
 }
 
-.debt-row:hover:not(:disabled) {
-  background: var(--bg-glass-light);
-  transform: translateX(2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--border-glass-hover);
-}
-
-.debt-row:focus-visible {
-  outline: 2px solid var(--accent-primary-border);
-  outline-offset: 2px;
-}
-
-.debt-row:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 /* Debt Row Content - HIG: Clear Information Hierarchy */
-.debt-row-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  min-width: 0;
-}
-
-.debt-row-main {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-md);
-  width: 100%;
-}
-
-.debt-row-title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-  font-family: var(--font-family);
-  letter-spacing: var(--letter-spacing-tight);
-  line-height: 1.4;
-  flex: 1;
-  min-width: 0;
-  text-align: left;
-  margin: 0;
-}
-
-[data-theme='light'] .debt-row-title {
-  color: rgba(0, 0, 0, 0.9);
-}
-
-.debt-row-amount {
+.crud-row-value {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
@@ -499,19 +73,7 @@
   text-align: right;
 }
 
-[data-theme='light'] .debt-row-amount {
-  color: rgba(0, 0, 0, 0.9);
-}
-
-.debt-row-secondary {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  flex-wrap: wrap;
-  width: 100%;
-}
-
-.debt-row-reference {
+.crud-row-meta {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   font-family: var(--font-family);
@@ -519,25 +81,17 @@
   line-height: 1.4;
 }
 
-[data-theme='light'] .debt-row-reference {
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.debt-row-rate {
+.crud-row-meta {
   font-size: var(--font-size-sm);
-  color: #ff9500;
+  color: var(--color-expense-text);
   font-weight: var(--font-weight-medium);
   font-family: var(--font-family);
   letter-spacing: var(--letter-spacing-tight);
   line-height: 1.4;
 }
 
-[data-theme='light'] .debt-row-rate {
-  color: #fd7e14;
-}
-
 /* Debt Row Progress - HIG: Visual Feedback */
-.debt-row-progress-container {
+.crud-row-progress {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
@@ -545,7 +99,7 @@
   margin-top: var(--spacing-xs);
 }
 
-.debt-row-progress-bar {
+.crud-row-progress-bar {
   flex: 1;
   height: 4px;
   background: var(--bg-glass-lighter);
@@ -554,17 +108,13 @@
   overflow: hidden;
 }
 
-[data-theme='light'] .debt-row-progress-bar {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.debt-row-progress-fill {
+.crud-row-progress-fill {
   height: 100%;
   border-radius: 2px;
   transition: width 0.3s ease;
 }
 
-.debt-row-progress-text {
+.crud-row-progress-text {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
@@ -576,164 +126,7 @@
   text-align: right;
 }
 
-[data-theme='light'] .debt-row-progress-text {
-  color: rgba(0, 0, 0, 0.9);
-}
-
 /* Debt Row Chevron */
-.debt-row-chevron {
-  color: var(--text-tertiary);
-  font-size: 1.25rem !important;
-  width: 1.25rem !important;
-  height: 1.25rem !important;
-  flex-shrink: 0;
-  margin-left: var(--spacing-xs);
-}
-
-[data-theme='light'] .debt-row-chevron {
-  color: rgba(0, 0, 0, 0.4);
-}
-
-/* Empty State - HIG: Clear Feedback */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--spacing-2xl) var(--spacing-lg);
-  text-align: center;
-  color: var(--text-secondary);
-  font-family: var(--font-family);
-}
-
-.empty-icon {
-  font-size: 4rem !important;
-  width: 4rem !important;
-  height: 4rem !important;
-  color: var(--text-tertiary);
-  margin-bottom: var(--spacing-md);
-  opacity: 0.5;
-}
-
-[data-theme='light'] .empty-icon {
-  color: rgba(0, 0, 0, 0.3);
-}
-
-.empty-text {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-xs) 0;
-  line-height: 1.4;
-}
-
-[data-theme='light'] .empty-text {
-  color: rgba(0, 0, 0, 0.9);
-}
-
-.empty-subtext {
-  font-size: var(--font-size-base);
-  color: var(--text-secondary);
-  margin: 0;
-  line-height: 1.5;
-}
-
-[data-theme='light'] .empty-subtext {
-  color: rgba(0, 0, 0, 0.6);
-}
-
-/* Modal Header - HIG: Clear Hierarchy */
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-lg);
-  border-bottom: 1px solid var(--border-glass-light);
-  position: relative;
-  z-index: 2;
-  background: var(--bg-glass-lighter);
-  border-radius: 32px 32px 0 0;
-}
-
-[data-theme='light'] .modal-header {
-  border-bottom-color: rgba(0, 0, 0, 0.1);
-  background: rgba(0, 0, 0, 0.02);
-}
-
-/* Modal Title - HIG: Clear Hierarchy & Readability */
-.modal-title {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary) !important;
-  margin: 0;
-  letter-spacing: var(--letter-spacing-tight);
-  font-family: var(--font-family);
-  line-height: 1.3;
-}
-
-[data-theme='light'] .modal-title {
-  color: rgba(0, 0, 0, 0.95) !important;
-}
-
-[data-theme='dark'] .modal-title {
-  color: rgba(255, 255, 255, 0.95) !important;
-}
-
-/* Modal Close Button - HIG: Touch Target (min 44x44px), Feedback */
-.modal-close {
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
-  border-radius: var(--radius-sm);
-  border: none;
-  background: rgba(255, 59, 48, 0.2);
-  color: rgba(255, 59, 48, 0.9);
-  font-size: 1.5rem;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-base);
-  border: 1px solid rgba(255, 59, 48, 0.3);
-  font-family: var(--font-family);
-}
-
-[data-theme='light'] .modal-close {
-  background: rgba(255, 59, 48, 0.1);
-  color: rgba(255, 59, 48, 0.8);
-  border-color: rgba(255, 59, 48, 0.2);
-}
-
-.modal-close:hover:not(:disabled) {
-  background: rgba(255, 59, 48, 0.3);
-  border-color: rgba(255, 59, 48, 0.5);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-.modal-close:active:not(:disabled) {
-  transform: translateY(0);
-  transition: transform var(--transition-fast);
-}
-
-.modal-close:focus-visible {
-  outline: 2px solid rgba(255, 59, 48, 0.6);
-  outline-offset: 2px;
-}
-
-.modal-close:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Detail Modal Styles - HIG: Visual Hierarchy & Spacing */
-.detail-modal {
-  max-width: 500px;
-  position: relative;
-}
-
 .detail-modal::before {
   content: '';
   position: absolute;
@@ -741,220 +134,10 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: var(--debt-color, #ff3b30);
+  background: var(--debt-color, var(--color-danger-solid));
   border-radius: 32px 32px 0 0;
   opacity: 0.8;
   z-index: 1;
-}
-
-/* Detail Content - HIG: Consistent Padding & Breathing Room */
-.detail-content {
-  padding: var(--spacing-xl);
-}
-
-[data-theme='light'] .detail-content {
-  padding: var(--spacing-xl);
-}
-
-/* Header Section - HIG: Clear Visual Hierarchy */
-.detail-section {
-  display: flex;
-  align-items: flex-start;
-  gap: 0;
-  margin: 0;
-  padding: 0;
-  border-bottom: 1px solid var(--border-glass-light);
-}
-
-[data-theme='light'] .detail-section {
-  border-bottom-color: rgba(0, 0, 0, 0.1);
-}
-
-.detail-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  margin: 0;
-  padding: var(--spacing-xs) 0 var(--spacing-xs) var(--spacing-md);
-}
-
-.detail-name {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-xs) 0;
-  letter-spacing: var(--letter-spacing-tight);
-  font-family: var(--font-family);
-  line-height: 1.3;
-}
-
-[data-theme='light'] .detail-name {
-  color: rgba(0, 0, 0, 0.95);
-}
-
-.detail-bank {
-  font-size: var(--font-size-base);
-  color: var(--text-secondary);
-  margin: 0;
-  letter-spacing: var(--letter-spacing-tight);
-  font-family: var(--font-family);
-  line-height: 1.4;
-}
-
-[data-theme='light'] .detail-bank {
-  color: rgba(0, 0, 0, 0.7);
-}
-
-/* Detail Rows - HIG: Consistent Spacing & Touch Targets */
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: var(--spacing-md) 0;
-  margin: 0;
-  border-bottom: 1px solid var(--border-glass-light);
-  gap: var(--spacing-lg);
-  min-height: 44px; /* HIG: Adequate touch target for potential interactions */
-}
-
-[data-theme='light'] .detail-row {
-  border-bottom-color: rgba(0, 0, 0, 0.08);
-}
-
-.detail-row:last-of-type {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.detail-label {
-  font-size: var(--font-size-base);
-  color: var(--text-secondary);
-  font-weight: var(--font-weight-medium);
-  font-family: var(--font-family);
-  letter-spacing: var(--letter-spacing-tight);
-  line-height: 1.5;
-  flex-shrink: 0;
-  min-width: 140px;
-}
-
-[data-theme='light'] .detail-label {
-  color: rgba(0, 0, 0, 0.7);
-}
-
-.detail-value {
-  font-size: var(--font-size-base);
-  color: var(--text-primary);
-  font-weight: var(--font-weight-medium);
-  font-family: var(--font-family);
-  letter-spacing: var(--letter-spacing-tight);
-  word-break: break-word;
-  text-align: right;
-  line-height: 1.5;
-  flex: 1;
-  min-width: 0;
-}
-
-[data-theme='light'] .detail-value {
-  color: rgba(0, 0, 0, 0.9);
-}
-
-.detail-value.spent {
-  color: #ff9500;
-}
-
-[data-theme='light'] .detail-value.spent {
-  color: #fd7e14;
-}
-
-.detail-value.remaining {
-  color: #34c759;
-}
-
-[data-theme='light'] .detail-value.remaining {
-  color: #28a745;
-}
-
-/* Actions Section - HIG: Clear Separation */
-.detail-actions {
-  display: flex;
-  gap: var(--spacing-md);
-  padding: var(--spacing-lg) var(--spacing-xl);
-  margin: 0;
-  border-top: 1px solid var(--border-glass-light);
-  background: var(--bg-glass-lighter);
-  border-radius: 0 0 32px 32px;
-}
-
-[data-theme='light'] .detail-actions {
-  border-top-color: rgba(0, 0, 0, 0.1);
-  background: rgba(0, 0, 0, 0.02);
-}
-
-/* Detail Button - HIG: Touch Target (min 44px height), Feedback, Accessibility */
-.detail-button {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-md) var(--spacing-lg);
-  min-height: 44px; /* HIG: Minimum touch target */
-  border-radius: var(--radius-md);
-  border: none;
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  font-family: var(--font-family);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  letter-spacing: var(--letter-spacing-tight);
-  line-height: 1.5;
-}
-
-.detail-button.edit {
-  background: rgba(0, 122, 255, 0.3);
-  color: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(0, 122, 255, 0.5);
-}
-
-.detail-button.edit:hover:not(:disabled) {
-  background: rgba(0, 122, 255, 0.4);
-  border-color: rgba(0, 122, 255, 0.7);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-.detail-button.delete {
-  background: rgba(255, 59, 48, 0.3);
-  color: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(255, 59, 48, 0.5);
-}
-
-.detail-button.delete:hover:not(:disabled) {
-  background: rgba(255, 59, 48, 0.4);
-  border-color: rgba(255, 59, 48, 0.7);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-.detail-button:active:not(:disabled) {
-  transform: translateY(0);
-  transition: transform var(--transition-fast);
-}
-
-.detail-button:focus-visible {
-  outline: 2px solid var(--accent-primary-border);
-  outline-offset: 2px;
-}
-
-.detail-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.detail-button svg {
-  font-size: 1.25rem;
 }
 
 /* Detail Modal Debt Styles */
@@ -967,29 +150,25 @@
   border-bottom: 1px solid var(--border-glass-light);
 }
 
-[data-theme='light'] .debt-detail-progress {
-  border-bottom-color: rgba(0, 0, 0, 0.1);
-}
-
 .debt-detail-progress-bar {
   flex: 1;
   height: 12px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--btn-secondary-bg);
   border-radius: 6px;
   position: relative;
 }
 
 .debt-detail-progress-fill {
   height: 100%;
-  background: var(--debt-color, #ff3b30);
+  background: var(--debt-color, var(--color-danger-solid));
   border-radius: 6px;
   transition: width 0.3s ease;
 }
 
 .debt-detail-progress-text {
-  font-size: 1rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
   font-family:
     'Inter',
     -apple-system,
@@ -1010,8 +189,8 @@
   align-items: center;
   gap: 0.75rem;
   cursor: pointer;
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
   font-family:
     'Inter',
     -apple-system,
@@ -1020,51 +199,15 @@
     sans-serif;
 }
 
-[data-theme='light'] .checkbox-label {
-  color: rgba(0, 0, 0, 0.9);
-}
-
-.checkbox-label input[type='checkbox'] {
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
-  margin: 0;
-  margin-right: 1rem;
-  cursor: pointer;
-  accent-color: rgba(255, 59, 48, 0.8);
-  border-radius: 6px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-[data-theme='light'] .checkbox-label input[type='checkbox'] {
-  border-color: rgba(0, 0, 0, 0.3);
-}
-
-.checkbox-label input[type='checkbox']:hover {
-  border-color: rgba(255, 59, 48, 0.8);
-  transform: scale(1.05);
-}
-
-[data-theme='light'] .checkbox-label input[type='checkbox']:hover {
-  border-color: rgba(255, 59, 48, 0.8);
-}
-
-.checkbox-label input[type='checkbox']:focus-visible {
-  outline: 2px solid rgba(255, 59, 48, 0.5);
-  outline-offset: 2px;
-}
-
 /* Modal Note Warning */
 .debt-modal-note {
   padding: 0.75rem 1rem;
   margin-bottom: 1rem;
-  background-color: rgba(255, 193, 7, 0.1);
-  border: 1px solid rgba(255, 193, 7, 0.3);
+  background-color: var(--surface-note-warning-bg);
+  border: 1px solid var(--surface-note-warning-border);
   border-radius: 8px;
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
   font-family:
     'Inter',
     -apple-system,
@@ -1074,19 +217,9 @@
   line-height: 1.5;
 }
 
-[data-theme='light'] .debt-modal-note {
-  background-color: rgba(255, 193, 7, 0.18);
-  border-color: rgba(255, 193, 7, 0.45);
-  color: rgba(0, 0, 0, 0.9);
-}
-
 .debt-modal-note strong {
-  font-weight: 600;
-  color: rgba(255, 193, 7, 0.95);
-}
-
-[data-theme='light'] .debt-modal-note strong {
-  color: rgba(230, 126, 0, 1);
+  font-weight: var(--font-weight-semibold);
+  color: var(--surface-note-warning-strong);
 }
 
 .sort-button {
@@ -1112,7 +245,7 @@
 .sort-button:hover {
   background: rgba(0, 122, 255, 0.3);
   border-color: rgba(0, 122, 255, 0.5);
-  transform: translateY(-2px);
+  transform: translateY(var(--motion-lift-md));
   box-shadow: var(--shadow-md);
 }
 
@@ -1147,17 +280,12 @@
 .debug-button:hover {
   background: var(--accent-danger-hover);
   border-color: var(--accent-danger-border);
-  transform: translateY(-2px);
+  transform: translateY(var(--motion-lift-md));
   box-shadow: var(--shadow-md);
 }
 
 .debug-button:active {
   transform: translateY(0);
-}
-
-/* Debug Modal Styles */
-.debug-modal-content {
-  padding: 2rem;
 }
 
 .debug-options {
@@ -1175,10 +303,8 @@
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow:
-    0 4px 16px 0 rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-glass);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: left;
@@ -1192,12 +318,12 @@
 }
 
 .debug-option-button:hover:not(:disabled) {
-  background: rgba(0, 0, 0, 0.3);
-  transform: translateY(-2px);
+  background: var(--surface-overlay);
+  transform: translateY(var(--motion-lift-md));
   box-shadow:
-    0 8px 24px 0 rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.15);
+    0 8px 24px 0 var(--text-disabled),
+    inset 0 1px 0 var(--glass-inset-highlight-strong);
+  border-color: var(--border-glass-hover);
 }
 
 .debug-option-button:active:not(:disabled) {
@@ -1215,20 +341,8 @@
 }
 
 .debug-option-button.delete-all:hover:not(:disabled) {
-  border-color: rgba(255, 59, 48, 0.5);
-  background: rgba(255, 59, 48, 0.1);
-}
-
-.debug-option-icon {
-  font-size: 2rem;
-  flex-shrink: 0;
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  border-color: var(--color-danger-border-medium);
+  background: var(--color-danger-bg-soft);
 }
 
 .debug-option-info {
@@ -1239,9 +353,9 @@
 }
 
 .debug-option-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.95);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
   margin: 0;
   letter-spacing: -0.01em;
   font-family:
@@ -1253,8 +367,8 @@
 }
 
 .debug-option-description {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
   margin: 0;
   font-family:
     'Inter',
@@ -1271,39 +385,9 @@
     padding: 0 0.5rem;
   }
 
-  .deudas-toolbar {
-    margin-top: var(--spacing-xl);
-    margin-bottom: var(--spacing-sm);
-  }
-
-  .deudas-toolbar-button {
-    width: 44px;
-    height: 44px;
-    min-width: 44px;
-    min-height: 44px;
-  }
-
-  .deudas-toolbar-icon {
-    font-size: 1.375rem !important;
-    width: 1.375rem !important;
-    height: 1.375rem !important;
-  }
-
   .deudas-page-title {
-    font-size: 2.25rem; /* 36px en tablet */
+    font-size: var(--font-size-3xl-sm); /* 36px en tablet */
     margin-bottom: var(--spacing-md);
-  }
-
-  .debts-summary-block {
-    flex-wrap: wrap;
-    justify-content: center;
-    width: 100%;
-    max-width: 100%;
-    padding: var(--spacing-sm) var(--spacing-md);
-  }
-
-  .debts-summary-block .summary-item {
-    flex: 0 1 auto;
   }
 
   .debts-advice-banner {
@@ -1314,27 +398,21 @@
   .debts-advice-icon {
     width: 28px;
     height: 28px;
-    font-size: 1.25rem;
+    font-size: var(--font-size-lg);
   }
 
   .debts-advice-text {
     font-size: var(--font-size-sm);
   }
 
-  .debt-row {
-    padding: var(--spacing-md);
-    gap: var(--spacing-sm);
-    min-height: 64px;
-  }
-
-  .debt-row-title,
-  .debt-row-amount {
+  .crud-row-title,
+  .crud-row-value {
     font-size: var(--font-size-base);
   }
 
-  .debt-row-reference,
-  .debt-row-rate,
-  .debt-row-progress {
+  .crud-row-meta,
+  .crud-row-meta,
+  .crud-row-progress {
     font-size: var(--font-size-sm);
   }
 
@@ -1350,12 +428,7 @@
   }
 
   .modal-title {
-    font-size: 1.25rem;
-  }
-
-  .detail-modal {
-    max-width: 100%;
-    margin: 1rem;
+    font-size: var(--font-size-lg);
   }
 
   .detail-content {
@@ -1407,55 +480,9 @@
     min-width: 44px;
     min-height: 44px;
   }
-}
-
-@media (max-width: 480px) {
+}@media (max-width: 480px){
   .deudas-content {
     padding: 0 0.5rem;
-  }
-
-  .deudas-toolbar {
-    margin-top: var(--spacing-xl);
-    margin-bottom: var(--spacing-xs);
-  }
-
-  .deudas-toolbar-button {
-    width: 44px;
-    height: 44px;
-    min-width: 44px;
-    min-height: 44px;
-  }
-
-  .deudas-toolbar-icon {
-    font-size: 1.25rem !important;
-    width: 1.25rem !important;
-    height: 1.25rem !important;
-  }
-
-  .deudas-page-title {
-    font-size: 2rem; /* 32px en móvil */
-    margin-bottom: var(--spacing-md);
-  }
-
-  .debts-summary-block {
-    flex-direction: column;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm);
-    width: 100%;
-  }
-
-  .debts-summary-block .summary-separator {
-    display: none;
-  }
-
-  .debts-summary-block .summary-item {
-    width: 100%;
-    padding: var(--spacing-xs) 0;
-    border-bottom: 1px solid var(--border-glass-light);
-  }
-
-  .debts-summary-block .summary-item:last-child {
-    border-bottom: none;
   }
 
   .debts-advice-banner {
@@ -1467,7 +494,7 @@
   .debts-advice-icon {
     width: 24px;
     height: 24px;
-    font-size: 1.125rem;
+    font-size: var(--font-size-base);
     align-self: flex-start;
   }
 
@@ -1476,56 +503,19 @@
     line-height: 1.5;
   }
 
-  .debt-row {
-    padding: var(--spacing-sm);
-    gap: var(--spacing-xs);
-    min-height: 60px;
-  }
-
-  .debt-row-title,
-  .debt-row-amount {
+  .crud-row-title,
+  .crud-row-value {
     font-size: var(--font-size-base);
   }
 
-  .debt-row-reference,
-  .debt-row-rate,
-  .debt-row-progress {
+  .crud-row-meta,
+  .crud-row-meta,
+  .crud-row-progress {
     font-size: var(--font-size-xs);
   }
 
-  .modal-content {
-    margin: 0.5rem;
-    border-radius: 20px;
-  }
-
-  .modal-header,
-  .modal-form {
-    padding: 1rem;
-  }
-
-  .modal-title {
-    font-size: 1.5rem;
-  }
-
-  .form-group label {
-    font-size: 1.125rem;
-  }
-
-  .form-group input,
-  .form-group select {
-    font-size: 1.125rem;
-  }
-
-  .modal-button {
-    font-size: 1.125rem;
-  }
-
   .error-message {
-    font-size: 1.125rem;
-  }
-
-  .detail-modal {
-    margin: 0.5rem;
+    font-size: var(--font-size-base);
   }
 
   .detail-content {
@@ -1562,12 +552,5 @@
   .detail-button {
     min-height: 44px;
     font-size: var(--font-size-base);
-  }
-
-  .modal-close {
-    width: 44px;
-    height: 44px;
-    min-width: 44px;
-    min-height: 44px;
   }
 }

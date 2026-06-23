@@ -1,73 +1,5 @@
 /* Mi Día Page Styles */
-.midia-content {
-  flex-direction: column;
-  gap: 0.75rem;
-  align-items: stretch;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-/* Toolbar */
-.midia-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
-  width: 100%;
-}
-
-@media (max-width: 768px) {
-  .midia-toolbar {
-    margin-top: var(--spacing-xl);
-    margin-bottom: var(--spacing-sm);
-  }
-}
-
-.midia-toolbar-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  min-width: 48px;
-  min-height: 48px;
-  background: var(--bg-glass);
-  backdrop-filter: var(--backdrop-blur);
-  -webkit-backdrop-filter: var(--backdrop-blur);
-  border: 1px solid var(--border-glass);
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all var(--transition-base);
-  padding: 0;
-  box-shadow: var(--shadow-sm);
-}
-
-.midia-toolbar-button:hover {
-  transform: scale(1.05);
-  box-shadow: var(--shadow-md);
-}
-
-.midia-toolbar-button:active {
-  transform: scale(0.95);
-}
-
-.midia-toolbar-icon {
-  width: 24px;
-  height: 24px;
-  color: var(--text-primary);
-}
-
-/* Page Title */
-.midia-page-title {
-  font-size: var(--font-size-2xl);
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-  margin-bottom: var(--spacing-xs);
-}
+.midia-content {}
 
 .midia-page-subtitle {
   font-size: var(--font-size-base);
@@ -83,7 +15,7 @@
 
 .midia-section-title {
   font-size: var(--font-size-xl);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
   margin: 0;
   margin-bottom: var(--spacing-md);
@@ -132,7 +64,7 @@
 
 .midia-routine-item.completed {
   opacity: 0.6;
-  background: var(--bg-secondary);
+  background: var(--surface-checked-bg);
 }
 
 .midia-routine-item.week {
@@ -141,7 +73,7 @@
 
 .midia-routine-item:hover:not(.completed) {
   box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  transform: translateY(var(--motion-lift-md));
   border-color: var(--accent-primary);
 }
 
@@ -167,7 +99,7 @@
 }
 
 .midia-routine-check:hover:not(:disabled) {
-  transform: scale(1.1);
+  transform: scale(var(--motion-fab-scale));
 }
 
 .midia-check-icon {
@@ -206,12 +138,12 @@
   border-radius: 50%;
   flex-shrink: 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid var(--text-disabled);
 }
 
 .midia-routine-title {
   font-size: var(--font-size-lg);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
   margin: 0;
   flex: 1;
@@ -239,20 +171,20 @@
 .midia-routine-frequency {
   font-size: var(--font-size-sm);
   color: var(--text-primary);
-  background: var(--accent-primary);
-  color: white;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-sm);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .midia-routine-days {
   font-size: var(--font-size-sm);
   color: var(--text-primary);
-  background: var(--bg-secondary);
+  background: var(--input-surface);
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-sm);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .midia-routine-time,
@@ -262,7 +194,7 @@
   gap: var(--spacing-xs);
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
-  background: var(--bg-secondary);
+  background: var(--input-surface);
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-sm);
 }
@@ -278,10 +210,10 @@
   gap: var(--spacing-xs);
   font-size: var(--font-size-sm);
   color: var(--text-primary);
-  background: var(--bg-secondary);
+  background: var(--input-surface);
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-sm);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .midia-routine-streak-icon {
@@ -296,10 +228,10 @@
   gap: var(--spacing-xs);
   font-size: var(--font-size-sm);
   color: var(--text-primary);
-  background: var(--bg-secondary);
+  background: var(--input-surface);
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-sm);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .midia-routine-completions-icon {
@@ -309,22 +241,5 @@
 }
 
 /* Light Theme */
-[data-theme='light'] .midia-routine-item {
-  background: var(--bg-glass);
-  border-color: var(--border-glass);
-}
 
-[data-theme='light'] .midia-routine-item.completed {
-  background: rgba(0, 0, 0, 0.03);
-}
-
-[data-theme='light'] .midia-routine-frequency {
-  background: var(--accent-primary);
-}
-
-[data-theme='light'] .midia-routine-time,
-[data-theme='light'] .midia-routine-duration,
-[data-theme='light'] .midia-routine-streak {
-  background: rgba(0, 0, 0, 0.05);
-}
 

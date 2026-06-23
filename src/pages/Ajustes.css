@@ -1,0 +1,60 @@
+.ajustes-static-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  min-height: 56px;
+  width: 100%;
+}
+
+.ajustes-profile-zone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+}
+
+.ajustes-profile-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+.ajustes-danger-zone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+}
+
+.ajustes-danger-divider {
+  height: 1px;
+  margin: 0 var(--spacing-lg);
+  background: var(--border-glass-light);
+}
+
+.ajustes-danger-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+/* Soft danger — copy + botón debajo (referencia Space Audit) */
+.ajustes-danger-button {
+  border-color: var(--color-danger-border-medium);
+  background: var(--color-danger-bg-soft-hover);
+  color: var(--color-danger-text-strong);
+  font-weight: var(--font-weight-semibold);
+}
+
+.ajustes-danger-button:hover:not(:disabled) {
+  background: var(--color-danger-bg-medium);
+  border-color: rgba(255, 59, 48, 0.7);
+}
+
+.ajustes-danger-button:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-danger-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}

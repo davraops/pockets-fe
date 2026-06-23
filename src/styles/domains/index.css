@@ -1,0 +1,13 @@
+/* Domain-level shared styles — imported via shared.css */
+@import './crud.css';
+@import './crud-list-rows.css';
+@import './crud-row-slots.css';
+@import './crud-hub-rows.css';
+@import './crud-card-rows.css';
+@import './crud-crypto-rows.css';
+@import './semantic-surfaces.css';
+@import './crud-forms.css';
+@import './crud-detail-cards.css';
+@import './crud-highlight-panels.css';
+@import './crud-workspace-controls.css';
+@import './crud-form-panels.css';

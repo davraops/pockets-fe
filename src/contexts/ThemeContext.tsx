@@ -1,6 +1,12 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-
-type Theme = 'dark' | 'light'
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react'
+import { api } from '../services/api'
+import {
+  type Theme,
+  getStoredTheme,
+  applyTheme,
+  syncUserThemeFromServer,
+  persistUserTheme,
+} from '../utils/userTheme'
 
 interface ThemeContextType {
   theme: Theme
@@ -10,31 +16,44 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
-const THEME_STORAGE_KEY = 'pockets-theme'
+export { ThemeContext }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    // Intentar obtener del localStorage
-    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null
-    if (savedTheme === 'dark' || savedTheme === 'light') {
-      // Aplicar inmediatamente al documento para evitar flash
-      document.documentElement.setAttribute('data-theme', savedTheme)
-      return savedTheme
-    }
-    // Por defecto, modo oscuro (ya que la app está diseñada así)
-    const defaultTheme: Theme = 'dark'
-    document.documentElement.setAttribute('data-theme', defaultTheme)
-    return defaultTheme
+  const [theme, setThemeState] = useState<Theme>(() => {
+    const stored = getStoredTheme()
+    applyTheme(stored)
+    return stored
   })
 
+  const setTheme = useCallback((next: Theme) => {
+    setThemeState(next)
+    applyTheme(next)
+  }, [])
+
   useEffect(() => {
-    // Aplicar tema al documento
-    document.documentElement.setAttribute('data-theme', theme)
-    localStorage.setItem(THEME_STORAGE_KEY, theme)
-  }, [theme])
+    const syncFromServer = () => {
+      void syncUserThemeFromServer().then(serverTheme => {
+        if (serverTheme) {
+          setTheme(serverTheme)
+        }
+      })
+    }
+
+    if (api.isAuthenticated()) {
+      syncFromServer()
+    }
+
+    window.addEventListener('pockets:auth-login', syncFromServer)
+    return () => window.removeEventListener('pockets:auth-login', syncFromServer)
+  }, [setTheme])
 
   const toggleTheme = () => {
-    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'))
+    setThemeState(prev => {
+      const next: Theme = prev === 'dark' ? 'light' : 'dark'
+      applyTheme(next)
+      void persistUserTheme(next)
+      return next
+    })
   }
 
   const value: ThemeContextType = {

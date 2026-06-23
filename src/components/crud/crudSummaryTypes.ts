@@ -1,0 +1,15 @@
+export type CrudSummaryTone =
+  | 'info'
+  | 'available'
+  | 'expense'
+  | 'income'
+  | 'positive'
+  | 'negative'
+  | 'savings'
+
+export interface CrudSummaryItem {
+  label: string
+  value: string | number
+  tone?: CrudSummaryTone
+  emphasis?: boolean
+}

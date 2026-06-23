@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { backToHubLabel } from '../constants/hubLabels'
 import { useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import BackspaceIcon from '@mui/icons-material/Backspace'
@@ -7,6 +8,7 @@ import CheckIcon from '@mui/icons-material/Check'
 import { useNotification } from '../contexts/NotificationContext'
 import './AppPage.css'
 import './Calculadora.css'
+import { devError } from '../utils/debugTools'
 
 function Calculadora() {
   const navigate = useNavigate()
@@ -16,83 +18,197 @@ function Calculadora() {
   const [operation, setOperation] = useState<string | null>(null)
   const [waitingForNewValue, setWaitingForNewValue] = useState(false)
   const [copied, setCopied] = useState(false)
+  const calculatorRef = useRef<HTMLDivElement>(null)
 
-  const inputNumber = (num: string) => {
+  const inputNumber = useCallback(
+    (num: string) => {
+      if (waitingForNewValue) {
+        setWaitingForNewValue(false)
+        setDisplay(num)
+        return
+      }
+      setDisplay(current => (current === '0' ? num : current + num))
+    },
+    [waitingForNewValue]
+  )
+
+  const inputDecimal = useCallback(() => {
     if (waitingForNewValue) {
-      setDisplay(num)
       setWaitingForNewValue(false)
-    } else {
-      setDisplay(display === '0' ? num : display + num)
-    }
-  }
-
-  const inputDecimal = () => {
-    if (waitingForNewValue) {
       setDisplay('0.')
-      setWaitingForNewValue(false)
-    } else if (display.indexOf('.') === -1) {
-      setDisplay(display + '.')
+      return
     }
-  }
+    setDisplay(current => (current.indexOf('.') === -1 ? `${current}.` : current))
+  }, [waitingForNewValue])
 
-  const clear = () => {
+  const clear = useCallback(() => {
     setDisplay('0')
     setPreviousValue(null)
     setOperation(null)
     setWaitingForNewValue(false)
-  }
+  }, [])
 
-  const backspace = () => {
-    if (display.length > 1) {
-      setDisplay(display.slice(0, -1))
-    } else {
-      setDisplay('0')
-    }
-  }
+  const backspace = useCallback(() => {
+    setDisplay(current => {
+      if (current.length > 1) {
+        return current.slice(0, -1)
+      }
+      return '0'
+    })
+  }, [])
 
-  const performOperation = (nextOperation: string) => {
-    const inputValue = parseFloat(display)
+  const toggleSign = useCallback(() => {
+    setDisplay(current => {
+      const value = parseFloat(current)
+      if (Number.isNaN(value) || value === 0) {
+        return current
+      }
+      return String(value * -1)
+    })
+  }, [])
 
-    if (previousValue === null) {
-      setPreviousValue(inputValue)
-    } else if (operation) {
-      const currentValue = previousValue || 0
-      const newValue = calculate(currentValue, inputValue, operation)
+  const applyPercent = useCallback(() => {
+    setDisplay(current => {
+      const value = parseFloat(current)
+      if (Number.isNaN(value)) {
+        return current
+      }
+      return String(value / 100)
+    })
+  }, [])
 
-      setDisplay(String(newValue))
-      setPreviousValue(newValue)
-    }
+  const tryCalculate = useCallback(
+    (firstValue: number, secondValue: number, currentOperation: string): number | null => {
+      if (currentOperation === '÷' && secondValue === 0) {
+        showNotification('No se puede dividir entre cero', 'warning')
+        return null
+      }
 
-    setWaitingForNewValue(true)
-    setOperation(nextOperation)
-  }
+      switch (currentOperation) {
+        case '+':
+          return firstValue + secondValue
+        case '-':
+          return firstValue - secondValue
+        case '×':
+          return firstValue * secondValue
+        case '÷':
+          return firstValue / secondValue
+        default:
+          return secondValue
+      }
+    },
+    [showNotification]
+  )
 
-  const calculate = (firstValue: number, secondValue: number, operation: string): number => {
-    switch (operation) {
-      case '+':
-        return firstValue + secondValue
-      case '-':
-        return firstValue - secondValue
-      case '×':
-        return firstValue * secondValue
-      case '÷':
-        return secondValue !== 0 ? firstValue / secondValue : 0
-      default:
-        return secondValue
-    }
-  }
+  const performOperation = useCallback(
+    (nextOperation: string) => {
+      const inputValue = parseFloat(display)
 
-  const handleEquals = () => {
+      if (previousValue === null) {
+        setPreviousValue(inputValue)
+      } else if (operation) {
+        const newValue = tryCalculate(previousValue, inputValue, operation)
+        if (newValue === null) {
+          return
+        }
+
+        setDisplay(String(newValue))
+        setPreviousValue(newValue)
+      }
+
+      setWaitingForNewValue(true)
+      setOperation(nextOperation)
+    },
+    [display, operation, previousValue, tryCalculate]
+  )
+
+  const handleEquals = useCallback(() => {
     const inputValue = parseFloat(display)
 
     if (previousValue !== null && operation) {
-      const newValue = calculate(previousValue, inputValue, operation)
+      const newValue = tryCalculate(previousValue, inputValue, operation)
+      if (newValue === null) {
+        return
+      }
       setDisplay(String(newValue))
       setPreviousValue(null)
       setOperation(null)
       setWaitingForNewValue(true)
     }
-  }
+  }, [display, operation, previousValue, tryCalculate])
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement
+      ) {
+        return
+      }
+
+      if (/^\d$/.test(event.key)) {
+        event.preventDefault()
+        inputNumber(event.key)
+        return
+      }
+
+      switch (event.key) {
+        case '.':
+        case ',':
+          event.preventDefault()
+          inputDecimal()
+          break
+        case '+':
+          event.preventDefault()
+          performOperation('+')
+          break
+        case '-':
+          event.preventDefault()
+          performOperation('-')
+          break
+        case '*':
+          event.preventDefault()
+          performOperation('×')
+          break
+        case '/':
+          event.preventDefault()
+          performOperation('÷')
+          break
+        case 'Enter':
+        case '=':
+          event.preventDefault()
+          handleEquals()
+          break
+        case 'Escape':
+          event.preventDefault()
+          clear()
+          break
+        case 'Backspace':
+          event.preventDefault()
+          backspace()
+          break
+        case '%':
+          event.preventDefault()
+          applyPercent()
+          break
+        default:
+          break
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [
+    applyPercent,
+    backspace,
+    clear,
+    handleEquals,
+    inputDecimal,
+    inputNumber,
+    performOperation,
+  ])
 
   const formatDisplay = (value: string): string => {
     // Limitar a 12 caracteres para que quepa en la pantalla
@@ -119,7 +235,7 @@ function Calculadora() {
         setCopied(false)
       }, 2000)
     } catch (err) {
-      console.error('Error al copiar:', err)
+      devError('Error al copiar:', err)
       showNotification('Error al copiar al portapapeles', 'error')
     }
   }
@@ -128,39 +244,58 @@ function Calculadora() {
     <div className="app-page-container">
       <div className="app-page-content calculadora-content">
         {/* Toolbar */}
-        <div className="calculadora-toolbar">
+        <div className="app-toolbar">
           <button
-            className="calculadora-toolbar-button"
+            className="app-toolbar-button"
             onClick={() => navigate('/registros')}
-            aria-label="Volver"
+            aria-label={backToHubLabel('registros')}
             type="button"
           >
-            <ArrowBackIcon className="calculadora-toolbar-icon" />
+            <ArrowBackIcon className="app-toolbar-icon" />
           </button>
         </div>
 
-        <h1 className="calculadora-page-title">Calculadora</h1>
+        <h1 className="app-page-title">Calculadora</h1>
 
         {/* Calculadora */}
-        <div className="calculadora-container">
-          {/* Display */}
-          <div className="calculadora-display">
-            <div className="calculadora-display-content">
-              <div className="calculadora-display-value">{formatDisplay(display)}</div>
-              <button
-                className="calculadora-copy-button"
-                onClick={copyToClipboard}
-                aria-label="Copiar número"
-                type="button"
-                title="Copiar al portapapeles"
-              >
-                {copied ? (
-                  <CheckIcon className="calculadora-copy-icon" />
-                ) : (
-                  <ContentCopyIcon className="calculadora-copy-icon" />
-                )}
-              </button>
-            </div>
+        <div className="calculadora-container" ref={calculatorRef} tabIndex={-1}>
+        {/* Display */}
+        <div className="calculadora-display">
+          <div className="calculadora-display-content">
+            <div className="calculadora-display-value">{formatDisplay(display)}</div>
+            <button
+              className="calculadora-copy-button"
+              onClick={copyToClipboard}
+              aria-label="Copiar número"
+              type="button"
+              title="Copiar al portapapeles"
+            >
+              {copied ? (
+                <CheckIcon className="calculadora-copy-icon" />
+              ) : (
+                <ContentCopyIcon className="calculadora-copy-icon" />
+              )}
+            </button>
+          </div>
+        </div>
+
+          <div className="calculadora-shortcuts">
+            <button
+              type="button"
+              className="calculadora-shortcut-button"
+              onClick={toggleSign}
+              aria-label="Cambiar signo"
+            >
+              ±
+            </button>
+            <button
+              type="button"
+              className="calculadora-shortcut-button"
+              onClick={applyPercent}
+              aria-label="Porcentaje"
+            >
+              %
+            </button>
           </div>
 
           {/* Botones */}
@@ -316,3 +451,4 @@ function Calculadora() {
 }
 
 export default Calculadora
+

@@ -1,0 +1,95 @@
+/* Semantic surface utilities — priority badges, tabs, alerts (token-driven) */
+
+.semantic-priority-high {
+  background: var(--priority-high-bg);
+  border: 2px solid var(--priority-high-border);
+  color: var(--priority-high-text);
+}
+
+.semantic-priority-medium {
+  background: var(--priority-medium-bg);
+  border: 2px solid var(--priority-medium-border);
+  color: var(--priority-medium-text);
+}
+
+.semantic-priority-low {
+  background: var(--priority-low-bg);
+  border: 2px solid var(--priority-low-border);
+  color: var(--priority-low-text);
+}
+
+.semantic-badge-success {
+  background: var(--badge-success-bg);
+  border: 1px solid var(--badge-success-border);
+}
+
+.semantic-badge-info {
+  background: var(--badge-info-bg);
+  border: 1px solid var(--badge-info-border);
+}
+
+.semantic-badge-warning {
+  background: var(--badge-warning-bg);
+  border: 1px solid var(--badge-warning-border);
+}
+
+.semantic-alert-warning {
+  background: var(--alert-warning-bg);
+  border: 1px solid var(--alert-warning-border);
+  box-shadow: var(--alert-warning-shadow);
+}
+
+.semantic-tab-active {
+  background: var(--tab-active-bg);
+  color: var(--tab-active-text);
+  box-shadow: var(--tab-active-shadow);
+}
+
+.semantic-input-surface {
+  background: var(--input-surface);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
+}
+
+.semantic-input-surface:focus {
+  outline: none;
+  background: var(--input-surface-focus);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--input-focus-ring);
+}
+
+.semantic-highlight-success {
+  color: var(--highlight-success-text);
+  background: var(--highlight-success-bg);
+  border-color: var(--highlight-success-border);
+}
+
+.semantic-surface-success {
+  background: var(--surface-success-bg);
+  border-color: var(--surface-success-border);
+  box-shadow: var(--surface-success-shadow);
+}
+
+.semantic-chip-info {
+  color: var(--chip-info-text);
+  background: var(--chip-info-bg);
+  border: 1px solid var(--chip-info-border);
+}
+
+.semantic-btn-icon {
+  background: transparent;
+  border: 1px solid var(--btn-icon-border);
+  color: var(--btn-icon-color);
+}
+
+.semantic-btn-icon:hover {
+  background: var(--btn-icon-hover-bg);
+  border-color: var(--btn-icon-hover-border);
+  color: var(--btn-icon-hover-color);
+}
+
+.semantic-btn-icon--danger:hover {
+  background: var(--btn-danger-hover-bg);
+  border-color: var(--btn-danger-hover-border);
+  color: var(--btn-danger-hover-text);
+}

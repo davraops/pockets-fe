@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { backToHubLabel } from '../constants/hubLabels'
 import { useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import RepeatIcon from '@mui/icons-material/Repeat'
@@ -11,9 +12,13 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import AddIcon from '@mui/icons-material/Add'
 import { api } from '../services/api'
+import { devError, isDebugToolsEnabled, isDestructiveDebugEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
+import { useConfirm } from '../contexts/ConfirmContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
+import ModalOverlay from '../components/ModalOverlay'
+import ListSkeleton from '../components/ListSkeleton'
 import './Rutinas.css'
 
 // Interfaz que coincide con la respuesta de la API
@@ -43,6 +48,7 @@ interface RoutineAPI {
 function Rutinas() {
   const navigate = useNavigate()
   const { showNotification } = useNotification()
+  const { confirm } = useConfirm()
   const [routines, setRoutines] = useState<RoutineAPI[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -52,6 +58,9 @@ function Rutinas() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const titleRef = useRef<HTMLInputElement>(null)
+  const dayOfMonthRef = useRef<HTMLInputElement>(null)
+  const daysOfWeekRef = useRef<HTMLDivElement>(null)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -95,8 +104,7 @@ function Rutinas() {
         // Normalizar is_active: asegurar que sea boolean
         const normalizedRoutines = response.routines.map(routine => ({
           ...routine,
-          is_active:
-            routine.is_active === true || routine.is_active === 'true' || routine.is_active === 1,
+          is_active: routine.is_active === true || routine.is_active === 'true' || routine.is_active === 1
         }))
         setRoutines(normalizedRoutines)
       } else {
@@ -165,9 +173,7 @@ function Rutinas() {
     setFormErrors({})
   }
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
     const checked = (e.target as HTMLInputElement).checked
 
@@ -222,21 +228,26 @@ function Rutinas() {
       errors.title = 'El título es requerido'
     }
 
-    if (
-      formData.frequency === 'weekly' &&
-      (!formData.days_of_week || formData.days_of_week.length === 0)
-    ) {
+    if (formData.frequency === 'weekly' && (!formData.days_of_week || formData.days_of_week.length === 0)) {
       errors.days_of_week = 'Debes seleccionar al menos un día de la semana'
     }
 
-    if (
-      formData.frequency === 'monthly' &&
-      (formData.day_of_month === null || formData.day_of_month === undefined)
-    ) {
+    if (formData.frequency === 'monthly' && (formData.day_of_month === null || formData.day_of_month === undefined)) {
       errors.day_of_month = 'Debes seleccionar un día del mes'
     }
 
     setFormErrors(errors)
+    if (Object.keys(errors).length > 0) {
+      queueMicrotask(() => {
+        if (errors.title) {
+          titleRef.current?.focus()
+        } else if (errors.days_of_week) {
+          daysOfWeekRef.current?.querySelector('button')?.focus()
+        } else if (errors.day_of_month) {
+          dayOfMonthRef.current?.focus()
+        }
+      })
+    }
     return Object.keys(errors).length === 0
   }
 
@@ -284,10 +295,10 @@ function Rutinas() {
       if (selectedRoutine) {
         // Modo edición
         const updateResponse = await api.updateRoutine(selectedRoutine.id, routineData)
-
+        
         // Recargar todas las rutinas
         await loadRoutines()
-
+        
         // Recargar la rutina específica para actualizar el modal
         const updatedRoutineResponse = await api.getRoutines(selectedRoutine.id)
         if (updatedRoutineResponse.routines && updatedRoutineResponse.routines.length > 0) {
@@ -300,9 +311,7 @@ function Rutinas() {
             frequency: updatedRoutine.frequency,
             days_of_week: updatedRoutine.days_of_week || [],
             day_of_month: updatedRoutine.day_of_month ?? null,
-            scheduled_time: updatedRoutine.scheduled_time
-              ? updatedRoutine.scheduled_time.slice(0, 5)
-              : '',
+            scheduled_time: updatedRoutine.scheduled_time ? updatedRoutine.scheduled_time.slice(0, 5) : '',
             color: updatedRoutine.color || '#007AFF',
             duration: updatedRoutine.duration ?? null,
           })
@@ -311,15 +320,15 @@ function Rutinas() {
       } else {
         // Modo creación
         const createResponse = await api.createRoutine(routineData)
-
+        
         // Recargar todas las rutinas
         await loadRoutines()
-
+        
         // Cerrar el modal
         handleCloseDetailModal()
         showNotification('Rutina creada exitosamente', 'success')
       }
-
+      
       setIsEditMode(false)
       showNotification('Rutina actualizada exitosamente', 'success')
     } catch (err: any) {
@@ -336,11 +345,7 @@ function Rutinas() {
   const handleDelete = async () => {
     if (!selectedRoutine) return
 
-    if (
-      !window.confirm(
-        '¿Estás seguro de que quieres eliminar esta rutina? Esta acción es irreversible.'
-      )
-    ) {
+    if (!(await confirm({ message: '¿Estás seguro de que quieres eliminar esta rutina? Esta acción es irreversible.', variant: 'danger' }))) {
       return
     }
 
@@ -376,7 +381,7 @@ function Rutinas() {
 
   const formatDaysOfWeek = (days: number[] | null | undefined): string => {
     if (!days || days.length === 0) return ''
-
+    
     const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
     const sortedDays = [...days].sort((a, b) => a - b)
     return sortedDays.map(day => dayNames[day]).join(', ')
@@ -399,6 +404,7 @@ function Rutinas() {
 
   // Función de debug para crear rutinas dummy
   const handleDebugCreateRoutines = async () => {
+    if (!isDebugToolsEnabled()) return
     try {
       setIsLoading(true)
       const demoRoutines = [
@@ -487,7 +493,7 @@ function Rutinas() {
 
       const today = new Date()
       today.setHours(0, 0, 0, 0)
-
+      
       const getDateString = (daysAgo: number) => {
         const date = new Date(today)
         date.setDate(date.getDate() - daysAgo)
@@ -498,14 +504,9 @@ function Rutinas() {
         return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
       }
 
-      for (const {
-        routine,
-        current_streak,
-        longest_streak,
-        completionsCount,
-      } of routinesWithStreaks) {
+      for (const { routine, current_streak, longest_streak, completionsCount } of routinesWithStreaks) {
         const response = await api.createRoutine(routine)
-
+        
         if (response.routine && response.routine.id) {
           // Crear completados para generar historial
           if (completionsCount > 0) {
@@ -556,7 +557,7 @@ function Rutinas() {
               }
             }
           }
-
+          
           // Actualizar directamente las rachas con valores inventados
           const updateData = {
             title: routine.title, // Campo válido requerido
@@ -577,7 +578,7 @@ function Rutinas() {
       setIsDebugModalOpen(false)
       showNotification('Rutinas demo creadas con rachas iniciadas', 'success')
     } catch (err: any) {
-      console.error('Error al crear rutinas demo:', err)
+      devError('Error al crear rutinas demo:', err)
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al crear las rutinas demo. Por favor, intenta de nuevo.'
@@ -589,10 +590,9 @@ function Rutinas() {
   }
 
   const handleDeleteAllRoutines = async () => {
+    if (!isDestructiveDebugEnabled()) return
     if (
-      window.confirm(
-        '¿Estás seguro de que quieres eliminar TODAS las rutinas y sus completaciones? Esta acción es irreversible.'
-      )
+      (await confirm({ message: '¿Estás seguro de que quieres eliminar TODAS las rutinas y sus completaciones? Esta acción es irreversible.', variant: 'danger' }))
     ) {
       try {
         setIsLoading(true)
@@ -612,163 +612,192 @@ function Rutinas() {
     }
   }
 
+  const calculateHighlights = () => {
+    const total = routines.length
+    const diarias = routines.filter(r => r.frequency === 'daily').length
+    const semanales = routines.filter(r => r.frequency === 'weekly').length
+    const conRacha = routines.filter(r => (r.current_streak ?? 0) > 0).length
+
+    return { total, diarias, semanales, conRacha }
+  }
+
+  const highlights = calculateHighlights()
+
+  const formatRoutineMeta = (routine: RoutineAPI) => {
+    const parts = [formatFrequency(routine.frequency)]
+    if (routine.frequency === 'weekly' && routine.days_of_week?.length) {
+      parts.push(formatDaysOfWeek(routine.days_of_week))
+    }
+    if (routine.frequency === 'monthly' && routine.day_of_month != null) {
+      parts.push(formatDayOfMonth(routine.day_of_month))
+    }
+    if (routine.scheduled_time) parts.push(routine.scheduled_time.slice(0, 5))
+    return parts.join(' • ')
+  }
+
   return (
     <div className="app-page-container">
-      <div className="app-page-content rutinas-content">
+      <div className="app-page-content app-page-content-wide crud-page-content rutinas-content">
         {/* Toolbar */}
-        <div className="rutinas-toolbar">
+        <div className="app-toolbar">
           <button
-            className="rutinas-toolbar-button"
+            className="app-toolbar-button"
             onClick={() => navigate('/tiempo')}
-            aria-label="Volver"
+            aria-label={backToHubLabel('tiempo')}
             type="button"
           >
-            <ArrowBackIcon className="rutinas-toolbar-icon" />
+            <ArrowBackIcon className="app-toolbar-icon" />
           </button>
 
-          <div className="rutinas-toolbar-menu-container" ref={menuRef}>
-            <button
-              className="rutinas-toolbar-button"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label="Menú de acciones"
-              type="button"
-            >
-              <MoreVertIcon className="rutinas-toolbar-icon" />
-            </button>
-
-            {isMenuOpen && (
-              <div className="rutinas-menu">
+          <div className="app-toolbar-menu-container" ref={menuRef}>
+            {isDebugToolsEnabled() && (
+              <>
                 <button
-                  className="rutinas-menu-item"
-                  onClick={() => {
-                    handleOpenCreateModal()
-                    setIsMenuOpen(false)
-                  }}
+                  className="app-toolbar-button"
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  aria-label="Opciones de depuración"
+                  aria-expanded={isMenuOpen}
                   type="button"
                 >
-                  <AddIcon className="rutinas-menu-icon" />
-                  <span>Agregar Rutina</span>
+                  <MoreVertIcon className="app-toolbar-icon" />
                 </button>
-                {api.isTestUser() && (
-                  <button
-                    className="rutinas-menu-item"
-                    onClick={() => {
-                      setIsDebugModalOpen(true)
-                      setIsMenuOpen(false)
-                    }}
-                    type="button"
-                  >
-                    <span>🐛 Debug</span>
-                  </button>
+                {isMenuOpen && (
+                  <div className="crud-dropdown-menu">
+                    <button
+                      className="crud-dropdown-menu-item"
+                      onClick={() => {
+                        setIsDebugModalOpen(true)
+                        setIsMenuOpen(false)
+                      }}
+                      type="button"
+                    >
+                      <span>🐛 Debug</span>
+                    </button>
+                  </div>
                 )}
-              </div>
+              </>
             )}
           </div>
         </div>
 
-        <h1 className="rutinas-page-title">Rutinas</h1>
-        <p className="rutinas-page-subtitle">Gestiona tus hábitos y rutinas</p>
+        <h1 className="app-page-title">Rutinas</h1>
+
+        <div className="crud-summary-strip" role="region" aria-label="Resumen de rutinas">
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Total</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--info">
+              {highlights.total}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Diarias</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--available">
+              {highlights.diarias}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Semanales</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--info">
+              {highlights.semanales}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Con racha</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--info">
+              {highlights.conRacha}
+            </span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+          onClick={handleOpenCreateModal}
+          aria-label="Agregar rutina"
+        >
+          <AddIcon aria-hidden={true} />
+          Agregar rutina
+        </button>
 
         {/* Lista de Rutinas */}
-        {isLoading ? (
-          <div className="rutinas-empty-state">
-            <p>Cargando rutinas...</p>
+        {isLoading && routines.length === 0 ? (
+          <div className="glass-group">
+            <ListSkeleton variant="inset-row" count={4} aria-label="Cargando rutinas" />
           </div>
-        ) : error ? (
-          <div className="rutinas-empty-state">
-            <p>{error}</p>
+        ) : error && routines.length === 0 ? (
+          <div className="loader-container">
+            <div className="loader finanzas-stats-error-panel">
+              <p className="loader-text loader-text--error" role="alert">
+                {error}
+              </p>
+              <button
+                type="button"
+                className="btn-base btn-secondary finanzas-stats-retry-button"
+                onClick={() => void loadRoutines()}
+                aria-label="Reintentar cargar rutinas"
+              >
+                <span>Reintentar</span>
+              </button>
+            </div>
           </div>
         ) : routines.length === 0 ? (
-          <div className="rutinas-empty-state">
+          <div className="empty-state">
             <RepeatIcon className="empty-state-icon" />
-            <p className="empty-state-text">No hay rutinas registradas aún.</p>
+            <p className="empty-text">No hay rutinas registradas aún</p>
+            <p className="empty-subtext">Usa el botón de arriba para agregar la primera</p>
           </div>
         ) : (
-          <div className="rutinas-list">
+          <div className="glass-group">
             {routines.map(routine => (
-              <div
+              <button
                 key={routine.id}
-                className="rutinas-item"
+                type="button"
+                className="crud-inset-row crud-row-accent-green"
                 onClick={() => handleOpenDetailModal(routine)}
+                aria-label={`Ver rutina ${routine.title}`}
               >
-                <div className="rutinas-item-content">
-                  <div className="rutinas-item-header">
-                    <div className="rutinas-item-title-section">
+                <div className="crud-row-content">
+                  <div className="crud-row-header">
+                    <div className="crud-row-title-section">
                       {routine.color && (
-                        <div
-                          className="rutinas-item-color-indicator"
-                          style={{ backgroundColor: routine.color }}
-                        />
+                        <span
+                          className="crud-row-icon"
+                          style={{ color: routine.color }}
+                          aria-hidden="true"
+                        >
+                          ●
+                        </span>
                       )}
-                      <h3 className="rutinas-item-title">{routine.title}</h3>
+                      <span className="crud-row-title">{routine.title}</span>
                     </div>
-                    <ChevronRightIcon className="rutinas-item-chevron" />
+                    {(routine.current_streak ?? 0) > 0 && (
+                      <span className="crud-row-value">{routine.current_streak}d</span>
+                    )}
+                    <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
                   </div>
+                  <p className="crud-row-meta">{formatRoutineMeta(routine)}</p>
                   {routine.description && (
-                    <p className="rutinas-item-description">{routine.description}</p>
+                    <p className="crud-row-preview">{routine.description}</p>
                   )}
-                  <div className="rutinas-item-meta">
-                    <span className="rutinas-item-frequency">
-                      {formatFrequency(routine.frequency)}
-                    </span>
-                    {routine.frequency === 'weekly' &&
-                      routine.days_of_week &&
-                      routine.days_of_week.length > 0 && (
-                        <span className="rutinas-item-days">
-                          {formatDaysOfWeek(routine.days_of_week)}
-                        </span>
-                      )}
-                    {routine.frequency === 'monthly' &&
-                      routine.day_of_month !== null &&
-                      routine.day_of_month !== undefined && (
-                        <span className="rutinas-item-day-month">
-                          {formatDayOfMonth(routine.day_of_month)}
-                        </span>
-                      )}
-                    {routine.scheduled_time && (
-                      <span className="rutinas-item-time">
-                        <AccessTimeIcon className="rutinas-item-time-icon" />
-                        {routine.scheduled_time.slice(0, 5)}
-                      </span>
-                    )}
-                    {routine.duration !== null && routine.duration !== undefined && (
-                      <span className="rutinas-item-duration">{routine.duration} min</span>
-                    )}
-                  </div>
-                  {(routine.current_streak !== undefined && routine.current_streak > 0) ||
-                  (routine.total_completions !== undefined && routine.total_completions > 0) ? (
-                    <div className="rutinas-item-stats">
-                      {routine.current_streak !== undefined && routine.current_streak > 0 && (
-                        <span className="rutinas-item-streak">
-                          <LocalFireDepartmentIcon className="rutinas-item-streak-icon" />
-                          {routine.current_streak} días
-                        </span>
-                      )}
-                      {routine.total_completions !== undefined && routine.total_completions > 0 && (
-                        <span className="rutinas-item-completions">
-                          <CheckCircleIcon className="rutinas-item-completions-icon" />
-                          {routine.total_completions} completados
-                        </span>
-                      )}
-                    </div>
-                  ) : null}
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         )}
 
         {/* Modal de Detalle/Edición/Creación */}
         {isDetailModalOpen && (
-          <div className="rutinas-modal-overlay" onClick={handleCloseDetailModal}>
-            <div className="rutinas-modal" onClick={e => e.stopPropagation()}>
-              <div className="rutinas-modal-header">
-                <h2 className="rutinas-modal-title">
-                  {selectedRoutine
-                    ? isEditMode
-                      ? 'Editar Rutina'
-                      : selectedRoutine.title
-                    : 'Crear Rutina'}
+          <ModalOverlay onClose={handleCloseDetailModal} className="modal-overlay">
+            <div className="modal-panel" onClick={e => e.stopPropagation()}>
+              <div className="modal-panel-header">
+                <h2 className="modal-panel-title" id="modal-panel-title-selectedroutine-iseditmode-editar-rutina-selectedroutine-title-crear-rutina">
+                  {selectedRoutine 
+                    ? (isEditMode ? 'Editar Rutina' : selectedRoutine.title)
+                    : 'Crear Rutina'
+                  }
                 </h2>
                 <div className="rutinas-modal-actions">
                   {selectedRoutine && !isEditMode && (
@@ -793,7 +822,7 @@ function Rutinas() {
                     </>
                   )}
                   <button
-                    className="rutinas-modal-close"
+                    className="modal-panel-close"
                     onClick={handleCloseDetailModal}
                     aria-label="Cerrar"
                     type="button"
@@ -803,8 +832,8 @@ function Rutinas() {
                 </div>
               </div>
 
-              {isEditMode || !selectedRoutine ? (
-                <form onSubmit={handleSubmit} className="rutinas-modal-form">
+              {(isEditMode || !selectedRoutine) ? (
+                <form onSubmit={handleSubmit} className="rutinas-modal-form" noValidate>
                   {/* Advertencia sobre cambios - Solo en modo edición */}
                   {selectedRoutine && isEditMode && (
                     <div className="rutinas-warning-message">
@@ -812,34 +841,39 @@ function Rutinas() {
                       <div className="rutinas-warning-content">
                         <p className="rutinas-warning-title">Advertencia sobre cambios</p>
                         <p className="rutinas-warning-text">
-                          Modificar la frecuencia, días de la semana o día del mes de esta rutina
-                          puede afectar tus rachas existentes. Recuerda que una rutina es un
-                          compromiso contigo mismo para cumplirla desde el principio.
+                          Modificar la frecuencia, días de la semana o día del mes de esta rutina puede afectar tus rachas existentes. 
+                          Recuerda que una rutina es un compromiso contigo mismo para cumplirla desde el principio.
                         </p>
                       </div>
                     </div>
                   )}
 
                   <div className="rutinas-form-group">
-                    <label htmlFor="title" className="rutinas-form-label">
+                    <label htmlFor="title" className="form-label-base">
                       Título *
                     </label>
                     <input
+                      ref={titleRef}
                       type="text"
                       id="title"
                       name="title"
                       value={formData.title}
                       onChange={handleChange}
-                      className={`rutinas-form-input ${formErrors.title ? 'error' : ''}`}
+                      className={`form-input-base ${formErrors.title  ? 'input-error' : ''}`}
                       placeholder="Ej: Ejercicio matutino"
+                      autoFocus={!selectedRoutine}
+                      aria-invalid={!!formErrors.title}
+                      {...(formErrors.title ? { 'aria-describedby': 'title-error' } : {})}
                     />
                     {formErrors.title && (
-                      <span className="rutinas-form-error">{formErrors.title}</span>
+                      <span id="title-error" className="rutinas-form-error" role="alert">
+                        {formErrors.title}
+                      </span>
                     )}
                   </div>
 
                   <div className="rutinas-form-group">
-                    <label htmlFor="description" className="rutinas-form-label">
+                    <label htmlFor="description" className="form-label-base">
                       Descripción
                     </label>
                     <textarea
@@ -847,14 +881,14 @@ function Rutinas() {
                       name="description"
                       value={formData.description}
                       onChange={handleChange}
-                      className="rutinas-form-textarea"
+                      className="form-textarea-base"
                       rows={3}
                       placeholder="Descripción de la rutina (opcional)"
                     />
                   </div>
 
                   <div className="rutinas-form-group">
-                    <label htmlFor="frequency" className="rutinas-form-label">
+                    <label htmlFor="frequency" className="form-label-base">
                       Frecuencia *
                     </label>
                     <select
@@ -862,7 +896,7 @@ function Rutinas() {
                       name="frequency"
                       value={formData.frequency}
                       onChange={handleChange}
-                      className={`rutinas-form-select ${formErrors.frequency ? 'error' : ''}`}
+                      className={`form-select-base ${formErrors.frequency ? 'input-error' : ''}`}
                     >
                       <option value="daily">Diaria</option>
                       <option value="weekly">Semanal</option>
@@ -872,8 +906,8 @@ function Rutinas() {
 
                   {formData.frequency === 'weekly' && (
                     <div className="rutinas-form-group">
-                      <label className="rutinas-form-label">Días de la semana *</label>
-                      <div className="rutinas-days-selector">
+                      <label className="form-label-base">Días de la semana *</label>
+                      <div id="days-of-week-group" ref={daysOfWeekRef} className="rutinas-days-selector">
                         {daysOfWeekOptions.map(day => (
                           <button
                             key={day.value}
@@ -886,17 +920,20 @@ function Rutinas() {
                         ))}
                       </div>
                       {formErrors.days_of_week && (
-                        <span className="rutinas-form-error">{formErrors.days_of_week}</span>
+                        <span id="days-of-week-error" className="rutinas-form-error" role="alert">
+                          {formErrors.days_of_week}
+                        </span>
                       )}
                     </div>
                   )}
 
                   {formData.frequency === 'monthly' && (
                     <div className="rutinas-form-group">
-                      <label htmlFor="day_of_month" className="rutinas-form-label">
+                      <label htmlFor="day_of_month" className="form-label-base">
                         Día del mes *
                       </label>
                       <input
+                        ref={dayOfMonthRef}
                         type="number"
                         id="day_of_month"
                         name="day_of_month"
@@ -904,17 +941,21 @@ function Rutinas() {
                         onChange={handleChange}
                         min="1"
                         max="31"
-                        className={`rutinas-form-input ${formErrors.day_of_month ? 'error' : ''}`}
+                        className={`form-input-base ${formErrors.day_of_month  ? 'input-error' : ''}`}
                         placeholder="1-31"
+                        aria-invalid={!!formErrors.day_of_month}
+                        {...(formErrors.day_of_month ? { 'aria-describedby': 'day-of-month-error' } : {})}
                       />
                       {formErrors.day_of_month && (
-                        <span className="rutinas-form-error">{formErrors.day_of_month}</span>
+                        <span id="day-of-month-error" className="rutinas-form-error" role="alert">
+                          {formErrors.day_of_month}
+                        </span>
                       )}
                     </div>
                   )}
 
                   <div className="rutinas-form-group">
-                    <label htmlFor="scheduled_time" className="rutinas-form-label">
+                    <label htmlFor="scheduled_time" className="form-label-base">
                       Hora programada
                     </label>
                     <input
@@ -923,12 +964,12 @@ function Rutinas() {
                       name="scheduled_time"
                       value={formData.scheduled_time}
                       onChange={handleChange}
-                      className="rutinas-form-input"
+                      className="form-input-base"
                     />
                   </div>
 
                   <div className="rutinas-form-group">
-                    <label htmlFor="duration" className="rutinas-form-label">
+                    <label htmlFor="duration" className="form-label-base">
                       Duración esperada (minutos)
                     </label>
                     <input
@@ -938,7 +979,7 @@ function Rutinas() {
                       value={formData.duration ?? ''}
                       onChange={handleChange}
                       min="0"
-                      className="rutinas-form-input"
+                      className="form-input-base"
                       placeholder="Ej: 30"
                     />
                     <p className="rutinas-form-help-text">
@@ -947,7 +988,7 @@ function Rutinas() {
                   </div>
 
                   <div className="rutinas-form-group">
-                    <label htmlFor="color" className="rutinas-form-label">
+                    <label htmlFor="color" className="form-label-base">
                       Color
                     </label>
                     <input
@@ -973,13 +1014,10 @@ function Rutinas() {
                       className="rutinas-form-button rutinas-form-button-primary"
                       disabled={isLoading}
                     >
-                      {isLoading
-                        ? selectedRoutine
-                          ? 'Guardando...'
-                          : 'Creando...'
-                        : selectedRoutine
-                          ? 'Guardar Cambios'
-                          : 'Crear Rutina'}
+                      {isLoading 
+                        ? (selectedRoutine ? 'Guardando...' : 'Creando...') 
+                        : (selectedRoutine ? 'Guardar Cambios' : 'Crear Rutina')
+                      }
                     </button>
                   </div>
                 </form>
@@ -994,37 +1032,27 @@ function Rutinas() {
 
                   <div className="rutinas-detail-section">
                     <h3 className="rutinas-detail-label">Frecuencia</h3>
-                    <p className="rutinas-detail-value">
-                      {formatFrequency(selectedRoutine.frequency)}
-                    </p>
+                    <p className="rutinas-detail-value">{formatFrequency(selectedRoutine.frequency)}</p>
                   </div>
 
-                  {selectedRoutine.frequency === 'weekly' &&
-                    selectedRoutine.days_of_week &&
-                    selectedRoutine.days_of_week.length > 0 && (
-                      <div className="rutinas-detail-section">
-                        <h3 className="rutinas-detail-label">Días de la semana</h3>
-                        <p className="rutinas-detail-value">
-                          {formatDaysOfWeek(selectedRoutine.days_of_week)}
-                        </p>
-                      </div>
-                    )}
+                  {selectedRoutine.frequency === 'weekly' && selectedRoutine.days_of_week && selectedRoutine.days_of_week.length > 0 && (
+                    <div className="rutinas-detail-section">
+                      <h3 className="rutinas-detail-label">Días de la semana</h3>
+                      <p className="rutinas-detail-value">{formatDaysOfWeek(selectedRoutine.days_of_week)}</p>
+                    </div>
+                  )}
 
-                  {selectedRoutine.frequency === 'monthly' &&
-                    selectedRoutine.day_of_month !== null &&
-                    selectedRoutine.day_of_month !== undefined && (
-                      <div className="rutinas-detail-section">
-                        <h3 className="rutinas-detail-label">Día del mes</h3>
-                        <p className="rutinas-detail-value">Día {selectedRoutine.day_of_month}</p>
-                      </div>
-                    )}
+                  {selectedRoutine.frequency === 'monthly' && selectedRoutine.day_of_month !== null && selectedRoutine.day_of_month !== undefined && (
+                    <div className="rutinas-detail-section">
+                      <h3 className="rutinas-detail-label">Día del mes</h3>
+                      <p className="rutinas-detail-value">Día {selectedRoutine.day_of_month}</p>
+                    </div>
+                  )}
 
                   {selectedRoutine.scheduled_time && (
                     <div className="rutinas-detail-section">
                       <h3 className="rutinas-detail-label">Hora programada</h3>
-                      <p className="rutinas-detail-value">
-                        {selectedRoutine.scheduled_time.slice(0, 5)}
-                      </p>
+                      <p className="rutinas-detail-value">{selectedRoutine.scheduled_time.slice(0, 5)}</p>
                     </div>
                   )}
 
@@ -1040,51 +1068,37 @@ function Rutinas() {
                       <h3 className="rutinas-detail-label">Racha actual</h3>
                       <p className="rutinas-detail-value rutinas-detail-streak">
                         <LocalFireDepartmentIcon className="rutinas-detail-streak-icon" />
-                        {selectedRoutine.current_streak !== undefined
-                          ? selectedRoutine.current_streak
-                          : 0}{' '}
-                        días
+                        {selectedRoutine.current_streak !== undefined ? selectedRoutine.current_streak : 0} días
                       </p>
                     </div>
                     <div className="rutinas-detail-stat">
                       <h3 className="rutinas-detail-label">Racha más larga</h3>
                       <p className="rutinas-detail-value">
-                        {selectedRoutine.longest_streak !== undefined
-                          ? selectedRoutine.longest_streak
-                          : 0}{' '}
-                        días
+                        {selectedRoutine.longest_streak !== undefined ? selectedRoutine.longest_streak : 0} días
                       </p>
                     </div>
                     <div className="rutinas-detail-stat">
                       <h3 className="rutinas-detail-label">Total completados</h3>
                       <p className="rutinas-detail-value rutinas-detail-completions">
                         <CheckCircleIcon className="rutinas-detail-completions-icon" />
-                        {selectedRoutine.total_completions !== undefined
-                          ? selectedRoutine.total_completions
-                          : 0}
+                        {selectedRoutine.total_completions !== undefined ? selectedRoutine.total_completions : 0}
                       </p>
                     </div>
-                    {selectedRoutine.completions_this_month !== undefined &&
-                      selectedRoutine.completions_this_month > 0 && (
-                        <div className="rutinas-detail-stat">
-                          <h3 className="rutinas-detail-label">Completados este mes</h3>
-                          <p className="rutinas-detail-value">
-                            {selectedRoutine.completions_this_month}
-                          </p>
-                        </div>
-                      )}
+                    {selectedRoutine.completions_this_month !== undefined && selectedRoutine.completions_this_month > 0 && (
+                      <div className="rutinas-detail-stat">
+                        <h3 className="rutinas-detail-label">Completados este mes</h3>
+                        <p className="rutinas-detail-value">{selectedRoutine.completions_this_month}</p>
+                      </div>
+                    )}
                     {selectedRoutine.last_completed_date && (
                       <div className="rutinas-detail-stat">
                         <h3 className="rutinas-detail-label">Último completado</h3>
                         <p className="rutinas-detail-value">
-                          {new Date(selectedRoutine.last_completed_date).toLocaleDateString(
-                            'es-ES',
-                            {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                            }
-                          )}
+                          {new Date(selectedRoutine.last_completed_date).toLocaleDateString('es-ES', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
                         </p>
                       </div>
                     )}
@@ -1092,17 +1106,17 @@ function Rutinas() {
                 </div>
               )}
             </div>
-          </div>
+        </ModalOverlay>
         )}
 
         {/* Modal de Debug */}
-        {isDebugModalOpen && (
-          <div className="rutinas-modal-overlay" onClick={() => setIsDebugModalOpen(false)}>
-            <div className="rutinas-modal" onClick={e => e.stopPropagation()}>
-              <div className="rutinas-modal-header">
-                <h2 className="rutinas-modal-title">Debug - Rutinas</h2>
+        {isDebugModalOpen && isDebugToolsEnabled() && (
+          <ModalOverlay onClose={() => setIsDebugModalOpen(false)} className="modal-overlay">
+            <div className="modal-panel" onClick={e => e.stopPropagation()}>
+              <div className="modal-panel-header">
+                <h2 className="modal-panel-title" id="modal-panel-title-debug-rutinas">Debug - Rutinas</h2>
                 <button
-                  className="rutinas-modal-close"
+                  className="modal-panel-close"
                   onClick={() => setIsDebugModalOpen(false)}
                   aria-label="Cerrar modal"
                   type="button"
@@ -1154,7 +1168,7 @@ function Rutinas() {
                 </div>
               </div>
             </div>
-          </div>
+          </ModalOverlay>
         )}
       </div>
     </div>

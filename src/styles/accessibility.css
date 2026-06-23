@@ -1,0 +1,81 @@
+/* P19 — Visual accessibility: focus, contrast, touch targets */
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: var(--spacing-md);
+  z-index: 10000;
+  padding: var(--spacing-sm) var(--spacing-md);
+  min-height: var(--touch-target-min);
+  display: inline-flex;
+  align-items: center;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  box-shadow: var(--shadow-md);
+}
+
+.skip-link:focus-visible {
+  top: var(--spacing-md);
+  outline: var(--focus-outline-width-contrast) solid var(--focus-outline-color-strong);
+  outline-offset: var(--focus-outline-offset);
+}
+
+/* Keyboard focus — FAB, tabs, transaction rows */
+[class$='-fab']:focus-visible,
+[class$='-empty-button']:focus-visible,
+[class$='-tab']:focus-visible,
+.crud-transaction-row:focus-visible,
+.modal-close:focus-visible,
+.theme-toggle-button:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+@media (prefers-contrast: more), (prefers-contrast: high) {
+  .glass-card,
+  .crud-card-row,
+  .crud-inset-row,
+  .crud-hub-row,
+  .crud-crypto-row,
+  .crud-transaction-row,
+  .hub-card,
+  .auth-card,
+  .modal-content,
+  .modal-panel,
+  .modal-content-base {
+    border-width: 2px;
+    border-color: var(--border-contrast-high);
+  }
+
+  .btn-base:focus-visible,
+  .form-input-base:focus-visible,
+  .form-textarea-base:focus-visible,
+  .form-select-base:focus-visible,
+  .crud-card-row:focus-visible,
+  .crud-inset-row:focus-visible,
+  .crud-hub-row:focus-visible,
+  .crud-crypto-row:focus-visible,
+  .crud-transaction-row:focus-visible,
+  .detail-button:focus-visible,
+  .app-toolbar-button:focus-visible,
+  .app-icon:focus-visible,
+  [class$='-fab']:focus-visible,
+  [class$='-empty-button']:focus-visible,
+  [class$='-tab']:focus-visible,
+  .modal-close:focus-visible,
+  .checkbox-label input[type='checkbox']:focus-visible {
+    outline-width: var(--focus-outline-width-contrast);
+    outline-color: var(--focus-outline-color-strong);
+  }
+
+  .form-input-base:focus-visible,
+  .form-textarea-base:focus-visible,
+  .form-select-base:focus-visible {
+    box-shadow: 0 0 0 var(--focus-outline-width-contrast) var(--input-focus-ring);
+  }
+}

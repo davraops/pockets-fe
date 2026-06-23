@@ -11,6 +11,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
+import { isDebugToolsEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
 import './AppPage.css'
 import './Deudas.css'
@@ -674,62 +675,45 @@ function Deudas() {
                 >
                   <ArrowBackIcon className="deudas-toolbar-icon" />
                 </button>
+                <button
+                  className="deudas-toolbar-button"
+                  onClick={toggleSortOrder}
+                  aria-label={sortOrder === 'desc' ? 'Ordenar tasa descendente' : 'Ordenar tasa ascendente'}
+                  type="button"
+                >
+                  {sortOrder === 'desc' ? (
+                    <ArrowDownwardIcon className="deudas-toolbar-icon" />
+                  ) : (
+                    <ArrowUpwardIcon className="deudas-toolbar-icon" />
+                  )}
+                </button>
                 <div className="deudas-toolbar-menu-container" ref={menuRef}>
-                  <button
-                    className="deudas-toolbar-button"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    aria-label="Opciones"
-                    aria-expanded={isMenuOpen}
-                    type="button"
-                  >
-                    <MoreVertIcon className="deudas-toolbar-icon" />
-                  </button>
-                  {isMenuOpen && (
-                    <div className="deudas-menu">
+                  {isDebugToolsEnabled() && (
+                    <>
                       <button
-                        className="deudas-menu-item"
-                        onClick={() => {
-                          setIsMenuOpen(false)
-                          handleOpenModal()
-                        }}
+                        className="deudas-toolbar-button"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        aria-label="Opciones de depuración"
+                        aria-expanded={isMenuOpen}
                         type="button"
                       >
-                        <AddIcon className="deudas-menu-icon" />
-                        <span>Agregar Deuda</span>
+                        <MoreVertIcon className="deudas-toolbar-icon" />
                       </button>
-                      <button
-                        className="deudas-menu-item"
-                        onClick={() => {
-                          setIsMenuOpen(false)
-                          toggleSortOrder()
-                        }}
-                        type="button"
-                      >
-                        {sortOrder === 'desc' ? (
-                          <>
-                            <ArrowDownwardIcon className="deudas-menu-icon" />
-                            <span>Tasa ↓</span>
-                          </>
-                        ) : (
-                          <>
-                            <ArrowUpwardIcon className="deudas-menu-icon" />
-                            <span>Tasa ↑</span>
-                          </>
-                        )}
-                      </button>
-                      {api.isTestUser() && (
-                        <button
-                          className="deudas-menu-item"
-                          onClick={() => {
-                            setIsMenuOpen(false)
-                            setIsDebugModalOpen(true)
-                          }}
-                          type="button"
-                        >
-                          <span>🐛 Debug</span>
-                        </button>
+                      {isMenuOpen && (
+                        <div className="deudas-menu">
+                          <button
+                            className="deudas-menu-item"
+                            onClick={() => {
+                              setIsMenuOpen(false)
+                              setIsDebugModalOpen(true)
+                            }}
+                            type="button"
+                          >
+                            <span>🐛 Debug</span>
+                          </button>
+                        </div>
                       )}
-                    </div>
+                    </>
                   )}
                 </div>
               </div>
@@ -737,27 +721,42 @@ function Deudas() {
               {/* Encabezado de Sección - HIG: Clear Navigation */}
               <h1 className="deudas-page-title">Deudas</h1>
 
-              {/* Resumen de deudas - HIG: Relevant Information Highlights */}
-              {debts.length > 0 && (
-                <div className="debts-summary-block">
-                  <div className="summary-item">
-                    <span className="summary-label">Total Adeudado</span>
-                    <span className="summary-value">{formatBalance(calculateTotalOwed())}</span>
-                  </div>
-                  <div className="summary-separator"></div>
-                  <div className="summary-item">
-                    <span className="summary-label">Deudas Activas</span>
-                    <span className="summary-value">{calculateActiveDebts()}</span>
-                  </div>
-                  <div className="summary-separator"></div>
-                  <div className="summary-item">
-                    <span className="summary-label">Tasa Promedio</span>
-                    <span className="summary-value">
-                      {calculateAverageInterestRate().toFixed(2)}%
-                    </span>
-                  </div>
+              <div
+                className="crud-summary-strip crud-summary-strip--danger"
+                role="region"
+                aria-label="Resumen de deudas"
+              >
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Total adeudado</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--danger">
+                    {formatBalance(calculateTotalOwed())}
+                  </span>
                 </div>
-              )}
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Activas</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
+                    {calculateActiveDebts()}
+                  </span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Tasa promedio</span>
+                  <span className="crud-summary-strip-value">
+                    {calculateAverageInterestRate().toFixed(2)}%
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+                onClick={handleOpenModal}
+                aria-label="Agregar deuda"
+              >
+                <AddIcon aria-hidden="true" />
+                Agregar deuda
+              </button>
 
               {/* Consejo de Pago - HIG: Clear Feedback */}
               {debts.length > 0 && (
@@ -786,7 +785,7 @@ function Deudas() {
                 <div className="empty-state">
                   <AccountBalanceIcon className="empty-icon" />
                   <p className="empty-text">No hay deudas registradas</p>
-                  <p className="empty-subtext">Agrega tu primera deuda</p>
+                  <p className="empty-subtext">Usa el botón de arriba para registrar la primera</p>
                 </div>
               ) : (
                 <div className="debts-list">
@@ -870,8 +869,8 @@ function Deudas() {
               sección <strong>Tarjetas Crédito</strong> en Finanzas.
             </div>
             <form className="modal-form" onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label htmlFor="concepto">Concepto *</label>
+              <div className="form-group-base">
+                <label htmlFor="concepto" className="form-label-base">Concepto *</label>
                 <input
                   type="text"
                   id="concepto"
@@ -880,14 +879,14 @@ function Deudas() {
                   onChange={handleChange}
                   required
                   placeholder="Ej: Préstamo personal"
-                  className={formErrors.concepto ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.concepto ? 'input-error' : ''}`}
                 />
                 {formErrors.concepto && (
                   <span className="error-message">{formErrors.concepto}</span>
                 )}
               </div>
-              <div className="form-group">
-                <label htmlFor="referencia">Referencia</label>
+              <div className="form-group-base">
+                <label htmlFor="referencia" className="form-label-base">Referencia</label>
                 <input
                   type="text"
                   id="referencia"
@@ -897,23 +896,23 @@ function Deudas() {
                   placeholder="Ej: REF-1234"
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="divisa">Divisa *</label>
+              <div className="form-group-base">
+                <label htmlFor="divisa" className="form-label-base">Divisa *</label>
                 <select
                   id="divisa"
                   name="divisa"
                   value={formData.divisa}
                   onChange={handleChange}
                   required
-                  className="form-select"
+                  className="form-select-base"
                 >
                   <option value="COP">COP</option>
                   <option value="USD">USD</option>
                   <option value="EUR">EUR</option>
                 </select>
               </div>
-              <div className="form-group">
-                <label htmlFor="valor">Valor Total *</label>
+              <div className="form-group-base">
+                <label htmlFor="valor" className="form-label-base">Valor Total *</label>
                 <input
                   type="number"
                   id="valor"
@@ -924,12 +923,12 @@ function Deudas() {
                   step="0.01"
                   min="0.01"
                   placeholder="0"
-                  className={formErrors.valor ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.valor ? 'input-error' : ''}`}
                 />
                 {formErrors.valor && <span className="error-message">{formErrors.valor}</span>}
               </div>
-              <div className="form-group">
-                <label htmlFor="adeudado">Monto Adeudado *</label>
+              <div className="form-group-base">
+                <label htmlFor="adeudado" className="form-label-base">Monto Adeudado *</label>
                 <input
                   type="number"
                   id="adeudado"
@@ -940,14 +939,14 @@ function Deudas() {
                   step="0.01"
                   min="0"
                   placeholder="0"
-                  className={formErrors.adeudado ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.adeudado ? 'input-error' : ''}`}
                 />
                 {formErrors.adeudado && (
                   <span className="error-message">{formErrors.adeudado}</span>
                 )}
               </div>
-              <div className="form-group">
-                <label htmlFor="fechaCorte">Fecha de Corte *</label>
+              <div className="form-group-base">
+                <label htmlFor="fechaCorte" className="form-label-base">Fecha de Corte *</label>
                 <input
                   type="date"
                   id="fechaCorte"
@@ -955,14 +954,14 @@ function Deudas() {
                   value={formData.fechaCorte}
                   onChange={handleChange}
                   required
-                  className={formErrors.fechaCorte ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.fechaCorte ? 'input-error' : ''}`}
                 />
                 {formErrors.fechaCorte && (
                   <span className="error-message">{formErrors.fechaCorte}</span>
                 )}
               </div>
-              <div className="form-group">
-                <label htmlFor="tasaInteres">Tasa de Interés (%)</label>
+              <div className="form-group-base">
+                <label htmlFor="tasaInteres" className="form-label-base">Tasa de Interés (%)</label>
                 <input
                   type="number"
                   id="tasaInteres"
@@ -974,8 +973,8 @@ function Deudas() {
                   placeholder="0"
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="interesEnMora">Interés en Mora (%)</label>
+              <div className="form-group-base">
+                <label htmlFor="interesEnMora" className="form-label-base">Interés en Mora (%)</label>
                 <input
                   type="number"
                   id="interesEnMora"
@@ -987,8 +986,8 @@ function Deudas() {
                   placeholder="0"
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="pagoMinimo">Pago Mínimo</label>
+              <div className="form-group-base">
+                <label htmlFor="pagoMinimo" className="form-label-base">Pago Mínimo</label>
                 <input
                   type="number"
                   id="pagoMinimo"
@@ -1000,7 +999,7 @@ function Deudas() {
                   placeholder="0"
                 />
               </div>
-              <div className="form-group checkbox-group">
+              <div className="form-group-base checkbox-group">
                 <label htmlFor="tieneSeguro" className="checkbox-label">
                   <input
                     type="checkbox"
@@ -1013,8 +1012,8 @@ function Deudas() {
                 </label>
               </div>
               {formData.tieneSeguro && (
-                <div className="form-group">
-                  <label htmlFor="valorSeguro">Valor del Seguro</label>
+                <div className="form-group-base">
+                  <label htmlFor="valorSeguro" className="form-label-base">Valor del Seguro</label>
                   <input
                     type="number"
                     id="valorSeguro"
@@ -1211,8 +1210,8 @@ function Deudas() {
               </>
             ) : (
               <form className="modal-form" onSubmit={handleSubmit}>
-                <div className="form-group">
-                  <label htmlFor="edit-concepto">Concepto *</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-concepto" className="form-label-base">Concepto *</label>
                   <input
                     type="text"
                     id="edit-concepto"
@@ -1221,14 +1220,14 @@ function Deudas() {
                     onChange={handleChange}
                     required
                     placeholder="Ej: Préstamo personal"
-                    className={formErrors.concepto ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.concepto ? 'input-error' : ''}`}
                   />
                   {formErrors.concepto && (
                     <span className="error-message">{formErrors.concepto}</span>
                   )}
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-referencia">Referencia</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-referencia" className="form-label-base">Referencia</label>
                   <input
                     type="text"
                     id="edit-referencia"
@@ -1238,23 +1237,23 @@ function Deudas() {
                     placeholder="Ej: REF-1234"
                   />
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-divisa">Divisa *</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-divisa" className="form-label-base">Divisa *</label>
                   <select
                     id="edit-divisa"
                     name="divisa"
                     value={formData.divisa}
                     onChange={handleChange}
                     required
-                    className="form-select"
+                    className="form-select-base"
                   >
                     <option value="COP">COP</option>
                     <option value="USD">USD</option>
                     <option value="EUR">EUR</option>
                   </select>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-valor">Valor Total *</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-valor" className="form-label-base">Valor Total *</label>
                   <input
                     type="number"
                     id="edit-valor"
@@ -1265,12 +1264,12 @@ function Deudas() {
                     step="0.01"
                     min="0.01"
                     placeholder="0"
-                    className={formErrors.valor ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.valor ? 'input-error' : ''}`}
                   />
                   {formErrors.valor && <span className="error-message">{formErrors.valor}</span>}
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-adeudado">Monto Adeudado *</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-adeudado" className="form-label-base">Monto Adeudado *</label>
                   <input
                     type="number"
                     id="edit-adeudado"
@@ -1281,14 +1280,14 @@ function Deudas() {
                     step="0.01"
                     min="0"
                     placeholder="0"
-                    className={formErrors.adeudado ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.adeudado ? 'input-error' : ''}`}
                   />
                   {formErrors.adeudado && (
                     <span className="error-message">{formErrors.adeudado}</span>
                   )}
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-fechaCorte">Fecha de Corte *</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-fechaCorte" className="form-label-base">Fecha de Corte *</label>
                   <input
                     type="date"
                     id="edit-fechaCorte"
@@ -1296,14 +1295,14 @@ function Deudas() {
                     value={formData.fechaCorte}
                     onChange={handleChange}
                     required
-                    className={formErrors.fechaCorte ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.fechaCorte ? 'input-error' : ''}`}
                   />
                   {formErrors.fechaCorte && (
                     <span className="error-message">{formErrors.fechaCorte}</span>
                   )}
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-tasaInteres">Tasa de Interés (%)</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-tasaInteres" className="form-label-base">Tasa de Interés (%)</label>
                   <input
                     type="number"
                     id="edit-tasaInteres"
@@ -1315,8 +1314,8 @@ function Deudas() {
                     placeholder="0"
                   />
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-interesEnMora">Interés en Mora (%)</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-interesEnMora" className="form-label-base">Interés en Mora (%)</label>
                   <input
                     type="number"
                     id="edit-interesEnMora"
@@ -1328,8 +1327,8 @@ function Deudas() {
                     placeholder="0"
                   />
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-pagoMinimo">Pago Mínimo</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-pagoMinimo" className="form-label-base">Pago Mínimo</label>
                   <input
                     type="number"
                     id="edit-pagoMinimo"
@@ -1341,7 +1340,7 @@ function Deudas() {
                     placeholder="0"
                   />
                 </div>
-                <div className="form-group checkbox-group">
+                <div className="form-group-base checkbox-group">
                   <label htmlFor="edit-tieneSeguro" className="checkbox-label">
                     <input
                       type="checkbox"
@@ -1354,8 +1353,8 @@ function Deudas() {
                   </label>
                 </div>
                 {formData.tieneSeguro && (
-                  <div className="form-group">
-                    <label htmlFor="edit-valorSeguro">Valor del Seguro</label>
+                  <div className="form-group-base">
+                    <label htmlFor="edit-valorSeguro" className="form-label-base">Valor del Seguro</label>
                     <input
                       type="number"
                       id="edit-valorSeguro"

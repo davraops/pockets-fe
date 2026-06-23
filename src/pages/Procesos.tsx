@@ -1,17 +1,20 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { backToHubLabel } from '../constants/hubLabels'
 import { useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import AddIcon from '@mui/icons-material/Add'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import MoreVertIcon from '@mui/icons-material/MoreVert'
 import DescriptionIcon from '@mui/icons-material/Description'
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive'
 import NotificationsOffIcon from '@mui/icons-material/NotificationsOff'
 import { api } from '../services/api'
 import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
+import { fetchUserDisplayName } from '../utils/userDisplayName'
+import { fetchUserJudicialDocument } from '../utils/userJudicialIdentity'
 import './AppPage.css'
+import ModalOverlay from '../components/ModalOverlay'
+import ListSkeleton from '../components/ListSkeleton'
 import './Procesos.css'
 
 interface ProcesoAPI {
@@ -75,34 +78,31 @@ function Procesos() {
   const [procesos, setProcesos] = useState<Proceso[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [selectedProceso, setSelectedProceso] = useState<Proceso | null>(null)
   const [actuaciones, setActuaciones] = useState<Actuacion[]>([])
   const [isLoadingActuaciones, setIsLoadingActuaciones] = useState(false)
   const [nombreCompleto, setNombreCompleto] = useState<string>('')
-  const [trackingMap, setTrackingMap] = useState<Map<number, { id: string; is_active: boolean }>>(
-    new Map()
-  )
-  const [isLoadingTracking, setIsLoadingTracking] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
+  const [trackingMap, setTrackingMap] = useState<Map<number, { id: string; is_active: boolean }>>(new Map())
 
-  useEffect(() => {
-    const loadData = async () => {
-      await loadTracking()
-      await loadProcesos()
+  const stripStats = useMemo(() => {
+    if (isLoading && procesos.length === 0) {
+      return null
     }
-    loadData()
-  }, [])
+    return {
+      total: procesos.length,
+      tracked: procesos.filter(p => p.isTracked).length,
+      enTramite: procesos.filter(p => p.estado === 'En trámite').length,
+    }
+  }, [procesos, isLoading])
 
-  const loadTracking = async () => {
+  const loadTracking = useCallback(async () => {
     try {
-      setIsLoadingTracking(true)
-      const response = await api.getProcessTracking(true) // Solo activos
+      const response = await api.getProcessTracking(true)
 
       if (response.tracking && Array.isArray(response.tracking)) {
         const map = new Map<number, { id: string; is_active: boolean }>()
-        response.tracking.forEach((track: any) => {
+        response.tracking.forEach((track: { id: string; id_proceso?: number; is_active: boolean }) => {
           if (track.id_proceso) {
             map.set(track.id_proceso, {
               id: track.id,
@@ -113,45 +113,53 @@ function Procesos() {
         setTrackingMap(map)
         return map
       }
-      return new Map()
-    } catch (err) {
-      // Silenciar errores de tracking, no es crítico
-      return new Map()
-    } finally {
-      setIsLoadingTracking(false)
+      return new Map<number, { id: string; is_active: boolean }>()
+    } catch {
+      return new Map<number, { id: string; is_active: boolean }>()
     }
-  }
+  }, [])
 
-  const loadProcesos = async () => {
+  const loadProcesos = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
 
-      // Obtener nombre completo del usuario
-      // Por ahora usamos un valor por defecto, pero debería venir del perfil del usuario
-      // TODO: Obtener nombre completo desde el perfil del usuario
-      const nombre = nombreCompleto || 'Rafael Augusto Avella Pena'
+      const [nombreFromProfile, documento] = await Promise.all([
+        nombreCompleto.trim()
+          ? Promise.resolve(nombreCompleto.trim())
+          : fetchUserDisplayName().then(name => name?.trim() ?? ''),
+        fetchUserJudicialDocument(),
+      ])
 
-      if (!nombre || nombre.trim() === '') {
-        setError('No se ha configurado el nombre completo del usuario')
-        setIsLoading(false)
+      const nombre = nombreFromProfile
+
+      if (!nombreCompleto && nombre) {
+        setNombreCompleto(nombre)
+      }
+
+      if (!documento && !nombre) {
+        setError(
+          'Configura tu documento de identidad o nombre en Ajustes para consultar tus procesos judiciales.'
+        )
+        setProcesos([])
         return
       }
 
-      const response = await api.getJudicialProcesses(nombre, 'nat', false, 1)
+      const response = await api.getJudicialProcesses(
+        nombre,
+        'nat',
+        false,
+        1,
+        documento ?? undefined
+      )
 
       if (response.procesos && Array.isArray(response.procesos)) {
         const procesosFiltrados = response.procesos.filter(
           (proc: ProcesoAPI) => proc.idProceso && !isNaN(Number(proc.idProceso))
         )
 
-        // Obtener tracking actualizado si no está cargado
-        let currentTrackingMap = trackingMap
-        if (currentTrackingMap.size === 0) {
-          currentTrackingMap = await loadTracking()
-        }
+        const currentTrackingMap = await loadTracking()
 
-        // Mapear procesos y cargar actuaciones para verificar negaciones/rechazos
         const procesosMapeados: Proceso[] = await Promise.all(
           procesosFiltrados.map(async (proc: ProcesoAPI) => {
             // Determinar estado basado en la fecha de última actuación
@@ -177,35 +185,37 @@ function Procesos() {
             let badge: 'Negado' | 'Rechazado' | null = null
             try {
               const actuacionesResponse = await api.getProcessActuaciones(idProceso, 1)
-              if (
-                actuacionesResponse.actuaciones &&
-                Array.isArray(actuacionesResponse.actuaciones)
-              ) {
+              if (actuacionesResponse.actuaciones && Array.isArray(actuacionesResponse.actuaciones)) {
                 // Buscar en todas las actuaciones
                 for (const act of actuacionesResponse.actuaciones) {
-                  const actuacionText =
-                    `${act.actuacion || ''} ${act.anotacion || ''}`.toLowerCase()
-
+                  const actuacionText = `${act.actuacion || ''} ${act.anotacion || ''}`.toLowerCase()
+                  
                   // Priorizar "AUTO RECHAZA DEMANDA" primero
                   if (
                     actuacionText.includes('auto rechaza demanda') ||
                     actuacionText.includes('auto rechaza') ||
-                    (act.actuacion?.toLowerCase().includes('auto') &&
-                      act.actuacion?.toLowerCase().includes('rechaza') &&
-                      act.actuacion?.toLowerCase().includes('demanda'))
+                    (act.actuacion?.toLowerCase().includes('auto') && 
+                     act.actuacion?.toLowerCase().includes('rechaza') &&
+                     act.actuacion?.toLowerCase().includes('demanda'))
                   ) {
                     badge = 'Rechazado'
                     break // Prioridad máxima, salir del loop
                   }
-
+                  
                   // Luego buscar otras variantes de rechazo
-                  if (actuacionText.includes('rechaza') || actuacionText.includes('rechazo')) {
+                  if (
+                    actuacionText.includes('rechaza') ||
+                    actuacionText.includes('rechazo')
+                  ) {
                     badge = 'Rechazado'
                     // No hacer break aquí, seguir buscando por si hay "auto rechaza demanda"
                   }
-
+                  
                   // Buscar negaciones
-                  if (actuacionText.includes('niega') || actuacionText.includes('deneg')) {
+                  if (
+                    actuacionText.includes('niega') ||
+                    actuacionText.includes('deneg')
+                  ) {
                     // Solo asignar "Negado" si no hay rechazo previo
                     if (!badge) {
                       badge = 'Negado'
@@ -220,7 +230,7 @@ function Procesos() {
 
             // Verificar si está en seguimiento
             const tracking = currentTrackingMap.get(idProceso)
-
+            
             return {
               id: idProceso.toString(),
               idProceso: idProceso,
@@ -240,9 +250,7 @@ function Procesos() {
 
         // Ordenar por fecha de última actuación (más recientes primero)
         procesosMapeados.sort((a, b) => {
-          return (
-            new Date(b.fechaUltimaActuacion).getTime() - new Date(a.fechaUltimaActuacion).getTime()
-          )
+          return new Date(b.fechaUltimaActuacion).getTime() - new Date(a.fechaUltimaActuacion).getTime()
         })
 
         setProcesos(procesosMapeados)
@@ -260,25 +268,11 @@ function Procesos() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [nombreCompleto, showNotification, loadTracking])
 
-  // Cerrar menú al hacer clic fuera
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement
-      if (isMenuOpen && !target.closest('.procesos-toolbar-menu-container')) {
-        setIsMenuOpen(false)
-      }
-    }
-
-    if (isMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isMenuOpen])
+    void loadProcesos()
+  }, [loadProcesos])
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -321,7 +315,7 @@ function Procesos() {
 
     try {
       const response = await api.getProcessActuaciones(Number(idProceso), 1)
-
+      
       if (response.actuaciones && Array.isArray(response.actuaciones)) {
         const actuacionesMapeadas: Actuacion[] = response.actuaciones.map((act: ActuacionAPI) => ({
           id: act.idRegActuacion,
@@ -363,21 +357,19 @@ function Procesos() {
         // Remover del seguimiento
         await api.removeProcessTracking(proceso.trackingId)
         showNotification('Proceso removido del seguimiento', 'success')
-
+        
         // Actualizar tracking map
         const newMap = new Map(trackingMap)
         newMap.delete(proceso.idProceso)
         setTrackingMap(newMap)
-
+        
         // Actualizar proceso en la lista
-        setProcesos(prev =>
-          prev.map(p =>
-            p.idProceso === proceso.idProceso
-              ? { ...p, isTracked: false, trackingId: undefined }
-              : p
-          )
-        )
-
+        setProcesos(prev => prev.map(p => 
+          p.idProceso === proceso.idProceso 
+            ? { ...p, isTracked: false, trackingId: undefined }
+            : p
+        ))
+        
         // Actualizar proceso seleccionado si es el mismo
         if (selectedProceso?.idProceso === proceso.idProceso) {
           setSelectedProceso({
@@ -387,8 +379,15 @@ function Procesos() {
           })
         }
       } else {
-        // Agregar al seguimiento
-        const nombre = nombreCompleto || 'Rafael Augusto Avella Pena'
+        const nombre =
+          nombreCompleto.trim() || (await fetchUserDisplayName())?.trim() || ''
+        if (!nombre) {
+          showNotification(
+            'Configura tu nombre completo en Ajustes antes de agregar seguimiento.',
+            'error'
+          )
+          return
+        }
         const response = await api.addProcessTracking({
           id_proceso: proceso.idProceso,
           llave_proceso: proceso.numero,
@@ -396,12 +395,9 @@ function Procesos() {
           despacho: proceso.despacho,
           departamento: proceso.departamento,
         })
-
-        showNotification(
-          'Proceso agregado al seguimiento. Recibirás notificaciones de nuevas actuaciones.',
-          'success'
-        )
-
+        
+        showNotification('Proceso agregado al seguimiento. Recibirás notificaciones de nuevas actuaciones.', 'success')
+        
         // Actualizar tracking map
         const newMap = new Map(trackingMap)
         if (response.tracking?.id) {
@@ -411,16 +407,14 @@ function Procesos() {
           })
         }
         setTrackingMap(newMap)
-
+        
         // Actualizar proceso en la lista
-        setProcesos(prev =>
-          prev.map(p =>
-            p.idProceso === proceso.idProceso
-              ? { ...p, isTracked: true, trackingId: response.tracking?.id }
-              : p
-          )
-        )
-
+        setProcesos(prev => prev.map(p => 
+          p.idProceso === proceso.idProceso 
+            ? { ...p, isTracked: true, trackingId: response.tracking?.id }
+            : p
+        ))
+        
         // Actualizar proceso seleccionado si es el mismo
         if (selectedProceso?.idProceso === proceso.idProceso) {
           setSelectedProceso({
@@ -441,87 +435,120 @@ function Procesos() {
 
   return (
     <div className="app-page-container">
-      <div className="app-page-content procesos-content">
+      <div className="app-page-content app-page-content-wide crud-page-content procesos-content">
         {/* Toolbar */}
-        <div className="procesos-toolbar">
+        <div className="app-toolbar">
           <button
-            className="procesos-toolbar-button"
+            className="app-toolbar-button"
             onClick={() => navigate('/justicia')}
-            aria-label="Volver"
+            aria-label={backToHubLabel('justicia')}
             type="button"
           >
-            <ArrowBackIcon className="procesos-toolbar-icon" />
+            <ArrowBackIcon className="app-toolbar-icon" />
           </button>
+        </div>
 
-          <div className="procesos-toolbar-menu-container" ref={menuRef}>
-            <button
-              className="procesos-toolbar-button"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label="Opciones"
-              aria-expanded={isMenuOpen}
-              type="button"
-            >
-              <MoreVertIcon className="procesos-toolbar-icon" />
-            </button>
-            {isMenuOpen && (
-              <div className="procesos-menu">
-                <button
-                  className="procesos-menu-item"
-                  onClick={() => {
-                    setIsMenuOpen(false)
-                    loadProcesos()
-                  }}
-                  type="button"
-                  disabled={isLoading}
-                >
-                  <RefreshIcon className="procesos-menu-icon" />
-                  <span>Actualizar</span>
-                </button>
-              </div>
-            )}
+        <h1 className="app-page-title">Procesos</h1>
+
+        <div className="crud-summary-strip" role="region" aria-label="Resumen de procesos">
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">Total</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--info">
+              {stripStats === null ? '…' : stripStats.total}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">En seguimiento</span>
+            <span className="crud-summary-strip-value crud-summary-strip-value--available">
+              {stripStats === null ? '…' : stripStats.tracked}
+            </span>
+          </div>
+          <div className="crud-summary-strip-separator" aria-hidden="true" />
+          <div className="crud-summary-strip-item">
+            <span className="crud-summary-strip-label">En trámite</span>
+            <span className="crud-summary-strip-value">
+              {stripStats === null ? '…' : stripStats.enTramite}
+            </span>
           </div>
         </div>
 
-        <h1 className="procesos-page-title">Procesos</h1>
-        <p className="procesos-page-subtitle">Gestiona tus procesos legales y jurídicos</p>
+        <button
+          type="button"
+          className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+          onClick={() => void loadProcesos()}
+          disabled={isLoading}
+          aria-busy={isLoading}
+          aria-label="Actualizar procesos judiciales"
+        >
+          <RefreshIcon aria-hidden="true" />
+          {isLoading ? 'Actualizando…' : 'Actualizar procesos'}
+        </button>
 
         {/* Lista de Procesos */}
-        {isLoading ? (
-          <div className="procesos-empty-state">
-            <p>Cargando procesos...</p>
+        {isLoading && procesos.length === 0 ? (
+          <div className="glass-group">
+            <ListSkeleton variant="inset-row" count={4} aria-label="Cargando procesos" />
           </div>
         ) : error ? (
-          <div className="procesos-empty-state">
-            <p>{error}</p>
+          <div className="loader-container">
+            <div className="loader finanzas-stats-error-panel">
+              <p className="loader-text loader-text--error" role="alert">
+                {error}
+              </p>
+              {error.includes('Ajustes') ? (
+                <button
+                  type="button"
+                  className="btn-base btn-secondary finanzas-stats-retry-button"
+                  onClick={() => navigate('/ajustes')}
+                  aria-label="Ir a Ajustes"
+                >
+                  <span>Ir a Ajustes</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn-base btn-secondary finanzas-stats-retry-button"
+                  onClick={() => void loadProcesos()}
+                  aria-label="Reintentar cargar procesos"
+                >
+                  <span>Reintentar</span>
+                </button>
+              )}
+            </div>
           </div>
         ) : procesos.length === 0 ? (
           <div className="procesos-empty-state">
             <DescriptionIcon className="empty-state-icon" />
-            <p className="empty-state-text">No hay procesos registrados aún.</p>
+            <p className="empty-state-text">No se encontraron procesos judiciales</p>
+            <p className="empty-state-subtext">
+              Los procesos se consultan con tu cédula o nombre configurados en Ajustes. Usa el botón
+              Actualizar arriba para volver a consultar.
+            </p>
           </div>
         ) : (
           <div className="procesos-list">
-            <div className="procesos-group">
+            <div className="glass-group">
               {procesos.map(proceso => (
                 <button
                   key={proceso.id}
-                  className="procesos-item"
+                  className="crud-inset-row crud-row-accent-indigo"
                   onClick={() => handleOpenDetailModal(proceso)}
                   type="button"
                 >
-                  <div className="procesos-item-content">
-                    <div className="procesos-item-header">
-                      <div className="procesos-item-title-section">
+                  <div className="crud-row-content">
+                    <div className="crud-row-header">
+                      <div className="crud-row-title-section">
                         <div
-                          className="procesos-item-estado-indicator"
+                          className="crud-row-meta-indicator"
                           style={{ backgroundColor: getEstadoColor(proceso.estado) }}
                         />
                         <div className="procesos-item-info">
-                          <div className="procesos-item-title-row">
-                            <h3 className="procesos-item-title">{proceso.numero}</h3>
+                          <div className="crud-row-title-row">
+                            <h3 className="crud-row-title">{proceso.numero}</h3>
                             {proceso.isTracked && (
-                              <NotificationsActiveIcon
-                                className="procesos-item-tracking-icon"
+                              <NotificationsActiveIcon 
+                                className="procesos-item-tracking-icon" 
                                 titleAccess="En seguimiento"
                               />
                             )}
@@ -533,30 +560,30 @@ function Procesos() {
                               </span>
                             )}
                           </div>
-                          <span className="procesos-item-tipo">{proceso.despacho}</span>
+                          <span className="crud-row-meta">{proceso.despacho}</span>
                         </div>
                       </div>
-                      <ChevronRightIcon className="procesos-item-chevron" />
+                      <ChevronRightIcon className="crud-row-chevron" />
                     </div>
                     {proceso.sujetosProcesales && (
-                      <p className="procesos-item-description">{proceso.sujetosProcesales}</p>
+                      <p className="crud-row-preview">{proceso.sujetosProcesales}</p>
                     )}
-                    <div className="procesos-item-meta">
+                    <div className="crud-row-meta">
                       <span
-                        className="procesos-item-estado"
+                        className="crud-row-meta"
                         style={{ color: getEstadoColor(proceso.estado) }}
                       >
                         {proceso.estado}
                       </span>
-                      <span className="procesos-item-separator">•</span>
-                      <span className="procesos-item-date">
+                      <span className="crud-row-separator">•</span>
+                      <span className="crud-row-meta">
                         Última actuación: {formatDate(proceso.fechaUltimaActuacion)}
                       </span>
                     </div>
-                    <div className="procesos-item-meta">
-                      <span className="procesos-item-departamento">{proceso.departamento}</span>
-                      <span className="procesos-item-separator">•</span>
-                      <span className="procesos-item-date">
+                    <div className="crud-row-meta">
+                      <span className="crud-row-meta">{proceso.departamento}</span>
+                      <span className="crud-row-separator">•</span>
+                      <span className="crud-row-meta">
                         Inicio: {formatDate(proceso.fechaInicio)}
                       </span>
                     </div>
@@ -569,12 +596,12 @@ function Procesos() {
 
         {/* Modal de Detalle */}
         {isDetailModalOpen && selectedProceso && (
-          <div className="procesos-modal-overlay" onClick={handleCloseDetailModal}>
-            <div className="procesos-modal" onClick={e => e.stopPropagation()}>
-              <div className="procesos-modal-header">
-                <h2 className="procesos-modal-title">Detalle del Proceso</h2>
+          <ModalOverlay onClose={handleCloseDetailModal} className="modal-overlay">
+            <div className="modal-panel" onClick={e => e.stopPropagation()}>
+              <div className="modal-panel-header">
+                <h2 className="modal-panel-title" id="modal-panel-title-detalle-del-proceso">Detalle del Proceso</h2>
                 <button
-                  className="procesos-modal-close-button"
+                  className="modal-panel-close"
                   onClick={handleCloseDetailModal}
                   aria-label="Cerrar"
                   type="button"
@@ -648,8 +675,7 @@ function Procesos() {
                   </button>
                   {selectedProceso.isTracked && (
                     <p className="procesos-tracking-note">
-                      Recibirás notificaciones automáticas cuando haya nuevas actuaciones en este
-                      proceso.
+                      Recibirás notificaciones automáticas cuando haya nuevas actuaciones en este proceso.
                     </p>
                   )}
                 </div>
@@ -658,7 +684,7 @@ function Procesos() {
                 <div className="procesos-detail-section">
                   <h3 className="procesos-detail-label">Actuaciones</h3>
                   {isLoadingActuaciones ? (
-                    <p className="procesos-detail-value">Cargando actuaciones...</p>
+                    <ListSkeleton variant="inset-row" count={3} aria-label="Cargando actuaciones" />
                   ) : actuaciones.length === 0 ? (
                     <p className="procesos-detail-value">No hay actuaciones disponibles</p>
                   ) : (
@@ -691,7 +717,7 @@ function Procesos() {
                 </div>
               </div>
             </div>
-          </div>
+          </ModalOverlay>
         )}
       </div>
     </div>
@@ -699,3 +725,4 @@ function Procesos() {
 }
 
 export default Procesos
+

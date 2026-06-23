@@ -9,6 +9,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
+import { isDebugToolsEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
@@ -923,6 +924,8 @@ function TarjetasDebito() {
     }
   }
 
+  const highlights = calculateHighlights()
+
   return (
     <>
       <div className="app-page-container">
@@ -955,42 +958,33 @@ function TarjetasDebito() {
                   <ArrowBackIcon className="tarjetas-debito-toolbar-icon" />
                 </button>
                 <div className="tarjetas-debito-toolbar-menu-container" ref={menuRef}>
-                  <button
-                    className="tarjetas-debito-toolbar-button"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    aria-label="Opciones"
-                    aria-expanded={isMenuOpen}
-                    type="button"
-                  >
-                    <MoreVertIcon className="tarjetas-debito-toolbar-icon" />
-                  </button>
-                  {isMenuOpen && (
-                    <div className="tarjetas-debito-menu">
+                  {isDebugToolsEnabled() && (
+                    <>
                       <button
-                        className="tarjetas-debito-menu-item"
-                        onClick={() => {
-                          handleOpenModal()
-                          setIsMenuOpen(false)
-                        }}
+                        className="tarjetas-debito-toolbar-button"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        aria-label="Opciones de depuración"
+                        aria-expanded={isMenuOpen}
                         type="button"
                       >
-                        <AddIcon className="tarjetas-debito-menu-icon" />
-                        Agregar Tarjeta
+                        <MoreVertIcon className="tarjetas-debito-toolbar-icon" />
                       </button>
-                      {api.isTestUser() && (
-                        <button
-                          className="tarjetas-debito-menu-item"
-                          onClick={() => {
-                            setIsDebugModalOpen(true)
-                            setIsMenuOpen(false)
-                          }}
-                          type="button"
-                        >
-                          <span className="tarjetas-debito-menu-icon">🐛</span>
-                          Debug
-                        </button>
+                      {isMenuOpen && (
+                        <div className="tarjetas-debito-menu">
+                          <button
+                            className="tarjetas-debito-menu-item"
+                            onClick={() => {
+                              setIsDebugModalOpen(true)
+                              setIsMenuOpen(false)
+                            }}
+                            type="button"
+                          >
+                            <span className="tarjetas-debito-menu-icon">🐛</span>
+                            Debug
+                          </button>
+                        </div>
                       )}
-                    </div>
+                    </>
                   )}
                 </div>
               </div>
@@ -998,42 +992,51 @@ function TarjetasDebito() {
               {/* Page Title - HIG: Clear Orientation */}
               <h1 className="tarjetas-debito-page-title">Tarjetas de Débito</h1>
 
-              {/* Highlights - HIG: Relevant Information */}
-              {cards.length > 0 &&
-                (() => {
-                  const highlights = calculateHighlights()
-                  return (
-                    <div className="tarjetas-debito-summary-block">
-                      <div className="summary-item">
-                        <span className="summary-label">Total</span>
-                        <span className="summary-value">{highlights.totalTarjetas}</span>
-                      </div>
-                      <div className="summary-separator"></div>
-                      <div className="summary-item">
-                        <span className="summary-label">Físicas</span>
-                        <span className="summary-value">{highlights.tarjetasFisicas}</span>
-                      </div>
-                      <div className="summary-separator"></div>
-                      <div className="summary-item">
-                        <span className="summary-label">Virtuales</span>
-                        <span className="summary-value">{highlights.tarjetasVirtuales}</span>
-                      </div>
-                      <div className="summary-separator"></div>
-                      <div className="summary-item">
-                        <span className="summary-label">Con Subscripciones</span>
-                        <span className="summary-value">
-                          {highlights.tarjetasConSubscripciones}
-                        </span>
-                      </div>
-                    </div>
-                  )
-                })()}
+              <div
+                className="crud-summary-strip"
+                role="region"
+                aria-label="Resumen de tarjetas de débito"
+              >
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Total</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
+                    {highlights.totalTarjetas}
+                  </span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Físicas</span>
+                  <span className="crud-summary-strip-value">{highlights.tarjetasFisicas}</span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Virtuales</span>
+                  <span className="crud-summary-strip-value">{highlights.tarjetasVirtuales}</span>
+                </div>
+                <div className="crud-summary-strip-separator" aria-hidden="true" />
+                <div className="crud-summary-strip-item">
+                  <span className="crud-summary-strip-label">Con subscripciones</span>
+                  <span className="crud-summary-strip-value crud-summary-strip-value--available">
+                    {highlights.tarjetasConSubscripciones}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+                onClick={handleOpenModal}
+                aria-label="Agregar tarjeta de débito"
+              >
+                <AddIcon aria-hidden="true" />
+                Agregar tarjeta
+              </button>
 
               {cards.length === 0 ? (
                 <div className="empty-state">
                   <PaymentIcon className="empty-icon" />
                   <p className="empty-text">No hay tarjetas agregadas</p>
-                  <p className="empty-subtext">Agrega tu primera tarjeta de débito</p>
+                  <p className="empty-subtext">Usa el botón de arriba para agregar la primera</p>
                 </div>
               ) : (
                 <div className="tarjetas-debito-list">
@@ -1098,8 +1101,8 @@ function TarjetasDebito() {
               </button>
             </div>
             <form className="modal-form" onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label htmlFor="nombre">Nombre</label>
+              <div className="form-group-base">
+                <label htmlFor="nombre" className="form-label-base">Nombre</label>
                 <input
                   type="text"
                   id="nombre"
@@ -1108,19 +1111,19 @@ function TarjetasDebito() {
                   onChange={handleChange}
                   required
                   placeholder="Ej: Tarjeta Débito Principal"
-                  className={formErrors.nombre ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.nombre ? 'input-error' : ''}`}
                 />
                 {formErrors.nombre && <span className="error-message">{formErrors.nombre}</span>}
               </div>
-              <div className="form-group">
-                <label htmlFor="cuentaId">Cuenta Bancaria</label>
+              <div className="form-group-base">
+                <label htmlFor="cuentaId" className="form-label-base">Cuenta Bancaria</label>
                 <select
                   id="cuentaId"
                   name="cuentaId"
                   value={formData.cuentaId}
                   onChange={handleChange}
                   required
-                  className={formErrors.cuentaId ? 'input-error form-select' : 'form-select'}
+                  className={`form-input-base ${`form-select-base ${formErrors.cuentaId ? 'input-error' : ''}`}`}
                 >
                   <option value="">Selecciona una cuenta</option>
                   {bankAccounts.map(account => (
@@ -1134,8 +1137,8 @@ function TarjetasDebito() {
                   <span className="error-message">{formErrors.cuentaId}</span>
                 )}
               </div>
-              <div className="form-group">
-                <label htmlFor="ultimos4Digitos">Últimos 4 Dígitos</label>
+              <div className="form-group-base">
+                <label htmlFor="ultimos4Digitos" className="form-label-base">Últimos 4 Dígitos</label>
                 <input
                   type="text"
                   id="ultimos4Digitos"
@@ -1145,14 +1148,14 @@ function TarjetasDebito() {
                   required
                   maxLength={4}
                   placeholder="1234"
-                  className={formErrors.ultimos4Digitos ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.ultimos4Digitos ? 'input-error' : ''}`}
                 />
                 {formErrors.ultimos4Digitos && (
                   <span className="error-message">{formErrors.ultimos4Digitos}</span>
                 )}
               </div>
-              <div className="form-group">
-                <label htmlFor="fechaVencimiento">Fecha de Vencimiento (Mes/Año)</label>
+              <div className="form-group-base">
+                <label htmlFor="fechaVencimiento" className="form-label-base">Fecha de Vencimiento (Mes/Año)</label>
                 <input
                   type="text"
                   id="fechaVencimiento"
@@ -1162,13 +1165,13 @@ function TarjetasDebito() {
                   required
                   maxLength={7}
                   placeholder="MM/YYYY"
-                  className={formErrors.fechaVencimiento ? 'input-error' : ''}
+                  className={`form-input-base ${formErrors.fechaVencimiento ? 'input-error' : ''}`}
                 />
                 {formErrors.fechaVencimiento && (
                   <span className="error-message">{formErrors.fechaVencimiento}</span>
                 )}
               </div>
-              <div className="form-group">
+              <div className="form-group-base">
                 <label htmlFor="esVirtual" className="checkbox-label">
                   <input
                     type="checkbox"
@@ -1287,8 +1290,8 @@ function TarjetasDebito() {
               </>
             ) : (
               <form className="modal-form" onSubmit={handleSubmit}>
-                <div className="form-group">
-                  <label htmlFor="edit-nombre">Nombre</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-nombre" className="form-label-base">Nombre</label>
                   <input
                     type="text"
                     id="edit-nombre"
@@ -1297,19 +1300,19 @@ function TarjetasDebito() {
                     onChange={handleChange}
                     required
                     placeholder="Ej: Tarjeta Débito Principal"
-                    className={formErrors.nombre ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.nombre ? 'input-error' : ''}`}
                   />
                   {formErrors.nombre && <span className="error-message">{formErrors.nombre}</span>}
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-cuentaId">Cuenta Bancaria</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-cuentaId" className="form-label-base">Cuenta Bancaria</label>
                   <select
                     id="edit-cuentaId"
                     name="cuentaId"
                     value={formData.cuentaId}
                     onChange={handleChange}
                     required
-                    className="form-select disabled-input"
+                    className="form-select-base disabled-input"
                     disabled
                   >
                     <option value="">Selecciona una cuenta</option>
@@ -1322,8 +1325,8 @@ function TarjetasDebito() {
                   </select>
                   <p className="form-hint">La cuenta no se puede modificar</p>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-ultimos4Digitos">Últimos 4 Dígitos</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-ultimos4Digitos" className="form-label-base">Últimos 4 Dígitos</label>
                   <input
                     type="text"
                     id="edit-ultimos4Digitos"
@@ -1333,14 +1336,14 @@ function TarjetasDebito() {
                     required
                     maxLength={4}
                     placeholder="1234"
-                    className={formErrors.ultimos4Digitos ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.ultimos4Digitos ? 'input-error' : ''}`}
                   />
                   {formErrors.ultimos4Digitos && (
                     <span className="error-message">{formErrors.ultimos4Digitos}</span>
                   )}
                 </div>
-                <div className="form-group">
-                  <label htmlFor="edit-fechaVencimiento">Fecha de Vencimiento (Mes/Año)</label>
+                <div className="form-group-base">
+                  <label htmlFor="edit-fechaVencimiento" className="form-label-base">Fecha de Vencimiento (Mes/Año)</label>
                   <input
                     type="text"
                     id="edit-fechaVencimiento"
@@ -1350,13 +1353,13 @@ function TarjetasDebito() {
                     required
                     maxLength={7}
                     placeholder="MM/YYYY"
-                    className={formErrors.fechaVencimiento ? 'input-error' : ''}
+                    className={`form-input-base ${formErrors.fechaVencimiento ? 'input-error' : ''}`}
                   />
                   {formErrors.fechaVencimiento && (
                     <span className="error-message">{formErrors.fechaVencimiento}</span>
                   )}
                 </div>
-                <div className="form-group">
+                <div className="form-group-base">
                   <label htmlFor="edit-esVirtual" className="checkbox-label">
                     <input
                       type="checkbox"

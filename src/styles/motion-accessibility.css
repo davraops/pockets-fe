@@ -1,0 +1,114 @@
+/* P16–P18 — Motion, focus & touch accessibility */
+
+@media (hover: hover) {
+  .btn-base:hover:not(:disabled) {
+    transform: translateY(var(--motion-lift-md));
+  }
+
+  .glass-card:hover {
+    transform: translateY(var(--motion-lift-md));
+  }
+
+  .empty-state-cta:hover:not(:disabled) {
+    transform: translateY(var(--motion-lift-sm));
+  }
+
+  .crud-card-row--project:hover:not(:disabled),
+  .crud-card-row--subscription:hover:not(:disabled),
+  .crud-card-row--debit-card:hover:not(:disabled),
+  .crud-card-row--debtor:hover:not(:disabled) {
+    transform: translateY(var(--motion-lift-sm));
+  }
+
+  .crud-card-row--debt:hover:not(:disabled),
+  .crud-card-row--credit:hover:not(:disabled) {
+    transform: translateX(var(--motion-shift-x));
+  }
+
+  .crud-crypto-row:hover:not(:disabled) {
+    transform: translateY(var(--motion-lift-sm));
+  }
+
+  .detail-button.edit:hover:not(:disabled),
+  .detail-button.delete:hover:not(:disabled) {
+    transform: translateY(var(--motion-lift-sm));
+  }
+}
+
+.btn-base:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+/* Touch: evita hover lifts persistentes tras tap */
+@media (hover: none) {
+  .btn-base:hover:not(:disabled),
+  .glass-card:hover,
+  .app-icon:hover:not(:disabled),
+  .app-toolbar-button:hover:not(:disabled),
+  .empty-state-cta:hover:not(:disabled),
+  .crud-card-row:hover:not(:disabled),
+  .crud-inset-row:hover:not(:disabled),
+  .crud-crypto-row:hover:not(:disabled),
+  .crud-hub-row:hover:not(:disabled),
+  .crud-transaction-row:hover:not(:disabled),
+  .detail-button:hover:not(:disabled),
+  .modal-button:hover:not(:disabled),
+  .hub-logout-button:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+
+  .btn-base,
+  .glass-card,
+  .app-icon,
+  .app-toolbar-button,
+  .form-input-wrapper,
+  .crud-inset-row,
+  .crud-card-row,
+  .crud-hub-row,
+  .crud-crypto-row,
+  .crud-transaction-row,
+  .detail-button,
+  .empty-state-cta,
+  .modal-button,
+  .hub-card,
+  .password-toggle-button {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+
+  .btn-base:hover:not(:disabled),
+  .btn-base:active:not(:disabled),
+  .glass-card:hover,
+  .app-icon:hover:not(:disabled),
+  .app-toolbar-button:hover:not(:disabled),
+  .form-input-wrapper.is-focused,
+  .crud-card-row:hover:not(:disabled),
+  .crud-inset-row:hover:not(:disabled),
+  .crud-crypto-row:hover:not(:disabled),
+  .crud-hub-row:hover:not(:disabled),
+  .crud-transaction-row:hover:not(:disabled),
+  .detail-button:hover:not(:disabled),
+  .detail-button:active:not(:disabled),
+  .empty-state-cta:hover:not(:disabled),
+  .modal-button:hover:not(:disabled),
+  .modal-button:active:not(:disabled) {
+    transform: none !important;
+  }
+
+  .form-input-wrapper.is-error {
+    animation: none !important;
+  }
+
+  .btn-spinner {
+    animation: none !important;
+  }
+}
