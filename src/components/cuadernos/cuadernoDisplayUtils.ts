@@ -1,4 +1,5 @@
 import type { CrudSummaryItem } from '../crud/crudSummaryTypes'
+import { documentHasContent, getDocumentPlainText, parseCuadernoContent } from './cuadernoDocument'
 import type { Note } from './cuadernosTypes'
 
 export function formatNoteDate(dateString: string): string {
@@ -13,19 +14,33 @@ export function formatNoteDate(dateString: string): string {
 }
 
 export function formatNotePreview(contenido: string, maxLength = 100): string {
-  return contenido.length > maxLength ? `${contenido.substring(0, maxLength)}...` : contenido
+  const doc = parseCuadernoContent(contenido)
+  if (doc.comment) {
+    return doc.comment.length > maxLength ? `${doc.comment.substring(0, maxLength)}...` : doc.comment
+  }
+  const plain = getDocumentPlainText(doc)
+  return plain.length > maxLength ? `${plain.substring(0, maxLength)}...` : plain
+}
+
+export function getNotePageIcon(contenido: string): string | undefined {
+  return parseCuadernoContent(contenido).icon
+}
+
+export function getNotePageCover(contenido: string): string | undefined {
+  return parseCuadernoContent(contenido).cover
 }
 
 export function formatNoteMeta(note: Note): string {
-  return note.fechaCreacion === note.fechaActualizacion
-    ? `Creada: ${formatNoteDate(note.fechaCreacion)}`
-    : `Actualizada: ${formatNoteDate(note.fechaActualizacion)}`
+  if (note.fechaCreacion === note.fechaActualizacion) {
+    return `Creado: ${formatNoteDate(note.fechaCreacion)}`
+  }
+  return `Creado: ${formatNoteDate(note.fechaCreacion)} · Actualizado: ${formatNoteDate(note.fechaActualizacion)}`
 }
 
 export function calculateCuadernoHighlights(notes: Note[]) {
   const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
   const total = notes.length
-  const conContenido = notes.filter(n => n.contenido.trim().length > 0).length
+  const conContenido = notes.filter(n => documentHasContent(parseCuadernoContent(n.contenido))).length
   const recientes = notes.filter(n => new Date(n.fechaCreacion).getTime() >= weekAgo).length
   const vacias = total - conContenido
 

@@ -1,3 +1,196 @@
+/* Cuentas hub — layout + list (rows use crud-inset-row from domains) */
+
+.cuentas-content {
+  gap: var(--spacing-md);
+}
+
+.cuentas-hub-toolbar {
+  justify-content: space-between;
+  width: 100%;
+}
+
+.cuentas-toolbar-menu-container {
+  position: relative;
+}
+
+.cuentas-menu {
+  position: absolute;
+  top: calc(100% + var(--spacing-xs));
+  right: 0;
+  min-width: 160px;
+  padding: var(--spacing-xs);
+  background: var(--modal-surface);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 10;
+}
+
+.cuentas-menu-item {
+  display: block;
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  text-align: left;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.cuentas-menu-item:hover {
+  background: var(--bg-glass-light);
+}
+
+.cuentas-hub-header {
+  margin-bottom: var(--spacing-xs);
+}
+
+.cuentas-hub-title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35em;
+  margin: 0;
+  font-family: var(--font-family);
+  line-height: 1.2;
+}
+
+.cuentas-hub-title-brand {
+  font-size: clamp(1.5rem, 4vw, 1.875rem);
+  font-weight: var(--font-weight-bold);
+  color: var(--section-finanzas);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.cuentas-hub-title-sep {
+  font-size: var(--font-size-lg);
+  color: var(--text-tertiary);
+}
+
+.cuentas-hub-title-context {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+}
+
+.cuentas-hub-meta {
+  margin: var(--spacing-xs) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+}
+
+.cuentas-balance-skeleton.skeleton-list-summary-card {
+  margin-bottom: 0;
+}
+
+.cuentas-balance-hero {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  width: 100%;
+  padding: var(--spacing-lg);
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-family);
+}
+
+.cuentas-balance-hero-icon {
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--section-color);
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.cuentas-balance-hero-icon svg {
+  font-size: var(--font-size-xxl);
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--text-primary);
+}
+
+.cuentas-balance-hero-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.cuentas-balance-hero-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+.cuentas-balance-hero-value {
+  font-size: clamp(var(--font-size-xl), 4vw, var(--font-size-hero));
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.cuentas-balance-hero-rates {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  line-height: 1.4;
+}
+
+.cuentas-primary-cta {
+  margin-bottom: var(--spacing-sm);
+}
+
+.cuentas-accounts-list {
+  width: 100%;
+}
+
+.cuentas-accounts-list .crud-row-value {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cuentas-error-panel {
+  max-width: 420px;
+  text-align: center;
+}
+
+.cuentas-error-text {
+  margin: 0;
+  font-size: var(--font-size-base);
+  color: var(--color-danger-text-strong);
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .cuentas-balance-hero {
+    padding: var(--spacing-md);
+  }
+
+  .cuentas-hub-title-brand {
+    font-size: var(--font-size-xl);
+  }
+
+  .cuentas-hub-title-context,
+  .cuentas-hub-title-sep {
+    font-size: var(--font-size-base);
+  }
+}
+
 .cuentas-content {}
 
 .cuentas-header {

@@ -34,7 +34,7 @@ function CuadernoDebugModal({ onClose, onReload, onClearList }: CuadernoDebugMod
     } catch (err: unknown) {
       const errorMessage = getTranslatedErrorMessage(
         err,
-        'Error al crear las notas demo. Por favor, intenta de nuevo.'
+        'Error al crear los cuadernos demo. Por favor, intenta de nuevo.'
       )
       showNotification(errorMessage, 'error')
     } finally {
@@ -48,7 +48,7 @@ function CuadernoDebugModal({ onClose, onReload, onClearList }: CuadernoDebugMod
     }
     if (
       !(await confirm({
-        message: '¿Estás seguro de que quieres eliminar TODAS las notas? Esta acción es irreversible.',
+        message: '¿Estás seguro de que quieres eliminar TODOS los cuadernos? Esta acción es irreversible.',
         variant: 'danger',
       }))
     ) {
@@ -60,11 +60,11 @@ function CuadernoDebugModal({ onClose, onReload, onClearList }: CuadernoDebugMod
       await api.deleteAllNotes()
       onClearList()
       onClose()
-      showNotification('Todas las notas han sido eliminadas', 'success')
+      showNotification('Todos los cuadernos han sido eliminados', 'success')
     } catch (err: unknown) {
       const errorMessage = getTranslatedErrorMessage(
         err,
-        'Error al eliminar las notas. Por favor, intenta de nuevo.'
+        'Error al eliminar los cuadernos. Por favor, intenta de nuevo.'
       )
       showNotification(errorMessage, 'error')
     } finally {
@@ -94,7 +94,7 @@ function CuadernoDebugModal({ onClose, onReload, onClearList }: CuadernoDebugMod
               <span className="debug-option-icon">📦</span>
               <div className="debug-option-info">
                 <h3 className="debug-option-title">Crear Notas Demo</h3>
-                <p className="debug-option-description">Crea 5 notas de ejemplo para pruebas</p>
+                <p className="debug-option-description">Crea 5 cuadernos de ejemplo para pruebas</p>
               </div>
             </button>
             <button
@@ -107,7 +107,7 @@ function CuadernoDebugModal({ onClose, onReload, onClearList }: CuadernoDebugMod
               <div className="debug-option-info">
                 <h3 className="debug-option-title">Eliminar Todas las Notas</h3>
                 <p className="debug-option-description">
-                  ⚠️ PELIGROSO: Elimina todas las notas (IRREVERSIBLE)
+                  ⚠️ PELIGROSO: Elimina todos los cuadernos (IRREVERSIBLE)
                 </p>
               </div>
             </button>

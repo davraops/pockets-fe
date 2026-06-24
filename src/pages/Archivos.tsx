@@ -1,7 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { backToHubLabel } from '../constants/hubLabels'
-import { useNavigate } from 'react-router-dom'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import DescriptionIcon from '@mui/icons-material/Description'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import { api } from '../services/api'
@@ -28,11 +25,11 @@ import { devError, devLog } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
 import { useConfirm } from '../contexts/ConfirmContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
+import UtilidadesSubHeader from '../components/utilidades/UtilidadesSubHeader'
 import './AppPage.css'
 import './Archivos.css'
 
 function Archivos() {
-  const navigate = useNavigate()
   const { showNotification } = useNotification()
   const { confirm } = useConfirm()
   const [files, setFiles] = useState<FileAPI[]>([])
@@ -303,19 +300,16 @@ function Archivos() {
   return (
     <>
       <div className="app-page-container">
-        <div className="app-page-content app-page-content-wide crud-page-content archivos-content">
-          <div className="app-toolbar">
-            <button
-              className="app-toolbar-button"
-              onClick={() => navigate('/registros')}
-              aria-label={backToHubLabel('registros')}
-              type="button"
-            >
-              <ArrowBackIcon className="app-toolbar-icon" />
-            </button>
-          </div>
-
-          <h1 className="app-page-title">Archivos</h1>
+        <div className="app-page-content app-page-content-wide crud-page-content archivos-content utilidades-sub-content">
+          <UtilidadesSubHeader
+            title="Archivos"
+            context="Documentos"
+            meta={
+              !isLoading && !error
+                ? `${files.length} archivo${files.length !== 1 ? 's' : ''}`
+                : undefined
+            }
+          />
 
           <CrudSummaryStrip
             ariaLabel="Resumen de archivos"

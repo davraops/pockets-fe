@@ -1,11 +1,8 @@
 /* Calculadora Page Styles */
 .calculadora-content {
   flex-direction: column;
-  gap: 0.75rem;
   align-items: stretch;
   width: 100%;
-  max-width: 500px;
-  margin: 0 auto;
 }
 
 /* Calculadora Container */
@@ -101,7 +98,7 @@
   height: var(--font-size-lg) !important;
 }
 
-@media (max-width: 768px){
+@media (max-width: 768px) {
   .calculadora-display-value {
     font-size: var(--font-size-hero);
   }
@@ -158,7 +155,6 @@
   gap: var(--spacing-md);
 }
 
-/* Botones - HIG: Touch Target (min 48px), Feedback */
 .calculadora-button {
   aspect-ratio: 1;
   min-height: 64px;
@@ -191,7 +187,6 @@
   outline-offset: var(--focus-outline-offset);
 }
 
-/* Botones de Números */
 .calculadora-button-number {
   background: var(--bg-glass);
   color: var(--text-primary);
@@ -204,13 +199,11 @@
   box-shadow: var(--shadow-md);
 }
 
-/* Botón Cero (ocupa 2 columnas) */
 .calculadora-button-zero {
   grid-column: span 2;
   aspect-ratio: 2 / 1;
 }
 
-/* Botones de Operadores */
 .calculadora-button-operator {
   background: var(--accent-primary);
   color: var(--text-on-accent);
@@ -229,7 +222,6 @@
   transform: scale(var(--motion-press-scale));
 }
 
-/* Botón Igual */
 .calculadora-button-equals {
   grid-row: span 2;
   aspect-ratio: 1 / 2;
@@ -250,7 +242,6 @@
   transform: scale(var(--motion-press-scale));
 }
 
-/* Botones de Función (C, Backspace) */
 .calculadora-button-function {
   background: var(--bg-glass-light);
   color: var(--text-secondary);
@@ -271,13 +262,166 @@
   height: var(--font-size-xl) !important;
 }
 
+/* Historial */
+.utilidades-tool-aside .calculadora-history {
+  padding: var(--spacing-lg);
+}
+
+.calculadora-history {
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+.calculadora-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.calculadora-history-title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+}
+
+.calculadora-history-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass-light);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.calculadora-history-clear:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-glass-hover);
+  color: var(--text-primary);
+}
+
+.calculadora-history-clear:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.calculadora-history-clear-icon {
+  font-size: var(--font-size-base) !important;
+  width: var(--font-size-base) !important;
+  height: var(--font-size-base) !important;
+}
+
+.calculadora-history-empty {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  line-height: 1.5;
+  font-family: var(--font-family);
+}
+
+.calculadora-history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.calculadora-history-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.calculadora-history-use {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-glass-light);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass-light);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-base);
+}
+
+.calculadora-history-use:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-glass-hover);
+}
+
+.calculadora-history-use:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.calculadora-history-expression {
+  font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+.calculadora-history-date {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+}
+
+.calculadora-history-copy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  padding: 0;
+  border: 1px solid var(--border-glass-light);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass-light);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.calculadora-history-copy:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-glass-hover);
+  color: var(--text-primary);
+}
+
+.calculadora-history-copy:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.calculadora-history-copy-icon {
+  font-size: var(--font-size-sm) !important;
+  width: 1rem !important;
+  height: 1rem !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
-  .calculadora-content {
-    max-width: 100%;
-    padding: 0 var(--spacing-md);
-  }
-
   .calculadora-container {
     padding: var(--spacing-md);
     gap: var(--spacing-md);
@@ -300,7 +444,9 @@
   .calculadora-display-value {
     font-size: var(--font-size-xxl);
   }
-}@media (max-width: 480px){
+}
+
+@media (max-width: 480px) {
   .calculadora-button {
     min-height: 56px;
     font-size: var(--font-size-base);
@@ -310,4 +456,3 @@
     font-size: var(--font-size-xl);
   }
 }
-

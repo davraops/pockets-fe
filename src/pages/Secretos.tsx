@@ -1,9 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { backToHubLabel } from '../constants/hubLabels'
-import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import LockIcon from '@mui/icons-material/Lock'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { api } from '../services/api'
 import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
@@ -33,11 +30,11 @@ import { devError, isDebugToolsEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
 import { useConfirm } from '../contexts/ConfirmContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
+import UtilidadesSubHeader from '../components/utilidades/UtilidadesSubHeader'
 import './AppPage.css'
 import './Secretos.css'
 
 function Secretos() {
-  const navigate = useNavigate()
   const { showNotification } = useNotification()
   const { confirm } = useConfirm()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -290,48 +287,45 @@ function Secretos() {
   return (
     <>
       <div className="app-page-container">
-        <div className="app-page-content app-page-content-wide crud-page-content secretos-content">
-          <div className="app-toolbar">
-            <button
-              className="app-toolbar-button"
-              onClick={() => navigate('/registros')}
-              aria-label={backToHubLabel('registros')}
-              type="button"
-            >
-              <ArrowBackIcon className="app-toolbar-icon" />
-            </button>
-            <div className="app-toolbar-menu-container" ref={menuRef}>
-              {isDebugToolsEnabled() && (
-                <>
+        <div className="app-page-content app-page-content-wide crud-page-content secretos-content utilidades-sub-content">
+          <UtilidadesSubHeader
+            title="Secretos"
+            context="Vault"
+            meta={
+              !isLoading && !error
+                ? `${secrets.length} guardado${secrets.length !== 1 ? 's' : ''}`
+                : undefined
+            }
+            toolbarActions={
+              isDebugToolsEnabled() ? (
+                <div className="utilidades-sub-menu-container" ref={menuRef}>
                   <button
+                    type="button"
                     className="app-toolbar-button"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                     aria-label="Opciones de depuración"
                     aria-expanded={isMenuOpen}
-                    type="button"
                   >
                     <MoreVertIcon className="app-toolbar-icon" />
                   </button>
                   {isMenuOpen && (
-                    <div className="crud-dropdown-menu">
+                    <div className="utilidades-sub-menu">
                       <button
-                        className="crud-dropdown-menu-item"
+                        type="button"
+                        className="utilidades-sub-menu-item"
                         onClick={() => {
                           setIsDebugModalOpen(true)
                           setIsMenuOpen(false)
                         }}
-                        type="button"
                       >
-                        <span>🐛 Debug</span>
+                        🐛 Debug
                       </button>
                     </div>
                   )}
-                </>
-              )}
-            </div>
-          </div>
-
-          <h1 className="app-page-title">Secretos</h1>
+                </div>
+              ) : null
+            }
+          />
 
           <CrudSummaryStrip
             ariaLabel="Resumen de secretos"

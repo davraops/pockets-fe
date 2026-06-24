@@ -92,13 +92,32 @@ function titleCaseFromSegment(segment: string): string {
     .join(' ')
 }
 
+const DYNAMIC_ROUTE_PREFIX_TITLES: Array<{ prefix: string; title: string }> = [
+  { prefix: '/registros/cuadernos/', title: 'Cuadernos' },
+  { prefix: '/product-readiness/', title: 'Product Readiness' },
+]
+
+function getDynamicRouteTitle(pathname: string): string | undefined {
+  for (const { prefix, title } of DYNAMIC_ROUTE_PREFIX_TITLES) {
+    if (pathname.startsWith(prefix) && pathname.length > prefix.length) {
+      return title
+    }
+  }
+  return undefined
+}
+
 /**
- * Resuelve el título de página: mapa explícito primero, derivación por ruta como fallback.
+ * Resuelve el título de página: mapa explícito primero, rutas dinámicas, derivación por ruta como fallback.
  */
 export function getRouteTitle(pathname: string): string {
   const explicit = ROUTE_TITLES[pathname]
   if (explicit !== undefined) {
     return explicit
+  }
+
+  const dynamic = getDynamicRouteTitle(pathname)
+  if (dynamic !== undefined) {
+    return dynamic
   }
 
   if (pathname === '/' || pathname === '/login') {

@@ -1,7 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { backToHubLabel } from '../constants/hubLabels'
-import { useNavigate } from 'react-router-dom'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import AddIcon from '@mui/icons-material/Add'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import InventoryIcon from '@mui/icons-material/Inventory'
@@ -30,11 +27,11 @@ import { devError, isDebugToolsEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
 import { useConfirm } from '../contexts/ConfirmContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
+import UtilidadesSubHeader from '../components/utilidades/UtilidadesSubHeader'
 import './AppPage.css'
 import './Patrimonio.css'
 
 function Patrimonio() {
-  const navigate = useNavigate()
   const { showNotification } = useNotification()
   const { confirm } = useConfirm()
   const [patrimonyItems, setPatrimonyItems] = useState<PatrimonyItem[]>([])
@@ -184,48 +181,45 @@ function Patrimonio() {
 
   return (
     <div className="app-page-container">
-      <div className="app-page-content app-page-content-wide crud-page-content patrimonio-content">
-        <div className="app-toolbar">
-          <button
-            className="app-toolbar-button"
-            onClick={() => navigate('/registros')}
-            aria-label={backToHubLabel('registros')}
-            type="button"
-          >
-            <ArrowBackIcon className="app-toolbar-icon" />
-          </button>
-          <div className="app-toolbar-menu-container" ref={menuRef}>
-            {isDebugToolsEnabled() && (
-              <>
+      <div className="app-page-content app-page-content-wide crud-page-content patrimonio-content utilidades-sub-content">
+        <UtilidadesSubHeader
+          title="Patrimonio"
+          context="Bienes"
+          meta={
+            !isLoading && !error
+              ? `${patrimonyItems.length} ítem${patrimonyItems.length !== 1 ? 's' : ''}`
+              : undefined
+          }
+          toolbarActions={
+            isDebugToolsEnabled() ? (
+              <div className="utilidades-sub-menu-container" ref={menuRef}>
                 <button
+                  type="button"
                   className="app-toolbar-button"
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   aria-label="Opciones de depuración"
                   aria-expanded={isMenuOpen}
-                  type="button"
                 >
                   <MoreVertIcon className="app-toolbar-icon" />
                 </button>
                 {isMenuOpen && (
-                  <div className="crud-dropdown-menu">
+                  <div className="utilidades-sub-menu">
                     <button
-                      className="crud-dropdown-menu-item"
+                      type="button"
+                      className="utilidades-sub-menu-item"
                       onClick={() => {
                         setIsMenuOpen(false)
                         setIsDebugModalOpen(true)
                       }}
-                      type="button"
                     >
-                      <span>🐛 Debug</span>
+                      🐛 Debug
                     </button>
                   </div>
                 )}
-              </>
-            )}
-          </div>
-        </div>
-
-        <h1 className="app-page-title">Patrimonio</h1>
+              </div>
+            ) : null
+          }
+        />
 
         <CrudSummaryStrip
           ariaLabel="Resumen de patrimonio"

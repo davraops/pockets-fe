@@ -12,6 +12,7 @@ import { api } from '../services/api'
 import { isDebugToolsEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
+import FinanzasSubHeader from '../components/finanzas/FinanzasSubHeader'
 import './AppPage.css'
 import './TarjetasDebito.css'
 
@@ -929,7 +930,7 @@ function TarjetasDebito() {
   return (
     <>
       <div className="app-page-container">
-        <div className="app-page-content tarjetas-debito-content">
+        <div className="app-page-content app-page-content-wide tarjetas-debito-content finanzas-sub-content">
           {isLoading ? (
             <div className="loader-container">
               <div className="loader">
@@ -947,50 +948,40 @@ function TarjetasDebito() {
             </div>
           ) : (
             <>
-              {/* Toolbar - HIG: Clear Navigation */}
-              <div className="tarjetas-debito-toolbar">
-                <button
-                  className="tarjetas-debito-toolbar-button"
-                  onClick={() => navigate('/finanzas')}
-                  aria-label="Volver a Finanzas"
-                  type="button"
-                >
-                  <ArrowBackIcon className="tarjetas-debito-toolbar-icon" />
-                </button>
-                <div className="tarjetas-debito-toolbar-menu-container" ref={menuRef}>
-                  {isDebugToolsEnabled() && (
-                    <>
+              <FinanzasSubHeader
+                title="Tarjetas de débito"
+                context="Pagos"
+                meta={`${cards.length} tarjeta${cards.length !== 1 ? 's' : ''}`}
+                toolbarActions={
+                  isDebugToolsEnabled() ? (
+                    <div className="finanzas-sub-menu-container" ref={menuRef}>
                       <button
-                        className="tarjetas-debito-toolbar-button"
+                        type="button"
+                        className="app-toolbar-button"
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
                         aria-label="Opciones de depuración"
                         aria-expanded={isMenuOpen}
-                        type="button"
                       >
-                        <MoreVertIcon className="tarjetas-debito-toolbar-icon" />
+                        <MoreVertIcon className="app-toolbar-icon" />
                       </button>
                       {isMenuOpen && (
-                        <div className="tarjetas-debito-menu">
+                        <div className="finanzas-sub-menu">
                           <button
-                            className="tarjetas-debito-menu-item"
+                            type="button"
+                            className="finanzas-sub-menu-item"
                             onClick={() => {
                               setIsDebugModalOpen(true)
                               setIsMenuOpen(false)
                             }}
-                            type="button"
                           >
-                            <span className="tarjetas-debito-menu-icon">🐛</span>
-                            Debug
+                            🐛 Debug
                           </button>
                         </div>
                       )}
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Page Title - HIG: Clear Orientation */}
-              <h1 className="tarjetas-debito-page-title">Tarjetas de Débito</h1>
+                    </div>
+                  ) : null
+                }
+              />
 
               <div
                 className="crud-summary-strip"
@@ -1039,47 +1030,41 @@ function TarjetasDebito() {
                   <p className="empty-subtext">Usa el botón de arriba para agregar la primera</p>
                 </div>
               ) : (
-                <div className="tarjetas-debito-list">
+                <div className="crud-card-list">
                   {cards.map(card => {
                     const bancoColor = getBancoColor(card.banco)
                     const subscriptionCount = getSubscriptionCountForCard(card.id)
                     return (
                       <button
                         key={card.id}
-                        className="tarjeta-debito-row"
-                        onClick={() => handleOpenDetailModal(card)}
                         type="button"
+                        className="crud-card-row crud-card-row--debit-card"
+                        onClick={() => handleOpenDetailModal(card)}
                         aria-label={`Ver detalles de ${card.nombre}`}
+                        style={{ '--row-accent': bancoColor } as React.CSSProperties}
                       >
-                        <div className="tarjeta-debito-row-content">
-                          <div className="tarjeta-debito-row-main">
-                            <span className="tarjeta-debito-row-title">{card.nombre}</span>
-                            <span className="tarjeta-debito-row-subtitle">
-                              {card.nombreCuenta} • {card.banco}
+                        <div className="crud-row-content">
+                          <div className="crud-row-main">
+                            <span className="crud-row-title">{card.nombre}</span>
+                            <span className="crud-row-subtitle">
+                              {card.nombreCuenta} · {card.banco}
                             </span>
                           </div>
-                          <div className="tarjeta-debito-row-secondary">
-                            <span className="tarjeta-debito-row-number">
-                              {formatCardNumber(card.ultimos4Digitos)}
-                            </span>
-                            <span className="tarjeta-debito-row-type">
-                              {card.esVirtual ? 'Virtual' : 'Física'}
-                            </span>
+                          <div className="crud-row-secondary">
+                            <span className="crud-row-meta">{formatCardNumber(card.ultimos4Digitos)}</span>
+                            <span className="crud-row-meta">{card.esVirtual ? 'Virtual' : 'Física'}</span>
                             {subscriptionCount > 0 && (
-                              <span className="tarjeta-debito-row-subscriptions">
+                              <span className="crud-row-meta">
                                 {subscriptionCount} subscripción
                                 {subscriptionCount !== 1 ? 'es' : ''}
                               </span>
                             )}
-                            <span className="tarjeta-debito-row-expiration">
+                            <span className="crud-row-meta">
                               Vence {formatDate(card.fechaVencimiento)}
                             </span>
                           </div>
                         </div>
-                        <ChevronRightIcon
-                          className="tarjeta-debito-row-chevron"
-                          aria-hidden="true"
-                        />
+                        <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
                       </button>
                     )
                   })}

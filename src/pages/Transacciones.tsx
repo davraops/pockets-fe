@@ -15,6 +15,7 @@ import { isDebugToolsEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import { emitTransactionSyncEvents } from '../utils/transactionMutation'
+import FinanzasSubHeader from '../components/finanzas/FinanzasSubHeader'
 import './AppPage.css'
 import './Transacciones.css'
 
@@ -1308,7 +1309,7 @@ function Transacciones() {
   return (
     <>
       <div className="app-page-container">
-        <div className="app-page-content transacciones-content">
+        <div className="app-page-content app-page-content-wide transacciones-content finanzas-sub-content">
           {isLoading ? (
             <div className="loader-container">
               <div className="loader">
@@ -1326,49 +1327,40 @@ function Transacciones() {
             </div>
           ) : (
             <>
-              {/* Toolbar - HIG: Navigation */}
-              <div className="transacciones-toolbar">
-                <button
-                  className="transacciones-toolbar-button"
-                  onClick={() => navigate('/finanzas')}
-                  aria-label="Volver a Finanzas"
-                  type="button"
-                >
-                  <ArrowBackIcon className="transacciones-toolbar-icon" />
-                </button>
-                <div className="transacciones-toolbar-menu-container" ref={menuRef}>
-                  {isDebugToolsEnabled() && (
-                    <>
+              <FinanzasSubHeader
+                title="Transacciones"
+                context="Movimientos"
+                meta={`${transactions.length} registrada${transactions.length !== 1 ? 's' : ''}`}
+                toolbarActions={
+                  isDebugToolsEnabled() ? (
+                    <div className="finanzas-sub-menu-container" ref={menuRef}>
                       <button
-                        className="transacciones-toolbar-button"
+                        type="button"
+                        className="app-toolbar-button"
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
                         aria-label="Opciones de depuración"
                         aria-expanded={isMenuOpen}
-                        type="button"
                       >
-                        <MoreVertIcon className="transacciones-toolbar-icon" />
+                        <MoreVertIcon className="app-toolbar-icon" />
                       </button>
                       {isMenuOpen && (
-                        <div className="transacciones-menu">
+                        <div className="finanzas-sub-menu">
                           <button
-                            className="transacciones-menu-item"
+                            type="button"
+                            className="finanzas-sub-menu-item"
                             onClick={() => {
                               setIsMenuOpen(false)
                               setIsDebugModalOpen(true)
                             }}
-                            type="button"
                           >
-                            <span>🐛 Debug</span>
+                            🐛 Debug
                           </button>
                         </div>
                       )}
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Encabezado de Sección - HIG: Clear Navigation */}
-              <h1 className="transacciones-page-title">Transacciones</h1>
+                    </div>
+                  ) : null
+                }
+              />
 
               <div
                 className="crud-summary-strip"
@@ -1427,58 +1419,46 @@ function Transacciones() {
                   <p className="empty-subtext">Usa el botón de arriba para registrar la primera</p>
                 </div>
               ) : (
-                <div className="transactions-list">
+                <div className="glass-group">
                   {transactions.map(transaction => {
                     const isIngreso = transaction.tipo === 'ingreso'
                     const isAhorro = transaction.tipo === 'ahorro'
-                    const transactionClass = isIngreso ? 'income' : isAhorro ? 'savings' : 'expense'
+                    const accentClass = isIngreso
+                      ? 'crud-row-accent-income'
+                      : isAhorro
+                        ? 'crud-row-accent-savings'
+                        : 'crud-row-accent-expense'
+                    const valueClass = isIngreso
+                      ? 'crud-row-value--income'
+                      : isAhorro
+                        ? 'crud-row-value--savings'
+                        : 'crud-row-value--expense'
+                    const metaParts = [
+                      transaction.categoria,
+                      formatDate(transaction.fecha),
+                      transaction.cuentaBancariaNombre,
+                      transaction.presupuestoNombre,
+                    ].filter(Boolean)
+
                     return (
                       <button
                         key={transaction.id}
-                        className={`transaction-item ${transactionClass}`}
-                        onClick={() => handleOpenDetailModal(transaction)}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
-                            handleOpenDetailModal(transaction)
-                          }
-                        }}
-                        aria-label={`Ver detalles de transacción ${transaction.descripcion}. ${isIngreso ? 'Ingreso' : isAhorro ? 'Ahorro' : 'Egreso'}: ${formatBalance(transaction.monto, transaction.moneda)}`}
                         type="button"
+                        className={`crud-inset-row crud-inset-row--tall ${accentClass}`}
+                        onClick={() => handleOpenDetailModal(transaction)}
+                        aria-label={`Ver detalles de transacción ${transaction.descripcion}. ${isIngreso ? 'Ingreso' : isAhorro ? 'Ahorro' : 'Egreso'}: ${formatBalance(transaction.monto, transaction.moneda)}`}
                       >
-                        <div className="transaction-content">
-                          <div className="transaction-header">
-                            <h3 className="transaction-description">{transaction.descripcion}</h3>
-                            <span className={`transaction-amount ${transactionClass}`}>
-                              {isIngreso ? '+' : isAhorro ? '💰' : '-'}
+                        <div className="crud-row-content">
+                          <div className="crud-row-header">
+                            <span className="crud-row-title">{transaction.descripcion}</span>
+                            <span className={`crud-row-value ${valueClass}`}>
+                              {isIngreso ? '+' : isAhorro ? '💰 ' : '−'}
                               {formatBalance(transaction.monto, transaction.moneda)}
                             </span>
+                            <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
                           </div>
-                          <div className="transaction-details">
-                            <span className="transaction-category">{transaction.categoria}</span>
-                            <span className="transaction-separator">•</span>
-                            <span className="transaction-date">
-                              {formatDate(transaction.fecha)}
-                            </span>
-                            {transaction.cuentaBancariaNombre && (
-                              <>
-                                <span className="transaction-separator">•</span>
-                                <span className="transaction-account">
-                                  {transaction.cuentaBancariaNombre}
-                                </span>
-                              </>
-                            )}
-                            {transaction.presupuestoNombre && (
-                              <>
-                                <span className="transaction-separator">•</span>
-                                <span className="transaction-budget">
-                                  {transaction.presupuestoNombre}
-                                </span>
-                              </>
-                            )}
-                          </div>
+                          <p className="crud-row-meta">{metaParts.join(' · ')}</p>
                         </div>
-                        <ChevronRightIcon className="transaction-chevron" />
                       </button>
                     )
                   })}

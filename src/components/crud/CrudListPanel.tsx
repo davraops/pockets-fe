@@ -14,6 +14,7 @@ interface CrudListPanelProps<T> {
   emptySubtext: string
   getItemKey: (item: T) => string
   renderItem: (item: T) => ReactNode
+  renderBody?: () => ReactNode
   listOuterClassName?: string
 }
 
@@ -30,6 +31,7 @@ function CrudListPanel<T>({
   emptySubtext,
   getItemKey,
   renderItem,
+  renderBody,
   listOuterClassName,
 }: CrudListPanelProps<T>) {
   if (isLoading && items.length === 0) {
@@ -72,9 +74,9 @@ function CrudListPanel<T>({
 
   const listContent = (
     <div className="glass-group">
-      {items.map(item => (
-        <Fragment key={getItemKey(item)}>{renderItem(item)}</Fragment>
-      ))}
+      {renderBody
+        ? renderBody()
+        : items.map(item => <Fragment key={getItemKey(item)}>{renderItem(item)}</Fragment>)}
     </div>
   )
 

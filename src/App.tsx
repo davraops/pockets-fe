@@ -270,6 +270,14 @@ function AppContent() {
           }
         />
         <Route
+          path="/registros/cuadernos/:noteId"
+          element={
+            <ProtectedRoute>
+              <Cuadernos />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/registros/cuadernos"
           element={
             <ProtectedRoute>

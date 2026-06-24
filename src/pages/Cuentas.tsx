@@ -4,7 +4,6 @@ import AddIcon from '@mui/icons-material/Add'
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
-import PaymentIcon from '@mui/icons-material/Payment'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
@@ -12,6 +11,7 @@ import { api } from '../services/api'
 import { isDebugToolsEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
+import ListSkeleton from '../components/ListSkeleton'
 import './AppPage.css'
 import './Cuentas.css'
 
@@ -389,14 +389,19 @@ function Cuentas() {
   }
 
   const formatBalance = (balance: number, currency: string = 'COP') => {
-    const locale = currency === 'EUR' ? 'es-ES' : currency === 'USD' ? 'en-US' : 'es-CO'
-    return new Intl.NumberFormat(locale, {
+    return new Intl.NumberFormat('es-CO', {
       style: 'currency',
-      currency: currency,
-      minimumFractionDigits: 1,
-      maximumFractionDigits: 1,
+      currency,
+      minimumFractionDigits: currency === 'COP' ? 0 : 2,
+      maximumFractionDigits: currency === 'COP' ? 0 : 2,
     }).format(balance)
   }
+
+  const formatExchangeRate = (rate: number) =>
+    new Intl.NumberFormat('es-CO', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(rate)
 
   const bancos = [
     'Bancolombia',
@@ -676,94 +681,129 @@ function Cuentas() {
   return (
     <>
       <div className="app-page-container">
-        <div className="app-page-content cuentas-content">
+        <div className="app-page-content app-page-content-wide cuentas-content">
           {isLoading ? (
-            <div className="loader-container">
-              <div className="loader">
-                <div className="loader-spinner"></div>
-                <p className="loader-text">Cargando cuentas...</p>
-              </div>
-            </div>
-          ) : error ? (
-            <div className="loader-container">
-              <div className="loader">
-                <p className="loader-text" style={{ color: 'rgba(255, 59, 48, 0.9)' }}>
-                  {error}
-                </p>
-              </div>
-            </div>
-          ) : (
             <>
-              {/* Toolbar - HIG: Navigation */}
-              <div className="cuentas-toolbar">
+              <div className="app-toolbar cuentas-hub-toolbar">
                 <button
-                  className="cuentas-toolbar-button"
+                  className="app-toolbar-button"
                   onClick={() => navigate('/finanzas')}
                   aria-label="Volver a Finanzas"
                   type="button"
                 >
-                  <ArrowBackIcon className="cuentas-toolbar-icon" />
+                  <ArrowBackIcon className="app-toolbar-icon" />
                 </button>
-                <div className="cuentas-toolbar-menu-container">
-                  {isDebugToolsEnabled() && (
-                    <>
-                      <button
-                        className="cuentas-toolbar-button"
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        aria-label="Opciones de depuración"
-                        aria-expanded={isMenuOpen}
-                        type="button"
-                      >
-                        <MoreVertIcon className="cuentas-toolbar-icon" />
-                      </button>
-                      {isMenuOpen && (
-                        <div className="cuentas-menu">
-                          <button
-                            className="cuentas-menu-item"
-                            onClick={() => {
-                              setIsMenuOpen(false)
-                              setIsDebugModalOpen(true)
-                            }}
-                            type="button"
-                          >
-                            <span>🐛 Debug</span>
-                          </button>
-                        </div>
-                      )}
-                    </>
-                  )}
+              </div>
+              <h1 className="cuentas-hub-title">
+                <span className="cuentas-hub-title-brand">Cuentas</span>
+              </h1>
+              <ListSkeleton
+                variant="summary-card"
+                count={1}
+                className="cuentas-balance-skeleton"
+                aria-label="Cargando resumen"
+              />
+              <ListSkeleton variant="inset-row" count={5} aria-label="Cargando cuentas" />
+            </>
+          ) : error ? (
+            <>
+              <div className="app-toolbar cuentas-hub-toolbar">
+                <button
+                  className="app-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="app-toolbar-icon" />
+                </button>
+              </div>
+              <div className="loader-container">
+                <div className="loader cuentas-error-panel">
+                  <p className="cuentas-error-text" role="alert">
+                    {error}
+                  </p>
                 </div>
               </div>
+            </>
+          ) : (
+            <>
+              <div className="app-toolbar cuentas-hub-toolbar">
+                <button
+                  className="app-toolbar-button"
+                  onClick={() => navigate('/finanzas')}
+                  aria-label="Volver a Finanzas"
+                  type="button"
+                >
+                  <ArrowBackIcon className="app-toolbar-icon" />
+                </button>
+                {isDebugToolsEnabled() && (
+                  <div className="cuentas-toolbar-menu-container">
+                    <button
+                      className="app-toolbar-button"
+                      onClick={() => setIsMenuOpen(!isMenuOpen)}
+                      aria-label="Opciones de depuración"
+                      aria-expanded={isMenuOpen}
+                      type="button"
+                    >
+                      <MoreVertIcon className="app-toolbar-icon" />
+                    </button>
+                    {isMenuOpen && (
+                      <div className="cuentas-menu">
+                        <button
+                          className="cuentas-menu-item"
+                          onClick={() => {
+                            setIsMenuOpen(false)
+                            setIsDebugModalOpen(true)
+                          }}
+                          type="button"
+                        >
+                          <span>🐛 Debug</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
 
-              {/* Encabezado de Sección - HIG: Clear Navigation */}
-              <h1 className="cuentas-page-title">Cuentas</h1>
+              <header className="cuentas-hub-header">
+                <h1 className="cuentas-hub-title">
+                  <span className="cuentas-hub-title-brand">Cuentas</span>
+                  <span className="cuentas-hub-title-sep" aria-hidden="true">
+                    ·
+                  </span>
+                  <span className="cuentas-hub-title-context">Bancos</span>
+                </h1>
+                <p className="cuentas-hub-meta">
+                  {accounts.length === 0
+                    ? 'Sin cuentas registradas'
+                    : `${accounts.length} cuenta${accounts.length !== 1 ? 's' : ''}`}
+                </p>
+              </header>
 
-              <div className="crud-summary-strip" role="region" aria-label="Resumen de cuentas">
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">USD</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
-                    {exchangeRates.USD.toLocaleString('es-CO')} COP
-                  </span>
+              <section className="cuentas-balance-hero" aria-label="Balance total en pesos">
+                <div
+                  className="cuentas-balance-hero-icon"
+                  style={{ '--section-color': 'var(--section-finanzas)' } as React.CSSProperties}
+                  aria-hidden="true"
+                >
+                  <AccountBalanceWalletIcon />
                 </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">EUR</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
-                    {exchangeRates.EUR.toLocaleString('es-CO')} COP
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Total</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--available">
+                <div className="cuentas-balance-hero-body">
+                  <span className="cuentas-balance-hero-label">Total en COP</span>
+                  <span className="cuentas-balance-hero-value">
                     {formatBalance(calculateTotalCOP(), 'COP')}
                   </span>
+                  <p className="cuentas-balance-hero-rates">
+                    Tasa USD {formatExchangeRate(exchangeRates.USD)} COP
+                    <span aria-hidden="true"> · </span>
+                    EUR {formatExchangeRate(exchangeRates.EUR)} COP
+                  </p>
                 </div>
-              </div>
+              </section>
 
               <button
                 type="button"
-                className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+                className="btn-base btn-accent btn-block btn-submit cuentas-primary-cta"
                 onClick={handleOpenModal}
                 aria-label="Agregar cuenta bancaria"
               >
@@ -778,57 +818,53 @@ function Cuentas() {
                   <p className="empty-subtext">Usa el botón de arriba para crear la primera</p>
                 </div>
               ) : (
-                <div className="accounts-list">
-                  <div className="accounts-group">
-                    {[...accounts]
-                      .sort((a, b) => b.balanceCOP - a.balanceCOP)
-                      .map(account => {
-                        const bancoColor = getBancoColor(account.banco)
-                        return (
-                          <button
-                            key={account.id}
-                            className="account-row"
-                            onClick={() => handleOpenDetailModal(account)}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault()
-                                handleOpenDetailModal(account)
-                              }
-                            }}
-                            aria-label={`Ver detalles de cuenta ${account.nombre} del banco ${account.banco}. Balance: ${formatBalance(account.balanceInicial, account.currency)}`}
-                            type="button"
-                          >
-                            <div className="account-row-content">
-                              <div className="account-row-main">
-                                <span className="account-row-title">{account.nombre}</span>
-                                <span className="account-row-balance">
-                                  {formatBalance(account.balanceInicial, account.currency)}
-                                </span>
-                              </div>
-                              <div className="account-row-secondary">
-                                <span className="account-row-bank">{account.banco}</span>
-                                {getCardCountForAccount(account.id) > 0 && (
-                                  <span className="account-row-cards">
-                                    {getCardCountForAccount(account.id)} tarjeta
-                                    {getCardCountForAccount(account.id) !== 1 ? 's' : ''}
-                                  </span>
-                                )}
-                                {account.currency !== 'COP' && (
-                                  <span className="account-row-equivalent">
-                                    ≈ {formatBalance(account.balanceCOP)} COP
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            <ChevronRightIcon className="account-row-chevron" aria-hidden="true" />
-                          </button>
+                <div className="glass-group cuentas-accounts-list">
+                  {[...accounts]
+                    .sort((a, b) => b.balanceCOP - a.balanceCOP)
+                    .map(account => {
+                      const bancoColor = getBancoColor(account.banco)
+                      const cardCount = getCardCountForAccount(account.id)
+                      const metaParts = [account.banco]
+                      if (cardCount > 0) {
+                        metaParts.push(
+                          `${cardCount} tarjeta${cardCount !== 1 ? 's' : ''}`
                         )
-                      })}
-                  </div>
+                      }
+                      const copPreview =
+                        account.currency !== 'COP'
+                          ? `≈ ${formatBalance(account.balanceCOP, 'COP')} COP`
+                          : null
+
+                      return (
+                        <button
+                          key={account.id}
+                          type="button"
+                          className="crud-inset-row crud-inset-row--tall"
+                          style={
+                            {
+                              '--row-accent': bancoColor,
+                              '--row-accent-hover': bancoColor,
+                            } as React.CSSProperties
+                          }
+                          onClick={() => handleOpenDetailModal(account)}
+                          aria-label={`Ver cuenta ${account.nombre}, ${account.banco}. Balance ${formatBalance(account.balanceInicial, account.currency)}`}
+                        >
+                          <div className="crud-row-content">
+                            <div className="crud-row-header">
+                              <span className="crud-row-title">{account.nombre}</span>
+                              <span className="crud-row-value">
+                                {formatBalance(account.balanceInicial, account.currency)}
+                              </span>
+                              <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
+                            </div>
+                            <p className="crud-row-meta">{metaParts.join(' · ')}</p>
+                            {copPreview && <p className="crud-row-preview">{copPreview}</p>}
+                          </div>
+                        </button>
+                      )
+                    })}
                 </div>
               )}
-
-              {/* Botón de volver */}
             </>
           )}
         </div>

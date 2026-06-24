@@ -849,7 +849,7 @@ function UxReadiness() {
 
           <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
-            <li>Validación custom con aria-invalid, aria-describedby, role="alert"</li>
+            <li>Validación custom con aria-invalid, aria-describedby, role=&quot;alert&quot;</li>
             <li>Submit bloqueado con aria-busy + spinner durante login</li>
             <li>Redirect a ruta original tras login (ProtectedRoute state.from)</li>
             <li>prefers-reduced-motion y prefers-contrast en CSS</li>

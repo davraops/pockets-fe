@@ -13,6 +13,7 @@ import { isDebugToolsEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import { emitTransactionSyncEvents } from '../utils/transactionMutation'
+import FinanzasSubHeader from '../components/finanzas/FinanzasSubHeader'
 import './AppPage.css'
 import './TarjetasCredito.css'
 
@@ -1002,7 +1003,7 @@ function TarjetasCredito() {
   return (
     <>
       <div className="app-page-container">
-        <div className="app-page-content tarjetas-credito-content">
+        <div className="app-page-content app-page-content-wide tarjetas-credito-content finanzas-sub-content">
           {isLoading ? (
             <div className="loader-container">
               <div className="loader">
@@ -1020,49 +1021,40 @@ function TarjetasCredito() {
             </div>
           ) : (
             <>
-              {/* Toolbar - HIG: Navigation */}
-              <div className="tarjetas-credito-toolbar">
-                <button
-                  className="tarjetas-credito-toolbar-button"
-                  onClick={() => navigate('/finanzas')}
-                  aria-label="Volver a Finanzas"
-                  type="button"
-                >
-                  <ArrowBackIcon className="tarjetas-credito-toolbar-icon" />
-                </button>
-                <div className="tarjetas-credito-toolbar-menu-container" ref={menuRef}>
-                  {isDebugToolsEnabled() && (
-                    <>
+              <FinanzasSubHeader
+                title="Tarjetas de crédito"
+                context="Cupo"
+                meta={`${cards.length} tarjeta${cards.length !== 1 ? 's' : ''}`}
+                toolbarActions={
+                  isDebugToolsEnabled() ? (
+                    <div className="finanzas-sub-menu-container" ref={menuRef}>
                       <button
-                        className="tarjetas-credito-toolbar-button"
+                        type="button"
+                        className="app-toolbar-button"
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
                         aria-label="Opciones de depuración"
                         aria-expanded={isMenuOpen}
-                        type="button"
                       >
-                        <MoreVertIcon className="tarjetas-credito-toolbar-icon" />
+                        <MoreVertIcon className="app-toolbar-icon" />
                       </button>
                       {isMenuOpen && (
-                        <div className="tarjetas-credito-menu">
+                        <div className="finanzas-sub-menu">
                           <button
-                            className="tarjetas-credito-menu-item"
+                            type="button"
+                            className="finanzas-sub-menu-item"
                             onClick={() => {
                               setIsMenuOpen(false)
                               setIsDebugModalOpen(true)
                             }}
-                            type="button"
                           >
-                            <span>🐛 Debug</span>
+                            🐛 Debug
                           </button>
                         </div>
                       )}
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Encabezado de Sección - HIG: Clear Navigation */}
-              <h1 className="tarjetas-credito-page-title">Tarjetas de Crédito</h1>
+                    </div>
+                  ) : null
+                }
+              />
 
               <div
                 className="crud-summary-strip"
@@ -1128,7 +1120,7 @@ function TarjetasCredito() {
                   <p className="empty-subtext">Usa el botón de arriba para agregar la primera</p>
                 </div>
               ) : (
-                <div className="cards-list">
+                <div className="crud-card-list">
                   {cards.map(card => {
                     const cardColor = '#FF2D55'
                     const usagePercentage =
@@ -1142,60 +1134,46 @@ function TarjetasCredito() {
                     return (
                       <button
                         key={card.id}
-                        className="card-row"
-                        onClick={() => handleOpenDetailModal(card)}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
-                            handleOpenDetailModal(card)
-                          }
-                        }}
-                        aria-label={`Ver detalles de tarjeta ${card.nombre} de ${card.banco}. Cupo disponible: ${formatPrice(cupoDisponible)}`}
                         type="button"
-                        style={{ '--banco-color': cardColor } as React.CSSProperties}
+                        className="crud-card-row crud-card-row--credit"
+                        onClick={() => handleOpenDetailModal(card)}
+                        aria-label={`Ver detalles de tarjeta ${card.nombre} de ${card.banco}. Cupo disponible: ${formatPrice(cupoDisponible)}`}
+                        style={{ '--row-accent': cardColor } as React.CSSProperties}
                       >
-                        <div className="card-row-content">
-                          <div className="card-row-main">
-                            <h3 className="card-row-title">{card.nombre}</h3>
-                            <span className="card-row-available">
-                              {formatPrice(cupoDisponible)} disponible
-                            </span>
+                        <div className="crud-row-content">
+                          <div className="crud-row-main">
+                            <span className="crud-row-title">{card.nombre}</span>
+                            <span className="crud-row-value">{formatPrice(cupoDisponible)}</span>
                           </div>
-                          <div className="card-row-secondary">
-                            <span className="card-row-bank">{card.banco}</span>
+                          <div className="crud-row-secondary">
+                            <span className="crud-row-meta">{card.banco}</span>
                             {card.cupoUsado !== undefined && card.cupoUsado > 0 && (
-                              <>
-                                <span className="card-row-separator">•</span>
-                                <span className="card-row-usage">
-                                  {usagePercentage.toFixed(1)}% usado
-                                </span>
-                              </>
+                              <span className="crud-row-meta">
+                                {usagePercentage.toFixed(1)}% usado
+                              </span>
                             )}
                             {card.beneficios.length > 0 && (
-                              <>
-                                <span className="card-row-separator">•</span>
-                                <span className="card-row-benefits">
-                                  {card.beneficios.length} beneficio
-                                  {card.beneficios.length !== 1 ? 's' : ''}
-                                </span>
-                              </>
+                              <span className="crud-row-meta">
+                                {card.beneficios.length} beneficio
+                                {card.beneficios.length !== 1 ? 's' : ''}
+                              </span>
                             )}
                           </div>
                           {card.cupoUsado !== undefined && card.cupoUsado > 0 && (
-                            <div className="card-row-progress-container">
-                              <div className="card-row-progress-bar">
+                            <div className="crud-row-progress">
+                              <div className="crud-row-progress-bar">
                                 <div
-                                  className="card-row-progress-fill"
+                                  className="crud-row-progress-fill"
                                   style={{
                                     width: `${Math.min(usagePercentage, 100)}%`,
                                     backgroundColor: cardColor,
                                   }}
-                                ></div>
+                                />
                               </div>
                             </div>
                           )}
                         </div>
-                        <ChevronRightIcon className="card-row-chevron" />
+                        <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
                       </button>
                     )
                   })}

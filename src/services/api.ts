@@ -211,7 +211,6 @@ class PocketsAPI {
     nombre_usuario?: string
     nombre_completo?: string
     fecha_nacimiento?: string
-    documento_identidad?: string
   }) {
     return this.request('/user-details', {
       method: 'PUT',
@@ -1091,15 +1090,36 @@ class PocketsAPI {
   }
 
   // Notes (Cuadernos)
-  async createNote(data: { title: string; content: string }) {
+  async createNote(data: {
+    title: string
+    content: string
+    parent_id?: string | null
+    sort_order?: number
+  }) {
     return this.request('/notes', {
       method: 'POST',
       body: data,
     })
   }
 
-  async getNotes(noteId: string | null = null) {
-    const endpoint = noteId ? `/notes?id=${noteId}` : '/notes'
+  async getNotes(
+    options: {
+      id?: string
+      parentId?: string | null
+      roots?: boolean
+    } = {}
+  ) {
+    const params = new URLSearchParams()
+    if (options.id) {
+      params.set('id', options.id)
+    }
+    if (options.roots) {
+      params.set('roots', 'true')
+    } else if (options.parentId) {
+      params.set('parent_id', options.parentId)
+    }
+    const query = params.toString()
+    const endpoint = query ? `/notes?${query}` : '/notes'
     return this.request(endpoint)
   }
 
@@ -1108,6 +1128,8 @@ class PocketsAPI {
     updates: {
       title?: string
       content?: string
+      parent_id?: string | null
+      sort_order?: number
     }
   ) {
     return this.request(`/notes/${noteId}`, {
@@ -1608,26 +1630,13 @@ class PocketsAPI {
   // Judicial Processes (Procesos Judiciales) - Proxy endpoints en pockets-lifestyle
   // Estos endpoints actúan como proxy a la API externa de la Rama Judicial de Colombia
   // para evitar problemas de CORS y 403 Forbidden
-  async getJudicialProcesses(
-    nombreCompleto: string,
-    tipoPersona: 'nat' | 'jur' = 'nat',
-    soloActivos: boolean = false,
-    pagina: number = 1,
-    documentoIdentidad?: string
-  ) {
+  async getJudicialProcesses(nombreCompleto: string, tipoPersona: 'nat' | 'jur' = 'nat', soloActivos: boolean = false, pagina: number = 1) {
     const params = new URLSearchParams({
+      nombre: nombreCompleto,
       tipoPersona: tipoPersona,
       SoloActivos: soloActivos ? 'true' : 'false', // La API espera string 'true' o 'false'
       pagina: pagina.toString(),
     })
-
-    const documento = documentoIdentidad?.replace(/\D/g, '') ?? ''
-    if (documento) {
-      params.set('documento', documento)
-      params.set('tipoDocumento', 'CC')
-    } else {
-      params.set('nombre', nombreCompleto)
-    }
 
     return await this.request(`/judicial-processes?${params.toString()}`)
   }

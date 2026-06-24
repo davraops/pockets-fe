@@ -1,0 +1,164 @@
+/* Shared Utilidades submodule layout — sub-header, toolbar, tool workspaces */
+
+.utilidades-sub-content,
+.cuadernos-content.utilidades-sub-content,
+.archivos-content.utilidades-sub-content,
+.secretos-content.utilidades-sub-content,
+.empleados-content.utilidades-sub-content,
+.vehiculos-content.utilidades-sub-content,
+.patrimonio-content.utilidades-sub-content,
+.calculadora-content.utilidades-sub-content,
+.generador-contrasenas-content.utilidades-sub-content {
+  gap: var(--spacing-md);
+  max-width: min(1120px, 100%);
+}
+
+.utilidades-sub-toolbar {
+  justify-content: space-between;
+  width: 100%;
+}
+
+.utilidades-sub-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-left: auto;
+}
+
+.utilidades-sub-menu-container {
+  position: relative;
+}
+
+.utilidades-sub-menu {
+  position: absolute;
+  top: calc(100% + var(--spacing-xs));
+  right: 0;
+  min-width: 160px;
+  padding: var(--spacing-xs);
+  background: var(--modal-surface);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 10;
+}
+
+.utilidades-sub-menu-item {
+  display: block;
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  text-align: left;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.utilidades-sub-menu-item:hover {
+  background: var(--bg-glass-light);
+}
+
+.utilidades-sub-header {
+  margin-bottom: var(--spacing-xs);
+}
+
+.utilidades-sub-title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35em;
+  margin: 0;
+  font-family: var(--font-family);
+  line-height: 1.2;
+}
+
+.utilidades-sub-title-brand {
+  font-size: clamp(1.5rem, 4vw, 1.875rem);
+  font-weight: var(--font-weight-bold);
+  color: var(--section-utilidades);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.utilidades-sub-title-sep {
+  font-size: var(--font-size-lg);
+  color: var(--text-tertiary);
+}
+
+.utilidades-sub-title-context {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+}
+
+.utilidades-sub-meta {
+  margin: var(--spacing-xs) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+}
+
+/* Tool pages — Calculadora, Generador */
+.utilidades-tool-workspace {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-lg);
+  width: 100%;
+  align-items: start;
+}
+
+.utilidades-tool-workspace--centered {
+  justify-items: center;
+}
+
+.utilidades-tool-main {
+  width: 100%;
+  min-width: 0;
+}
+
+.utilidades-tool-main--narrow {
+  max-width: 400px;
+}
+
+.utilidades-tool-aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  min-width: 0;
+}
+
+.utilidades-tool-hint {
+  margin: var(--spacing-sm) 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  text-align: center;
+  font-family: var(--font-family);
+  line-height: 1.4;
+}
+
+@media (min-width: 900px) {
+  .utilidades-tool-workspace--split {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+    gap: var(--spacing-xl);
+  }
+
+  .utilidades-tool-aside {
+    position: sticky;
+    top: 0;
+    max-height: calc(100vh - var(--layout-status-bar-height, 0px) - 8rem);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 768px) {
+  .utilidades-sub-title-brand {
+    font-size: var(--font-size-xl);
+  }
+
+  .utilidades-sub-title-context,
+  .utilidades-sub-title-sep {
+    font-size: var(--font-size-base);
+  }
+}

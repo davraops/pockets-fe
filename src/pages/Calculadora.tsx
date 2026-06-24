@@ -1,24 +1,54 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { backToHubLabel } from '../constants/hubLabels'
-import { useNavigate } from 'react-router-dom'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import BackspaceIcon from '@mui/icons-material/Backspace'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import CheckIcon from '@mui/icons-material/Check'
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import { useNotification } from '../contexts/NotificationContext'
+import UtilidadesSubHeader from '../components/utilidades/UtilidadesSubHeader'
 import './AppPage.css'
 import './Calculadora.css'
 import { devError } from '../utils/debugTools'
+import {
+  addCalculadoraHistoryEntry,
+  clearCalculadoraHistory,
+  loadCalculadoraHistory,
+  type CalculadoraHistoryEntry,
+} from '../utils/calculadoraHistory'
+
+function formatDisplay(value: string): string {
+  if (value.length > 12) {
+    const num = parseFloat(value)
+    if (isNaN(num)) return value
+    if (Math.abs(num) >= 1e12) {
+      return num.toExponential(6)
+    }
+    return num.toPrecision(12).replace(/\.?0+$/, '')
+  }
+  return value
+}
+
+function formatHistoryTime(timestamp: number): string {
+  return new Intl.DateTimeFormat('es', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(timestamp))
+}
 
 function Calculadora() {
-  const navigate = useNavigate()
   const { showNotification } = useNotification()
   const [display, setDisplay] = useState('0')
   const [previousValue, setPreviousValue] = useState<number | null>(null)
   const [operation, setOperation] = useState<string | null>(null)
   const [waitingForNewValue, setWaitingForNewValue] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [history, setHistory] = useState<CalculadoraHistoryEntry[]>([])
   const calculatorRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setHistory(loadCalculadoraHistory())
+  }, [])
 
   const inputNumber = useCallback(
     (num: string) => {
@@ -100,6 +130,18 @@ function Calculadora() {
     [showNotification]
   )
 
+  const recordHistory = useCallback(
+    (firstValue: number, secondValue: number, currentOperation: string, result: number) => {
+      const entry: CalculadoraHistoryEntry = {
+        expression: `${formatDisplay(String(firstValue))} ${currentOperation} ${formatDisplay(String(secondValue))} = ${formatDisplay(String(result))}`,
+        result: formatDisplay(String(result)),
+        timestamp: Date.now(),
+      }
+      setHistory(addCalculadoraHistoryEntry(entry))
+    },
+    []
+  )
+
   const performOperation = useCallback(
     (nextOperation: string) => {
       const inputValue = parseFloat(display)
@@ -130,12 +172,26 @@ function Calculadora() {
       if (newValue === null) {
         return
       }
+      recordHistory(previousValue, inputValue, operation, newValue)
       setDisplay(String(newValue))
       setPreviousValue(null)
       setOperation(null)
       setWaitingForNewValue(true)
     }
-  }, [display, operation, previousValue, tryCalculate])
+  }, [display, operation, previousValue, recordHistory, tryCalculate])
+
+  const applyHistoryResult = useCallback((result: string) => {
+    setDisplay(result)
+    setPreviousValue(null)
+    setOperation(null)
+    setWaitingForNewValue(true)
+  }, [])
+
+  const handleClearHistory = useCallback(() => {
+    clearCalculadoraHistory()
+    setHistory([])
+    showNotification('Historial borrado', 'success')
+  }, [showNotification])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -210,24 +266,9 @@ function Calculadora() {
     performOperation,
   ])
 
-  const formatDisplay = (value: string): string => {
-    // Limitar a 12 caracteres para que quepa en la pantalla
-    if (value.length > 12) {
-      const num = parseFloat(value)
-      if (isNaN(num)) return value
-      // Usar notación científica si es muy grande
-      if (Math.abs(num) >= 1e12) {
-        return num.toExponential(6)
-      }
-      // Truncar decimales si es necesario
-      return num.toPrecision(12).replace(/\.?0+$/, '')
-    }
-    return value
-  }
-
-  const copyToClipboard = async () => {
+  const copyToClipboard = async (value?: string) => {
     try {
-      const valueToCopy = formatDisplay(display)
+      const valueToCopy = value ?? formatDisplay(display)
       await navigator.clipboard.writeText(valueToCopy)
       setCopied(true)
       showNotification('Número copiado al portapapeles', 'success')
@@ -242,208 +283,252 @@ function Calculadora() {
 
   return (
     <div className="app-page-container">
-      <div className="app-page-content calculadora-content">
-        {/* Toolbar */}
-        <div className="app-toolbar">
-          <button
-            className="app-toolbar-button"
-            onClick={() => navigate('/registros')}
-            aria-label={backToHubLabel('registros')}
-            type="button"
-          >
-            <ArrowBackIcon className="app-toolbar-icon" />
-          </button>
-        </div>
+      <div className="app-page-content app-page-content-wide calculadora-content utilidades-sub-content">
+        <UtilidadesSubHeader
+          title="Calculadora"
+          context="Rápida"
+          meta="Teclado numérico, atajos e historial local"
+        />
 
-        <h1 className="app-page-title">Calculadora</h1>
+        <div className="utilidades-tool-workspace utilidades-tool-workspace--split">
+          <div className="utilidades-tool-main utilidades-tool-main--narrow">
+            <div className="calculadora-container" ref={calculatorRef} tabIndex={-1}>
+              <div className="calculadora-display">
+                <div className="calculadora-display-content">
+                  <div className="calculadora-display-value">{formatDisplay(display)}</div>
+                  <button
+                    className="calculadora-copy-button"
+                    onClick={() => copyToClipboard()}
+                    aria-label="Copiar número"
+                    type="button"
+                    title="Copiar al portapapeles"
+                  >
+                    {copied ? (
+                      <CheckIcon className="calculadora-copy-icon" />
+                    ) : (
+                      <ContentCopyIcon className="calculadora-copy-icon" />
+                    )}
+                  </button>
+                </div>
+              </div>
 
-        {/* Calculadora */}
-        <div className="calculadora-container" ref={calculatorRef} tabIndex={-1}>
-        {/* Display */}
-        <div className="calculadora-display">
-          <div className="calculadora-display-content">
-            <div className="calculadora-display-value">{formatDisplay(display)}</div>
-            <button
-              className="calculadora-copy-button"
-              onClick={copyToClipboard}
-              aria-label="Copiar número"
-              type="button"
-              title="Copiar al portapapeles"
-            >
-              {copied ? (
-                <CheckIcon className="calculadora-copy-icon" />
+              <div className="calculadora-shortcuts">
+                <button
+                  type="button"
+                  className="calculadora-shortcut-button"
+                  onClick={toggleSign}
+                  aria-label="Cambiar signo"
+                >
+                  ±
+                </button>
+                <button
+                  type="button"
+                  className="calculadora-shortcut-button"
+                  onClick={applyPercent}
+                  aria-label="Porcentaje"
+                >
+                  %
+                </button>
+              </div>
+
+              <div className="calculadora-buttons">
+                <button
+                  className="calculadora-button calculadora-button-function"
+                  onClick={clear}
+                  type="button"
+                  aria-label="Limpiar"
+                >
+                  C
+                </button>
+                <button
+                  className="calculadora-button calculadora-button-function"
+                  onClick={backspace}
+                  type="button"
+                  aria-label="Borrar"
+                >
+                  <BackspaceIcon className="calculadora-button-icon" />
+                </button>
+                <button
+                  className="calculadora-button calculadora-button-operator"
+                  onClick={() => performOperation('÷')}
+                  type="button"
+                  aria-label="Dividir"
+                >
+                  ÷
+                </button>
+                <button
+                  className="calculadora-button calculadora-button-operator"
+                  onClick={() => performOperation('×')}
+                  type="button"
+                  aria-label="Multiplicar"
+                >
+                  ×
+                </button>
+
+                <button
+                  className="calculadora-button calculadora-button-number"
+                  onClick={() => inputNumber('7')}
+                  type="button"
+                >
+                  7
+                </button>
+                <button
+                  className="calculadora-button calculadora-button-number"
+                  onClick={() => inputNumber('8')}
+                  type="button"
+                >
+                  8
+                </button>
+                <button
+                  className="calculadora-button calculadora-button-number"
+                  onClick={() => inputNumber('9')}
+                  type="button"
+                >
+                  9
+                </button>
+                <button
+                  className="calculadora-button calculadora-button-operator"
+                  onClick={() => performOperation('-')}
+                  type="button"
+                  aria-label="Restar"
+                >
+                  −
+                </button>
+
+                <button
+                  className="calculadora-button calculadora-button-number"
+                  onClick={() => inputNumber('4')}
+                  type="button"
+                >
+                  4
+                </button>
+                <button
+                  className="calculadora-button calculadora-button-number"
+                  onClick={() => inputNumber('5')}
+                  type="button"
+                >
+                  5
+                </button>
+                <button
+                  className="calculadora-button calculadora-button-number"
+                  onClick={() => inputNumber('6')}
+                  type="button"
+                >
+                  6
+                </button>
+                <button
+                  className="calculadora-button calculadora-button-operator"
+                  onClick={() => performOperation('+')}
+                  type="button"
+                  aria-label="Sumar"
+                >
+                  +
+                </button>
+
+                <button
+                  className="calculadora-button calculadora-button-number"
+                  onClick={() => inputNumber('1')}
+                  type="button"
+                >
+                  1
+                </button>
+                <button
+                  className="calculadora-button calculadora-button-number"
+                  onClick={() => inputNumber('2')}
+                  type="button"
+                >
+                  2
+                </button>
+                <button
+                  className="calculadora-button calculadora-button-number"
+                  onClick={() => inputNumber('3')}
+                  type="button"
+                >
+                  3
+                </button>
+                <button
+                  className="calculadora-button calculadora-button-equals"
+                  onClick={handleEquals}
+                  type="button"
+                  aria-label="Igual"
+                >
+                  =
+                </button>
+
+                <button
+                  className="calculadora-button calculadora-button-number calculadora-button-zero"
+                  onClick={() => inputNumber('0')}
+                  type="button"
+                >
+                  0
+                </button>
+                <button
+                  className="calculadora-button calculadora-button-number"
+                  onClick={inputDecimal}
+                  type="button"
+                  aria-label="Punto decimal"
+                >
+                  .
+                </button>
+              </div>
+            </div>
+
+            <p className="utilidades-tool-hint">
+              Atajos: números, + − × ÷, Enter (=), Backspace, Escape (limpiar)
+            </p>
+          </div>
+
+          <aside className="utilidades-tool-aside">
+            <div className="calculadora-history">
+              <div className="calculadora-history-header">
+                <h2 className="calculadora-history-title">Historial</h2>
+                {history.length > 0 && (
+                  <button
+                    type="button"
+                    className="calculadora-history-clear"
+                    onClick={handleClearHistory}
+                    aria-label="Borrar historial"
+                    title="Borrar historial"
+                  >
+                    <DeleteOutlineIcon className="calculadora-history-clear-icon" />
+                  </button>
+                )}
+              </div>
+
+              {history.length === 0 ? (
+                <p className="calculadora-history-empty">
+                  Las operaciones completadas con = aparecerán aquí.
+                </p>
               ) : (
-                <ContentCopyIcon className="calculadora-copy-icon" />
+                <ul className="calculadora-history-list">
+                  {history.map((entry, index) => (
+                    <li key={`${entry.timestamp}-${index}`} className="calculadora-history-item">
+                      <button
+                        type="button"
+                        className="calculadora-history-use"
+                        onClick={() => applyHistoryResult(entry.result)}
+                        title="Usar resultado"
+                      >
+                        <span className="calculadora-history-expression">{entry.expression}</span>
+                        <span className="calculadora-history-date">
+                          {formatHistoryTime(entry.timestamp)}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        className="calculadora-history-copy"
+                        onClick={() => copyToClipboard(entry.result)}
+                        aria-label={`Copiar ${entry.result}`}
+                        title="Copiar resultado"
+                      >
+                        <ContentCopyIcon className="calculadora-history-copy-icon" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               )}
-            </button>
-          </div>
-        </div>
-
-          <div className="calculadora-shortcuts">
-            <button
-              type="button"
-              className="calculadora-shortcut-button"
-              onClick={toggleSign}
-              aria-label="Cambiar signo"
-            >
-              ±
-            </button>
-            <button
-              type="button"
-              className="calculadora-shortcut-button"
-              onClick={applyPercent}
-              aria-label="Porcentaje"
-            >
-              %
-            </button>
-          </div>
-
-          {/* Botones */}
-          <div className="calculadora-buttons">
-            {/* Fila 1 */}
-            <button
-              className="calculadora-button calculadora-button-function"
-              onClick={clear}
-              type="button"
-              aria-label="Limpiar"
-            >
-              C
-            </button>
-            <button
-              className="calculadora-button calculadora-button-function"
-              onClick={backspace}
-              type="button"
-              aria-label="Borrar"
-            >
-              <BackspaceIcon className="calculadora-button-icon" />
-            </button>
-            <button
-              className="calculadora-button calculadora-button-operator"
-              onClick={() => performOperation('÷')}
-              type="button"
-              aria-label="Dividir"
-            >
-              ÷
-            </button>
-            <button
-              className="calculadora-button calculadora-button-operator"
-              onClick={() => performOperation('×')}
-              type="button"
-              aria-label="Multiplicar"
-            >
-              ×
-            </button>
-
-            {/* Fila 2 */}
-            <button
-              className="calculadora-button calculadora-button-number"
-              onClick={() => inputNumber('7')}
-              type="button"
-            >
-              7
-            </button>
-            <button
-              className="calculadora-button calculadora-button-number"
-              onClick={() => inputNumber('8')}
-              type="button"
-            >
-              8
-            </button>
-            <button
-              className="calculadora-button calculadora-button-number"
-              onClick={() => inputNumber('9')}
-              type="button"
-            >
-              9
-            </button>
-            <button
-              className="calculadora-button calculadora-button-operator"
-              onClick={() => performOperation('-')}
-              type="button"
-              aria-label="Restar"
-            >
-              −
-            </button>
-
-            {/* Fila 3 */}
-            <button
-              className="calculadora-button calculadora-button-number"
-              onClick={() => inputNumber('4')}
-              type="button"
-            >
-              4
-            </button>
-            <button
-              className="calculadora-button calculadora-button-number"
-              onClick={() => inputNumber('5')}
-              type="button"
-            >
-              5
-            </button>
-            <button
-              className="calculadora-button calculadora-button-number"
-              onClick={() => inputNumber('6')}
-              type="button"
-            >
-              6
-            </button>
-            <button
-              className="calculadora-button calculadora-button-operator"
-              onClick={() => performOperation('+')}
-              type="button"
-              aria-label="Sumar"
-            >
-              +
-            </button>
-
-            {/* Fila 4 */}
-            <button
-              className="calculadora-button calculadora-button-number"
-              onClick={() => inputNumber('1')}
-              type="button"
-            >
-              1
-            </button>
-            <button
-              className="calculadora-button calculadora-button-number"
-              onClick={() => inputNumber('2')}
-              type="button"
-            >
-              2
-            </button>
-            <button
-              className="calculadora-button calculadora-button-number"
-              onClick={() => inputNumber('3')}
-              type="button"
-            >
-              3
-            </button>
-            <button
-              className="calculadora-button calculadora-button-equals"
-              onClick={handleEquals}
-              type="button"
-              aria-label="Igual"
-            >
-              =
-            </button>
-
-            {/* Fila 5 */}
-            <button
-              className="calculadora-button calculadora-button-number calculadora-button-zero"
-              onClick={() => inputNumber('0')}
-              type="button"
-            >
-              0
-            </button>
-            <button
-              className="calculadora-button calculadora-button-number"
-              onClick={inputDecimal}
-              type="button"
-              aria-label="Punto decimal"
-            >
-              .
-            </button>
-          </div>
+            </div>
+          </aside>
         </div>
       </div>
     </div>
@@ -451,4 +536,3 @@ function Calculadora() {
 }
 
 export default Calculadora
-

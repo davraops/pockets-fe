@@ -4,7 +4,7 @@ import './Ajustes.css'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import BadgeIcon from '@mui/icons-material/Badge'
+import GavelIcon from '@mui/icons-material/Gavel'
 import DarkModeIcon from '@mui/icons-material/DarkMode'
 import PersonIcon from '@mui/icons-material/Person'
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz'
@@ -21,11 +21,10 @@ import {
   saveUserDisplayName,
 } from '../utils/userDisplayName'
 import {
-  fetchUserJudicialDocument,
-  formatJudicialDocumentInput,
-  getCachedJudicialDocument,
-  saveUserJudicialDocument,
-} from '../utils/userJudicialIdentity'
+  fetchUserFullName,
+  getCachedFullName,
+  saveUserFullName,
+} from '../utils/userFullName'
 
 function Ajustes() {
   const navigate = useNavigate()
@@ -33,11 +32,11 @@ function Ajustes() {
   const { showNotification } = useNotification()
   const { confirm } = useConfirm()
   const [displayName, setDisplayName] = useState('')
-  const [judicialDocument, setJudicialDocument] = useState('')
+  const [fullName, setFullName] = useState('')
   const [accountUsername] = useState(() => api.getCurrentUsername() ?? '')
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
   const [isSavingName, setIsSavingName] = useState(false)
-  const [isSavingDocument, setIsSavingDocument] = useState(false)
+  const [isSavingFullName, setIsSavingFullName] = useState(false)
   const [isDeletingTransactions, setIsDeletingTransactions] = useState(false)
   const [isResettingAccounts, setIsResettingAccounts] = useState(false)
 
@@ -47,13 +46,13 @@ function Ajustes() {
     const loadProfile = async () => {
       setIsLoadingProfile(true)
       try {
-        const [name, document] = await Promise.all([
+        const [name, legalName] = await Promise.all([
           fetchUserDisplayName(),
-          fetchUserJudicialDocument(),
+          fetchUserFullName(),
         ])
         if (!cancelled) {
           setDisplayName(name ?? getDisplayNameFallback() ?? '')
-          setJudicialDocument(document ?? getCachedJudicialDocument() ?? '')
+          setFullName(legalName ?? getCachedFullName() ?? '')
         }
       } finally {
         if (!cancelled) {
@@ -91,22 +90,26 @@ function Ajustes() {
     }
   }
 
-  const handleSaveJudicialDocument = async () => {
-    const normalized = formatJudicialDocumentInput(judicialDocument)
+  const handleSaveFullName = async () => {
+    const trimmed = fullName.trim()
+    if (!trimmed) {
+      showNotification('Escribe tu nombre completo para guardar', 'warning')
+      return
+    }
 
     try {
-      setIsSavingDocument(true)
-      const saved = await saveUserJudicialDocument(normalized)
-      setJudicialDocument(saved ?? '')
-      showNotification('Documento guardado correctamente', 'success')
+      setIsSavingFullName(true)
+      const saved = await saveUserFullName(trimmed)
+      setFullName(saved)
+      showNotification('Nombre completo actualizado correctamente', 'success')
     } catch (err: unknown) {
-      console.error('Error al guardar documento:', err)
+      console.error('Error al guardar nombre completo:', err)
       showNotification(
-        getTranslatedErrorMessage(err, 'No se pudo guardar el documento. Intenta de nuevo.'),
+        getTranslatedErrorMessage(err, 'No se pudo guardar el nombre completo. Intenta de nuevo.'),
         'error'
       )
     } finally {
-      setIsSavingDocument(false)
+      setIsSavingFullName(false)
     }
   }
 
@@ -272,38 +275,37 @@ function Ajustes() {
                     style={{ backgroundColor: '#5856D6' }}
                     aria-hidden="true"
                   >
-                    <BadgeIcon />
+                    <GavelIcon />
                   </div>
                   <div className="crud-row-content">
-                    <span className="crud-row-title">Documento de identidad</span>
+                    <span className="crud-row-title">Nombre completo</span>
                     <span className="crud-row-subtitle">
-                      Se usa para consultar tus procesos judiciales por cédula
+                      Tal como aparece en tus documentos; se usa para consultar procesos judiciales
                     </span>
                   </div>
                 </div>
-                <label className="form-label-base" htmlFor="ajustes-judicial-document">
-                  Número de cédula
+                <label className="form-label-base" htmlFor="ajustes-full-name">
+                  Nombre completo legal
                 </label>
                 <input
-                  id="ajustes-judicial-document"
+                  id="ajustes-full-name"
                   className="form-input-base"
                   type="text"
-                  inputMode="numeric"
-                  value={judicialDocument}
-                  onChange={e => setJudicialDocument(formatJudicialDocumentInput(e.target.value))}
-                  placeholder="Ej. 1234567890"
-                  disabled={isLoadingProfile || isSavingDocument}
-                  autoComplete="off"
-                  maxLength={12}
+                  value={fullName}
+                  onChange={e => setFullName(e.target.value)}
+                  placeholder="Ej. Rafael Augusto Avella Pena"
+                  disabled={isLoadingProfile || isSavingFullName}
+                  autoComplete="name"
+                  maxLength={120}
                 />
                 <button
                   className="btn-base btn-accent btn-block btn-submit"
                   type="button"
-                  onClick={() => void handleSaveJudicialDocument()}
-                  disabled={isLoadingProfile || isSavingDocument}
-                  aria-busy={isSavingDocument}
+                  onClick={() => void handleSaveFullName()}
+                  disabled={isLoadingProfile || isSavingFullName || !fullName.trim()}
+                  aria-busy={isSavingFullName}
                 >
-                  {isSavingDocument ? 'Guardando…' : 'Guardar documento'}
+                  {isSavingFullName ? 'Guardando…' : 'Guardar nombre completo'}
                 </button>
               </div>
             </div>

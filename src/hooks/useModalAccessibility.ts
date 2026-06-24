@@ -9,6 +9,34 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
   )
 }
 
+function isModalDismissControl(element: HTMLElement): boolean {
+  return (
+    element.classList.contains('modal-close') || element.classList.contains('modal-panel-close')
+  )
+}
+
+function pickInitialFocus(container: HTMLElement): HTMLElement | undefined {
+  const focusables = getFocusableElements(container)
+  const active = document.activeElement
+
+  if (
+    active instanceof HTMLElement &&
+    container.contains(active) &&
+    active !== container &&
+    focusables.includes(active)
+  ) {
+    return active
+  }
+
+  return (
+    focusables.find(
+      el => el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT'
+    ) ??
+    focusables.find(el => !isModalDismissControl(el)) ??
+    focusables[0]
+  )
+}
+
 /**
  * Focus trap, Escape to close, and focus restore for modal dialogs.
  */
@@ -18,6 +46,9 @@ export function useModalAccessibility(
   containerRef: RefObject<HTMLElement | null>
 ) {
   const previousFocusRef = useRef<HTMLElement | null>(null)
+  const onCloseRef = useRef(onClose)
+
+  onCloseRef.current = onClose
 
   useEffect(() => {
     if (!isOpen) return
@@ -27,11 +58,7 @@ export function useModalAccessibility(
     if (!container) return
 
     const focusInitial = () => {
-      const focusables = getFocusableElements(container)
-      const preferred = focusables.find(
-        el => el.classList.contains('modal-close') || el.classList.contains('modal-panel-close')
-      )
-      ;(preferred ?? focusables[0] ?? container).focus()
+      pickInitialFocus(container)?.focus()
     }
 
     const raf = requestAnimationFrame(focusInitial)
@@ -39,7 +66,7 @@ export function useModalAccessibility(
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault()
-        onClose()
+        onCloseRef.current()
         return
       }
 
@@ -71,5 +98,5 @@ export function useModalAccessibility(
       document.removeEventListener('keydown', handleKeyDown)
       previousFocusRef.current?.focus?.()
     }
-  }, [isOpen, onClose, containerRef])
+  }, [isOpen, containerRef])
 }

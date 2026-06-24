@@ -6,10 +6,14 @@ import GavelIcon from '@mui/icons-material/Gavel'
 import WorkIcon from '@mui/icons-material/Work'
 import SettingsIcon from '@mui/icons-material/Settings'
 import LogoutIcon from '@mui/icons-material/Logout'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ThemeToggle from '../components/ThemeToggle'
+import HomeDashboard from '../components/home/HomeDashboard'
 import { useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { api } from '../services/api'
+import { useHomeDashboard } from '../hooks/useHomeDashboard'
+import './Home.css'
 import {
   fetchUserDisplayName,
   getCachedDisplayName,
@@ -90,13 +94,24 @@ function getNotificationsAriaLabel(
   return 'Notificaciones'
 }
 
+function formatTodayLine(): string {
+  return new Date().toLocaleDateString('es-CO', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  })
+}
+
 function Home() {
   const navigate = useNavigate()
   const { confirm } = useConfirm()
+  const { data: dashboardData, isRefreshing: isDashboardRefreshing, reload: reloadDashboard } =
+    useHomeDashboard()
   const [displayName, setDisplayName] = useState(() => getDisplayNameFallback() ?? '')
   const [unreadCount, setUnreadCount] = useState(0)
   const [badgeStatus, setBadgeStatus] = useState<BadgeStatus>('loading')
   const [isBadgeRefreshing, setIsBadgeRefreshing] = useState(false)
+  const todayLine = useMemo(() => formatTodayLine(), [])
 
   useEffect(() => {
     document.title = 'Pockets'
@@ -157,13 +172,12 @@ function Home() {
     }
 
     void loadUnreadNotifications()
-    const interval = setInterval(() => void loadUnreadNotifications(true), 30000)
+    const interval = setInterval(() => {
+      void loadUnreadNotifications(true)
+      reloadDashboard()
+    }, 30000)
     return () => clearInterval(interval)
-  }, [])
-
-  const handleAppClick = (app: LauncherApp) => {
-    navigate(app.path)
-  }
+  }, [reloadDashboard])
 
   const handleLogout = async () => {
     if (
@@ -180,9 +194,9 @@ function Home() {
   }
 
   return (
-    <div className="hub-shell">
-      <div className="hub-card">
-        <div className="hub-card-top-toolbar">
+    <div className="hub-shell hub-shell-home">
+      <div className="hub-card hub-card-home">
+        <div className="hub-card-top-toolbar hub-home-toolbar">
           <ThemeToggle />
           <button
             type="button"
@@ -205,55 +219,67 @@ function Home() {
               )}
             </span>
           </button>
-        </div>
-
-        <header className="hub-card-header">
-          <h1 className="auth-card-title">
-            <span className="auth-card-title-brand">Pockets</span>
-            <span className="auth-card-title-sep" aria-hidden="true">
-              —
-            </span>
-            Aplicaciones
-          </h1>
-          {displayName && <p className="hub-greeting">Hola, {displayName}</p>}
-        </header>
-
-        <div className="hub-card-scroll">
-          <nav className="hub-launcher-grid" aria-label="Aplicaciones de Pockets">
-            {launcherApps.map(app => {
-              const IconComponent = app.Icon
-              return (
-                <button
-                  key={app.id}
-                  className="app-icon"
-                  style={{ '--app-color': app.color } as React.CSSProperties}
-                  onClick={() => handleAppClick(app)}
-                  aria-label={app.name}
-                  type="button"
-                >
-                  <div className="app-icon-wrapper">
-                    <div className="app-icon-bg">
-                      <IconComponent className="app-material-icon" aria-hidden={true} />
-                    </div>
-                  </div>
-                  <span className="app-name">{app.name}</span>
-                </button>
-              )
-            })}
-          </nav>
-        </div>
-
-        <footer className="hub-card-footer">
           <button
             type="button"
-            className="btn-base btn-secondary btn-block hub-logout-button"
+            className="hub-toolbar-icon-button hub-home-logout-button"
             onClick={() => void handleLogout()}
             aria-label="Salir. Cerrar sesión"
           >
-            <LogoutIcon aria-hidden={true} />
-            Salir
+            <LogoutIcon className="hub-toolbar-icon" aria-hidden={true} />
           </button>
-        </footer>
+        </div>
+
+        <header className="hub-card-header">
+          <h1 className="hub-home-header-title">
+            <span className="hub-home-header-title-brand">Pockets</span>
+            <span className="hub-home-header-title-sep" aria-hidden="true">
+              ·
+            </span>
+            <span className="hub-home-header-title-context">Inicio</span>
+          </h1>
+          <p className="hub-home-header-meta">
+            {displayName ? (
+              <>
+                Hola, {displayName}
+                <span aria-hidden="true"> · </span>
+              </>
+            ) : null}
+            <span className="hub-home-header-date">{todayLine}</span>
+          </p>
+        </header>
+
+        <div className="hub-home-body">
+          <main className="hub-home-main">
+            <HomeDashboard data={dashboardData} isRefreshing={isDashboardRefreshing} />
+          </main>
+
+          <aside className="hub-home-aside" aria-label="Aplicaciones de Pockets">
+            <h2 className="hub-home-aside-title">Aplicaciones</h2>
+            <nav className="hub-home-apps" aria-label="Navegación por secciones">
+              <div className="glass-group">
+                {launcherApps.map(app => {
+                  const IconComponent = app.Icon
+                  return (
+                    <button
+                      key={app.id}
+                      type="button"
+                      className="hub-home-app-row"
+                      style={{ '--app-color': app.color } as React.CSSProperties}
+                      onClick={() => navigate(app.path)}
+                      aria-label={app.name}
+                    >
+                      <div className="hub-home-app-icon" aria-hidden="true">
+                        <IconComponent />
+                      </div>
+                      <span className="hub-home-app-name">{app.name}</span>
+                      <ChevronRightIcon className="hub-home-app-chevron" aria-hidden="true" />
+                    </button>
+                  )
+                })}
+              </div>
+            </nav>
+          </aside>
+        </div>
       </div>
     </div>
   )

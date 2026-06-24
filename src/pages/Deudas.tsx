@@ -13,6 +13,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
 import { isDebugToolsEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
+import FinanzasSubHeader from '../components/finanzas/FinanzasSubHeader'
 import './AppPage.css'
 import './Deudas.css'
 
@@ -647,7 +648,7 @@ function Deudas() {
   return (
     <>
       <div className="app-page-container">
-        <div className="app-page-content deudas-content">
+        <div className="app-page-content app-page-content-wide deudas-content finanzas-sub-content">
           {isLoading ? (
             <div className="loader-container">
               <div className="loader">
@@ -665,61 +666,58 @@ function Deudas() {
             </div>
           ) : (
             <>
-              {/* Toolbar - HIG: Navigation */}
-              <div className="deudas-toolbar">
-                <button
-                  className="deudas-toolbar-button"
-                  onClick={() => navigate('/finanzas')}
-                  aria-label="Volver a Finanzas"
-                  type="button"
-                >
-                  <ArrowBackIcon className="deudas-toolbar-icon" />
-                </button>
-                <button
-                  className="deudas-toolbar-button"
-                  onClick={toggleSortOrder}
-                  aria-label={sortOrder === 'desc' ? 'Ordenar tasa descendente' : 'Ordenar tasa ascendente'}
-                  type="button"
-                >
-                  {sortOrder === 'desc' ? (
-                    <ArrowDownwardIcon className="deudas-toolbar-icon" />
-                  ) : (
-                    <ArrowUpwardIcon className="deudas-toolbar-icon" />
-                  )}
-                </button>
-                <div className="deudas-toolbar-menu-container" ref={menuRef}>
-                  {isDebugToolsEnabled() && (
-                    <>
-                      <button
-                        className="deudas-toolbar-button"
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        aria-label="Opciones de depuración"
-                        aria-expanded={isMenuOpen}
-                        type="button"
-                      >
-                        <MoreVertIcon className="deudas-toolbar-icon" />
-                      </button>
-                      {isMenuOpen && (
-                        <div className="deudas-menu">
-                          <button
-                            className="deudas-menu-item"
-                            onClick={() => {
-                              setIsMenuOpen(false)
-                              setIsDebugModalOpen(true)
-                            }}
-                            type="button"
-                          >
-                            <span>🐛 Debug</span>
-                          </button>
-                        </div>
+              <FinanzasSubHeader
+                title="Deudas"
+                context="Crédito"
+                meta={`${debts.length} registrada${debts.length !== 1 ? 's' : ''}`}
+                toolbarActions={
+                  <>
+                    <button
+                      type="button"
+                      className="app-toolbar-button"
+                      onClick={toggleSortOrder}
+                      aria-label={
+                        sortOrder === 'desc'
+                          ? 'Ordenar tasa descendente'
+                          : 'Ordenar tasa ascendente'
+                      }
+                    >
+                      {sortOrder === 'desc' ? (
+                        <ArrowDownwardIcon className="app-toolbar-icon" />
+                      ) : (
+                        <ArrowUpwardIcon className="app-toolbar-icon" />
                       )}
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Encabezado de Sección - HIG: Clear Navigation */}
-              <h1 className="deudas-page-title">Deudas</h1>
+                    </button>
+                    {isDebugToolsEnabled() && (
+                      <div className="finanzas-sub-menu-container" ref={menuRef}>
+                        <button
+                          type="button"
+                          className="app-toolbar-button"
+                          onClick={() => setIsMenuOpen(!isMenuOpen)}
+                          aria-label="Opciones de depuración"
+                          aria-expanded={isMenuOpen}
+                        >
+                          <MoreVertIcon className="app-toolbar-icon" />
+                        </button>
+                        {isMenuOpen && (
+                          <div className="finanzas-sub-menu">
+                            <button
+                              type="button"
+                              className="finanzas-sub-menu-item"
+                              onClick={() => {
+                                setIsMenuOpen(false)
+                                setIsDebugModalOpen(true)
+                              }}
+                            >
+                              🐛 Debug
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
+                }
+              />
 
               <div
                 className="crud-summary-strip crud-summary-strip--danger"
@@ -788,62 +786,56 @@ function Deudas() {
                   <p className="empty-subtext">Usa el botón de arriba para registrar la primera</p>
                 </div>
               ) : (
-                <div className="debts-list">
+                <div className="crud-card-list">
                   {debts.map(debt => {
-                    // Verificar si la deuda está asociada a una tarjeta de crédito y está pagada
                     const isCreditCardDebt = isDebtAssociatedWithCreditCard(debt.concepto)
                     const paidPercentage = calculatePaidPercentage(debt.valor, debt.adeudado)
-                    // Cualquier deuda con más del 95% pagada se muestra en verde
                     const isPaidOff =
                       paidPercentage >= 95 ||
                       (isCreditCardDebt && (debt.adeudado === 0 || Math.abs(debt.adeudado) < 0.01))
-                    const debtColor = isPaidOff ? '#34C759' : getDebtColor(debt.concepto) // Verde si está casi pagada
+                    const debtColor = isPaidOff ? '#34C759' : getDebtColor(debt.concepto)
                     return (
                       <button
                         key={debt.id}
-                        className={`debt-row ${isPaidOff ? 'debt-paid-off' : ''}`}
-                        onClick={() => handleOpenDetailModal(debt)}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
-                            handleOpenDetailModal(debt)
-                          }
-                        }}
-                        aria-label={`Ver detalles de deuda ${debt.concepto}. Adeudado: ${formatBalance(debt.adeudado, debt.divisa)}. ${paidPercentage.toFixed(1)}% pagado`}
                         type="button"
-                        style={{ '--debt-color': debtColor } as React.CSSProperties}
+                        className={`crud-card-row crud-card-row--debt${isPaidOff ? ' crud-card-row--paid-off' : ''}`}
+                        onClick={() => handleOpenDetailModal(debt)}
+                        aria-label={`Ver detalles de deuda ${debt.concepto}. Adeudado: ${formatBalance(debt.adeudado, debt.divisa)}. ${paidPercentage.toFixed(1)}% pagado`}
+                        style={{ '--row-accent': debtColor } as React.CSSProperties}
                       >
-                        <div className="debt-row-content">
-                          <div className="debt-row-main">
-                            <h3 className="debt-row-title">{debt.concepto}</h3>
-                            <span className="debt-row-amount">
+                        <div className="crud-row-content">
+                          <div className="crud-row-main">
+                            <span className="crud-row-title">{debt.concepto}</span>
+                            <span className="crud-row-value">
                               {formatBalance(debt.adeudado, debt.divisa)}
                             </span>
                           </div>
-                          <div className="debt-row-secondary">
-                            {debt.referencia && (
-                              <span className="debt-row-reference">{debt.referencia}</span>
-                            )}
-                            {debt.tasaInteres > 0 && (
-                              <span className="debt-row-rate">{debt.tasaInteres}% interés</span>
-                            )}
-                          </div>
-                          <div className="debt-row-progress-container">
-                            <div className="debt-row-progress-bar">
+                          {(debt.referencia || debt.tasaInteres > 0) && (
+                            <div className="crud-row-secondary">
+                              {debt.referencia && (
+                                <span className="crud-row-meta">{debt.referencia}</span>
+                              )}
+                              {debt.tasaInteres > 0 && (
+                                <span className="crud-row-meta">{debt.tasaInteres}% interés</span>
+                              )}
+                            </div>
+                          )}
+                          <div className="crud-row-progress">
+                            <div className="crud-row-progress-bar">
                               <div
-                                className="debt-row-progress-fill"
+                                className="crud-row-progress-fill"
                                 style={{
                                   width: `${Math.min(paidPercentage, 100)}%`,
                                   backgroundColor: debtColor,
                                 }}
-                              ></div>
+                              />
                             </div>
-                            <span className="debt-row-progress-text">
+                            <span className="crud-row-progress-text">
                               {paidPercentage.toFixed(1)}% pagado
                             </span>
                           </div>
                         </div>
-                        <ChevronRightIcon className="debt-row-chevron" />
+                        <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
                       </button>
                     )
                   })}

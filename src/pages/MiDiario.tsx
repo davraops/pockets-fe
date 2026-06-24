@@ -113,21 +113,22 @@ function MiDiario() {
 
     // Contar días consecutivos desde startDate hacia atrás
     let streak = 0
-    let checkDate = new Date(startDate)
+    const checkDate = new Date(startDate)
+    let hasEntry = true
 
-    while (true) {
+    while (hasEntry) {
       const checkDateStr = checkDate.toISOString().split('T')[0]
-      const hasEntry = sortedDates.some(date => {
+      hasEntry = sortedDates.some(date => {
         const dateStr = date.toISOString().split('T')[0]
         return dateStr === checkDateStr
       })
 
-      if (hasEntry) {
-        streak++
-        checkDate.setDate(checkDate.getDate() - 1)
-      } else {
+      if (!hasEntry) {
         break
       }
+
+      streak++
+      checkDate.setDate(checkDate.getDate() - 1)
     }
 
     setCurrentStreak(streak)

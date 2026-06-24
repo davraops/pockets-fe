@@ -14,6 +14,7 @@ import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import { emitTransactionSyncEvents } from '../utils/transactionMutation'
 import ListSkeleton from '../components/ListSkeleton'
+import FinanzasSubHeader from '../components/finanzas/FinanzasSubHeader'
 import './AppPage.css'
 import './Proyectos.css'
 
@@ -631,37 +632,17 @@ function Proyectos() {
   return (
     <>
       <div className="app-page-container">
-        <div className="app-page-content app-page-content-wide crud-page-content proyectos-content">
+        <div className="app-page-content app-page-content-wide crud-page-content proyectos-content finanzas-sub-content">
           {isLoading && projects.length === 0 ? (
             <>
-              <div className="app-toolbar">
-                <button
-                  className="app-toolbar-button"
-                  onClick={() => navigate('/finanzas')}
-                  aria-label="Volver a Finanzas"
-                  type="button"
-                >
-                  <ArrowBackIcon className="app-toolbar-icon" />
-                </button>
-              </div>
-              <h1 className="app-page-title">Proyectos</h1>
+              <FinanzasSubHeader title="Proyectos" context="Ahorro" />
               <div className="crud-card-list">
                 <ListSkeleton variant="inset-row" count={4} aria-label="Cargando proyectos" />
               </div>
             </>
           ) : error && projects.length === 0 ? (
             <>
-              <div className="app-toolbar">
-                <button
-                  className="app-toolbar-button"
-                  onClick={() => navigate('/finanzas')}
-                  aria-label="Volver a Finanzas"
-                  type="button"
-                >
-                  <ArrowBackIcon className="app-toolbar-icon" />
-                </button>
-              </div>
-              <h1 className="app-page-title">Proyectos</h1>
+              <FinanzasSubHeader title="Proyectos" context="Ahorro" />
               <div className="loader-container">
                 <div className="loader finanzas-stats-error-panel">
                   <p className="loader-text loader-text--error" role="alert">
@@ -680,47 +661,40 @@ function Proyectos() {
             </>
           ) : (
             <>
-              <div className="app-toolbar">
-                <button
-                  className="app-toolbar-button"
-                  onClick={() => navigate('/finanzas')}
-                  aria-label="Volver a Finanzas"
-                  type="button"
-                >
-                  <ArrowBackIcon className="app-toolbar-icon" />
-                </button>
-                <div className="app-toolbar-menu-container" ref={menuRef}>
-                  {isDebugToolsEnabled() && (
-                    <>
+              <FinanzasSubHeader
+                title="Proyectos"
+                context="Ahorro"
+                meta={`${projects.length} proyecto${projects.length !== 1 ? 's' : ''}`}
+                toolbarActions={
+                  isDebugToolsEnabled() ? (
+                    <div className="finanzas-sub-menu-container" ref={menuRef}>
                       <button
+                        type="button"
                         className="app-toolbar-button"
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
                         aria-label="Opciones de depuración"
                         aria-expanded={isMenuOpen}
-                        type="button"
                       >
                         <MoreVertIcon className="app-toolbar-icon" />
                       </button>
                       {isMenuOpen && (
-                        <div className="crud-dropdown-menu">
+                        <div className="finanzas-sub-menu">
                           <button
-                            className="crud-dropdown-menu-item"
+                            type="button"
+                            className="finanzas-sub-menu-item"
                             onClick={() => {
                               setIsDebugModalOpen(true)
                               setIsMenuOpen(false)
                             }}
-                            type="button"
                           >
-                            <span>🐛 Debug</span>
+                            🐛 Debug
                           </button>
                         </div>
                       )}
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <h1 className="app-page-title">Proyectos</h1>
+                    </div>
+                  ) : null
+                }
+              />
 
               <div
                 className="crud-summary-strip crud-summary-strip--success"
@@ -779,46 +753,46 @@ function Proyectos() {
                     return (
                       <button
                         key={project.id}
-                        className="crud-card-row crud-card-row--project proyecto-row"
-                        onClick={() => handleOpenDetailModal(project)}
                         type="button"
+                        className="crud-card-row crud-card-row--project"
+                        onClick={() => handleOpenDetailModal(project)}
                         aria-label={`Ver detalles de ${project.nombre}`}
+                        style={{ '--row-accent': statusColor } as React.CSSProperties}
                       >
-                        <div className="proyecto-row-content">
-                          <div className="proyecto-row-main">
-                            <span className="proyecto-row-title">{project.nombre}</span>
-                            <span className="proyecto-row-subtitle" style={{ color: statusColor }}>
+                        <div className="crud-row-content">
+                          <div className="crud-row-main">
+                            <span className="crud-row-title">{project.nombre}</span>
+                            <span className="crud-row-subtitle" style={{ color: statusColor }}>
                               {getStatusText(project.estado)}
                             </span>
                           </div>
-                          <div className="proyecto-row-secondary">
-                            <div className="proyecto-row-progress">
-                              <div className="proyecto-row-progress-bar">
+                          <div className="crud-row-secondary">
+                            <div className="crud-row-progress">
+                              <div className="crud-row-progress-bar">
                                 <div
-                                  className="proyecto-row-progress-fill"
+                                  className="crud-row-progress-fill"
                                   style={{
                                     width: `${Math.min(project.porcentajeProgreso, 100)}%`,
                                     backgroundColor: statusColor,
                                   }}
                                 />
                               </div>
-                              <span className="proyecto-row-progress-text">
+                              <span className="crud-row-progress-text">
                                 {project.porcentajeProgreso.toFixed(1)}%
                               </span>
                             </div>
-                            <span className="proyecto-row-amount">
-                              {formatPrice(project.montoActual)} /{' '}
-                              {formatPrice(project.montoObjetivo)}
+                            <span className="crud-row-meta">
+                              {formatPrice(project.montoActual)} / {formatPrice(project.montoObjetivo)}
                             </span>
-                            <span className="proyecto-row-restante">
+                            <span className="crud-row-meta">
                               Restante: {formatPrice(project.restante)}
                             </span>
-                            <span className="proyecto-row-duration">
+                            <span className="crud-row-meta">
                               {project.duracionMeses} mes{project.duracionMeses !== 1 ? 'es' : ''}
                             </span>
                           </div>
                         </div>
-                        <ChevronRightIcon className="proyecto-row-chevron" aria-hidden="true" />
+                        <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
                       </button>
                     )
                   })}

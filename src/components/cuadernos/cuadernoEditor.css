@@ -1,0 +1,2208 @@
+/* Cuaderno block editor — Notion-style workspace */
+
+.cuaderno-workspace {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+}
+
+.cuaderno-workspace__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xs) 0 var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: transparent;
+}
+
+.cuaderno-workspace__header-start {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.cuaderno-workspace__hierarchy {
+  flex-shrink: 0;
+}
+
+.cuaderno-workspace__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.cuaderno-workspace__back:hover {
+  background: var(--bg-glass-light);
+  color: var(--text-primary);
+}
+
+.cuaderno-workspace__header-end {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.cuaderno-workspace__action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-height: 2.25rem;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--bg-glass) 82%, transparent);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.cuaderno-workspace__action:hover {
+  border-color: color-mix(in srgb, var(--section-utilidades) 40%, var(--border-glass));
+  color: var(--text-primary);
+  background: var(--bg-glass-light);
+}
+
+.cuaderno-workspace__action--primary {
+  background: var(--section-utilidades);
+  color: var(--text-on-accent);
+  border-color: transparent;
+}
+
+@media (max-width: 768px) {
+  .cuaderno-workspace--mobile .cuaderno-workspace__header {
+    padding-top: 0;
+    gap: var(--spacing-sm);
+  }
+
+  .cuaderno-workspace--mobile .cuaderno-workspace__back {
+    min-height: 2.75rem;
+    padding-inline: var(--spacing-sm);
+    font-weight: var(--font-weight-medium);
+  }
+
+  .cuaderno-workspace--mobile .cuaderno-workspace__header-end {
+    width: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: var(--spacing-xs);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .cuaderno-workspace--mobile .cuaderno-workspace__action {
+    flex-shrink: 0;
+    min-height: 2.5rem;
+  }
+
+  .cuaderno-workspace--mobile .cuaderno-workspace__page-body {
+    padding-inline: 0;
+  }
+}
+
+.cuaderno-workspace__action--primary:hover {
+  background: color-mix(in srgb, var(--section-utilidades) 88%, #000);
+  color: var(--text-on-accent);
+}
+
+/* Subpáginas modal */
+.cuaderno-subpages-modal {
+  max-width: 42rem;
+}
+
+.cuaderno-subpages-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-md);
+  border-bottom: 1px solid var(--border-glass-light);
+}
+
+.cuaderno-subpages-modal__header-copy {
+  min-width: 0;
+}
+
+.cuaderno-subpages-modal__eyebrow {
+  margin: 0 0 0.2rem;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--section-utilidades);
+  font-family: var(--font-family);
+}
+
+.cuaderno-subpages-modal__title {
+  line-height: 1.25;
+}
+
+.cuaderno-subpages-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: var(--spacing-sm);
+  margin: 0;
+  padding: var(--spacing-md) var(--spacing-lg);
+  list-style: none;
+  overflow-y: auto;
+  max-height: min(52vh, 28rem);
+}
+
+.cuaderno-subpages-modal__empty {
+  margin: 0;
+  padding: var(--spacing-xl) var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+  text-align: center;
+}
+
+.cuaderno-subpages-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--spacing-md) var(--spacing-lg) var(--spacing-lg);
+  border-top: 1px solid var(--border-glass-light);
+}
+
+.cuaderno-subpages-modal__create {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-height: 2.5rem;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--section-utilidades);
+  color: var(--text-on-accent);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.cuaderno-subpages-modal__create:hover {
+  background: color-mix(in srgb, var(--section-utilidades) 88%, #000);
+}
+
+.cuaderno-workspace__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+}
+
+.cuaderno-workspace__status--error {
+  color: var(--danger-text, #c62828);
+}
+
+.cuaderno-workspace__retry {
+  border: none;
+  padding: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.cuaderno-workspace__retry:hover {
+  opacity: 0.85;
+}
+
+.cuaderno-workspace__overflow {
+  position: relative;
+}
+
+.cuaderno-workspace__overflow-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--bg-glass) 82%, transparent);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.cuaderno-workspace__overflow-trigger:hover {
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+.cuaderno-workspace__overflow-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 200px;
+  padding: var(--spacing-xs);
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cuaderno-workspace__overflow-menu button {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.cuaderno-workspace__overflow-menu button:hover,
+.cuaderno-workspace__overflow-menu button.active,
+.cuaderno-workspace__overflow-menu button:focus-visible {
+  background: var(--bg-glass-light);
+  outline: none;
+}
+
+.cuaderno-workspace__overflow-menu button.active {
+  box-shadow: inset 2px 0 0 var(--accent-primary);
+}
+
+.cuaderno-workspace__overflow-menu button:hover {
+  background: var(--bg-glass-light);
+}
+
+.cuaderno-workspace__overflow-menu button.danger {
+  color: var(--color-danger, #ff3b30);
+}
+
+.cuaderno-workspace__status--read {
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+.cuaderno-workspace--read .cuaderno-workspace__page:not(.cuaderno-workspace__page--has-cover) {
+  padding-top: var(--spacing-xs);
+}
+
+.cuaderno-read-surface {
+  cursor: text;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) 0;
+  margin: 0;
+  transition: background var(--transition-fast);
+  outline: none;
+  background: transparent;
+}
+
+.cuaderno-workspace__page--has-cover .cuaderno-read-surface {
+  padding-top: 0;
+}
+
+.cuaderno-read-surface:hover {
+  background: color-mix(in srgb, var(--bg-glass-light) 45%, transparent);
+}
+
+.cuaderno-read-surface:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.cuaderno-read-title {
+  margin: 0 0 var(--spacing-lg);
+  font-family: var(--font-family);
+  font-size: clamp(2.125rem, 5vw, 2.875rem);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  word-break: break-word;
+}
+
+.cuaderno-page-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  margin-bottom: var(--spacing-lg);
+  width: 100%;
+}
+
+.cuaderno-page-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm) var(--spacing-md);
+  width: 100%;
+  min-width: 0;
+  margin-bottom: var(--spacing-sm);
+}
+
+.cuaderno-page-title-row .cuaderno-read-title,
+.cuaderno-page-title-row .cuaderno-workspace__title {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  margin: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.cuaderno-page-title-row .cuaderno-page-icon-stage--set .cuaderno-page-icon {
+  margin-bottom: 0;
+}
+
+.cuaderno-page-header--read .cuaderno-page-title-row {
+  margin-bottom: var(--spacing-sm);
+}
+
+.cuaderno-page-header--read .cuaderno-read-title {
+  margin-bottom: 0;
+}
+
+.cuaderno-page-header--read .cuaderno-page-comment--read {
+  margin-bottom: var(--spacing-sm);
+}
+
+.cuaderno-page-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.65rem;
+  margin-top: var(--spacing-xs);
+  margin-bottom: var(--spacing-lg);
+  font-family: var(--font-family-sans, inherit);
+  font-size: var(--font-size-xs, 0.75rem);
+  line-height: 1.45;
+  color: var(--text-tertiary);
+}
+
+.cuaderno-page-meta__item {
+  font: inherit;
+  color: inherit;
+}
+
+.cuaderno-page-meta__sep {
+  opacity: 0.45;
+  user-select: none;
+}
+
+.cuaderno-page-header--read:not(:has(.cuaderno-page-comment--read)) .cuaderno-page-title-row {
+  margin-bottom: var(--spacing-sm);
+}
+
+.cuaderno-page-header--edit .cuaderno-page-meta {
+  margin-top: var(--spacing-sm);
+}
+
+.cuaderno-page-icon-stage {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+}
+
+.cuaderno-page-icon-stage--set .cuaderno-page-icon {
+  margin-bottom: 0;
+}
+
+.cuaderno-page-header--over-cover .cuaderno-page-icon-stage--set {
+  padding: 0.2rem;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--modal-surface, #fff) 88%, transparent);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.08),
+    0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.cuaderno-page-header--over-cover .cuaderno-page-icon-stage--set .cuaderno-page-icon {
+  margin-bottom: 0;
+  min-width: calc(var(--cuaderno-page-icon-size, 3.75rem) - 0.4rem);
+  min-height: calc(var(--cuaderno-page-icon-size, 3.75rem) - 0.4rem);
+}
+
+.cuaderno-page-header--over-cover {
+  position: relative;
+  z-index: 2;
+  margin-top: calc(-1 * var(--cuaderno-cover-overlap, 2.25rem));
+}
+
+.cuaderno-page-header--over-cover:not(:has(.cuaderno-page-icon-stage--set)) {
+  margin-top: 0;
+  padding-top: var(--spacing-md);
+}
+
+.cuaderno-page-header--over-cover .cuaderno-read-title,
+.cuaderno-page-header--over-cover .cuaderno-workspace__title {
+  margin-top: 0;
+}
+
+.cuaderno-page-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  min-width: var(--cuaderno-page-icon-size, 3.75rem);
+  min-height: var(--cuaderno-page-icon-size, 3.75rem);
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+
+.cuaderno-page-icon--over-cover:not(.cuaderno-page-icon--set) {
+  border: 1px dashed var(--border-glass);
+  background: color-mix(in srgb, var(--modal-surface, #fff) 86%, transparent);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+}
+
+.cuaderno-page-icon:hover:not(:disabled) {
+  background: var(--bg-glass-light);
+  color: var(--text-secondary);
+}
+
+.cuaderno-page-icon--over-cover:not(.cuaderno-page-icon--set):hover:not(:disabled) {
+  background: color-mix(in srgb, var(--modal-surface, #fff) 94%, transparent);
+  border-color: var(--text-tertiary);
+}
+
+.cuaderno-page-icon--set {
+  cursor: pointer;
+}
+
+.cuaderno-page-icon--readonly {
+  cursor: inherit;
+  pointer-events: none;
+}
+
+.cuaderno-page-icon--readonly:hover {
+  background: transparent;
+}
+
+.cuaderno-page-icon__glyph {
+  font-size: var(--cuaderno-page-icon-size, clamp(3rem, 7vw, 4.25rem));
+  line-height: 1;
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.22));
+}
+
+.cuaderno-page-icon__placeholder {
+  font-size: 1.5rem !important;
+  opacity: 0.88;
+}
+
+.cuaderno-page-icon--over-cover .cuaderno-page-icon__hint {
+  display: none;
+}
+
+.cuaderno-page-icon__hint {
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+}
+
+.cuaderno-page-comment {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-normal);
+  font-size: var(--font-size-sm);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--text-secondary);
+  line-height: 1.55;
+  word-break: break-word;
+}
+
+.cuaderno-page-comment--read {
+  white-space: pre-wrap;
+}
+
+.cuaderno-page-comment--edit {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 0 0 var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  resize: none;
+  overflow: hidden;
+  outline: none;
+  caret-color: var(--accent-primary-solid);
+}
+
+.cuaderno-page-comment--edit::placeholder {
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-normal);
+  color: var(--text-tertiary);
+  opacity: 0.9;
+}
+
+.cuaderno-emoji-picker {
+  position: relative;
+}
+
+/* Paneles flotantes (iconos, portada) — fondo casi opaco */
+.cuaderno-picker-panel {
+  background: var(--modal-surface);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid var(--modal-border-accent, var(--border-glass));
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.cuaderno-emoji-picker__panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 25;
+  width: min(20rem, calc(100vw - 2rem));
+  max-height: min(22rem, calc(100vh - 8rem));
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-sm);
+}
+
+.cuaderno-emoji-picker__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0 calc(-1 * var(--spacing-xs));
+  padding: 0 var(--spacing-xs);
+  scrollbar-width: thin;
+}
+
+.cuaderno-emoji-picker__section + .cuaderno-emoji-picker__section {
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--border-glass);
+}
+
+.cuaderno-emoji-picker__section-title {
+  margin: 0 0 var(--spacing-xs);
+  padding: 0 var(--spacing-xs);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cuaderno-emoji-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 2px;
+}
+
+.cuaderno-emoji-picker__option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.cuaderno-emoji-picker__option:hover,
+.cuaderno-emoji-picker__option.active {
+  background: var(--bg-glass-light);
+}
+
+.cuaderno-emoji-picker__custom {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--border-glass);
+}
+
+.cuaderno-emoji-picker__custom input {
+  flex: 1;
+  min-width: 0;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  background: var(--input-surface, var(--bg-glass));
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+}
+
+.cuaderno-emoji-picker__apply {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  background: var(--input-surface, var(--bg-glass));
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.cuaderno-emoji-picker__apply:hover {
+  border-color: var(--accent-primary);
+}
+
+.cuaderno-emoji-picker__remove {
+  width: 100%;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  text-align: left;
+  cursor: pointer;
+}
+
+.cuaderno-emoji-picker__remove:hover {
+  background: var(--bg-glass-light);
+  color: var(--color-danger, #ff3b30);
+}
+
+.cuaderno-block-viewer {
+  --cuaderno-indent-step: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  user-select: text;
+}
+
+.cuaderno-block-view {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  padding: 0.15rem 0;
+  min-width: 0;
+}
+
+.cuaderno-block-view__marker {
+  flex-shrink: 0;
+  width: 1.25rem;
+  padding-top: 0.2rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.cuaderno-block-view__todo-marker {
+  flex-shrink: 0;
+  width: 1.25rem;
+  padding-top: 0.1rem;
+  color: var(--text-secondary);
+  font-size: var(--font-size-base);
+}
+
+.cuaderno-block-view__text {
+  flex: 1;
+  margin: 0;
+  min-width: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  line-height: 1.65;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.cuaderno-block-view--heading-1 .cuaderno-block-view__text {
+  font-size: 1.65rem;
+  font-weight: var(--font-weight-bold);
+  line-height: 1.25;
+}
+
+.cuaderno-block-view--heading-2 .cuaderno-block-view__text {
+  font-size: 1.35rem;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.3;
+}
+
+.cuaderno-block-view--heading-3 .cuaderno-block-view__text {
+  font-size: 1.15rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+.cuaderno-block-view--quote {
+  width: 100%;
+  margin: var(--spacing-xs) 0;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: 1px solid color-mix(in srgb, var(--section-utilidades) 16%, var(--border-glass));
+  border-left: 4px solid color-mix(in srgb, var(--section-utilidades) 72%, var(--accent-primary));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--section-utilidades) 7%, var(--bg-glass-light));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 5%, transparent),
+    0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.cuaderno-block-view--quote .cuaderno-block-view__text {
+  border-left: none;
+  padding-left: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-base);
+  line-height: 1.7;
+  font-style: italic;
+}
+
+.cuaderno-block-view--quote .cuaderno-block-view__text::before {
+  content: '“';
+  display: block;
+  margin-bottom: 0.15rem;
+  font-family: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+  font-size: 1.65rem;
+  font-style: normal;
+  line-height: 1;
+  color: color-mix(in srgb, var(--section-utilidades) 42%, var(--text-tertiary));
+}
+
+.cuaderno-block-view--code .cuaderno-block-view__text {
+  width: 100%;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: var(--font-size-sm);
+  background: var(--bg-glass);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  overflow-x: auto;
+}
+
+.cuaderno-block-view--code code {
+  font-family: inherit;
+}
+
+.cuaderno-block-view__text--done {
+  text-decoration: line-through;
+  color: var(--text-tertiary);
+}
+
+.cuaderno-read-empty {
+  padding: var(--spacing-xl) 0;
+  text-align: left;
+}
+
+.cuaderno-read-empty__title {
+  margin: 0 0 var(--spacing-sm);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+}
+
+.cuaderno-read-empty__hint {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+}
+
+.cuaderno-workspace__page {
+  --cuaderno-cover-height: clamp(6.5rem, 16vw, 8.5rem);
+  --cuaderno-page-icon-size: clamp(3.25rem, 7vw, 4.25rem);
+  --cuaderno-cover-overlap: calc(var(--cuaderno-page-icon-size) * 0.52);
+
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: var(--spacing-sm) 0 var(--spacing-3xl, 4rem);
+}
+
+.cuaderno-workspace__hero {
+  position: relative;
+  margin: calc(-1 * var(--spacing-sm)) calc(-1 * var(--spacing-xs)) var(--spacing-sm);
+}
+
+.cuaderno-workspace__header--over-cover {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 2;
+  margin: 0;
+  padding: var(--spacing-sm);
+  pointer-events: none;
+}
+
+.cuaderno-workspace__header--over-cover .cuaderno-workspace__header-start,
+.cuaderno-workspace__header--over-cover .cuaderno-workspace__header-end,
+.cuaderno-workspace__header--over-cover .cuaderno-workspace__overflow {
+  pointer-events: auto;
+}
+
+.cuaderno-workspace--has-cover .cuaderno-workspace__back,
+.cuaderno-workspace--has-cover .cuaderno-workspace__action,
+.cuaderno-workspace--has-cover .cuaderno-workspace__overflow-trigger {
+  background: color-mix(in srgb, var(--bg-glass) 78%, transparent);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid color-mix(in srgb, #fff 12%, var(--border-glass));
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  color: var(--text-primary);
+}
+
+.cuaderno-workspace--has-cover .cuaderno-workspace__back {
+  background: color-mix(in srgb, var(--bg-glass) 72%, transparent);
+}
+
+.cuaderno-workspace__page-body {
+  width: 100%;
+  max-width: 100%;
+  padding-inline: var(--spacing-xs);
+}
+
+.cuaderno-workspace__page--has-cover {
+  padding-top: 0;
+}
+
+.cuaderno-page-cover-wrap {
+  position: relative;
+  margin: 0;
+}
+
+.cuaderno-page-cover-wrap--readonly {
+  margin-bottom: 0;
+}
+
+.cuaderno-page-cover {
+  position: relative;
+  isolation: isolate;
+  height: var(--cuaderno-cover-height);
+  width: 100%;
+  border-radius: var(--radius-xl, 16px);
+  background-size: cover;
+  background-position: center;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    0 8px 24px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.cuaderno-page-cover::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 45%;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    color-mix(in srgb, var(--bg-body) 8%, transparent) 100%
+  );
+  pointer-events: none;
+}
+
+.cuaderno-page-cover--editable:hover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.06);
+  pointer-events: none;
+}
+
+.cuaderno-page-cover--readonly {
+  margin-bottom: 0;
+}
+
+.cuaderno-page-cover--editable {
+  position: relative;
+}
+
+.cuaderno-page-cover--editable:hover .cuaderno-page-cover__actions,
+.cuaderno-page-cover--editable:focus-within .cuaderno-page-cover__actions {
+  opacity: 1;
+}
+
+.cuaderno-page-cover__actions {
+  position: absolute;
+  right: var(--spacing-sm);
+  bottom: var(--spacing-sm);
+  display: flex;
+  gap: var(--spacing-xs);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.cuaderno-page-cover__action {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.cuaderno-page-cover__action:hover {
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.cuaderno-page-cover-add {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.cuaderno-page-cover-add:hover {
+  color: var(--text-secondary);
+  background: var(--bg-glass-light);
+}
+
+.cuaderno-cover-picker__panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 25;
+  width: min(20rem, calc(100vw - 2rem));
+  max-height: min(22rem, calc(100vh - 8rem));
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-sm);
+}
+
+.cuaderno-cover-picker__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.cuaderno-cover-picker__section + .cuaderno-cover-picker__section {
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--border-glass);
+}
+
+.cuaderno-cover-picker__section-title {
+  margin: 0 0 var(--spacing-xs);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cuaderno-cover-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--spacing-xs);
+}
+
+.cuaderno-cover-picker__option {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.cuaderno-cover-picker__option:hover {
+  transform: scale(1.03);
+}
+
+.cuaderno-cover-picker__option.active {
+  border-color: var(--accent-primary, #fff);
+  box-shadow: 0 0 0 1px var(--accent-primary, #fff);
+}
+
+.cuaderno-cover-picker__remove {
+  width: 100%;
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: none;
+  border-top: 1px solid var(--border-glass);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  text-align: left;
+  cursor: pointer;
+}
+
+.cuaderno-cover-picker__remove:hover {
+  color: var(--color-danger, #ff3b30);
+}
+
+.cuaderno-workspace__title {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-family: var(--font-family);
+  font-size: clamp(2.125rem, 5vw, 2.875rem);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--spacing-sm);
+  padding: var(--spacing-xs) 0;
+  outline: none;
+  caret-color: var(--accent-primary-solid);
+}
+
+.cuaderno-page-title-row .cuaderno-workspace__title {
+  margin-bottom: 0;
+}
+
+.cuaderno-workspace__title:focus {
+  outline: none;
+}
+
+.cuaderno-workspace__title::placeholder {
+  color: var(--text-tertiary);
+}
+
+.cuaderno-block-row__body,
+.cuaderno-block-view {
+  margin-left: calc(var(--cuaderno-block-indent, 0) * var(--cuaderno-indent-step, 1.5rem));
+}
+
+.cuaderno-block-editor {
+  --cuaderno-indent-step: 1.5rem;
+  --cuaderno-gutter-width: 5.375rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 200px;
+  padding-bottom: 30vh;
+}
+
+.cuaderno-block-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  padding: 0.125rem 0;
+  border-radius: var(--radius-sm);
+  transition:
+    background var(--transition-fast),
+    box-shadow var(--transition-fast);
+  position: relative;
+}
+
+.cuaderno-block-row--active {
+  background: transparent;
+}
+
+.cuaderno-block-row--active .cuaderno-block-row__body {
+  border-left-color: var(--accent-primary-solid);
+  background: color-mix(in srgb, var(--accent-primary-solid) 10%, var(--bg-glass-light));
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.cuaderno-block-row--active:not(.cuaderno-block-row--quote) .cuaderno-block-row__body {
+  box-shadow: none;
+}
+
+.cuaderno-block-row:hover:not(.cuaderno-block-row--active) {
+  background: color-mix(in srgb, var(--text-primary) 3%, transparent);
+}
+
+.cuaderno-block-row--dragging {
+  opacity: 0.45;
+}
+
+.cuaderno-block-row--drop-target::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: var(--accent-primary);
+  border-radius: 1px;
+}
+
+.cuaderno-block-row__gutter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.2rem;
+  width: var(--cuaderno-gutter-width, 5.375rem);
+  min-width: var(--cuaderno-gutter-width, 5.375rem);
+  min-height: calc(1.75rem + 0.35rem);
+  flex-shrink: 0;
+  align-self: flex-start;
+  padding-top: 0.15rem;
+  padding-right: 0.1rem;
+  box-sizing: border-box;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.cuaderno-block-row:hover .cuaderno-block-row__gutter,
+.cuaderno-block-row:focus-within .cuaderno-block-row__gutter,
+.cuaderno-block-row--menu-open .cuaderno-block-row__gutter,
+.cuaderno-block-row--active .cuaderno-block-row__gutter {
+  opacity: 1;
+}
+
+.cuaderno-block-gutter-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  min-width: 1.5rem;
+  min-height: 1.5rem;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.cuaderno-block-gutter-btn:hover {
+  background: var(--bg-glass-light);
+  border-color: var(--border-glass-light);
+  color: var(--text-primary);
+}
+
+.cuaderno-block-gutter-btn--active {
+  background: color-mix(in srgb, var(--section-utilidades) 14%, var(--bg-glass-light));
+  border-color: color-mix(in srgb, var(--section-utilidades) 28%, var(--border-glass));
+  color: var(--text-primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.cuaderno-block-gutter-btn:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: 1px;
+}
+
+.cuaderno-block-gutter-btn--drag {
+  cursor: grab;
+}
+
+.cuaderno-block-gutter-btn--drag:active {
+  cursor: grabbing;
+}
+
+.cuaderno-block-menu {
+  position: fixed;
+  z-index: 1200;
+  width: min(20rem, calc(100vw - 1.5rem));
+  max-height: min(26rem, calc(100vh - 5rem));
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--modal-border-accent, var(--border-glass));
+  border-radius: var(--radius-lg);
+  background: var(--modal-surface, var(--bg-glass-heavy, var(--bg-glass)));
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.06),
+    0 16px 40px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+}
+
+.cuaderno-block-menu__title {
+  margin: 0 0 var(--spacing-sm);
+  padding: 0 var(--spacing-xs);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cuaderno-block-menu__types {
+  overflow-y: auto;
+  padding: 0;
+  margin: 0 calc(-1 * var(--spacing-xs));
+  scrollbar-width: thin;
+}
+
+.cuaderno-block-menu__type {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  width: calc(100% - var(--spacing-xs));
+  margin: 0 var(--spacing-xs);
+  padding: var(--spacing-sm);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-family: var(--font-family);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.cuaderno-block-menu__type:hover,
+.cuaderno-block-menu__type:focus-visible,
+.cuaderno-block-menu__type--highlighted {
+  background: var(--bg-glass-light);
+  border-color: var(--border-glass-light);
+  outline: none;
+}
+
+.cuaderno-block-menu__type--active {
+  background: color-mix(in srgb, var(--section-utilidades) 10%, var(--bg-glass-light));
+  border-color: color-mix(in srgb, var(--section-utilidades) 22%, var(--border-glass));
+  box-shadow: inset 3px 0 0 var(--section-utilidades);
+}
+
+.cuaderno-block-menu__type-icon {
+  flex-shrink: 0;
+  width: 2.125rem;
+  height: 2.125rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-glass-light);
+  background: color-mix(in srgb, var(--bg-glass-light) 80%, transparent);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.cuaderno-block-menu__type-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cuaderno-block-menu__type-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+.cuaderno-block-menu__type-desc {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  line-height: 1.35;
+}
+
+.cuaderno-block-menu__separator {
+  height: 1px;
+  margin: var(--spacing-xs) var(--spacing-sm);
+  background: var(--border-glass-light);
+}
+
+.cuaderno-block-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  min-height: 2.5rem;
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-top: var(--spacing-xs);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.cuaderno-block-menu__item:hover:not(:disabled),
+.cuaderno-block-menu__item:focus-visible {
+  background: color-mix(in srgb, var(--color-danger, #ff3b30) 8%, var(--bg-glass-light));
+  border-color: color-mix(in srgb, var(--color-danger, #ff3b30) 18%, transparent);
+  outline: none;
+}
+
+.cuaderno-block-menu__item--danger {
+  color: var(--color-danger, #ff3b30);
+}
+
+.cuaderno-block-menu__item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cuaderno-block-menu__hint {
+  margin: 0;
+  padding: var(--spacing-xs) var(--spacing-md) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  line-height: 1.35;
+}
+
+.cuaderno-block-row__body {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  min-width: 0;
+  flex: 1;
+  padding-top: 0.15rem;
+  padding-left: var(--spacing-sm);
+  border-left: 3px solid transparent;
+  box-sizing: border-box;
+}
+
+.cuaderno-block-row--heading-1 .cuaderno-block-row__gutter {
+  min-height: calc(2.4rem + 0.35rem);
+  padding-top: 0.35rem;
+}
+
+.cuaderno-block-row--heading-2 .cuaderno-block-row__gutter {
+  min-height: calc(2rem + 0.35rem);
+  padding-top: 0.28rem;
+}
+
+.cuaderno-block-row--heading-3 .cuaderno-block-row__gutter {
+  min-height: calc(1.85rem + 0.35rem);
+  padding-top: 0.22rem;
+}
+
+.cuaderno-block-row--image .cuaderno-block-row__gutter {
+  min-height: 1.75rem;
+  padding-top: 0.2rem;
+}
+
+.cuaderno-block-row--image .cuaderno-block-row__body {
+  justify-content: center;
+}
+
+.cuaderno-block-view--image {
+  display: flex;
+  justify-content: center;
+}
+
+.cuaderno-block-row--column-2 .cuaderno-block-row__gutter,
+.cuaderno-block-row--table .cuaderno-block-row__gutter {
+  min-height: calc(1.75rem + 0.35rem);
+  padding-top: 0.22rem;
+}
+
+.cuaderno-block-marker {
+  flex-shrink: 0;
+  width: 1.25rem;
+  padding-top: 0.35rem;
+  color: var(--text-secondary);
+  font-size: var(--font-size-base);
+  text-align: center;
+  user-select: none;
+}
+
+.cuaderno-block-todo {
+  flex-shrink: 0;
+  padding-top: 0.4rem;
+  display: flex;
+  align-items: center;
+}
+
+.cuaderno-block-todo input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--accent-primary);
+  cursor: pointer;
+}
+
+.cuaderno-todo-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cuaderno-todo-block--read {
+  gap: var(--spacing-xs);
+}
+
+.cuaderno-todo-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  min-width: 0;
+}
+
+.cuaderno-todo-item--read {
+  padding: 0.15rem 0;
+}
+
+.cuaderno-todo-item .cuaderno-block-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.cuaderno-list-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cuaderno-list-block--read {
+  gap: var(--spacing-xs);
+}
+
+.cuaderno-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  min-width: 0;
+}
+
+.cuaderno-list-item--read {
+  padding: 0.15rem 0;
+}
+
+.cuaderno-list-item__marker {
+  flex-shrink: 0;
+  min-width: 1.25rem;
+  margin-top: 0.15rem;
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  color: var(--text-secondary);
+  text-align: center;
+  user-select: none;
+}
+
+.cuaderno-list-block--numbered .cuaderno-list-item__marker {
+  min-width: 1.5rem;
+  text-align: right;
+}
+
+.cuaderno-list-item .cuaderno-block-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.cuaderno-column-block {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-lg);
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+.cuaderno-column-block--read {
+  gap: var(--spacing-xl);
+}
+
+.cuaderno-column-block__col {
+  min-width: 0;
+}
+
+.cuaderno-column-block__col .cuaderno-block-input,
+.cuaderno-column-block__col .cuaderno-block-view__text {
+  width: 100%;
+}
+
+.cuaderno-block-row--column-2 .cuaderno-block-row__body,
+.cuaderno-block-row--table .cuaderno-block-row__body {
+  padding-left: 0;
+  margin-left: 0;
+}
+
+.cuaderno-table-block {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+.cuaderno-table-block__scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass-lighter, transparent);
+}
+
+.cuaderno-table-block__table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.cuaderno-table-block__corner,
+.cuaderno-table-block__row-head,
+.cuaderno-table-block__col-head {
+  width: 2.1rem;
+  min-width: 2.1rem;
+  padding: 0;
+  border: 1px solid var(--border-glass);
+  background: color-mix(in srgb, var(--bg-glass-light) 85%, transparent);
+  vertical-align: middle;
+  text-align: center;
+}
+
+.cuaderno-table-block__row-head {
+  font-weight: var(--font-weight-normal);
+}
+
+.cuaderno-table-block__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    background var(--transition-fast),
+    opacity var(--transition-fast);
+}
+
+.cuaderno-table-block__remove:hover:not(:disabled) {
+  color: var(--color-danger, #ff3b30);
+  border-color: color-mix(in srgb, var(--color-danger, #ff3b30) 35%, transparent);
+  background: color-mix(in srgb, var(--color-danger, #ff3b30) 8%, transparent);
+}
+
+.cuaderno-table-block__remove:disabled {
+  opacity: 0.28;
+  cursor: not-allowed;
+}
+
+.cuaderno-table-block__remove:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.cuaderno-table-block__cell {
+  border: 1px solid var(--border-glass);
+  padding: 0;
+  vertical-align: top;
+  min-width: 6rem;
+}
+
+.cuaderno-table-block__cell .cuaderno-block-input {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  min-height: 2.25rem;
+}
+
+.cuaderno-table-block--read .cuaderno-table-block__cell {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
+.cuaderno-table-block__toolbar {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+}
+
+.cuaderno-table-block__tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.cuaderno-table-block__tool:hover {
+  color: var(--text-secondary);
+  border-color: var(--accent-primary);
+  background: var(--bg-glass-light);
+}
+
+.cuaderno-table-block__tool--danger:not(:disabled):hover {
+  color: var(--color-danger, #ff3b30);
+  border-color: color-mix(in srgb, var(--color-danger, #ff3b30) 40%, var(--border-glass));
+  background: color-mix(in srgb, var(--color-danger, #ff3b30) 8%, transparent);
+}
+
+.cuaderno-table-block__tool:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .cuaderno-column-block {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+}
+
+.cuaderno-block-input {
+  flex: 1;
+  width: 100%;
+  min-width: 1ch;
+  min-height: 1.75rem;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  line-height: 1.65;
+  color: var(--text-primary);
+  padding: 0.2rem 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  caret-color: var(--accent-primary-solid);
+}
+
+.cuaderno-block-input--empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-tertiary);
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
+.cuaderno-block-input--empty.cuaderno-block-input--focused::before {
+  opacity: 0;
+}
+
+.cuaderno-block-input--focused,
+.cuaderno-block-input:focus {
+  outline: none;
+}
+
+.cuaderno-block-row--heading-1 .cuaderno-block-input {
+  font-size: 1.65rem;
+  font-weight: var(--font-weight-bold);
+  line-height: 1.25;
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+}
+
+.cuaderno-block-row--heading-2 .cuaderno-block-input {
+  font-size: 1.35rem;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.3;
+  padding-top: 0.25rem;
+}
+
+.cuaderno-block-row--heading-3 .cuaderno-block-input {
+  font-size: 1.15rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+.cuaderno-block-row--quote .cuaderno-block-row__body {
+  position: relative;
+  width: 100%;
+  margin: var(--spacing-xs) 0;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: 1px solid color-mix(in srgb, var(--section-utilidades) 16%, var(--border-glass));
+  border-left: 4px solid color-mix(in srgb, var(--section-utilidades) 72%, var(--accent-primary));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--section-utilidades) 7%, var(--bg-glass-light));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 5%, transparent),
+    0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.cuaderno-block-row--quote .cuaderno-block-row__body::before {
+  content: '“';
+  position: absolute;
+  top: var(--spacing-md);
+  left: var(--spacing-md);
+  font-family: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+  font-size: 1.65rem;
+  line-height: 1;
+  color: color-mix(in srgb, var(--section-utilidades) 42%, var(--text-tertiary));
+  pointer-events: none;
+  user-select: none;
+}
+
+.cuaderno-block-row--quote .cuaderno-block-input {
+  padding-left: 1.35rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  line-height: 1.7;
+}
+
+.cuaderno-block-row--quote .cuaderno-block-input--empty[data-placeholder]::before {
+  font-style: italic;
+}
+
+.cuaderno-block-row--code .cuaderno-block-input {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: var(--font-size-sm);
+  background: var(--bg-glass);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  line-height: 1.5;
+}
+
+.cuaderno-block-row--to-do .cuaderno-todo-item:has(input:checked) .cuaderno-block-input {
+  text-decoration: line-through;
+  color: var(--text-tertiary);
+}
+
+.cuaderno-block-divider {
+  width: 100%;
+  height: 1px;
+  margin: var(--spacing-md) 0;
+  background: var(--border-glass);
+  border: none;
+}
+
+.cuaderno-image-block {
+  margin: var(--spacing-xs) auto var(--spacing-md);
+  width: fit-content;
+  max-width: 100%;
+}
+
+.cuaderno-image-block__img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  margin-inline: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-glass-light);
+  background: color-mix(in srgb, var(--bg-glass-light) 40%, transparent);
+  box-shadow: var(--shadow-sm);
+}
+
+.cuaderno-block-input--rich code {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.92em;
+  background: var(--bg-glass);
+  border-radius: 3px;
+  padding: 0.05em 0.35em;
+}
+
+.cuaderno-rich-text-content strong {
+  font-weight: var(--font-weight-bold);
+}
+
+.cuaderno-rich-text-content em {
+  font-style: italic;
+}
+
+.cuaderno-rich-text-content u {
+  text-decoration: underline;
+}
+
+.cuaderno-rich-text-content s {
+  text-decoration: line-through;
+}
+
+.cuaderno-rich-text-content code {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.92em;
+  background: var(--bg-glass);
+  border-radius: 3px;
+  padding: 0.05em 0.35em;
+}
+
+.cuaderno-inline-toolbar {
+  position: fixed;
+  z-index: 1200;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.cuaderno-inline-toolbar__btn {
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.45rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.cuaderno-inline-toolbar__btn:hover,
+.cuaderno-inline-toolbar__btn--active {
+  background: var(--bg-glass-light);
+  color: var(--text-primary);
+}
+
+.cuaderno-inline-toolbar__btn--active {
+  box-shadow: inset 0 0 0 1px var(--accent-primary);
+}
+
+.cuaderno-data-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: var(--spacing-lg);
+}
+
+.cuaderno-data-panel__sheet {
+  width: min(720px, 100%);
+  max-height: 85vh;
+  overflow: auto;
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-xl);
+}
+
+.cuaderno-data-panel__tabs {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.cuaderno-data-panel__tabs button {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass);
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  cursor: pointer;
+}
+
+.cuaderno-data-panel__tabs button.active {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: var(--text-on-accent);
+}
+
+.cuaderno-data-panel__hint {
+  margin: 0 0 var(--spacing-md);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.cuaderno-data-panel__textarea {
+  width: 100%;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass-light);
+  color: var(--text-primary);
+  resize: vertical;
+}
+
+.cuaderno-data-panel__error {
+  margin: var(--spacing-sm) 0 0;
+  color: var(--color-danger, #ff3b30);
+  font-size: var(--font-size-sm);
+}
+
+.cuaderno-data-panel__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-lg);
+}
+
+@media (max-width: 640px) {
+  .cuaderno-block-editor {
+    --cuaderno-gutter-width: 5rem;
+  }
+
+  .cuaderno-block-row__gutter {
+    opacity: 1;
+    gap: 0.15rem;
+  }
+
+  .cuaderno-block-gutter-btn {
+    width: 1.4375rem;
+    height: 1.4375rem;
+    min-width: 1.4375rem;
+    min-height: 1.4375rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (hover: none) {
+  .cuaderno-block-row__gutter {
+    opacity: 1;
+  }
+}
+
+.cuaderno-internal-link {
+  position: relative;
+  z-index: 1;
+  color: var(--accent-primary);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent-primary) 45%, transparent);
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.cuaderno-internal-link:hover {
+  text-decoration-color: var(--accent-primary);
+}
+
+.cuaderno-block-input .cuaderno-internal-link {
+  pointer-events: none;
+}
+
+.cuaderno-link-picker {
+  position: fixed;
+  z-index: 1200;
+  min-width: 14rem;
+  max-width: 20rem;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass-heavy, var(--bg-glass));
+  box-shadow: var(--shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.18));
+  backdrop-filter: blur(12px);
+}
+
+.cuaderno-link-picker__title {
+  margin: 0 0 var(--spacing-xs);
+  padding: 0 var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cuaderno-link-picker__empty {
+  margin: 0;
+  padding: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.cuaderno-link-picker__item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-sm);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.cuaderno-link-picker__item:hover,
+.cuaderno-link-picker__item--active,
+.cuaderno-link-picker__item:focus-visible {
+  background: var(--bg-glass-light);
+  outline: none;
+}
+
+.cuaderno-link-picker__item--active {
+  background: color-mix(in srgb, var(--accent-primary) 12%, var(--bg-glass-light));
+  box-shadow: inset 2px 0 0 var(--accent-primary);
+}
+
+.cuaderno-link-picker__icon {
+  flex-shrink: 0;
+  color: var(--accent-primary);
+}
+
+.cuaderno-link-picker__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cuaderno-link-picker__footer {
+  margin: var(--spacing-xs) 0 0;
+  padding: var(--spacing-xs) var(--spacing-sm) 0;
+  border-top: 1px solid var(--border-glass);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.cuaderno-link-picker__footer kbd {
+  display: inline-block;
+  padding: 0 0.25rem;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  background: var(--bg-glass-light);
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.cuaderno-slash-picker {
+  position: fixed;
+  z-index: 1200;
+  min-width: 16rem;
+  max-width: 22rem;
+  max-height: 18rem;
+  overflow-y: auto;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass-heavy, var(--bg-glass));
+  box-shadow: var(--shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.18));
+  backdrop-filter: blur(12px);
+}
+
+.cuaderno-slash-picker__title {
+  margin: 0 0 var(--spacing-xs);
+  padding: 0 var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cuaderno-slash-picker__empty {
+  margin: 0;
+  padding: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.cuaderno-slash-picker__option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-sm);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  text-align: left;
+  cursor: pointer;
+}
+
+.cuaderno-slash-picker__option:hover,
+.cuaderno-slash-picker__option--active,
+.cuaderno-slash-picker__option:focus-visible {
+  background: var(--bg-glass-light);
+  outline: none;
+}
+
+.cuaderno-slash-picker__option--active {
+  background: color-mix(in srgb, var(--accent-primary) 12%, var(--bg-glass-light));
+  box-shadow: inset 2px 0 0 var(--accent-primary);
+}
+
+.cuaderno-slash-picker__icon {
+  flex-shrink: 0;
+  min-width: 1.75rem;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.cuaderno-slash-picker__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.cuaderno-slash-picker__label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.cuaderno-slash-picker__description {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.35;
+}

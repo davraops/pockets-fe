@@ -1,13 +1,11 @@
 import { useState, useCallback, useEffect } from 'react'
-import { backToHubLabel } from '../constants/hubLabels'
 import { sectionColor } from '../constants/sectionColors'
-import { useNavigate } from 'react-router-dom'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import LockIcon from '@mui/icons-material/Lock'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { useNotification } from '../contexts/NotificationContext'
+import UtilidadesSubHeader from '../components/utilidades/UtilidadesSubHeader'
 import './AppPage.css'
 import './GeneradorContrasenas.css'
 import { devError } from '../utils/debugTools'
@@ -18,7 +16,6 @@ interface PasswordHistory {
 }
 
 function GeneradorContrasenas() {
-  const navigate = useNavigate()
   const { showNotification } = useNotification()
   const [password, setPassword] = useState<string>('')
   const [length, setLength] = useState<number>(16)
@@ -190,162 +187,69 @@ function GeneradorContrasenas() {
 
   return (
     <div className="app-page-container">
-      <div className="app-page-content app-page-content-wide crud-page-content generador-contrasenas-content">
-        {/* Toolbar */}
-        <div className="app-toolbar">
-          <button
-            className="app-toolbar-button"
-            onClick={() => navigate('/registros')}
-            aria-label={backToHubLabel('registros')}
-            type="button"
-          >
-            <ArrowBackIcon className="app-toolbar-icon" />
-          </button>
-        </div>
+      <div className="app-page-content app-page-content-wide crud-page-content generador-contrasenas-content utilidades-sub-content">
+        <UtilidadesSubHeader
+          title="Generador"
+          context="Contraseñas"
+          meta="Historial de sesión local"
+        />
 
-        <h1 className="app-page-title">Generador de Contraseñas</h1>
-
-        {/* Generador de Contraseñas */}
-        <div className="password-generator">
-          {/* Contraseña Generada */}
-          <div className="password-display">
-            <div className="password-output">
-              <input
-                type="text"
-                value={password}
-                readOnly
-                className="password-input"
-                placeholder="Tu contraseña aparecerá aquí"
-                aria-label="Contraseña generada"
-              />
-              <div className="password-actions">
-                <button
-                  className="password-action-button"
-                  onClick={copyToClipboard}
-                  aria-label="Copiar contraseña"
-                  type="button"
-                  disabled={!password}
-                >
-                  {copied ? (
-                    <CheckCircleIcon className="password-action-icon" />
-                  ) : (
-                    <ContentCopyIcon className="password-action-icon" />
-                  )}
-                </button>
-                <button
-                  className="password-action-button"
-                  onClick={generatePassword}
-                  aria-label="Generar nueva contraseña"
-                  type="button"
-                >
-                  <RefreshIcon className="password-action-icon" />
-                </button>
-              </div>
-            </div>
-
-            {/* Indicador de Fortaleza */}
-            {password && (
-              <div className="password-strength">
-                <div className="password-strength-label">
-                  <LockIcon className="password-strength-icon" />
-                  <span>Fortaleza: {strength.label}</span>
-                </div>
-                <div className="password-strength-bar">
-                  <div
-                    className="password-strength-fill"
-                    style={{
-                      width: `${(strength.level / 4) * 100}%`,
-                      backgroundColor: strength.color,
-                    }}
-                  />
+        <div className="utilidades-tool-workspace utilidades-tool-workspace--split">
+          <div className="utilidades-tool-main">
+            <div className="password-display">
+              <div className="password-output">
+                <input
+                  type="text"
+                  value={password}
+                  readOnly
+                  className="password-input"
+                  placeholder="Tu contraseña aparecerá aquí"
+                  aria-label="Contraseña generada"
+                />
+                <div className="password-actions">
+                  <button
+                    className="password-action-button"
+                    onClick={copyToClipboard}
+                    aria-label="Copiar contraseña"
+                    type="button"
+                    disabled={!password}
+                  >
+                    {copied ? (
+                      <CheckCircleIcon className="password-action-icon" />
+                    ) : (
+                      <ContentCopyIcon className="password-action-icon" />
+                    )}
+                  </button>
+                  <button
+                    className="password-action-button"
+                    onClick={generatePassword}
+                    aria-label="Generar nueva contraseña"
+                    type="button"
+                  >
+                    <RefreshIcon className="password-action-icon" />
+                  </button>
                 </div>
               </div>
-            )}
-          </div>
 
-          {/* Configuración */}
-          <div className="password-settings">
-            <h3 className="password-settings-title">Configuración</h3>
-
-            {/* Longitud */}
-            <div className="password-setting-group">
-              <div className="password-setting-header">
-                <label htmlFor="length" className="password-setting-label">
-                  Longitud: {length} caracteres
-                </label>
-                <span className="password-setting-value">{length}</span>
-              </div>
-              <input
-                type="range"
-                id="length"
-                min="4"
-                max="64"
-                value={length}
-                onChange={e => setLength(parseInt(e.target.value))}
-                className="password-range-input"
-              />
-              <div className="password-range-labels">
-                <span>4</span>
-                <span>64</span>
-              </div>
+              {password && (
+                <div className="password-strength">
+                  <div className="password-strength-label">
+                    <LockIcon className="password-strength-icon" />
+                    <span>Fortaleza: {strength.label}</span>
+                  </div>
+                  <div className="password-strength-bar">
+                    <div
+                      className="password-strength-fill"
+                      style={{
+                        width: `${(strength.level / 4) * 100}%`,
+                        backgroundColor: strength.color,
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Opciones de Caracteres */}
-            <div className="password-options">
-              <label className="password-option">
-                <input
-                  type="checkbox"
-                  checked={includeUppercase}
-                  onChange={e => setIncludeUppercase(e.target.checked)}
-                  className="password-checkbox"
-                />
-                <span className="password-option-label">Mayúsculas (A-Z)</span>
-              </label>
-
-              <label className="password-option">
-                <input
-                  type="checkbox"
-                  checked={includeLowercase}
-                  onChange={e => setIncludeLowercase(e.target.checked)}
-                  className="password-checkbox"
-                />
-                <span className="password-option-label">Minúsculas (a-z)</span>
-              </label>
-
-              <label className="password-option">
-                <input
-                  type="checkbox"
-                  checked={includeNumbers}
-                  onChange={e => setIncludeNumbers(e.target.checked)}
-                  className="password-checkbox"
-                />
-                <span className="password-option-label">Números (0-9)</span>
-              </label>
-
-              <label className="password-option">
-                <input
-                  type="checkbox"
-                  checked={includeSymbols}
-                  onChange={e => setIncludeSymbols(e.target.checked)}
-                  className="password-checkbox"
-                />
-                <span className="password-option-label">Símbolos (!@#$%...)</span>
-              </label>
-
-              <label className="password-option">
-                <input
-                  type="checkbox"
-                  checked={excludeAmbiguous}
-                  onChange={e => setExcludeAmbiguous(e.target.checked)}
-                  className="password-checkbox"
-                />
-                <span className="password-option-label">
-                  Excluir caracteres ambiguos (0, O, l, 1, I)
-                </span>
-              </label>
-            </div>
-
-            {/* Botón Generar */}
             <button
               className="password-generate-button"
               onClick={generatePassword}
@@ -355,43 +259,124 @@ function GeneradorContrasenas() {
               }
             >
               <RefreshIcon className="password-generate-icon" />
-              <span>Generar Contraseña</span>
+              <span>Generar contraseña</span>
             </button>
           </div>
 
-          {/* Historial */}
-          {history.length > 0 && (
-            <div className="password-history">
-              <h3 className="password-history-title">Historial</h3>
-              <div className="password-history-list">
-                {history.map((item, index) => (
-                  <div key={index} className="password-history-item">
-                    <div className="password-history-content">
-                      <code className="password-history-password">{item.password}</code>
-                      <span className="password-history-date">
-                        {formatHistoryDate(item.timestamp)}
-                      </span>
-                    </div>
-                    <button
-                      className="password-history-copy"
-                      onClick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(item.password)
-                          showNotification('Contraseña copiada', 'success')
-                        } catch (err) {
-                          showNotification('Error al copiar', 'error')
-                        }
-                      }}
-                      aria-label="Copiar contraseña del historial"
-                      type="button"
-                    >
-                      <ContentCopyIcon className="password-history-copy-icon" />
-                    </button>
-                  </div>
-                ))}
+          <div className="utilidades-tool-aside">
+            <div className="password-settings">
+              <h3 className="password-settings-title">Configuración</h3>
+
+              <div className="password-setting-group">
+                <div className="password-setting-header">
+                  <label htmlFor="length" className="password-setting-label">
+                    Longitud: {length} caracteres
+                  </label>
+                  <span className="password-setting-value">{length}</span>
+                </div>
+                <input
+                  type="range"
+                  id="length"
+                  min="4"
+                  max="64"
+                  value={length}
+                  onChange={e => setLength(parseInt(e.target.value))}
+                  className="password-range-input"
+                />
+                <div className="password-range-labels">
+                  <span>4</span>
+                  <span>64</span>
+                </div>
+              </div>
+
+              <div className="password-options">
+                <label className="password-option">
+                  <input
+                    type="checkbox"
+                    checked={includeUppercase}
+                    onChange={e => setIncludeUppercase(e.target.checked)}
+                    className="password-checkbox"
+                  />
+                  <span className="password-option-label">Mayúsculas (A-Z)</span>
+                </label>
+
+                <label className="password-option">
+                  <input
+                    type="checkbox"
+                    checked={includeLowercase}
+                    onChange={e => setIncludeLowercase(e.target.checked)}
+                    className="password-checkbox"
+                  />
+                  <span className="password-option-label">Minúsculas (a-z)</span>
+                </label>
+
+                <label className="password-option">
+                  <input
+                    type="checkbox"
+                    checked={includeNumbers}
+                    onChange={e => setIncludeNumbers(e.target.checked)}
+                    className="password-checkbox"
+                  />
+                  <span className="password-option-label">Números (0-9)</span>
+                </label>
+
+                <label className="password-option">
+                  <input
+                    type="checkbox"
+                    checked={includeSymbols}
+                    onChange={e => setIncludeSymbols(e.target.checked)}
+                    className="password-checkbox"
+                  />
+                  <span className="password-option-label">Símbolos (!@#$%...)</span>
+                </label>
+
+                <label className="password-option">
+                  <input
+                    type="checkbox"
+                    checked={excludeAmbiguous}
+                    onChange={e => setExcludeAmbiguous(e.target.checked)}
+                    className="password-checkbox"
+                  />
+                  <span className="password-option-label">
+                    Excluir caracteres ambiguos (0, O, l, 1, I)
+                  </span>
+                </label>
               </div>
             </div>
-          )}
+
+            {history.length > 0 && (
+              <div className="password-history">
+                <h3 className="password-history-title">Historial</h3>
+                <div className="password-history-list">
+                  {history.map((item, index) => (
+                    <div key={index} className="password-history-item">
+                      <div className="password-history-content">
+                        <code className="password-history-password">{item.password}</code>
+                        <span className="password-history-date">
+                          {formatHistoryDate(item.timestamp)}
+                        </span>
+                      </div>
+                      <button
+                        className="password-history-copy"
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(item.password)
+                            showNotification('Contraseña copiada', 'success')
+                          } catch {
+                            showNotification('Error al copiar', 'error')
+                          }
+                        }}
+                        aria-label="Copiar contraseña del historial"
+                        type="button"
+                      >
+                        <ContentCopyIcon className="password-history-copy-icon" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

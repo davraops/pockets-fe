@@ -1,10 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
@@ -15,6 +13,7 @@ import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
 import ModalOverlay from '../components/ModalOverlay'
 import ListSkeleton from '../components/ListSkeleton'
+import FinanzasSubHeader from '../components/finanzas/FinanzasSubHeader'
 import './CDTs.css'
 
 // Interfaz que coincide con la respuesta de la API (campos en inglés)
@@ -43,7 +42,6 @@ interface CDT {
 }
 
 function CDTs() {
-  const navigate = useNavigate()
   const { showNotification } = useNotification()
   const { confirm } = useConfirm()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -561,37 +559,17 @@ function CDTs() {
   return (
     <>
       <div className="app-page-container">
-        <div className="app-page-content app-page-content-wide crud-page-content cdts-content">
+        <div className="app-page-content app-page-content-wide crud-page-content cdts-content finanzas-sub-content">
           {isLoading && cdts.length === 0 ? (
             <>
-              <div className="app-toolbar">
-                <button
-                  className="app-toolbar-button"
-                  onClick={() => navigate('/finanzas')}
-                  aria-label="Volver a Finanzas"
-                  type="button"
-                >
-                  <ArrowBackIcon className="app-toolbar-icon" />
-                </button>
-              </div>
-              <h1 className="app-page-title">CDTs</h1>
+              <FinanzasSubHeader title="CDTs" context="Inversión" />
               <div className="glass-group">
                 <ListSkeleton variant="inset-row" count={4} aria-label="Cargando CDTs" />
               </div>
             </>
           ) : error && cdts.length === 0 ? (
             <>
-              <div className="app-toolbar">
-                <button
-                  className="app-toolbar-button"
-                  onClick={() => navigate('/finanzas')}
-                  aria-label="Volver a Finanzas"
-                  type="button"
-                >
-                  <ArrowBackIcon className="app-toolbar-icon" />
-                </button>
-              </div>
-              <h1 className="app-page-title">CDTs</h1>
+              <FinanzasSubHeader title="CDTs" context="Inversión" />
               <div className="loader-container">
                 <div className="loader finanzas-stats-error-panel">
                   <p className="loader-text loader-text--error" role="alert">
@@ -610,47 +588,40 @@ function CDTs() {
             </>
           ) : (
             <>
-              <div className="app-toolbar">
-                <button
-                  className="app-toolbar-button"
-                  onClick={() => navigate('/finanzas')}
-                  aria-label="Volver a Finanzas"
-                  type="button"
-                >
-                  <ArrowBackIcon className="app-toolbar-icon" />
-                </button>
-                <div className="app-toolbar-menu-container" ref={menuRef}>
-                  {isDebugToolsEnabled() && (
-                    <>
+              <FinanzasSubHeader
+                title="CDTs"
+                context="Inversión"
+                meta={`${cdts.length} activo${cdts.length !== 1 ? 's' : ''}`}
+                toolbarActions={
+                  isDebugToolsEnabled() ? (
+                    <div className="finanzas-sub-menu-container" ref={menuRef}>
                       <button
+                        type="button"
                         className="app-toolbar-button"
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
                         aria-label="Opciones de depuración"
                         aria-expanded={isMenuOpen}
-                        type="button"
                       >
                         <MoreVertIcon className="app-toolbar-icon" />
                       </button>
                       {isMenuOpen && (
-                        <div className="crud-dropdown-menu">
+                        <div className="finanzas-sub-menu">
                           <button
-                            className="crud-dropdown-menu-item"
+                            type="button"
+                            className="finanzas-sub-menu-item"
                             onClick={() => {
                               setIsDebugModalOpen(true)
                               setIsMenuOpen(false)
                             }}
-                            type="button"
                           >
-                            <span>🐛 Debug</span>
+                            🐛 Debug
                           </button>
                         </div>
                       )}
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <h1 className="app-page-title">CDTs</h1>
+                    </div>
+                  ) : null
+                }
+              />
 
               <div
                 className="crud-summary-strip crud-summary-strip--success"

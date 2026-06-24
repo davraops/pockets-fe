@@ -1,4 +1,508 @@
 /* Cuadernos Page Styles */
+.cuadernos-page.app-page-container {
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+.cuadernos-page .app-page-content.cuadernos-shell {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding-top: var(--layout-chrome-offset-top);
+  padding-right: var(--spacing-md);
+  padding-bottom: var(--layout-chrome-offset-bottom);
+  padding-left: var(--spacing-md);
+  flex: 1;
+  min-height: calc(100vh - var(--layout-status-bar-height) - var(--layout-footer-height));
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+@media (min-width: 769px) {
+  .cuadernos-page.app-page-container {
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+
+  .cuadernos-page .app-page-content.cuadernos-shell {
+    max-width: var(--layout-max-width-wide);
+    margin-inline: auto;
+    width: 100%;
+    padding-left: var(--spacing-lg);
+    padding-right: var(--spacing-lg);
+  }
+}
+
+.cuadernos-shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  /* Escala con el panel principal; tope ~900px con sidebar, ~960px sin ella */
+  --cuaderno-workspace-max-width: clamp(42rem, 86%, 56.25rem);
+}
+
+.cuadernos-hub-toolbar {
+  flex-shrink: 0;
+  padding-bottom: var(--spacing-xs);
+}
+
+.cuadernos-shell__panes {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: row;
+  align-items: stretch;
+  width: 100%;
+}
+
+.cuadernos-shell--sidebar-collapsed {
+  --cuaderno-workspace-max-width: clamp(42rem, 90%, 60rem);
+}
+
+.cuadernos-sidebar {
+  width: 18.75rem;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-right: 1px solid var(--border-glass-light);
+  background: color-mix(in srgb, var(--bg-glass-light) 35%, transparent);
+}
+
+.cuadernos-sidebar__header {
+  flex-shrink: 0;
+  padding: var(--spacing-md) var(--spacing-md) var(--spacing-sm);
+  border-bottom: 1px solid var(--border-glass-light);
+}
+
+.cuadernos-sidebar__title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  width: 100%;
+}
+
+.cuadernos-sidebar__title-icon {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  color: var(--section-utilidades);
+}
+
+.cuadernos-sidebar__title-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.cuadernos-sidebar__title {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  line-height: 1.25;
+}
+
+.cuadernos-sidebar__meta {
+  margin: 0.15rem 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+}
+
+.cuadernos-sidebar__debug {
+  flex-shrink: 0;
+}
+
+.cuadernos-sidebar__title-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.cuadernos-sidebar__hide {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.85rem;
+  height: 1.85rem;
+  padding: 0;
+  border: 1px solid var(--border-glass-light);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.cuadernos-sidebar__hide:hover {
+  background: var(--bg-glass-light);
+  border-color: var(--border-glass);
+  color: var(--text-secondary);
+}
+
+.cuadernos-sidebar__hide:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.cuadernos-main__sidebar-toggle {
+  margin-bottom: var(--spacing-sm);
+}
+
+.cuadernos-main--sidebar-collapsed .cuaderno-workspace--has-cover .cuaderno-workspace__hero {
+  margin-top: 0;
+}
+
+.cuadernos-sidebar-show {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-height: 2.25rem;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass);
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.cuadernos-sidebar-show:hover {
+  border-color: color-mix(in srgb, var(--section-utilidades) 40%, var(--border-glass));
+  color: var(--text-primary);
+  background: var(--bg-glass-light);
+}
+
+.cuadernos-sidebar-show:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.cuadernos-shell--sidebar-collapsed .cuadernos-main {
+  padding-left: var(--spacing-md);
+}
+
+.cuadernos-sidebar__add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  width: 100%;
+  min-height: 2.25rem;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid color-mix(in srgb, var(--section-utilidades) 28%, var(--border-glass));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--section-utilidades) 10%, transparent);
+  color: var(--section-utilidades);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.cuadernos-sidebar__add:hover {
+  background: color-mix(in srgb, var(--section-utilidades) 16%, transparent);
+  border-color: color-mix(in srgb, var(--section-utilidades) 45%, var(--border-glass));
+  box-shadow: var(--shadow-sm);
+}
+
+.cuadernos-sidebar__search {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-sm);
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass);
+}
+
+.cuadernos-sidebar__search-icon {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  color: var(--text-tertiary);
+}
+
+.cuadernos-sidebar__search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  outline: none;
+}
+
+.cuadernos-sidebar__search-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.cuadernos-sidebar__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--spacing-xs) var(--spacing-xs) var(--spacing-md);
+}
+
+.cuadernos-sidebar__empty {
+  padding: var(--spacing-md);
+  text-align: center;
+}
+
+.cuadernos-sidebar__empty-text {
+  margin: 0 0 var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+  line-height: 1.45;
+}
+
+.cuadernos-sidebar__retry {
+  border: none;
+  background: transparent;
+  color: var(--section-utilidades);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.cuadernos-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md);
+}
+
+.cuadernos-main .cuaderno-workspace {
+  width: 100%;
+  max-width: var(--cuaderno-workspace-max-width);
+  margin-inline: auto;
+}
+
+.cuadernos-main-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: var(--spacing-2xl) var(--spacing-xl);
+  text-align: center;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--bg-glass-light) 40%, transparent);
+  border: 1px solid var(--border-glass-light);
+}
+
+.cuadernos-main-empty__icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--section-utilidades) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--section-utilidades) 22%, transparent);
+}
+
+.cuadernos-main-empty__icon {
+  width: 1.75rem !important;
+  height: 1.75rem !important;
+  color: var(--section-utilidades);
+}
+
+.cuadernos-main-empty__title {
+  margin: 0 0 var(--spacing-xs);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.cuadernos-main-empty__text {
+  margin: 0 0 var(--spacing-lg);
+  max-width: 24rem;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  line-height: 1.55;
+}
+
+.cuadernos-main-empty__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-lg);
+}
+
+.cuaderno-empty-pick-grid {
+  width: 100%;
+  max-width: 36rem;
+  margin-top: var(--spacing-md);
+}
+
+.cuaderno-empty-pick-grid__heading {
+  margin: 0 0 var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+  text-align: left;
+}
+
+.cuaderno-empty-pick-grid__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: var(--spacing-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cuaderno-pick-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 9.5rem;
+  padding: 0;
+  border: 1px solid var(--border-glass-light);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.cuaderno-pick-card:hover {
+  border-color: color-mix(in srgb, var(--section-utilidades) 35%, var(--border-glass));
+  box-shadow: var(--shadow-sm);
+  transform: translateY(var(--motion-lift-sm));
+}
+
+.cuaderno-pick-card:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.cuaderno-pick-card--placeholder {
+  opacity: 0.92;
+}
+
+.cuaderno-pick-card__cover {
+  flex-shrink: 0;
+  height: 3.25rem;
+  background-size: cover;
+  background-position: center;
+}
+
+.cuaderno-pick-card__cover--empty {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--section-utilidades) 18%, var(--bg-glass-light)) 0%,
+    color-mix(in srgb, var(--border-glass) 60%, transparent) 100%
+  );
+}
+
+.cuaderno-pick-card__body {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.55rem 0.55rem 0.65rem;
+  min-height: 0;
+}
+
+.cuaderno-pick-card__icon {
+  position: absolute;
+  top: -1.15rem;
+  left: 0.45rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--bg-glass) 90%, var(--bg-body));
+  border: 1px solid color-mix(in srgb, var(--border-glass) 85%, transparent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.cuaderno-pick-card__icon--empty {
+  font-size: 0.95rem;
+  opacity: 0.75;
+}
+
+.cuaderno-pick-card__parent {
+  margin: 0.85rem 0 0;
+  font-size: 0.65rem;
+  font-weight: var(--font-weight-medium);
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cuaderno-pick-card:not(.cuaderno-pick-card--subpage) .cuaderno-pick-card__body {
+  padding-top: 1.15rem;
+}
+
+.cuaderno-pick-card__title {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  line-height: 1.35;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
 .cuadernos-content {}
 
 /* Page Subtitle */
@@ -17,6 +521,240 @@
   width: 100%;
   display: flex;
   flex-direction: column;
+}
+
+.cuaderno-tree-row--sidebar {
+  align-items: center;
+  min-height: 2rem;
+}
+
+.cuaderno-tree-row--sidebar .cuaderno-tree-row__toggle {
+  margin-top: 0;
+  width: 1.25rem;
+}
+
+.cuaderno-tree-row--sidebar .cuaderno-tree-row__toggle-spacer {
+  width: 1.25rem;
+}
+
+.cuaderno-tree-row--sidebar .cuaderno-tree-row__drag {
+  margin-top: 0;
+  width: 0;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    width var(--transition-fast),
+    opacity var(--transition-fast);
+}
+
+.cuaderno-tree-row--sidebar:hover .cuaderno-tree-row__drag,
+.cuaderno-tree-row--sidebar.cuaderno-tree-row--dragging .cuaderno-tree-row__drag {
+  width: 1.1rem;
+  opacity: 1;
+}
+
+.cuaderno-tree-row--sidebar .cuaderno-tree-row__add {
+  margin-top: 0;
+  width: 0;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    width var(--transition-fast),
+    opacity var(--transition-fast);
+}
+
+.cuaderno-tree-row--sidebar:hover .cuaderno-tree-row__add,
+.cuaderno-tree-row--sidebar .cuaderno-tree-row__add:focus-visible {
+  width: 1.5rem;
+  opacity: 1;
+}
+
+.cuaderno-tree-row--active .cuaderno-tree-sidebar-link {
+  background: color-mix(in srgb, var(--section-utilidades) 14%, var(--bg-glass-light));
+  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.cuaderno-tree-row--sidebar.cuaderno-tree-row--drop-target {
+  outline: none;
+}
+
+.cuaderno-tree-row--sidebar.cuaderno-tree-row--drop-target .cuaderno-tree-sidebar-link {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: -2px;
+}
+
+.cuaderno-tree-row--sidebar.cuaderno-tree-row--drop-nest .cuaderno-tree-sidebar-link {
+  outline: 2px dashed color-mix(in srgb, var(--section-utilidades) 70%, transparent);
+  outline-offset: -2px;
+}
+
+.cuaderno-tree-sidebar-link {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.5rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.cuaderno-tree-sidebar-link:hover {
+  background: var(--bg-glass-light);
+  color: var(--text-primary);
+}
+
+.cuaderno-tree-sidebar-link__icon {
+  flex-shrink: 0;
+  width: 1.15rem;
+  font-size: 0.95rem;
+  line-height: 1;
+  text-align: center;
+}
+
+.cuaderno-tree-sidebar-link__icon--empty {
+  opacity: 0.35;
+  font-size: 0.7rem;
+}
+
+.cuaderno-tree-sidebar-link__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cuaderno-tree-list--sidebar {
+  gap: 1px;
+}
+
+.cuaderno-tree-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.cuaderno-tree-row {
+  display: flex;
+  align-items: stretch;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.cuaderno-tree-row__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  flex-shrink: 0;
+  margin-top: 0.85rem;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+.cuaderno-tree-row__toggle--open {
+  transform: rotate(90deg);
+}
+
+.cuaderno-tree-row__toggle:hover {
+  color: var(--text-secondary);
+}
+
+.cuaderno-tree-row__toggle-spacer {
+  width: 1.5rem;
+  flex-shrink: 0;
+}
+
+.cuaderno-tree-row__folder {
+  flex-shrink: 0;
+  margin-top: 1rem;
+  color: var(--text-tertiary);
+}
+
+.cuaderno-tree-row__item {
+  flex: 1;
+  min-width: 0;
+}
+
+.cuaderno-tree-row__drag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  flex-shrink: 0;
+  margin-top: 0.85rem;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: grab;
+  opacity: 0;
+  transition: opacity var(--transition-fast), color var(--transition-fast);
+}
+
+.cuaderno-tree-row:hover .cuaderno-tree-row__drag,
+.cuaderno-tree-row--dragging .cuaderno-tree-row__drag {
+  opacity: 1;
+}
+
+.cuaderno-tree-row__drag:active {
+  cursor: grabbing;
+}
+
+.cuaderno-tree-row--dragging {
+  opacity: 0.45;
+}
+
+.cuaderno-tree-row--drop-target .cuaderno-tree-row__item .crud-inset-row {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: -2px;
+  border-radius: var(--radius-md);
+}
+
+.cuaderno-tree-row__add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  margin-top: 0.75rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity var(--transition-fast),
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.cuaderno-tree-row:hover .cuaderno-tree-row__add,
+.cuaderno-tree-row__add:focus-visible {
+  opacity: 1;
+}
+
+.cuaderno-tree-row__add:hover {
+  background: color-mix(in srgb, var(--section-utilidades) 12%, transparent);
+  color: var(--section-utilidades);
+}
+
+.cuaderno-tree-row__item .crud-inset-row {
+  width: 100%;
 }
 
 /* Cuaderno Row - Compact List Item - HIG: Touch Target (min 72px height), Feedback */
@@ -166,10 +904,383 @@
   font-size: var(--font-size-xl) !important;
   width: var(--font-size-xl) !important;
   height: var(--font-size-xl) !important;
-}@media (max-width: 768px){
-  .cuadernos-fab {
-    bottom: 80px;
-    right: var(--spacing-md);
+}
+
+/* Create modal */
+.cuaderno-create-modal {
+  max-width: 26rem;
+  overflow: visible;
+}
+
+.cuaderno-create-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-md);
+}
+
+.cuaderno-create-modal__header-copy {
+  min-width: 0;
+}
+
+.cuaderno-create-modal__eyebrow {
+  margin: 0 0 0.2rem;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--section-utilidades);
+  font-family: var(--font-family);
+}
+
+.cuaderno-create-modal__header .modal-panel-title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  line-height: 1.25;
+}
+
+.cuaderno-create-modal__parent {
+  margin: 0.35rem 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+}
+
+.cuaderno-create-modal__form {
+  padding: 0 var(--spacing-lg) var(--spacing-lg);
+}
+
+.cuaderno-create-modal__title-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.cuaderno-create-modal__label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cuaderno-create-modal__input {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+}
+
+.cuaderno-create-modal__appearance-label {
+  margin: 0 0 var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cuaderno-create-modal__hero {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: visible;
+  min-height: 4.5rem;
+  padding-bottom: 1.35rem;
+}
+
+.cuaderno-create-modal__hero-cover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 3.25rem;
+  padding: 0;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--bg-glass-light) 70%, var(--border-glass));
+  border: 1px solid color-mix(in srgb, var(--border-glass) 70%, transparent);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.cuaderno-create-modal__hero-cover:hover:not(:disabled),
+.cuaderno-create-modal__hero--picker-open .cuaderno-create-modal__hero-cover {
+  border-color: color-mix(in srgb, var(--section-utilidades) 45%, var(--border-glass));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--section-utilidades) 20%, transparent);
+}
+
+.cuaderno-create-modal__hero-cover-hint {
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-tertiary);
+  letter-spacing: 0.02em;
+}
+
+.cuaderno-create-modal__hero--has-cover .cuaderno-create-modal__hero-cover {
+  border-color: transparent;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #000 12%, transparent);
+}
+
+.cuaderno-create-modal__hero--has-cover .cuaderno-create-modal__hero-cover:hover:not(:disabled),
+.cuaderno-create-modal__hero--has-cover.cuaderno-create-modal__hero--picker-open .cuaderno-create-modal__hero-cover {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, #000 12%, transparent),
+    inset 0 0 0 999px rgba(0, 0, 0, 0.08);
+}
+
+.cuaderno-create-modal__hero-icon {
+  position: absolute;
+  left: var(--spacing-sm);
+  bottom: 0;
+  z-index: 2;
+}
+
+.cuaderno-create-modal .cuaderno-emoji-picker {
+  position: static;
+}
+
+.cuaderno-create-modal .cuaderno-page-icon {
+  --cuaderno-page-icon-size: 2rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--bg-glass) 90%, var(--bg-body));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--border-glass) 80%, transparent),
+    0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.cuaderno-create-modal .cuaderno-page-icon--over-cover:not(.cuaderno-page-icon--set) {
+  background: color-mix(in srgb, var(--bg-glass) 82%, var(--bg-body));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.cuaderno-create-modal .cuaderno-page-icon__glyph {
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.cuaderno-create-modal .cuaderno-page-icon__hint,
+.cuaderno-create-modal .cuaderno-page-icon__placeholder {
+  display: none;
+}
+
+.cuaderno-create-modal .cuaderno-page-icon:not(.cuaderno-page-icon--set)::before {
+  content: '📓';
+  font-size: 1.35rem;
+  line-height: 1;
+  opacity: 0.55;
+}
+
+.cuaderno-create-modal .cuaderno-page-icon--set::after {
+  content: none;
+}
+
+.cuaderno-create-modal__cover-clear {
+  position: absolute;
+  top: var(--spacing-xs);
+  right: var(--spacing-xs);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.45rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.48);
+  color: #fff;
+  font-family: var(--font-family);
+  font-size: 0.68rem;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  opacity: 0;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition:
+    background var(--transition-fast),
+    opacity var(--transition-fast);
+}
+
+.cuaderno-create-modal__hero:hover .cuaderno-create-modal__cover-clear,
+.cuaderno-create-modal__hero--picker-open .cuaderno-create-modal__cover-clear,
+.cuaderno-create-modal__cover-clear:focus-visible {
+  opacity: 1;
+}
+
+.cuaderno-create-modal__cover-clear:hover {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.cuaderno-create-modal__cover-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 14rem;
+  z-index: 30;
+}
+
+.cuaderno-create-modal__hint {
+  margin: var(--spacing-sm) 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+  line-height: 1.4;
+}
+
+.cuaderno-create-modal .cuaderno-emoji-picker__panel {
+  left: 0;
+  right: auto;
+  width: min(18rem, 78vw);
+  max-height: 15rem;
+  z-index: 30;
+}
+
+.cuaderno-create-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border-glass-light);
+}
+
+.cuaderno-create-modal__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  min-height: 2.75rem;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition:
+    background var(--transition-base),
+    border-color var(--transition-base),
+    transform var(--transition-fast),
+    box-shadow var(--transition-base);
+}
+
+.cuaderno-create-modal__button--secondary {
+  background: var(--btn-secondary-bg);
+  color: var(--text-primary);
+  border-color: var(--border-glass);
+}
+
+.cuaderno-create-modal__button--secondary:hover:not(:disabled) {
+  background: var(--btn-secondary-bg-hover);
+}
+
+.cuaderno-create-modal__button--primary {
+  background: var(--section-utilidades);
+  color: var(--text-on-accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.cuaderno-create-modal__button--primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--section-utilidades) 88%, #000);
+  box-shadow: var(--shadow-md);
+  transform: translateY(var(--motion-lift-sm));
+}
+
+.cuaderno-create-modal__button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.cuaderno-create-modal__button:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.cuaderno-create-modal__button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .cuadernos-page .app-page-content.cuadernos-shell {
+    flex-direction: column;
+    padding-top: var(--spacing-md);
+    padding-right: var(--spacing-sm);
+    padding-left: var(--spacing-sm);
+    padding-bottom: var(--layout-chrome-offset-bottom-mobile);
+    min-height: calc(100vh - var(--layout-footer-height-mobile));
+    border-radius: var(--radius-lg);
+  }
+
+  .cuadernos-shell {
+    --cuaderno-workspace-max-width: 100%;
+  }
+
+  /* Lista fullscreen: solo jerarquía */
+  .cuadernos-shell--mobile-list,
+  .cuadernos-shell--mobile-list .cuadernos-shell__panes {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .cuadernos-shell--mobile-list .cuadernos-sidebar {
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+    border-right: none;
+    border-bottom: none;
+    border-radius: var(--radius-md);
+    margin-bottom: 0;
+  }
+
+  .cuadernos-shell--mobile-list .cuadernos-sidebar__body {
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* Editor fullscreen: solo workspace */
+  .cuadernos-shell--mobile-editor,
+  .cuadernos-shell--mobile-editor .cuadernos-shell__panes {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .cuadernos-shell--mobile-editor .cuadernos-main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0 0 var(--spacing-sm);
+  }
+
+  .cuadernos-shell--mobile-editor .cuaderno-workspace {
+    flex: 1;
+    min-height: 0;
+    max-width: none;
+  }
+
+  .cuaderno-tree-row--sidebar .cuaderno-tree-row__drag[hidden] {
+    display: none;
+  }
+
+  .cuaderno-tree-row--sidebar .cuaderno-tree-sidebar-link {
+    min-height: 2.75rem;
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
+  }
+
+  .cuaderno-create-modal__actions {
+    flex-direction: column-reverse;
+  }
+
+  .cuaderno-create-modal__button {
+    width: 100%;
   }
 }
 

@@ -1,23 +1,23 @@
 /* Generador Contraseñas Page Styles */
 .generador-contrasenas-content {}
 
-/* Page Subtitle */
-.generador-contrasenas-page-subtitle {
-  font-size: var(--font-size-base);
-  color: var(--text-secondary);
-  margin: 0 0 var(--spacing-xl) 0;
-  letter-spacing: var(--letter-spacing-tight);
-  font-family: var(--font-family);
-  line-height: 1.4;
-  text-align: left;
-}
-
-/* Password Generator */
-.password-generator {
+.utilidades-tool-main .password-display {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xl);
+  gap: var(--spacing-md);
+}
+
+.utilidades-tool-main .password-generate-button {
   width: 100%;
+  margin-top: var(--spacing-md);
+}
+
+.utilidades-tool-aside .password-settings {
+  gap: var(--spacing-lg);
+}
+
+.utilidades-tool-aside .password-history {
+  padding: var(--spacing-lg);
 }
 
 /* Password Display */
@@ -193,7 +193,7 @@
 .password-setting-value {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
-  color: var(--accent-primary);
+  color: var(--section-utilidades);
   font-family: var(--font-family);
 }
 

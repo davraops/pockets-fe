@@ -1,12 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import CalculateIcon from '@mui/icons-material/Calculate'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import RestoreIcon from '@mui/icons-material/Restore'
 import ArchiveIcon from '@mui/icons-material/Archive'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { api } from '../services/api'
@@ -19,6 +17,7 @@ import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
 import ModalOverlay from '../components/ModalOverlay'
 import ListSkeleton from '../components/ListSkeleton'
+import FinanzasSubHeader from '../components/finanzas/FinanzasSubHeader'
 import './Presupuestos.css'
 
 // Interfaz que coincide con la respuesta de la API
@@ -49,7 +48,6 @@ interface Budget {
 }
 
 function Presupuestos() {
-  const navigate = useNavigate()
   const { showNotification } = useNotification()
   const { confirm } = useConfirm()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -689,37 +687,17 @@ function Presupuestos() {
   return (
     <>
       <div className="app-page-container">
-        <div className="app-page-content app-page-content-wide crud-page-content presupuestos-content">
+        <div className="app-page-content app-page-content-wide crud-page-content presupuestos-content finanzas-sub-content">
           {isLoading ? (
             <>
-              <div className="app-toolbar">
-                <button
-                  className="app-toolbar-button"
-                  onClick={() => navigate('/finanzas')}
-                  aria-label="Volver a Finanzas"
-                  type="button"
-                >
-                  <ArrowBackIcon className="app-toolbar-icon" />
-                </button>
-              </div>
-              <h1 className="app-page-title">Presupuestos</h1>
+              <FinanzasSubHeader title="Presupuestos" context="Control" />
               <div className="glass-group">
                 <ListSkeleton variant="inset-row" count={5} aria-label="Cargando presupuestos" />
               </div>
             </>
           ) : error ? (
             <>
-              <div className="app-toolbar">
-                <button
-                  className="app-toolbar-button"
-                  onClick={() => navigate('/finanzas')}
-                  aria-label="Volver a Finanzas"
-                  type="button"
-                >
-                  <ArrowBackIcon className="app-toolbar-icon" />
-                </button>
-              </div>
-              <h1 className="app-page-title">Presupuestos</h1>
+              <FinanzasSubHeader title="Presupuestos" context="Control" />
               <div className="loader-container">
                 <div className="loader finanzas-stats-error-panel">
                   <p className="loader-text loader-text--error" role="alert">
@@ -738,57 +716,50 @@ function Presupuestos() {
             </>
           ) : (
             <>
-              {/* Toolbar - HIG: Navigation */}
-              <div className="app-toolbar">
-                <button
-                  className="app-toolbar-button"
-                  onClick={() => navigate('/finanzas')}
-                  aria-label="Volver a Finanzas"
-                  type="button"
-                >
-                  <ArrowBackIcon className="app-toolbar-icon" />
-                </button>
-                <button
-                  className="app-toolbar-button"
-                  onClick={() => void handleOpenDeletedBudgetsModal()}
-                  aria-label="Ver presupuestos eliminados"
-                  type="button"
-                >
-                  <ArchiveIcon className="app-toolbar-icon" />
-                </button>
-                <div className="app-toolbar-menu-container" ref={menuRef}>
-                  {isDebugToolsEnabled() && (
-                    <>
-                      <button
-                        className="app-toolbar-button"
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        aria-label="Opciones de depuración"
-                        aria-expanded={isMenuOpen}
-                        type="button"
-                      >
-                        <MoreVertIcon className="app-toolbar-icon" />
-                      </button>
-                      {isMenuOpen && (
-                        <div className="crud-dropdown-menu">
-                          <button
-                            className="crud-dropdown-menu-item"
-                            onClick={() => {
-                              setIsMenuOpen(false)
-                              setIsDebugModalOpen(true)
-                            }}
-                            type="button"
-                          >
-                            <span>🐛 Debug</span>
-                          </button>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Encabezado de Sección - HIG: Clear Navigation */}
-              <h1 className="app-page-title">Presupuestos</h1>
+              <FinanzasSubHeader
+                title="Presupuestos"
+                context="Control"
+                meta={`${budgets.length} activo${budgets.length !== 1 ? 's' : ''}`}
+                toolbarActions={
+                  <>
+                    <button
+                      type="button"
+                      className="app-toolbar-button"
+                      onClick={() => void handleOpenDeletedBudgetsModal()}
+                      aria-label="Ver presupuestos eliminados"
+                    >
+                      <ArchiveIcon className="app-toolbar-icon" />
+                    </button>
+                    {isDebugToolsEnabled() && (
+                      <div className="finanzas-sub-menu-container" ref={menuRef}>
+                        <button
+                          type="button"
+                          className="app-toolbar-button"
+                          onClick={() => setIsMenuOpen(!isMenuOpen)}
+                          aria-label="Opciones de depuración"
+                          aria-expanded={isMenuOpen}
+                        >
+                          <MoreVertIcon className="app-toolbar-icon" />
+                        </button>
+                        {isMenuOpen && (
+                          <div className="finanzas-sub-menu">
+                            <button
+                              type="button"
+                              className="finanzas-sub-menu-item"
+                              onClick={() => {
+                                setIsMenuOpen(false)
+                                setIsDebugModalOpen(true)
+                              }}
+                            >
+                              🐛 Debug
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
+                }
+              />
 
               {/* Resumen de presupuestos */}
               <div className="crud-summary-strip crud-summary-strip--success" role="region" aria-label="Resumen de presupuestos">

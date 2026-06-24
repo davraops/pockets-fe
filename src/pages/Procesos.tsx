@@ -10,8 +10,7 @@ import NotificationsOffIcon from '@mui/icons-material/NotificationsOff'
 import { api } from '../services/api'
 import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
-import { fetchUserDisplayName } from '../utils/userDisplayName'
-import { fetchUserJudicialDocument } from '../utils/userJudicialIdentity'
+import { fetchUserFullName } from '../utils/userFullName'
 import './AppPage.css'
 import ModalOverlay from '../components/ModalOverlay'
 import ListSkeleton from '../components/ListSkeleton'
@@ -124,34 +123,22 @@ function Procesos() {
       setIsLoading(true)
       setError(null)
 
-      const [nombreFromProfile, documento] = await Promise.all([
-        nombreCompleto.trim()
-          ? Promise.resolve(nombreCompleto.trim())
-          : fetchUserDisplayName().then(name => name?.trim() ?? ''),
-        fetchUserJudicialDocument(),
-      ])
-
-      const nombre = nombreFromProfile
+      const nombre =
+        nombreCompleto.trim() || (await fetchUserFullName())?.trim() || ''
 
       if (!nombreCompleto && nombre) {
         setNombreCompleto(nombre)
       }
 
-      if (!documento && !nombre) {
+      if (!nombre) {
         setError(
-          'Configura tu documento de identidad o nombre en Ajustes para consultar tus procesos judiciales.'
+          'Configura tu nombre completo en Ajustes para consultar tus procesos judiciales.'
         )
         setProcesos([])
         return
       }
 
-      const response = await api.getJudicialProcesses(
-        nombre,
-        'nat',
-        false,
-        1,
-        documento ?? undefined
-      )
+      const response = await api.getJudicialProcesses(nombre, 'nat', false, 1)
 
       if (response.procesos && Array.isArray(response.procesos)) {
         const procesosFiltrados = response.procesos.filter(
@@ -380,7 +367,7 @@ function Procesos() {
         }
       } else {
         const nombre =
-          nombreCompleto.trim() || (await fetchUserDisplayName())?.trim() || ''
+          nombreCompleto.trim() || (await fetchUserFullName())?.trim() || ''
         if (!nombre) {
           showNotification(
             'Configura tu nombre completo en Ajustes antes de agregar seguimiento.',
@@ -522,7 +509,7 @@ function Procesos() {
             <DescriptionIcon className="empty-state-icon" />
             <p className="empty-state-text">No se encontraron procesos judiciales</p>
             <p className="empty-state-subtext">
-              Los procesos se consultan con tu cédula o nombre configurados en Ajustes. Usa el botón
+              Los procesos se consultan con tu nombre completo configurado en Ajustes. Usa el botón
               Actualizar arriba para volver a consultar.
             </p>
           </div>
