@@ -255,20 +255,6 @@ function Valores() {
                   <button
                     type="button"
                     className="lifestyle-sub-menu-item"
-                    onClick={() => openCreateModal('value')}
-                  >
-                    Nuevo valor
-                  </button>
-                  <button
-                    type="button"
-                    className="lifestyle-sub-menu-item"
-                    onClick={() => openCreateModal('belief')}
-                  >
-                    Nueva creencia
-                  </button>
-                  <button
-                    type="button"
-                    className="lifestyle-sub-menu-item"
                     onClick={() => {
                       setIsMenuOpen(false)
                       void loadEntries()

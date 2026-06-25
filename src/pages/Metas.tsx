@@ -296,9 +296,6 @@ function Metas() {
               </button>
               {isMenuOpen ? (
                 <div className="lifestyle-sub-menu">
-                  <button type="button" className="lifestyle-sub-menu-item" onClick={openCreateModal}>
-                    Nueva meta
-                  </button>
                   <button
                     type="button"
                     className="lifestyle-sub-menu-item"

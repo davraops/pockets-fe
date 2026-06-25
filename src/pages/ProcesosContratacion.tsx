@@ -370,6 +370,37 @@ function ProcesosContratacion() {
     setShowFormModal(false)
   }
 
+  const handleOpenCreateModal = () => {
+    setEditingId(null)
+    setFormData({
+      name: '',
+      contact: '',
+      contactVia: 'LinkedIn',
+      company: '',
+      roleDescription: '',
+      salaryRangeMin: '',
+      salaryRangeMax: '',
+      salaryCurrency: 'USD',
+      negotiatedSalary: '',
+      negotiatedCurrency: 'USD',
+      benefits: [],
+      newBenefit: '',
+      hiringSteps: [],
+      newHiringStep: '',
+      interviewDates: [],
+      newInterviewDate: '',
+      newInterviewTime: '',
+      interactions: [],
+      newInteractionDate: '',
+      newInteractionDescription: '',
+      status: 'Abierto',
+      hasAgency: false,
+      agencyName: '',
+      payToLeadingZen: false,
+    })
+    setShowFormModal(true)
+  }
+
   const handleDebugCreateHiringProcesses = async () => {
     if (!isDebugToolsEnabled()) {
       return
@@ -673,44 +704,6 @@ function ProcesosContratacion() {
                     className="procesos-contratacion-menu-item"
                     onClick={() => {
                       setIsMenuOpen(false)
-                      setEditingId(null)
-                      setFormData({
-                        name: '',
-                        contact: '',
-                        contactVia: 'LinkedIn',
-                        company: '',
-                        roleDescription: '',
-                        salaryRangeMin: '',
-                        salaryRangeMax: '',
-                        salaryCurrency: 'USD',
-                        negotiatedSalary: '',
-                        negotiatedCurrency: 'USD',
-                        benefits: [],
-                        newBenefit: '',
-                        hiringSteps: [],
-                        newHiringStep: '',
-                        interviewDates: [],
-                        newInterviewDate: '',
-                        newInterviewTime: '',
-                        interactions: [],
-                        newInteractionDate: '',
-                        newInteractionDescription: '',
-                        status: 'Abierto',
-                        hasAgency: false,
-                        agencyName: '',
-                        payToLeadingZen: false,
-                      })
-                      setShowFormModal(true)
-                    }}
-                    type="button"
-                  >
-                    <AddIcon className="procesos-contratacion-menu-icon" />
-                    <span>Nuevo proceso</span>
-                  </button>
-                  <button
-                    className="procesos-contratacion-menu-item"
-                    onClick={() => {
-                      setIsMenuOpen(false)
                       void loadProcesos()
                     }}
                     type="button"
@@ -741,6 +734,16 @@ function ProcesosContratacion() {
           ariaLabel="Resumen de procesos de contratación"
           items={summaryItems}
         />
+
+        <button
+          type="button"
+          className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
+          onClick={handleOpenCreateModal}
+          aria-label="Nuevo proceso de contratación"
+        >
+          <AddIcon aria-hidden="true" />
+          Nuevo proceso
+        </button>
 
         <div className="proceso-contratacion-tabs" role="tablist" aria-label="Vistas de procesos">
           {(
