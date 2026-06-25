@@ -1410,6 +1410,24 @@ function TarjetasCredito() {
                     </div>
                   </div>
 
+                  {selectedCard.cupoUsado !== undefined && selectedCard.cupoUsado > 0 && (
+                    <div className="detail-strip-progress">
+                      <div className="detail-strip-progress-bar">
+                        <div
+                          className="detail-strip-progress-fill"
+                          style={{
+                            width: `${Math.min((selectedCard.cupoUsado / selectedCard.cupo) * 100, 100)}%`,
+                            backgroundColor: '#FF2D55',
+                          }}
+                        />
+                      </div>
+                      <span className="detail-strip-progress-text">
+                        {((selectedCard.cupoUsado / selectedCard.cupo) * 100).toFixed(1)}%
+                        utilizado
+                      </span>
+                    </div>
+                  )}
+
                   <div className="detail-row">
                     <span className="detail-label">Banco:</span>
                     <span className="detail-value">{selectedCard.banco}</span>
@@ -1434,22 +1452,6 @@ function TarjetasCredito() {
                               selectedCard.cupo - selectedCard.cupoUsado
                           )}
                         </span>
-                      </div>
-                      <div className="detail-row detail-progress-row">
-                        <span className="detail-label">Utilización:</span>
-                        <div className="detail-progress-container">
-                          <div className="detail-progress-bar">
-                            <div
-                              className="detail-progress-fill"
-                              style={{
-                                width: `${Math.min((selectedCard.cupoUsado / selectedCard.cupo) * 100, 100)}%`,
-                              }}
-                            ></div>
-                          </div>
-                          <span className="detail-progress-percentage">
-                            {((selectedCard.cupoUsado / selectedCard.cupo) * 100).toFixed(1)}%
-                          </span>
-                        </div>
                       </div>
                     </>
                   )}

@@ -1,6 +1,5 @@
 .tarjetas-credito-content {}
 
-/* Credit Warning Banner - HIG: Clear Feedback */
 .credit-warning-banner {
   display: flex;
   align-items: flex-start;
@@ -52,59 +51,6 @@
   color: var(--surface-credit-warning-accent-strong);
 }
 
-/* Header */
-.tarjetas-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 0.75rem;
-  flex-wrap: wrap;
-}
-
-/* Cards List - HIG: Efficient Information Presentation */
-/* Card Row Content - HIG: Clear Information Hierarchy */
-
-/* Card Row Progress - HIG: Visual Feedback */
-
-/* Card Row Chevron */
-.benefits-all-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.875rem 1.5rem;
-  background: rgba(255, 45, 85, 0.2);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border-radius: 16px;
-  border: 1px solid rgba(255, 45, 85, 0.3);
-  box-shadow: var(--shadow-sm);
-  color: var(--text-primary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'SF Pro Display',
-    sans-serif;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  letter-spacing: -0.01em;
-}
-
-.benefits-all-button:hover {
-  background: rgba(255, 45, 85, 0.3);
-  border-color: rgba(255, 45, 85, 0.5);
-  transform: translateY(var(--motion-lift-md));
-  box-shadow: var(--shadow-md);
-}
-
-.benefits-all-button:active {
-  transform: translateY(0);
-}
-
 .benefit-icon {
   display: flex;
   align-items: center;
@@ -130,24 +76,14 @@
   font-size: var(--font-size-sm);
   color: var(--text-primary);
   font-weight: var(--font-weight-semibold);
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'SF Pro Display',
-    sans-serif;
+  font-family: var(--font-family);
 }
 
 .benefit-cards {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   font-weight: var(--font-weight-normal);
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'SF Pro Display',
-    sans-serif;
+  font-family: var(--font-family);
 }
 
 .no-benefits-message {
@@ -155,47 +91,7 @@
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
   padding: 2rem;
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'SF Pro Display',
-    sans-serif;
-}
-
-.card-subscriptions-badge {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.625rem;
-  background: rgba(175, 82, 222, 0.2);
-  border: 1px solid rgba(175, 82, 222, 0.3);
-  border-radius: 12px;
-  width: fit-content;
-  transition: all 0.2s ease;
-}
-
-.card-subscriptions-badge:hover {
-  background: rgba(175, 82, 222, 0.3);
-  border-color: rgba(175, 82, 222, 0.5);
-}
-
-.subscriptions-badge-icon {
-  font-size: var(--font-size-sm);
-  color: rgba(175, 82, 222, 0.9);
-}
-
-.subscriptions-badge-text {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  font-weight: var(--font-weight-medium);
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'SF Pro Display',
-    sans-serif;
-  letter-spacing: -0.01em;
+  font-family: var(--font-family);
 }
 
 .credit-card-warning {
@@ -228,12 +124,7 @@
   font-weight: var(--font-weight-bold);
   color: rgba(255, 45, 85, 0.95);
   margin: 0;
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'SF Pro Display',
-    sans-serif;
+  font-family: var(--font-family);
   letter-spacing: -0.01em;
   flex: 1;
 }
@@ -247,12 +138,7 @@
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
   margin: 0 0 0.75rem 0;
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'SF Pro Display',
-    sans-serif;
+  font-family: var(--font-family);
 }
 
 .tips-list {
@@ -268,12 +154,7 @@
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   line-height: 1.5;
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'SF Pro Display',
-    sans-serif;
+  font-family: var(--font-family);
   padding-left: 0;
 }
 
@@ -285,12 +166,7 @@
 .error-message {
   font-size: var(--font-size-base);
   color: var(--color-danger-text);
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'SF Pro Display',
-    sans-serif;
+  font-family: var(--font-family);
 }
 
 .disabled-input {
@@ -298,117 +174,6 @@
   cursor: not-allowed;
 }
 
-/* Delete Warning Modal Styles */
-.delete-warning-content {
-  padding: 1.5rem;
-}
-
-.warning-text {
-  font-size: var(--font-size-sm);
-  color: var(--text-primary);
-  margin: 0 0 1.5rem 0;
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'SF Pro Display',
-    sans-serif;
-  line-height: 1.5;
-}
-
-.warning-text strong {
-  color: rgba(255, 193, 7, 0.9);
-  font-weight: var(--font-weight-semibold);
-}
-
-.affected-subscriptions-list {
-  margin-bottom: 1.5rem;
-}
-
-.subscriptions-list-title {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0 0 0.75rem 0;
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'SF Pro Display',
-    sans-serif;
-}
-
-.subscriptions-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 12px;
-  padding: 0.75rem;
-  border: 1px solid var(--border-glass);
-}
-
-.subscription-list-icon {
-  font-size: var(--font-size-lg);
-  color: rgba(175, 82, 222, 0.8);
-  flex-shrink: 0;
-}
-
-.subscription-list-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
-}
-
-.subscription-list-name {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'SF Pro Display',
-    sans-serif;
-}
-
-.subscription-list-price {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'SF Pro Display',
-    sans-serif;
-}
-
-.warning-reminder {
-  background: rgba(255, 193, 7, 0.1);
-  border: 1px solid rgba(255, 193, 7, 0.3);
-  border-radius: 12px;
-  padding: 1rem;
-}
-
-.reminder-text {
-  font-size: var(--font-size-sm);
-  color: var(--text-primary);
-  margin: 0;
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'SF Pro Display',
-    sans-serif;
-  line-height: 1.5;
-}
-
-.reminder-text strong {
-  color: rgba(255, 193, 7, 0.9);
-}
-
-/* Responsive */
 @media (max-width: 768px) {
   .tarjetas-credito-content {
     padding: 0 var(--spacing-sm);
@@ -438,16 +203,12 @@
     font-size: var(--font-size-sm);
     line-height: 1.4;
   }
-.modal-close {
+
+  .modal-close {
     width: 44px;
     height: 44px;
     min-width: 44px;
     min-height: 44px;
-  }
-
-  .benefits-all-button {
-    width: 100%;
-    justify-content: center;
   }
 }
 

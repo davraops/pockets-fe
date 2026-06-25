@@ -67,45 +67,6 @@
 
 /* Debt Row Chevron */
 
-/* Detail Modal Debt Styles */
-.debt-detail-progress {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  margin: var(--spacing-xl) 0 var(--spacing-lg) 0;
-  padding: 0 var(--spacing-md) var(--spacing-lg) var(--spacing-md);
-  border-bottom: 1px solid var(--border-glass-light);
-}
-
-.debt-detail-progress-bar {
-  flex: 1;
-  height: 12px;
-  background: var(--btn-secondary-bg);
-  border-radius: 6px;
-  position: relative;
-}
-
-.debt-detail-progress-fill {
-  height: 100%;
-  background: var(--debt-color, var(--color-danger-solid));
-  border-radius: 6px;
-  transition: width 0.3s ease;
-}
-
-.debt-detail-progress-text {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'SF Pro Display',
-    sans-serif;
-  min-width: 100px;
-  text-align: right;
-}
-
 .checkbox-group {
   display: flex;
   align-items: center;

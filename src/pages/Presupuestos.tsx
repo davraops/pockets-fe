@@ -1036,10 +1036,10 @@ function Presupuestos() {
                     </div>
                   </div>
 
-                  <div className="budget-detail-progress">
-                    <div className="budget-detail-progress-bar">
+                  <div className="detail-strip-progress">
+                    <div className="detail-strip-progress-bar">
                       <div
-                        className="budget-detail-progress-fill"
+                        className="detail-strip-progress-fill"
                         style={{
                           width: `${Math.min(selectedBudget.porcentajeUsado, 100)}%`,
                           backgroundColor: getProgressColor(
@@ -1049,7 +1049,7 @@ function Presupuestos() {
                         }}
                       ></div>
                     </div>
-                    <span className="budget-detail-progress-text">
+                    <span className="detail-strip-progress-text">
                       {selectedBudget.porcentajeUsado.toFixed(1)}%
                     </span>
                   </div>

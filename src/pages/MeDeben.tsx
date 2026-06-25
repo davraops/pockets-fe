@@ -794,17 +794,17 @@ function MeDeben() {
                     </div>
                   </div>
 
-                  <div className="debtor-detail-progress">
-                    <div className="debtor-detail-progress-bar">
+                  <div className="detail-strip-progress">
+                    <div className="detail-strip-progress-bar">
                       <div
-                        className="debtor-detail-progress-fill"
+                        className="detail-strip-progress-fill"
                         style={{
                           width: `${Math.min(calculatePaidPercentage(selectedDebtor.valor, selectedDebtor.totalPagado), 100)}%`,
                           backgroundColor: getDebtorColor(selectedDebtor.nombreDeudor),
                         }}
                       ></div>
                     </div>
-                    <span className="debtor-detail-progress-text">
+                    <span className="detail-strip-progress-text">
                       {calculatePaidPercentage(
                         selectedDebtor.valor,
                         selectedDebtor.totalPagado

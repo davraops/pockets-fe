@@ -967,17 +967,17 @@ function Proyectos() {
                     </div>
                   </div>
 
-                  <div className="project-detail-progress">
-                    <div className="project-detail-progress-bar">
+                  <div className="detail-strip-progress">
+                    <div className="detail-strip-progress-bar">
                       <div
-                        className="project-detail-progress-fill"
+                        className="detail-strip-progress-fill"
                         style={{
                           width: `${Math.min(selectedProject.porcentajeProgreso, 100)}%`,
                           backgroundColor: getStatusColor(selectedProject.estado),
                         }}
                       />
                     </div>
-                    <span className="project-detail-progress-text">
+                    <span className="detail-strip-progress-text">
                       {selectedProject.porcentajeProgreso.toFixed(1)}%
                     </span>
                   </div>

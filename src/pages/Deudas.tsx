@@ -1065,10 +1065,10 @@ function Deudas() {
                     </div>
                   </div>
 
-                  <div className="debt-detail-progress">
-                    <div className="debt-detail-progress-bar">
+                  <div className="detail-strip-progress">
+                    <div className="detail-strip-progress-bar">
                       <div
-                        className="debt-detail-progress-fill"
+                        className="detail-strip-progress-fill"
                         style={{
                           width: `${Math.min(calculatePaidPercentage(selectedDebt.valor, selectedDebt.adeudado), 100)}%`,
                           backgroundColor: (() => {
@@ -1084,7 +1084,7 @@ function Deudas() {
                         }}
                       ></div>
                     </div>
-                    <span className="debt-detail-progress-text">
+                    <span className="detail-strip-progress-text">
                       {calculatePaidPercentage(selectedDebt.valor, selectedDebt.adeudado).toFixed(
                         1
                       )}
