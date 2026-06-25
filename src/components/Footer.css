@@ -1,6 +1,7 @@
 .app-footer {
   width: 100%;
   padding: 1.5rem 2rem;
+  padding-bottom: calc(1.5rem + var(--safe-bottom));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -63,6 +64,54 @@ body:has([class*="-modal-overlay"]:not([style*="display: none"])) .app-footer {
   align-items: center;
 }
 
+.footer-status-notification-button {
+  position: relative;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  padding: 0;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.footer-status-notification-button:hover:not(:disabled) {
+  background: var(--bg-glass-light);
+}
+
+.footer-status-notification-icon {
+  font-size: 1.5rem !important;
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+}
+
+.footer-status-notification-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: #ff3b30;
+  color: white;
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 10px;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border: 2px solid var(--bg-glass-lighter);
+}
+
 .footer-status-separator {
   color: var(--text-tertiary);
   font-size: var(--font-size-base);
@@ -101,6 +150,7 @@ body:has([class*="-modal-overlay"]:not([style*="display: none"])) .app-footer {
 @media (max-width: 768px) {
   .app-footer {
     padding: var(--spacing-lg) var(--spacing-md);
+    padding-bottom: calc(var(--spacing-lg) + var(--safe-bottom));
     gap: var(--spacing-md);
   }
 
@@ -109,15 +159,31 @@ body:has([class*="-modal-overlay"]:not([style*="display: none"])) .app-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: var(--spacing-sm);
+  }
+
+  .footer-status-notification-button {
+    display: flex;
+  }
+
+  .footer-status-center {
+    position: static;
+    transform: none;
+    flex: 1;
+    justify-content: center;
+    min-width: 0;
   }
 
   .footer-text {
     font-size: var(--font-size-sm);
     padding-top: var(--spacing-sm);
   }
-}@media (max-width: 480px) {
+}
+
+@media (max-width: 480px) {
   .app-footer {
     padding: var(--spacing-md) var(--spacing-sm);
+    padding-bottom: calc(var(--spacing-md) + var(--safe-bottom));
     gap: var(--spacing-sm);
   }
 

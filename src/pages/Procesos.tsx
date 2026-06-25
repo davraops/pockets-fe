@@ -1,88 +1,79 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { backToHubLabel } from '../constants/hubLabels'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import { useNavigate } from 'react-router-dom'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import RefreshIcon from '@mui/icons-material/Refresh'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import DescriptionIcon from '@mui/icons-material/Description'
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive'
-import NotificationsOffIcon from '@mui/icons-material/NotificationsOff'
+import RefreshIcon from '@mui/icons-material/Refresh'
+import SearchIcon from '@mui/icons-material/Search'
 import { api } from '../services/api'
 import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import { fetchUserFullName } from '../utils/userFullName'
+import {
+  detectProcesoBadge,
+  fetchProcessActuaciones,
+  type JudicialActuacionAPI,
+} from '../utils/judicialActuaciones'
+import LifestyleSubHeader from '../components/tiempo/LifestyleSubHeader'
+import ProcesoConsultaBanner from '../components/procesos/ProcesoConsultaBanner'
+import ProcesoDetailModal from '../components/procesos/ProcesoDetailModal'
+import {
+  filterProcesos,
+  formatProcesoDate,
+  formatRelativeDate,
+  formatUserRolesLabel,
+  getEstadoColor,
+  mapProcesoFromAPI,
+} from '../components/procesos/procesoDisplayUtils'
+import type { Actuacion, Proceso, ProcesoAPI, ProcesoFilter } from '../components/procesos/procesoTypes'
 import './AppPage.css'
-import ModalOverlay from '../components/ModalOverlay'
 import ListSkeleton from '../components/ListSkeleton'
 import './Procesos.css'
 
-interface ProcesoAPI {
-  idProceso: number
-  idConexion: number
-  llaveProceso: string
-  fechaProceso: string
-  fechaUltimaActuacion: string
-  despacho: string
-  departamento: string
-  sujetosProcesales: string
-  esPrivado: boolean
-  cantFilas: number
+function mapActuaciones(actuaciones: JudicialActuacionAPI[]): Actuacion[] {
+  return actuaciones.map(act => ({
+    id: act.idRegActuacion,
+    numero: act.consActuacion,
+    fecha: act.fechaActuacion,
+    tipo: act.actuacion,
+    anotacion: act.anotacion,
+    fechaInicial: act.fechaInicial,
+    fechaFinal: act.fechaFinal,
+    fechaRegistro: act.fechaRegistro,
+    conDocumentos: act.conDocumentos,
+  }))
 }
 
-interface Proceso {
-  id: string
-  idProceso: number
-  numero: string
-  despacho: string
-  departamento: string
-  sujetosProcesales: string
-  fechaInicio: string
-  fechaUltimaActuacion: string
-  estado: string
-  badge?: 'Negado' | 'Rechazado' | null
-  trackingId?: string // ID del tracking si está en seguimiento
-  isTracked?: boolean // Si está siendo seguido
-}
-
-interface ActuacionAPI {
-  idRegActuacion: number
-  llaveProceso: string
-  consActuacion: number
-  fechaActuacion: string
-  actuacion: string
-  anotacion: string | null
-  fechaInicial: string | null
-  fechaFinal: string | null
-  fechaRegistro: string
-  codRegla: string
-  conDocumentos: boolean
-  cant: number
-}
-
-interface Actuacion {
-  id: number
-  numero: number
-  fecha: string
-  tipo: string
-  anotacion: string | null
-  fechaInicial: string | null
-  fechaFinal: string | null
-  fechaRegistro: string
-  conDocumentos: boolean
-}
+const FILTER_OPTIONS: Array<{ id: ProcesoFilter; label: string }> = [
+  { id: 'all', label: 'Todos' },
+  { id: 'tracked', label: 'Seguimiento' },
+  { id: 'tramite', label: 'En trámite' },
+  { id: 'inactivos', label: 'Inactivos' },
+]
 
 function Procesos() {
   const navigate = useNavigate()
   const { showNotification } = useNotification()
   const [procesos, setProcesos] = useState<Proceso[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [selectedProceso, setSelectedProceso] = useState<Proceso | null>(null)
   const [actuaciones, setActuaciones] = useState<Actuacion[]>([])
   const [isLoadingActuaciones, setIsLoadingActuaciones] = useState(false)
+  const [actuacionesError, setActuacionesError] = useState<string | null>(null)
+  const [isTrackingBusy, setIsTrackingBusy] = useState(false)
   const [nombreCompleto, setNombreCompleto] = useState<string>('')
-  const [trackingMap, setTrackingMap] = useState<Map<number, { id: string; is_active: boolean }>>(new Map())
+  const [trackingMap, setTrackingMap] = useState<Map<number, { id: string; is_active: boolean }>>(
+    new Map()
+  )
+  const [searchQuery, setSearchQuery] = useState('')
+  const [activeFilter, setActiveFilter] = useState<ProcesoFilter>('all')
+  const [soloActivos, setSoloActivos] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [hasMorePages, setHasMorePages] = useState(false)
 
   const stripStats = useMemo(() => {
     if (isLoading && procesos.length === 0) {
@@ -94,6 +85,22 @@ function Procesos() {
       enTramite: procesos.filter(p => p.estado === 'En trámite').length,
     }
   }, [procesos, isLoading])
+
+  const filteredProcesos = useMemo(
+    () => filterProcesos(procesos, { filter: activeFilter, query: searchQuery }),
+    [procesos, activeFilter, searchQuery]
+  )
+
+  const headerMeta = useMemo(() => {
+    if (isLoading || error) return undefined
+    if (procesos.length === 0) return 'Consulta por nombre en Rama Judicial'
+    const tracked = procesos.filter(p => p.isTracked).length
+    const base = `${procesos.length} proceso${procesos.length === 1 ? '' : 's'}`
+    if (searchQuery.trim() || activeFilter !== 'all') {
+      return `${filteredProcesos.length} visibles · ${base}`
+    }
+    return tracked > 0 ? `${base} · ${tracked} en seguimiento` : base
+  }, [isLoading, error, procesos, filteredProcesos.length, searchQuery, activeFilter])
 
   const loadTracking = useCallback(async () => {
     try {
@@ -118,246 +125,176 @@ function Procesos() {
     }
   }, [])
 
-  const loadProcesos = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
+  const loadProcesos = useCallback(
+    async (options?: { page?: number; append?: boolean }) => {
+      const page = options?.page ?? 1
+      const append = options?.append ?? false
 
-      const nombre =
-        nombreCompleto.trim() || (await fetchUserFullName())?.trim() || ''
+      try {
+        if (append) {
+          setIsLoadingMore(true)
+        } else {
+          setIsLoading(true)
+        }
+        setError(null)
 
-      if (!nombreCompleto && nombre) {
-        setNombreCompleto(nombre)
-      }
+        const nombre =
+          nombreCompleto.trim() || (await fetchUserFullName())?.trim() || ''
 
-      if (!nombre) {
-        setError(
-          'Configura tu nombre completo en Ajustes para consultar tus procesos judiciales.'
-        )
-        setProcesos([])
-        return
-      }
+        if (!nombreCompleto && nombre) {
+          setNombreCompleto(nombre)
+        }
 
-      const response = await api.getJudicialProcesses(nombre, 'nat', false, 1)
+        if (!nombre) {
+          setError(
+            'Configura tu nombre completo en Ajustes para consultar tus procesos judiciales.'
+          )
+          setProcesos([])
+          setHasMorePages(false)
+          return
+        }
 
-      if (response.procesos && Array.isArray(response.procesos)) {
-        const procesosFiltrados = response.procesos.filter(
-          (proc: ProcesoAPI) => proc.idProceso && !isNaN(Number(proc.idProceso))
-        )
+        const response = await api.getJudicialProcesses(nombre, 'nat', soloActivos, page)
 
-        const currentTrackingMap = await loadTracking()
+        if (response.procesos && Array.isArray(response.procesos)) {
+          const procesosFiltrados = response.procesos.filter(
+            (proc: ProcesoAPI) => proc.idProceso && !Number.isNaN(Number(proc.idProceso))
+          )
 
-        const procesosMapeados: Proceso[] = await Promise.all(
-          procesosFiltrados.map(async (proc: ProcesoAPI) => {
-            // Determinar estado basado en la fecha de última actuación
-            const fechaUltimaActuacion = new Date(proc.fechaUltimaActuacion)
-            const hoy = new Date()
-            const diasDesdeUltimaActuacion = Math.floor(
-              (hoy.getTime() - fechaUltimaActuacion.getTime()) / (1000 * 60 * 60 * 24)
-            )
+          const currentTrackingMap = await loadTracking()
 
-            let estado = 'En trámite'
-            if (diasDesdeUltimaActuacion > 365) {
-              estado = 'Archivado'
-            } else if (diasDesdeUltimaActuacion > 180) {
-              estado = 'Suspendido'
-            }
-
+          const procesosMapeados: Proceso[] = procesosFiltrados.map((proc: ProcesoAPI) => {
             const idProceso = Number(proc.idProceso)
-            if (isNaN(idProceso) || idProceso <= 0) {
-              throw new Error(`ID de proceso inválido: ${proc.idProceso}`)
-            }
-
-            // Verificar actuaciones para detectar negaciones/rechazos
-            let badge: 'Negado' | 'Rechazado' | null = null
-            try {
-              const actuacionesResponse = await api.getProcessActuaciones(idProceso, 1)
-              if (actuacionesResponse.actuaciones && Array.isArray(actuacionesResponse.actuaciones)) {
-                // Buscar en todas las actuaciones
-                for (const act of actuacionesResponse.actuaciones) {
-                  const actuacionText = `${act.actuacion || ''} ${act.anotacion || ''}`.toLowerCase()
-                  
-                  // Priorizar "AUTO RECHAZA DEMANDA" primero
-                  if (
-                    actuacionText.includes('auto rechaza demanda') ||
-                    actuacionText.includes('auto rechaza') ||
-                    (act.actuacion?.toLowerCase().includes('auto') && 
-                     act.actuacion?.toLowerCase().includes('rechaza') &&
-                     act.actuacion?.toLowerCase().includes('demanda'))
-                  ) {
-                    badge = 'Rechazado'
-                    break // Prioridad máxima, salir del loop
-                  }
-                  
-                  // Luego buscar otras variantes de rechazo
-                  if (
-                    actuacionText.includes('rechaza') ||
-                    actuacionText.includes('rechazo')
-                  ) {
-                    badge = 'Rechazado'
-                    // No hacer break aquí, seguir buscando por si hay "auto rechaza demanda"
-                  }
-                  
-                  // Buscar negaciones
-                  if (
-                    actuacionText.includes('niega') ||
-                    actuacionText.includes('deneg')
-                  ) {
-                    // Solo asignar "Negado" si no hay rechazo previo
-                    if (!badge) {
-                      badge = 'Negado'
-                    }
-                  }
-                }
-              }
-            } catch (err) {
-              // Si falla cargar actuaciones, continuar sin badge
-              // No es crítico para mostrar el proceso
-            }
-
-            // Verificar si está en seguimiento
             const tracking = currentTrackingMap.get(idProceso)
-            
-            return {
-              id: idProceso.toString(),
-              idProceso: idProceso,
-              numero: proc.llaveProceso,
-              despacho: proc.despacho.trim(),
-              departamento: proc.departamento,
-              sujetosProcesales: proc.sujetosProcesales,
-              fechaInicio: proc.fechaProceso,
-              fechaUltimaActuacion: proc.fechaUltimaActuacion,
-              estado,
-              badge,
-              trackingId: tracking?.id,
-              isTracked: tracking?.is_active || false,
-            }
+            return mapProcesoFromAPI(proc, nombre, tracking)
           })
+
+          procesosMapeados.sort(
+            (a, b) =>
+              new Date(b.fechaUltimaActuacion).getTime() -
+              new Date(a.fechaUltimaActuacion).getTime()
+          )
+
+          setProcesos(prev => {
+            if (!append) return procesosMapeados
+            const merged = new Map(prev.map(item => [item.idProceso, item]))
+            procesosMapeados.forEach(item => merged.set(item.idProceso, item))
+            return Array.from(merged.values()).sort(
+              (a, b) =>
+                new Date(b.fechaUltimaActuacion).getTime() -
+                new Date(a.fechaUltimaActuacion).getTime()
+            )
+          })
+
+          const paginacion = response.paginacion as
+            | { pagina?: number; totalPaginas?: number }
+            | undefined
+          const totalPaginas = paginacion?.totalPaginas ?? 1
+          setCurrentPage(page)
+          setHasMorePages(page < totalPaginas)
+        } else if (!append) {
+          setProcesos([])
+          setHasMorePages(false)
+        }
+      } catch (err: unknown) {
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al cargar los procesos judiciales. Por favor, intenta de nuevo.'
         )
-
-        // Ordenar por fecha de última actuación (más recientes primero)
-        procesosMapeados.sort((a, b) => {
-          return new Date(b.fechaUltimaActuacion).getTime() - new Date(a.fechaUltimaActuacion).getTime()
-        })
-
-        setProcesos(procesosMapeados)
-      } else {
-        setProcesos([])
+        setError(errorMessage)
+        showNotification(errorMessage, 'error')
+        if (!append) {
+          setProcesos([])
+        }
+      } finally {
+        setIsLoading(false)
+        setIsLoadingMore(false)
       }
-    } catch (err: any) {
-      const errorMessage = getTranslatedErrorMessage(
-        err,
-        'Error al cargar los procesos judiciales. Por favor, intenta de nuevo.'
-      )
-      setError(errorMessage)
-      showNotification(errorMessage, 'error')
-      setProcesos([])
-    } finally {
-      setIsLoading(false)
-    }
-  }, [nombreCompleto, showNotification, loadTracking])
+    },
+    [nombreCompleto, showNotification, loadTracking, soloActivos]
+  )
 
   useEffect(() => {
     void loadProcesos()
   }, [loadProcesos])
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
-  }
-
-  const getEstadoColor = (estado: string) => {
-    switch (estado.toLowerCase()) {
-      case 'activo':
-      case 'en trámite':
-        return '#007AFF'
-      case 'cerrado':
-      case 'resuelto':
-        return '#34C759'
-      case 'suspendido':
-        return '#FF9500'
-      case 'archivado':
-        return '#8E8E93'
-      default:
-        return '#5856D6'
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      void loadProcesos()
     }
-  }
+    window.addEventListener('pockets:user-details-updated', handleProfileUpdate)
+    return () => window.removeEventListener('pockets:user-details-updated', handleProfileUpdate)
+  }, [loadProcesos])
+
+  const loadActuacionesForProceso = useCallback(
+    async (idProceso: number, options?: { bypassCache?: boolean }) => {
+      setIsLoadingActuaciones(true)
+      setActuacionesError(null)
+      setActuaciones([])
+
+      try {
+        const response = await fetchProcessActuaciones(idProceso, 1, options)
+        const actuacionesMapeadas = mapActuaciones(response)
+        const badge = detectProcesoBadge(response)
+
+        setActuaciones(actuacionesMapeadas)
+        setSelectedProceso(prev =>
+          prev?.idProceso === idProceso ? { ...prev, badge } : prev
+        )
+        setProcesos(prev =>
+          prev.map(p => (p.idProceso === idProceso ? { ...p, badge } : p))
+        )
+      } catch (err: unknown) {
+        const errorMessage = getTranslatedErrorMessage(
+          err,
+          'Error al cargar las actuaciones del proceso.'
+        )
+        setActuacionesError(errorMessage)
+        showNotification(errorMessage, 'error')
+      } finally {
+        setIsLoadingActuaciones(false)
+      }
+    },
+    [showNotification]
+  )
 
   const handleOpenDetailModal = async (proceso: Proceso) => {
-    // Validar que idProceso existe y es un número válido
-    const idProceso = proceso.idProceso
-    if (!idProceso || isNaN(Number(idProceso)) || idProceso <= 0) {
+    if (!proceso.idProceso || Number.isNaN(Number(proceso.idProceso)) || proceso.idProceso <= 0) {
       showNotification('Error: No se pudo obtener el ID del proceso', 'error')
       return
     }
 
     setSelectedProceso(proceso)
     setIsDetailModalOpen(true)
-    setIsLoadingActuaciones(true)
-    setActuaciones([])
-
-    try {
-      const response = await api.getProcessActuaciones(Number(idProceso), 1)
-      
-      if (response.actuaciones && Array.isArray(response.actuaciones)) {
-        const actuacionesMapeadas: Actuacion[] = response.actuaciones.map((act: ActuacionAPI) => ({
-          id: act.idRegActuacion,
-          numero: act.consActuacion,
-          fecha: act.fechaActuacion,
-          tipo: act.actuacion,
-          anotacion: act.anotacion,
-          fechaInicial: act.fechaInicial,
-          fechaFinal: act.fechaFinal,
-          fechaRegistro: act.fechaRegistro,
-          conDocumentos: act.conDocumentos,
-        }))
-        setActuaciones(actuacionesMapeadas)
-      }
-    } catch (err: any) {
-      const errorMessage = getTranslatedErrorMessage(
-        err,
-        'Error al cargar las actuaciones del proceso.'
-      )
-      showNotification(errorMessage, 'error')
-    } finally {
-      setIsLoadingActuaciones(false)
-    }
+    await loadActuacionesForProceso(proceso.idProceso)
   }
 
   const handleCloseDetailModal = () => {
     setIsDetailModalOpen(false)
     setSelectedProceso(null)
     setActuaciones([])
+    setActuacionesError(null)
   }
 
-  const handleToggleTracking = async (proceso: Proceso, e?: React.MouseEvent) => {
-    if (e) {
-      e.stopPropagation()
-    }
-
+  const handleToggleTracking = async (proceso: Proceso) => {
+    setIsTrackingBusy(true)
     try {
       if (proceso.isTracked && proceso.trackingId) {
-        // Remover del seguimiento
         await api.removeProcessTracking(proceso.trackingId)
         showNotification('Proceso removido del seguimiento', 'success')
-        
-        // Actualizar tracking map
+
         const newMap = new Map(trackingMap)
         newMap.delete(proceso.idProceso)
         setTrackingMap(newMap)
-        
-        // Actualizar proceso en la lista
-        setProcesos(prev => prev.map(p => 
-          p.idProceso === proceso.idProceso 
-            ? { ...p, isTracked: false, trackingId: undefined }
-            : p
-        ))
-        
-        // Actualizar proceso seleccionado si es el mismo
+
+        setProcesos(prev =>
+          prev.map(p =>
+            p.idProceso === proceso.idProceso
+              ? { ...p, isTracked: false, trackingId: undefined }
+              : p
+          )
+        )
+
         if (selectedProceso?.idProceso === proceso.idProceso) {
           setSelectedProceso({
             ...selectedProceso,
@@ -375,6 +312,7 @@ function Procesos() {
           )
           return
         }
+
         const response = await api.addProcessTracking({
           id_proceso: proceso.idProceso,
           llave_proceso: proceso.numero,
@@ -382,10 +320,12 @@ function Procesos() {
           despacho: proceso.despacho,
           departamento: proceso.departamento,
         })
-        
-        showNotification('Proceso agregado al seguimiento. Recibirás notificaciones de nuevas actuaciones.', 'success')
-        
-        // Actualizar tracking map
+
+        showNotification(
+          'Proceso agregado al seguimiento. Recibirás notificaciones de nuevas actuaciones.',
+          'success'
+        )
+
         const newMap = new Map(trackingMap)
         if (response.tracking?.id) {
           newMap.set(proceso.idProceso, {
@@ -394,15 +334,15 @@ function Procesos() {
           })
         }
         setTrackingMap(newMap)
-        
-        // Actualizar proceso en la lista
-        setProcesos(prev => prev.map(p => 
-          p.idProceso === proceso.idProceso 
-            ? { ...p, isTracked: true, trackingId: response.tracking?.id }
-            : p
-        ))
-        
-        // Actualizar proceso seleccionado si es el mismo
+
+        setProcesos(prev =>
+          prev.map(p =>
+            p.idProceso === proceso.idProceso
+              ? { ...p, isTracked: true, trackingId: response.tracking?.id }
+              : p
+          )
+        )
+
         if (selectedProceso?.idProceso === proceso.idProceso) {
           setSelectedProceso({
             ...selectedProceso,
@@ -411,68 +351,124 @@ function Procesos() {
           })
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al actualizar el seguimiento del proceso.'
       )
       showNotification(errorMessage, 'error')
+    } finally {
+      setIsTrackingBusy(false)
     }
   }
 
+  const handleCopyNumero = async () => {
+    if (!selectedProceso) return
+    try {
+      await navigator.clipboard.writeText(selectedProceso.numero)
+      showNotification('Radicado copiado al portapapeles', 'success')
+    } catch {
+      showNotification('No se pudo copiar el radicado', 'error')
+    }
+  }
+
+  const showFilters = !isLoading && !error && procesos.length > 0
+  const showSearch = showFilters || searchQuery.trim().length > 0
+
   return (
     <div className="app-page-container">
-      <div className="app-page-content app-page-content-wide crud-page-content procesos-content">
-        {/* Toolbar */}
-        <div className="app-toolbar">
+      <div className="app-page-content app-page-content-wide crud-page-content procesos-content lifestyle-sub-content">
+        <LifestyleSubHeader
+          title="Procesos"
+          context="Justicia"
+          meta={headerMeta}
+          backTo="/justicia"
+          backLabel="Volver a Justicia"
+        />
+
+        {!isLoading && !error && nombreCompleto ? (
+          <ProcesoConsultaBanner
+            nombre={nombreCompleto}
+            onOpenAjustes={() => navigate('/ajustes')}
+          />
+        ) : null}
+
+        <CrudSummaryStrip
+          ariaLabel="Resumen de procesos"
+          items={[
+            {
+              label: 'Total',
+              value: stripStats === null ? '…' : stripStats.total,
+              tone: 'info',
+            },
+            {
+              label: 'En seguimiento',
+              value: stripStats === null ? '…' : stripStats.tracked,
+              tone: 'available',
+            },
+            {
+              label: 'En trámite',
+              value: stripStats === null ? '…' : stripStats.enTramite,
+            },
+          ]}
+        />
+
+        {showFilters ? (
+          <div className="crud-segmented-tabs-container procesos-filters">
+            <div className="crud-segmented-tabs" role="tablist" aria-label="Filtrar procesos">
+              {FILTER_OPTIONS.map(option => (
+                <button
+                  key={option.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeFilter === option.id}
+                  className={`crud-segmented-tab${activeFilter === option.id ? ' crud-segmented-tab--active' : ''}`}
+                  onClick={() => setActiveFilter(option.id)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+            <label className="procesos-solo-activos">
+              <input
+                type="checkbox"
+                checked={soloActivos}
+                onChange={event => setSoloActivos(event.target.checked)}
+              />
+              <span>Solo activos</span>
+            </label>
+          </div>
+        ) : null}
+
+        <div
+          className={`lifestyle-toolbar${!showSearch ? ' lifestyle-toolbar--solo-cta' : ''}`}
+        >
+          {showSearch ? (
+            <label className="lifestyle-search">
+              <SearchIcon className="lifestyle-search-icon" aria-hidden="true" />
+              <input
+                type="search"
+                className="lifestyle-search-input"
+                value={searchQuery}
+                onChange={event => setSearchQuery(event.target.value)}
+                placeholder="Buscar por radicado, despacho o parte…"
+                aria-label="Buscar procesos judiciales"
+              />
+            </label>
+          ) : null}
           <button
-            className="app-toolbar-button"
-            onClick={() => navigate('/justicia')}
-            aria-label={backToHubLabel('justicia')}
             type="button"
+            className="btn-base btn-accent btn-submit crud-primary-cta lifestyle-toolbar-cta"
+            onClick={() => void loadProcesos()}
+            disabled={isLoading}
+            aria-busy={isLoading}
+            aria-label="Actualizar procesos judiciales"
           >
-            <ArrowBackIcon className="app-toolbar-icon" />
+            <RefreshIcon aria-hidden="true" />
+            {isLoading ? 'Actualizando…' : 'Actualizar procesos'}
           </button>
         </div>
 
-        <h1 className="app-page-title">Procesos</h1>
-
-        <div className="crud-summary-strip" role="region" aria-label="Resumen de procesos">
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Total</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--info">
-              {stripStats === null ? '…' : stripStats.total}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">En seguimiento</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--available">
-              {stripStats === null ? '…' : stripStats.tracked}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">En trámite</span>
-            <span className="crud-summary-strip-value">
-              {stripStats === null ? '…' : stripStats.enTramite}
-            </span>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
-          onClick={() => void loadProcesos()}
-          disabled={isLoading}
-          aria-busy={isLoading}
-          aria-label="Actualizar procesos judiciales"
-        >
-          <RefreshIcon aria-hidden="true" />
-          {isLoading ? 'Actualizando…' : 'Actualizar procesos'}
-        </button>
-
-        {/* Lista de Procesos */}
         {isLoading && procesos.length === 0 ? (
           <div className="glass-group">
             <ListSkeleton variant="inset-row" count={4} aria-label="Cargando procesos" />
@@ -509,207 +505,121 @@ function Procesos() {
             <DescriptionIcon className="empty-state-icon" />
             <p className="empty-state-text">No se encontraron procesos judiciales</p>
             <p className="empty-state-subtext">
-              Los procesos se consultan con tu nombre completo configurado en Ajustes. Usa el botón
-              Actualizar arriba para volver a consultar.
+              Los procesos se consultan con tu nombre completo configurado en Ajustes. Usa Actualizar
+              procesos para volver a consultar la Rama Judicial.
+            </p>
+          </div>
+        ) : filteredProcesos.length === 0 ? (
+          <div className="procesos-empty-state procesos-empty-state--filtered">
+            <DescriptionIcon className="empty-state-icon" />
+            <p className="empty-state-text">Ningún proceso coincide con el filtro</p>
+            <p className="empty-state-subtext">
+              Prueba otro término de búsqueda o cambia el filtro seleccionado.
             </p>
           </div>
         ) : (
           <div className="procesos-list">
             <div className="glass-group">
-              {procesos.map(proceso => (
-                <button
-                  key={proceso.id}
-                  className="crud-inset-row crud-row-accent-indigo"
-                  onClick={() => handleOpenDetailModal(proceso)}
-                  type="button"
-                >
-                  <div className="crud-row-content">
-                    <div className="crud-row-header">
-                      <div className="crud-row-title-section">
-                        <div
-                          className="crud-row-meta-indicator"
-                          style={{ backgroundColor: getEstadoColor(proceso.estado) }}
-                        />
-                        <div className="procesos-item-info">
-                          <div className="crud-row-title-row">
-                            <h3 className="crud-row-title">{proceso.numero}</h3>
-                            {proceso.isTracked && (
-                              <NotificationsActiveIcon 
-                                className="procesos-item-tracking-icon" 
-                                titleAccess="En seguimiento"
-                              />
-                            )}
-                            {proceso.badge && (
-                              <span
-                                className={`procesos-item-badge procesos-item-badge-${proceso.badge.toLowerCase()}`}
-                              >
-                                {proceso.badge}
-                              </span>
-                            )}
+              {filteredProcesos.map(proceso => {
+                const userRolesLabel = formatUserRolesLabel(proceso.userRoles)
+                return (
+                  <button
+                    key={proceso.id}
+                    className="crud-inset-row crud-row-accent-indigo"
+                    onClick={() => void handleOpenDetailModal(proceso)}
+                    type="button"
+                  >
+                    <div className="crud-row-content">
+                      <div className="crud-row-header">
+                        <div className="crud-row-title-section">
+                          <div
+                            className="crud-row-meta-indicator"
+                            style={{ backgroundColor: getEstadoColor(proceso.estado) }}
+                          />
+                          <div className="procesos-item-info">
+                            <div className="crud-row-title-row">
+                              <h3 className="crud-row-title">{proceso.numero}</h3>
+                              {proceso.isTracked ? (
+                                <NotificationsActiveIcon
+                                  className="procesos-item-tracking-icon"
+                                  titleAccess="En seguimiento"
+                                />
+                              ) : null}
+                              {proceso.badge ? (
+                                <span
+                                  className={`procesos-item-badge procesos-item-badge-${proceso.badge.toLowerCase()}`}
+                                >
+                                  {proceso.badge}
+                                </span>
+                              ) : null}
+                            </div>
+                            <span className="crud-row-meta">{proceso.despacho}</span>
                           </div>
-                          <span className="crud-row-meta">{proceso.despacho}</span>
                         </div>
+                        <ChevronRightIcon className="crud-row-chevron" />
                       </div>
-                      <ChevronRightIcon className="crud-row-chevron" />
+                      {userRolesLabel ? (
+                        <p className="procesos-item-role">Tu rol: {userRolesLabel}</p>
+                      ) : null}
+                      {proceso.sujetosProcesales ? (
+                        <p className="crud-row-preview">{proceso.sujetosProcesales}</p>
+                      ) : null}
+                      <div className="crud-row-meta">
+                        <span
+                          className="crud-row-meta"
+                          style={{ color: getEstadoColor(proceso.estado) }}
+                        >
+                          {proceso.estado}
+                        </span>
+                        <span className="crud-row-separator">•</span>
+                        <span className="crud-row-meta">
+                          Última actuación {formatRelativeDate(proceso.fechaUltimaActuacion)}
+                        </span>
+                      </div>
+                      <div className="crud-row-meta">
+                        <span className="crud-row-meta">{proceso.departamento}</span>
+                        <span className="crud-row-separator">•</span>
+                        <span className="crud-row-meta">
+                          Inicio {formatProcesoDate(proceso.fechaInicio)}
+                        </span>
+                      </div>
                     </div>
-                    {proceso.sujetosProcesales && (
-                      <p className="crud-row-preview">{proceso.sujetosProcesales}</p>
-                    )}
-                    <div className="crud-row-meta">
-                      <span
-                        className="crud-row-meta"
-                        style={{ color: getEstadoColor(proceso.estado) }}
-                      >
-                        {proceso.estado}
-                      </span>
-                      <span className="crud-row-separator">•</span>
-                      <span className="crud-row-meta">
-                        Última actuación: {formatDate(proceso.fechaUltimaActuacion)}
-                      </span>
-                    </div>
-                    <div className="crud-row-meta">
-                      <span className="crud-row-meta">{proceso.departamento}</span>
-                      <span className="crud-row-separator">•</span>
-                      <span className="crud-row-meta">
-                        Inicio: {formatDate(proceso.fechaInicio)}
-                      </span>
-                    </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                )
+              })}
             </div>
+            {hasMorePages ? (
+              <button
+                type="button"
+                className="btn-base btn-secondary btn-block procesos-load-more"
+                onClick={() => void loadProcesos({ page: currentPage + 1, append: true })}
+                disabled={isLoadingMore}
+                aria-busy={isLoadingMore}
+              >
+                {isLoadingMore ? 'Cargando más procesos…' : 'Cargar más procesos'}
+              </button>
+            ) : null}
           </div>
         )}
 
-        {/* Modal de Detalle */}
-        {isDetailModalOpen && selectedProceso && (
-          <ModalOverlay onClose={handleCloseDetailModal} className="modal-overlay">
-            <div className="modal-panel" onClick={e => e.stopPropagation()}>
-              <div className="modal-panel-header">
-                <h2 className="modal-panel-title" id="modal-panel-title-detalle-del-proceso">Detalle del Proceso</h2>
-                <button
-                  className="modal-panel-close"
-                  onClick={handleCloseDetailModal}
-                  aria-label="Cerrar"
-                  type="button"
-                >
-                  ×
-                </button>
-              </div>
-
-              <div className="procesos-detail-content">
-                {/* Información del Proceso */}
-                <div className="procesos-detail-section">
-                  <h3 className="procesos-detail-label">Número de Proceso</h3>
-                  <p className="procesos-detail-value">{selectedProceso.numero}</p>
-                </div>
-
-                <div className="procesos-detail-section">
-                  <h3 className="procesos-detail-label">Despacho</h3>
-                  <p className="procesos-detail-value">{selectedProceso.despacho}</p>
-                </div>
-
-                <div className="procesos-detail-section">
-                  <h3 className="procesos-detail-label">Departamento</h3>
-                  <p className="procesos-detail-value">{selectedProceso.departamento}</p>
-                </div>
-
-                <div className="procesos-detail-section">
-                  <h3 className="procesos-detail-label">Sujetos Procesales</h3>
-                  <p className="procesos-detail-value">{selectedProceso.sujetosProcesales}</p>
-                </div>
-
-                <div className="procesos-detail-section">
-                  <h3 className="procesos-detail-label">Estado</h3>
-                  <p
-                    className="procesos-detail-value"
-                    style={{ color: getEstadoColor(selectedProceso.estado) }}
-                  >
-                    {selectedProceso.estado}
-                  </p>
-                </div>
-
-                <div className="procesos-detail-section">
-                  <h3 className="procesos-detail-label">Fecha de Inicio</h3>
-                  <p className="procesos-detail-value">{formatDate(selectedProceso.fechaInicio)}</p>
-                </div>
-
-                <div className="procesos-detail-section">
-                  <h3 className="procesos-detail-label">Última Actuación</h3>
-                  <p className="procesos-detail-value">
-                    {formatDate(selectedProceso.fechaUltimaActuacion)}
-                  </p>
-                </div>
-
-                {/* Botón de Seguimiento */}
-                <div className="procesos-detail-section">
-                  <button
-                    className={`procesos-tracking-button ${selectedProceso.isTracked ? 'procesos-tracking-button-active' : ''}`}
-                    onClick={() => handleToggleTracking(selectedProceso)}
-                    type="button"
-                  >
-                    {selectedProceso.isTracked ? (
-                      <>
-                        <NotificationsActiveIcon className="procesos-tracking-icon" />
-                        <span>Remover del Seguimiento</span>
-                      </>
-                    ) : (
-                      <>
-                        <NotificationsOffIcon className="procesos-tracking-icon" />
-                        <span>Agregar al Seguimiento</span>
-                      </>
-                    )}
-                  </button>
-                  {selectedProceso.isTracked && (
-                    <p className="procesos-tracking-note">
-                      Recibirás notificaciones automáticas cuando haya nuevas actuaciones en este proceso.
-                    </p>
-                  )}
-                </div>
-
-                {/* Actuaciones */}
-                <div className="procesos-detail-section">
-                  <h3 className="procesos-detail-label">Actuaciones</h3>
-                  {isLoadingActuaciones ? (
-                    <ListSkeleton variant="inset-row" count={3} aria-label="Cargando actuaciones" />
-                  ) : actuaciones.length === 0 ? (
-                    <p className="procesos-detail-value">No hay actuaciones disponibles</p>
-                  ) : (
-                    <div className="procesos-actuaciones-list">
-                      {actuaciones.map(actuacion => (
-                        <div key={actuacion.id} className="procesos-actuacion-item">
-                          <div className="procesos-actuacion-header">
-                            <span className="procesos-actuacion-numero">#{actuacion.numero}</span>
-                            <span className="procesos-actuacion-fecha">
-                              {formatDate(actuacion.fecha)}
-                            </span>
-                          </div>
-                          <h4 className="procesos-actuacion-tipo">{actuacion.tipo}</h4>
-                          {actuacion.anotacion && (
-                            <p className="procesos-actuacion-anotacion">{actuacion.anotacion}</p>
-                          )}
-                          {actuacion.fechaInicial && actuacion.fechaFinal && (
-                            <p className="procesos-actuacion-fechas">
-                              Período: {formatDate(actuacion.fechaInicial)} -{' '}
-                              {formatDate(actuacion.fechaFinal)}
-                            </p>
-                          )}
-                          {actuacion.conDocumentos && (
-                            <span className="procesos-actuacion-documentos">📄 Con documentos</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </ModalOverlay>
-        )}
+        {isDetailModalOpen && selectedProceso ? (
+          <ProcesoDetailModal
+            proceso={selectedProceso}
+            actuaciones={actuaciones}
+            isLoadingActuaciones={isLoadingActuaciones}
+            actuacionesError={actuacionesError}
+            isTrackingBusy={isTrackingBusy}
+            onClose={handleCloseDetailModal}
+            onRefreshActuaciones={() =>
+              void loadActuacionesForProceso(selectedProceso.idProceso, { bypassCache: true })
+            }
+            onToggleTracking={() => void handleToggleTracking(selectedProceso)}
+            onCopyNumero={() => void handleCopyNumero()}
+          />
+        ) : null}
       </div>
     </div>
   )
 }
 
 export default Procesos
-

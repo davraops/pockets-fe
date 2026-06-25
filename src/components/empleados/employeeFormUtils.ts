@@ -14,6 +14,10 @@ export interface EmployeeFormData {
   emergencyContactName: string
   emergencyContactPhone: string
   emergencyContactRelationship: string
+  debtNormal: string
+  debtCesantias: string
+  debtNormalNotes: string
+  debtCesantiasNotes: string
 }
 
 export interface EmployeeFormErrors {
@@ -35,6 +39,10 @@ export const EMPTY_EMPLOYEE_FORM: EmployeeFormData = {
   emergencyContactName: '',
   emergencyContactPhone: '',
   emergencyContactRelationship: '',
+  debtNormal: '',
+  debtCesantias: '',
+  debtNormalNotes: '',
+  debtCesantiasNotes: '',
 }
 
 export const EMPTY_EMPLOYEE_FORM_ERRORS: EmployeeFormErrors = {
@@ -57,7 +65,20 @@ export function employeeToFormData(employee: Employee): EmployeeFormData {
     emergencyContactName: employee.data.emergencyContact?.name || '',
     emergencyContactPhone: employee.data.emergencyContact?.phone || '',
     emergencyContactRelationship: employee.data.emergencyContact?.relationship || '',
+    debtNormal: employee.data.debtNormal ? employee.data.debtNormal.toString() : '',
+    debtCesantias: employee.data.debtCesantias ? employee.data.debtCesantias.toString() : '',
+    debtNormalNotes: employee.data.debtNormalNotes || '',
+    debtCesantiasNotes: employee.data.debtCesantiasNotes || '',
   }
+}
+
+export function parseOptionalAmount(value: string): number | undefined {
+  const trimmed = value.trim()
+  if (!trimmed) {
+    return undefined
+  }
+  const parsed = parseFloat(trimmed)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined
 }
 
 export function formDataToEmployeePayload(formData: EmployeeFormData): {
@@ -86,6 +107,10 @@ export function formDataToEmployeePayload(formData: EmployeeFormData): {
               relationship: formData.emergencyContactRelationship.trim() || undefined,
             }
           : undefined,
+      debtNormal: parseOptionalAmount(formData.debtNormal),
+      debtCesantias: parseOptionalAmount(formData.debtCesantias),
+      debtNormalNotes: formData.debtNormalNotes.trim() || undefined,
+      debtCesantiasNotes: formData.debtCesantiasNotes.trim() || undefined,
     },
   }
 }

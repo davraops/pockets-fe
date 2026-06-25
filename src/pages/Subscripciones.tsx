@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import AddIcon from '@mui/icons-material/Add'
 import CardMembershipIcon from '@mui/icons-material/CardMembership'
 import EditIcon from '@mui/icons-material/Edit'
@@ -643,35 +644,24 @@ function Subscripciones() {
               />
 
               {/* Resumen de subscripciones */}
-              <div className="crud-summary-strip" role="region" aria-label="Resumen de subscripciones">
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Total</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
-                    {highlights.totalSubscripciones}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item crud-summary-strip-item--emphasis">
-                  <span className="crud-summary-strip-label">Total mensual</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--expense">
-                    {formatPrice(highlights.totalMensual)}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Familiares</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
-                    {highlights.subscripcionesFamiliares}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Individuales</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--available">
-                    {highlights.subscripcionesIndividuales}
-                  </span>
-                </div>
-              </div>
+              <CrudSummaryStrip
+                ariaLabel="Resumen de subscripciones"
+                items={[
+                  { label: 'Total', value: highlights.totalSubscripciones, tone: 'info' },
+                  {
+                    label: 'Total mensual',
+                    value: formatPrice(highlights.totalMensual),
+                    tone: 'expense',
+                    emphasis: true,
+                  },
+                  { label: 'Familiares', value: highlights.subscripcionesFamiliares, tone: 'info' },
+                  {
+                    label: 'Individuales',
+                    value: highlights.subscripcionesIndividuales,
+                    tone: 'available',
+                  },
+                ]}
+              />
 
               <button
                 type="button"
@@ -708,14 +698,14 @@ function Subscripciones() {
                             </span>
                           </div>
                           <div className="crud-row-secondary">
-                            <span className="crud-row-value">
+                            <span className="crud-row-value crud-row-value--sm">
                               {formatPrice(subscription.precio)}
                             </span>
-                            <span className="crud-row-meta">
+                            <span className="crud-row-meta crud-row-meta--sm">
                               Corte: {formatDate(subscription.fechaCorte)}
                             </span>
                             {subscription.esFamiliar && (
-                              <span className="crud-row-tag">👨‍👩‍👧‍👦 Familiar</span>
+                              <span className="crud-row-tag crud-row-tag--chip">👨‍👩‍👧‍👦 Familiar</span>
                             )}
                           </div>
                         </div>
@@ -857,7 +847,7 @@ function Subscripciones() {
                   <div className="detail-section">
                     <div className="detail-info">
                       <h3 className="detail-name">{selectedSubscription.nombre}</h3>
-                      <p className="detail-card">
+                      <p className="detail-bank">
                         {selectedSubscription.nombreTarjeta} -{' '}
                         {formatCardNumber(selectedSubscription.ultimos4Digitos)}
                       </p>

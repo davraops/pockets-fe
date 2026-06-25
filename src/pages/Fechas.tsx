@@ -1,6 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { backToHubLabel } from '../constants/hubLabels'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Calendar, dateFnsLocalizer, View, Event as CalendarEvent } from 'react-big-calendar'
 import { format, parse, startOfWeek, getDay } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -10,19 +8,46 @@ import AddIcon from '@mui/icons-material/Add'
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ViewListIcon from '@mui/icons-material/ViewList'
 import CalendarViewWeekIcon from '@mui/icons-material/CalendarViewWeek'
+import SearchIcon from '@mui/icons-material/Search'
 import { api } from '../services/api'
 import { devError, isDebugToolsEnabled, isDestructiveDebugEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
 import { useConfirm } from '../contexts/ConfirmContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
+import { useIsMobile } from '../hooks/useBreakpoint'
 import './AppPage.css'
 import ModalOverlay from '../components/ModalOverlay'
 import ListSkeleton from '../components/ListSkeleton'
+import LifestyleSubHeader from '../components/tiempo/LifestyleSubHeader'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
+import FechaEventCard, { FechaFeaturedEvent } from '../components/fechas/FechaEventCard'
+import FechasEventFormFields from '../components/fechas/FechasEventFormFields'
+import {
+  EMPTY_FECHAS_EVENT_FORM,
+  EMPTY_FECHAS_EVENT_FORM_ERRORS,
+  eventToFormData,
+  formDataToEventPayload,
+  validateFechasEventForm,
+  type FechasEventFormData,
+  type FechasEventFormErrors,
+  type RecurrenceFrequency,
+} from '../components/fechas/fechasFormUtils'
+import {
+  calculateEventHighlights,
+  compareEventsBySchedule,
+  excludeFeaturedEvent,
+  filterEventsByQuery,
+  formatEventDateLong,
+  formatEventMeta,
+  formatEventTime,
+  formatEventWhenLabel,
+  formatRecurrenceLabel,
+  getNextFeaturedEvent,
+  groupEventsByPeriod,
+} from '../components/fechas/fechasDisplayUtils'
 import './Fechas.css'
 
 // Interfaz que coincide con la respuesta de la API (campos en inglés)
@@ -75,7 +100,6 @@ const localizer = dateFnsLocalizer({
 })
 
 function Fechas() {
-  const navigate = useNavigate()
   const { showNotification } = useNotification()
   const { confirm } = useConfirm()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -90,22 +114,13 @@ function Fechas() {
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
   const [calendarView, setCalendarView] = useState<View>('month')
   const [calendarDate, setCalendarDate] = useState(new Date())
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
+  const isMobile = useIsMobile()
   const menuRef = useRef<HTMLDivElement>(null)
   const tituloRef = useRef<HTMLInputElement>(null)
   const fechaRef = useRef<HTMLInputElement>(null)
-  const [formData, setFormData] = useState({
-    titulo: '',
-    descripcion: '',
-    fecha: '',
-    hora: '',
-    esTodoElDia: false,
-    ubicacion: '',
-  })
-  const [formErrors, setFormErrors] = useState({
-    titulo: '',
-    fecha: '',
-  })
+  const [formData, setFormData] = useState<FechasEventFormData>(EMPTY_FECHAS_EVENT_FORM)
+  const [formErrors, setFormErrors] = useState<FechasEventFormErrors>(EMPTY_FECHAS_EVENT_FORM_ERRORS)
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Mapear Evento de API a formato interno
   const mapEventFromAPI = (apiEvent: EventAPI): Event => {
@@ -130,8 +145,8 @@ function Fechas() {
   }
 
   // Convertir eventos al formato de react-big-calendar
-  const getCalendarEvents = (): CalendarEvent[] => {
-    return events.map(event => {
+  const buildCalendarEvents = useCallback((source: Event[]): CalendarEvent[] => {
+    return source.map(event => {
       const eventDate = new Date(event.fecha)
       let start: Date
       let end: Date
@@ -165,38 +180,35 @@ function Fechas() {
         resource: event, // Guardar el evento completo para acceso rápido
       }
     })
-  }
+  }, [])
 
-  // Manejar clic en evento del calendario
-  const handleSelectEvent = (calendarEvent: CalendarEvent) => {
-    const event = calendarEvent.resource as Event
-    if (event) {
-      handleOpenDetailModal(event)
-    }
-  }
+  const filteredEvents = useMemo(
+    () => filterEventsByQuery(events, searchQuery),
+    [events, searchQuery]
+  )
+  const hasSearch = searchQuery.trim().length > 0
 
-  // Obtener eventos próximos (hasta 30 días)
-  const getUpcomingEvents = (): Event[] => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const thirtyDaysLater = new Date(today)
-    thirtyDaysLater.setDate(today.getDate() + 30)
+  const featuredEvent = useMemo(
+    () => (hasSearch ? null : getNextFeaturedEvent(filteredEvents)),
+    [filteredEvents, hasSearch]
+  )
 
-    return events
-      .filter(event => {
-        const eventDate = new Date(event.fecha)
-        eventDate.setHours(0, 0, 0, 0)
-        return eventDate >= today && eventDate <= thirtyDaysLater
-      })
-      .sort((a, b) => {
-        const dateA = new Date(a.fecha)
-        const dateB = new Date(b.fecha)
-        return dateA.getTime() - dateB.getTime()
-      })
-      .slice(0, 5) // Mostrar máximo 5 eventos próximos
-  }
+  const listEvents = useMemo(
+    () => excludeFeaturedEvent(filteredEvents, featuredEvent),
+    [filteredEvents, featuredEvent]
+  )
 
-  const upcomingEvents = getUpcomingEvents()
+  const periodGroups = useMemo(() => groupEventsByPeriod(listEvents), [listEvents])
+
+  const searchResultEvents = useMemo(
+    () => [...filteredEvents].sort(compareEventsBySchedule),
+    [filteredEvents]
+  )
+
+  const calendarEvents = useMemo(
+    () => buildCalendarEvents(filteredEvents),
+    [buildCalendarEvents, filteredEvents]
+  )
 
   const loadEvents = useCallback(async () => {
     setIsLoading(true)
@@ -222,6 +234,21 @@ function Fechas() {
     void loadEvents()
   }, [loadEvents])
 
+  const handleSelectEvent = (calendarEvent: CalendarEvent) => {
+    const event = calendarEvent.resource as Event
+    if (event) {
+      handleOpenDetailModal(event)
+    }
+  }
+
+  const renderEventCard = (event: Event) => (
+    <FechaEventCard
+      key={event.id}
+      event={event}
+      onClick={() => handleOpenDetailModal(event)}
+    />
+  )
+
   // Cerrar menú al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -242,67 +269,31 @@ function Fechas() {
   const handleOpenModal = () => {
     setIsModalOpen(true)
     setIsEditMode(false)
-    setFormData({
-      titulo: '',
-      descripcion: '',
-      fecha: '',
-      hora: '',
-      esTodoElDia: false,
-      ubicacion: '',
-    })
-    setFormErrors({
-      titulo: '',
-      fecha: '',
-    })
+    setFormData(EMPTY_FECHAS_EVENT_FORM)
+    setFormErrors(EMPTY_FECHAS_EVENT_FORM_ERRORS)
   }
 
   const handleCloseModal = () => {
     setIsModalOpen(false)
     setIsEditMode(false)
-    setFormData({
-      titulo: '',
-      descripcion: '',
-      fecha: '',
-      hora: '',
-      esTodoElDia: false,
-      ubicacion: '',
-    })
-    setFormErrors({
-      titulo: '',
-      fecha: '',
-    })
+    setFormData(EMPTY_FECHAS_EVENT_FORM)
+    setFormErrors(EMPTY_FECHAS_EVENT_FORM_ERRORS)
   }
 
   const handleOpenDetailModal = (event: Event) => {
     setSelectedEvent(event)
     setIsDetailModalOpen(true)
     setIsEditMode(false)
-    setFormData({
-      titulo: event.titulo,
-      descripcion: event.descripcion || '',
-      fecha: event.fecha,
-      hora: event.hora || '',
-      esTodoElDia: event.esTodoElDia,
-      ubicacion: event.ubicacion || '',
-    })
+    setFormData(eventToFormData(event))
+    setFormErrors(EMPTY_FECHAS_EVENT_FORM_ERRORS)
   }
 
   const handleCloseDetailModal = () => {
     setIsDetailModalOpen(false)
     setSelectedEvent(null)
     setIsEditMode(false)
-    setFormData({
-      titulo: '',
-      descripcion: '',
-      fecha: '',
-      hora: '',
-      esTodoElDia: false,
-      ubicacion: '',
-    })
-    setFormErrors({
-      titulo: '',
-      fecha: '',
-    })
+    setFormData(EMPTY_FECHAS_EVENT_FORM)
+    setFormErrors(EMPTY_FECHAS_EVENT_FORM_ERRORS)
   }
 
   const handleEditClick = () => {
@@ -335,22 +326,7 @@ function Fechas() {
   }
 
   const validateForm = (): boolean => {
-    const errors = {
-      titulo: '',
-      fecha: '',
-    }
-    let isValid = true
-
-    if (!formData.titulo.trim()) {
-      errors.titulo = 'El título es requerido'
-      isValid = false
-    }
-
-    if (!formData.fecha) {
-      errors.fecha = 'La fecha es requerida'
-      isValid = false
-    }
-
+    const { isValid, errors } = validateFechasEventForm(formData)
     setFormErrors(errors)
     if (!isValid) {
       queueMicrotask(() => {
@@ -367,34 +343,16 @@ function Fechas() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const isValid = validateForm()
-    if (!isValid) {
+    if (!validateForm()) {
       return
     }
+
+    const payload = formDataToEventPayload(formData)
 
     try {
       setIsLoading(true)
       if (isEditMode && selectedEvent) {
-        // Editar evento existente
-        const updateData: any = {
-          title: formData.titulo.trim(),
-          event_date: formData.fecha,
-          is_all_day: formData.esTodoElDia,
-        }
-
-        if (formData.descripcion.trim()) {
-          updateData.description = formData.descripcion.trim()
-        }
-
-        if (!formData.esTodoElDia && formData.hora) {
-          updateData.event_time = formData.hora
-        }
-
-        if (formData.ubicacion.trim()) {
-          updateData.location = formData.ubicacion.trim()
-        }
-
-        await api.updateEvent(selectedEvent.id, updateData)
+        await api.updateEvent(selectedEvent.id, payload)
 
         const response = await api.getEvents()
         if (response.events && Array.isArray(response.events)) {
@@ -404,26 +362,7 @@ function Fechas() {
         handleCloseDetailModal()
         showNotification('Evento actualizado exitosamente', 'success')
       } else {
-        // Agregar nuevo evento
-        const createData: any = {
-          title: formData.titulo.trim(),
-          event_date: formData.fecha,
-          is_all_day: formData.esTodoElDia,
-        }
-
-        if (formData.descripcion.trim()) {
-          createData.description = formData.descripcion.trim()
-        }
-
-        if (!formData.esTodoElDia && formData.hora) {
-          createData.event_time = formData.hora
-        }
-
-        if (formData.ubicacion.trim()) {
-          createData.location = formData.ubicacion.trim()
-        }
-
-        await api.createEvent(createData)
+        await api.createEvent(payload)
 
         const response = await api.getEvents()
         if (response.events && Array.isArray(response.events)) {
@@ -457,7 +396,7 @@ function Fechas() {
     }))
 
     // Limpiar error del campo cuando el usuario empiece a escribir
-    if (formErrors[name as keyof typeof formErrors]) {
+    if (formErrors[name as keyof FechasEventFormErrors]) {
       setFormErrors(prev => ({
         ...prev,
         [name]: '',
@@ -465,19 +404,16 @@ function Fechas() {
     }
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
-  }
-
-  const formatTime = (timeString: string | null) => {
-    if (!timeString) return ''
-    const [hours, minutes] = timeString.split(':')
-    return `${hours}:${minutes}`
+  const handleRecurrencePreset = (frequency: RecurrenceFrequency) => {
+    setFormData(prev => ({
+      ...prev,
+      esRecurrente: true,
+      frecuenciaRecurrencia: frequency,
+      intervaloRecurrencia: '1',
+    }))
+    if (formErrors.frecuenciaRecurrencia) {
+      setFormErrors(prev => ({ ...prev, frecuenciaRecurrencia: '' }))
+    }
   }
 
   // Función de debug para crear eventos demo
@@ -494,6 +430,9 @@ function Fechas() {
             .toISOString()
             .split('T')[0],
           is_all_day: true,
+          is_recurring: true,
+          recurrence_frequency: 'yearly',
+          recurrence_interval: 1,
           location: 'Casa de Juan',
         },
         {
@@ -523,6 +462,9 @@ function Fechas() {
             .toISOString()
             .split('T')[0],
           is_all_day: true,
+          is_recurring: true,
+          recurrence_frequency: 'yearly',
+          recurrence_interval: 1,
           location: 'Restaurante El Jardín',
         },
         {
@@ -613,46 +555,26 @@ function Fechas() {
     }
   }
 
-  const calculateHighlights = () => {
-    const total = events.length
-    const proximos = upcomingEvents.length
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const hoy = events.filter(event => {
-      const eventDate = new Date(event.fecha)
-      eventDate.setHours(0, 0, 0, 0)
-      return eventDate.getTime() === today.getTime()
-    }).length
+  const highlights = useMemo(() => calculateEventHighlights(events), [events])
 
-    return { total, proximos, hoy }
-  }
-
-  const highlights = calculateHighlights()
-
-  const formatEventMeta = (event: Event) => {
-    const parts = [formatDate(event.fecha)]
-    if (event.hora && !event.esTodoElDia) parts.push(formatTime(event.hora))
-    if (event.esTodoElDia) parts.push('Todo el día')
-    return parts.join(' • ')
-  }
+  const headerMeta = !isLoading && !error
+    ? hasSearch
+      ? `${filteredEvents.length} de ${events.length} evento${events.length !== 1 ? 's' : ''}`
+      : events.length === 0
+        ? 'Sin eventos registrados'
+        : `${highlights.total} eventos · ${highlights.hoy} hoy · ${highlights.proximos} próximos`
+    : undefined
 
   return (
     <div className="app-page-container">
-      <div className="app-page-content app-page-content-wide crud-page-content fechas-content">
-        {/* Toolbar - HIG: Navigation */}
-        <div className="app-toolbar">
-          <button
-            className="app-toolbar-button"
-            onClick={() => navigate('/tiempo')}
-            aria-label={backToHubLabel('tiempo')}
-            type="button"
-          >
-            <ArrowBackIcon className="app-toolbar-icon" />
-          </button>
-
-          <div className="app-toolbar-menu-container" ref={menuRef}>
-            {isDebugToolsEnabled() && (
-              <>
+      <div className="app-page-content app-page-content-wide crud-page-content fechas-content lifestyle-sub-content">
+        <LifestyleSubHeader
+          title="Fechas"
+          context="Agenda"
+          meta={headerMeta}
+          toolbarActions={
+            isDebugToolsEnabled() ? (
+              <div className="lifestyle-sub-menu-container" ref={menuRef}>
                 <button
                   className="app-toolbar-button"
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -662,131 +584,108 @@ function Fechas() {
                 >
                   <MoreVertIcon className="app-toolbar-icon" />
                 </button>
-                {isMenuOpen && (
-                  <div className="crud-dropdown-menu">
+                {isMenuOpen ? (
+                  <div className="lifestyle-sub-menu">
                     <button
-                      className="crud-dropdown-menu-item"
+                      className="lifestyle-sub-menu-item"
                       onClick={() => {
                         setIsDebugModalOpen(true)
                         setIsMenuOpen(false)
                       }}
                       type="button"
                     >
-                      <span>🐛 Debug</span>
+                      🐛 Debug
                     </button>
                   </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
+                ) : null}
+              </div>
+            ) : null
+          }
+        />
 
-        <h1 className="app-page-title">Fechas</h1>
+        {!isLoading && !error && events.length > 0 ? (
+          <CrudSummaryStrip
+            ariaLabel="Resumen de eventos"
+            items={[
+              { label: 'Total', value: highlights.total, tone: 'info' },
+              { label: 'Hoy', value: highlights.hoy, tone: 'available' },
+              { label: 'Próximos', value: highlights.proximos, tone: 'info' },
+            ]}
+          />
+        ) : null}
 
-        <div className="crud-summary-strip" role="region" aria-label="Resumen de eventos">
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Total</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--info">
-              {highlights.total}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Hoy</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--available">
-              {highlights.hoy}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Próximos</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--info">
-              {highlights.proximos}
-            </span>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
-          onClick={handleOpenModal}
-          aria-label="Agregar evento"
-        >
-          <AddIcon aria-hidden={true} />
-          Agregar evento
-        </button>
-
-        {/* Mensaje Inspirador */}
-        <div className="fechas-inspiration-message">
-          <div className="fechas-inspiration-content">
-            <p className="fechas-inspiration-badge">✨ Respira tranquilo</p>
-            <p className="fechas-inspiration-main">
-              Este es un espacio libre de trabajo
-            </p>
-            <p className="fechas-inspiration-text">
-              Cuando todos los engaños fallen y cuando las cosas se pongan difíciles, te vas a necesitar a ti y a tu familia real. Este espacio es para las fechas y compromisos contigo y los tuyos.
-            </p>
-          </div>
-        </div>
-
-        {!isLoading && !error && upcomingEvents.length > 0 && (
-          <div className="glass-group" role="region" aria-label="Próximos eventos">
-            {upcomingEvents.map(event => {
-              const eventDate = new Date(event.fecha)
-              const today = new Date()
-              today.setHours(0, 0, 0, 0)
-              eventDate.setHours(0, 0, 0, 0)
-              const daysUntil = Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-              const isToday = daysUntil === 0
-              const isTomorrow = daysUntil === 1
-              const whenLabel = isToday ? 'Hoy' : isTomorrow ? 'Mañana' : `En ${daysUntil} días`
-
-              return (
-                <button
-                  key={event.id}
-                  type="button"
-                  className="crud-inset-row crud-row-accent-blue"
-                  onClick={() => handleOpenDetailModal(event)}
-                  aria-label={`Ver evento ${event.titulo}`}
-                >
-                  <div className="crud-row-content">
-                    <div className="crud-row-header">
-                      <span className="crud-row-title">{event.titulo}</span>
-                      <span className="crud-row-value">{whenLabel}</span>
-                      <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
-                    </div>
-                    <p className="crud-row-meta">{formatEventMeta(event)}</p>
-                    {event.descripcion && (
-                      <p className="crud-row-preview">{event.descripcion}</p>
-                    )}
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        )}
-
-                {/* Toggle de Vista */}
-        <div className="fechas-view-toggle">
-          <button
-            className={`fechas-view-toggle-button ${viewMode === 'list' ? 'active' : ''}`}
-            onClick={() => setViewMode('list')}
-            type="button"
-            aria-label="Vista de lista"
+        <div className="fechas-toolbar-row">
+          <div
+            className={`lifestyle-toolbar${!isLoading && !error && events.length === 0 ? ' lifestyle-toolbar--solo-cta' : ''}`}
           >
-            <ViewListIcon />
-            <span>Lista</span>
-          </button>
-          <button
-            className={`fechas-view-toggle-button ${viewMode === 'calendar' ? 'active' : ''}`}
-            onClick={() => setViewMode('calendar')}
-            type="button"
-            aria-label="Vista de calendario"
-          >
-            <CalendarViewWeekIcon />
-            <span>Calendario</span>
-          </button>
+            {!isLoading && !error && (events.length > 0 || hasSearch) ? (
+              <label className="lifestyle-search">
+                <SearchIcon className="lifestyle-search-icon" aria-hidden="true" />
+                <input
+                  type="search"
+                  className="lifestyle-search-input"
+                  value={searchQuery}
+                  onChange={event => setSearchQuery(event.target.value)}
+                  placeholder="Buscar por título, lugar, fecha…"
+                  aria-label="Buscar eventos"
+                />
+              </label>
+            ) : null}
+            <button
+              type="button"
+              className="btn-base btn-accent btn-submit crud-primary-cta lifestyle-toolbar-cta"
+              onClick={handleOpenModal}
+              aria-label="Agregar evento"
+            >
+              <AddIcon aria-hidden={true} />
+              Agregar evento
+            </button>
+          </div>
+
+          {!isLoading && !error && events.length > 0 ? (
+            <div className="fechas-view-toggle" role="tablist" aria-label="Vista de agenda">
+              <button
+                className={`fechas-view-toggle-button ${viewMode === 'list' ? 'active' : ''}`}
+                onClick={() => setViewMode('list')}
+                type="button"
+                role="tab"
+                aria-selected={viewMode === 'list'}
+                aria-label="Vista de lista"
+              >
+                <ViewListIcon />
+                <span>Lista</span>
+              </button>
+              <button
+                className={`fechas-view-toggle-button ${viewMode === 'calendar' ? 'active' : ''}`}
+                onClick={() => setViewMode('calendar')}
+                type="button"
+                role="tab"
+                aria-selected={viewMode === 'calendar'}
+                aria-label="Vista de calendario"
+              >
+                <CalendarViewWeekIcon />
+                <span>Calendario</span>
+              </button>
+            </div>
+          ) : null}
         </div>
+
+        {!hasSearch && !isLoading && !error && events.length > 0 ? (
+          <div className="fechas-purpose-banner">
+            <span className="fechas-purpose-banner__badge">Espacio personal</span>
+            <p className="fechas-purpose-banner__text">
+              Fechas y compromisos contigo y los tuyos. Cuando todo lo demás falle, vas a necesitar
+              tiempo real con tu familia — aquí no van eventos laborales.
+            </p>
+          </div>
+        ) : null}
+
+        {!hasSearch && !isLoading && !error && featuredEvent && viewMode === 'list' ? (
+          <FechaFeaturedEvent
+            event={featuredEvent}
+            onClick={() => handleOpenDetailModal(featuredEvent)}
+          />
+        ) : null}
 
         {/* Vista de Calendario */}
         {viewMode === 'calendar' && (
@@ -814,7 +713,7 @@ function Fechas() {
             ) : (
               <Calendar
                 localizer={localizer}
-                events={getCalendarEvents()}
+                events={calendarEvents}
                 startAccessor="start"
                 endAccessor="end"
                 style={{ 
@@ -846,73 +745,82 @@ function Fechas() {
           </div>
         )}
 
-        {/* Lista de Eventos */}
         {viewMode === 'list' && (
           <>
             {isLoading && events.length === 0 ? (
-          <div className="glass-group">
-            <ListSkeleton variant="inset-row" count={4} aria-label="Cargando eventos" />
-          </div>
-        ) : error && events.length === 0 ? (
-          <div className="loader-container">
-            <div className="loader finanzas-stats-error-panel">
-              <p className="loader-text loader-text--error" role="alert">
-                {error}
-              </p>
-              <button
-                type="button"
-                className="btn-base btn-secondary finanzas-stats-retry-button"
-                onClick={() => void loadEvents()}
-                aria-label="Reintentar cargar eventos"
-              >
-                <span>Reintentar</span>
-              </button>
-            </div>
-          </div>
-        ) : events.length === 0 ? (
-          <div className="empty-state">
-            <CalendarTodayIcon className="empty-state-icon" />
-            <p className="empty-text">No hay eventos registrados aún</p>
-            <p className="empty-subtext">Usa el botón de arriba para agregar el primero</p>
-          </div>
-        ) : (
-          <div className="glass-group">
-            {events.map(event => (
-              <button
-                key={event.id}
-                type="button"
-                className="crud-inset-row crud-row-accent-blue"
-                onClick={() => handleOpenDetailModal(event)}
-                aria-label={`Ver evento ${event.titulo}`}
-              >
-                <div className="crud-row-content">
-                  <div className="crud-row-header">
-                    <span className="crud-row-title">{event.titulo}</span>
-                    <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
-                  </div>
-                  <p className="crud-row-meta">{formatEventMeta(event)}</p>
-                  {event.descripcion && (
-                    <p className="crud-row-preview">{event.descripcion}</p>
-                  )}
-                  {event.ubicacion && (
-                    <p className="crud-row-hint">📍 {event.ubicacion}</p>
-                  )}
+              <div className="fechas-event-grid">
+                <ListSkeleton variant="inset-row" count={4} aria-label="Cargando eventos" />
+              </div>
+            ) : error && events.length === 0 ? (
+              <div className="loader-container">
+                <div className="loader finanzas-stats-error-panel">
+                  <p className="loader-text loader-text--error" role="alert">
+                    {error}
+                  </p>
+                  <button
+                    type="button"
+                    className="btn-base btn-secondary finanzas-stats-retry-button"
+                    onClick={() => void loadEvents()}
+                    aria-label="Reintentar cargar eventos"
+                  >
+                    <span>Reintentar</span>
+                  </button>
                 </div>
-              </button>
-            ))}
-          </div>
-        )}
+              </div>
+            ) : hasSearch && filteredEvents.length === 0 ? (
+              <div className="empty-state">
+                <CalendarTodayIcon className="empty-state-icon" />
+                <p className="empty-text">Sin coincidencias</p>
+                <p className="empty-subtext">Prueba con otro término o limpia la búsqueda</p>
+              </div>
+            ) : hasSearch ? (
+              <section className="fechas-section" aria-label="Resultados de búsqueda">
+                <h2 className="fechas-section-title">Resultados</h2>
+                <div className="fechas-event-grid">
+                  {searchResultEvents.map(event => renderEventCard(event))}
+                </div>
+              </section>
+            ) : events.length === 0 ? (
+              <div className="empty-state">
+                <CalendarTodayIcon className="empty-state-icon" />
+                <p className="empty-text">No hay eventos registrados aún</p>
+                <p className="empty-subtext">Usa Agregar evento para registrar el primero</p>
+              </div>
+            ) : periodGroups.length === 0 ? null : (
+              periodGroups.map(group => (
+                <section
+                  key={group.id}
+                  className="fechas-section"
+                  aria-label={group.label}
+                >
+                  <h2 className="fechas-section-title">{group.label}</h2>
+                  <div
+                    className={`fechas-event-grid${group.id === 'past' ? ' fechas-event-grid--past' : ''}`}
+                  >
+                    {group.events.map(event => renderEventCard(event))}
+                  </div>
+                </section>
+              ))
+            )}
           </>
         )}
 
                 {/* Modal de Crear/Editar Evento */}
         {isModalOpen && (
           <ModalOverlay onClose={handleCloseModal} className="modal-overlay">
-            <div className="modal-panel" onClick={e => e.stopPropagation()}>
-              <div className="modal-panel-header">
-                <h2 className="modal-panel-title" id="modal-panel-title-iseditmode-editar-evento-nuevo-evento">
-                  {isEditMode ? 'Editar Evento' : 'Nuevo Evento'}
-                </h2>
+            <div
+              className="modal-panel fechas-modal lifestyle-modal lifestyle-modal--form"
+              onClick={e => e.stopPropagation()}
+              role="dialog"
+              aria-labelledby="modal-title-fechas-nuevo"
+            >
+              <div className="lifestyle-modal__header">
+                <div className="lifestyle-modal__header-copy">
+                  <p className="lifestyle-modal__kicker">Fechas · Nuevo</p>
+                  <h2 className="modal-panel-title" id="modal-title-fechas-nuevo">
+                    Nuevo evento
+                  </h2>
+                </div>
                 <button
                   className="modal-panel-close"
                   onClick={handleCloseModal}
@@ -924,129 +832,25 @@ function Fechas() {
               </div>
 
               <form onSubmit={handleSubmit} className="fechas-modal-form" noValidate>
-                {/* Nota sobre eventos laborales */}
-                <div className="fechas-form-notice">
-                  <span className="fechas-form-notice-icon">🚫</span>
-                  <span className="fechas-form-notice-text">
-                    Prohibido agregar eventos laborales aquí. Este espacio es solo para fechas y compromisos contigo y los tuyos.
-                  </span>
-                </div>
+                <FechasEventFormFields
+                  formData={formData}
+                  formErrors={formErrors}
+                  tituloRef={tituloRef}
+                  fechaRef={fechaRef}
+                  onChange={handleChange}
+                  onRecurrencePreset={handleRecurrencePreset}
+                />
 
-                <div className="form-group-base">
-                  <label htmlFor="titulo" className="form-label-base form-label-base--comfortable">
-                    Título *
-                  </label>
-                  <input
-                    ref={tituloRef}
-                    type="text"
-                    id="titulo"
-                    name="titulo"
-                    value={formData.titulo}
-                    onChange={handleChange}
-                    className={`form-input-base ${formErrors.titulo  ? 'input-error' : ''}`}
-                    placeholder="Ej: Cumpleaños de Juan"
-                    autoFocus
-                    aria-invalid={!!formErrors.titulo}
-                    {...(formErrors.titulo ? { 'aria-describedby': 'titulo-error' } : {})}
-                  />
-                  {formErrors.titulo && (
-                    <span id="titulo-error" className="fechas-form-error" role="alert">
-                      {formErrors.titulo}
-                    </span>
-                  )}
-                </div>
-
-                <div className="form-group-base">
-                  <label htmlFor="descripcion" className="form-label-base form-label-base--comfortable">
-                    Descripción
-                  </label>
-                  <textarea
-                    id="descripcion"
-                    name="descripcion"
-                    value={formData.descripcion}
-                    onChange={handleChange}
-                    className="form-textarea-base"
-                    rows={3}
-                    placeholder="Descripción del evento (opcional)"
-                  />
-                </div>
-
-                <div className="form-group-base">
-                  <label htmlFor="fecha" className="form-label-base form-label-base--comfortable">
-                    Fecha *
-                  </label>
-                  <input
-                    ref={fechaRef}
-                    type="date"
-                    id="fecha"
-                    name="fecha"
-                    value={formData.fecha}
-                    onChange={handleChange}
-                    className={`form-input-base ${formErrors.fecha  ? 'input-error' : ''}`}
-                    aria-invalid={!!formErrors.fecha}
-                    {...(formErrors.fecha ? { 'aria-describedby': 'fecha-error' } : {})}
-                  />
-                  {formErrors.fecha && (
-                    <span id="fecha-error" className="fechas-form-error" role="alert">
-                      {formErrors.fecha}
-                    </span>
-                  )}
-                </div>
-
-                <div className="form-group-base">
-                  <label className="fechas-form-checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="esTodoElDia"
-                      checked={formData.esTodoElDia}
-                      onChange={handleChange}
-                      className="fechas-form-checkbox"
-                    />
-                    <span>Todo el día</span>
-                  </label>
-                </div>
-
-                {!formData.esTodoElDia && (
-                  <div className="form-group-base">
-                    <label htmlFor="hora" className="form-label-base form-label-base--comfortable">
-                      Hora
-                    </label>
-                    <input
-                      type="time"
-                      id="hora"
-                      name="hora"
-                      value={formData.hora}
-                      onChange={handleChange}
-                      className="form-input-base"
-                    />
-                  </div>
-                )}
-
-                <div className="form-group-base">
-                  <label htmlFor="ubicacion" className="form-label-base form-label-base--comfortable">
-                    Ubicación
-                  </label>
-                  <input
-                    type="text"
-                    id="ubicacion"
-                    name="ubicacion"
-                    value={formData.ubicacion}
-                    onChange={handleChange}
-                    className="form-input-base"
-                    placeholder="Ej: Restaurante El Jardín"
-                  />
-                </div>
-
-                <div className="fechas-modal-actions">
+                <div className="modal-actions-base lifestyle-modal__footer">
                   <button
                     type="button"
-                    className="fechas-button-secondary"
+                    className="btn-base btn-secondary lifestyle-modal__btn"
                     onClick={handleCloseModal}
                   >
                     Cancelar
                   </button>
-                  <button type="submit" className="fechas-button-primary" disabled={isLoading}>
-                    {isLoading ? 'Guardando...' : isEditMode ? 'Actualizar' : 'Crear'}
+                  <button type="submit" className="btn-base btn-accent lifestyle-modal__btn" disabled={isLoading}>
+                    {isLoading ? 'Guardando...' : 'Crear'}
                   </button>
                 </div>
               </form>
@@ -1057,11 +861,26 @@ function Fechas() {
         {/* Modal de Detalle de Evento */}
         {isDetailModalOpen && selectedEvent && (
           <ModalOverlay onClose={handleCloseDetailModal} className="modal-overlay">
-            <div className="modal-panel" onClick={e => e.stopPropagation()}>
-              <div className="modal-panel-header">
-                <h2 className="modal-panel-title" id="modal-panel-title-iseditmode-editar-evento-selectedevent-titulo">
-                  {isEditMode ? 'Editar Evento' : selectedEvent.titulo}
-                </h2>
+            <div
+              className={`modal-panel fechas-modal lifestyle-modal${isEditMode ? ' lifestyle-modal--form' : ''}`}
+              onClick={e => e.stopPropagation()}
+              role="dialog"
+              aria-labelledby="modal-title-fechas-detalle"
+            >
+              <div className="lifestyle-modal__header">
+                <div className="lifestyle-modal__header-copy">
+                  <p className="lifestyle-modal__kicker">
+                    Fechas · {isEditMode ? 'Editar' : 'Detalle'}
+                  </p>
+                  <h2 className="modal-panel-title" id="modal-title-fechas-detalle">
+                    {isEditMode ? 'Editar evento' : selectedEvent.titulo}
+                  </h2>
+                  {!isEditMode ? (
+                    <p className="lifestyle-modal__subtitle">
+                      {formatEventWhenLabel(selectedEvent)} · {formatEventMeta(selectedEvent)}
+                    </p>
+                  ) : null}
+                </div>
                 <button
                   className="modal-panel-close"
                   onClick={handleCloseDetailModal}
@@ -1074,180 +893,99 @@ function Fechas() {
 
               {isEditMode ? (
                 <form onSubmit={handleSubmit} className="fechas-modal-form" noValidate>
-                  {/* Nota sobre eventos laborales */}
-                  <div className="fechas-form-notice">
-                    <span className="fechas-form-notice-icon">🚫</span>
-                    <span className="fechas-form-notice-text">
-                      Prohibido agregar eventos laborales aquí. Este espacio es solo para fechas y compromisos contigo y los tuyos.
-                    </span>
-                  </div>
+                  <FechasEventFormFields
+                    formData={formData}
+                    formErrors={formErrors}
+                    tituloRef={tituloRef}
+                    fechaRef={fechaRef}
+                    onChange={handleChange}
+                    onRecurrencePreset={handleRecurrencePreset}
+                    tituloErrorId="edit-titulo-error"
+                    fechaErrorId="edit-fecha-error"
+                  />
 
-                  <div className="form-group-base">
-                    <label htmlFor="titulo" className="form-label-base form-label-base--comfortable">
-                      Título *
-                    </label>
-                    <input
-                      ref={tituloRef}
-                      type="text"
-                      id="titulo"
-                      name="titulo"
-                      value={formData.titulo}
-                      onChange={handleChange}
-                      className={`form-input-base ${formErrors.titulo  ? 'input-error' : ''}`}
-                      autoFocus
-                      aria-invalid={!!formErrors.titulo}
-                      {...(formErrors.titulo ? { 'aria-describedby': 'edit-titulo-error' } : {})}
-                    />
-                    {formErrors.titulo && (
-                      <span id="edit-titulo-error" className="fechas-form-error" role="alert">
-                        {formErrors.titulo}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="form-group-base">
-                    <label htmlFor="descripcion" className="form-label-base form-label-base--comfortable">
-                      Descripción
-                    </label>
-                    <textarea
-                      id="descripcion"
-                      name="descripcion"
-                      value={formData.descripcion}
-                      onChange={handleChange}
-                      className="form-textarea-base"
-                      rows={3}
-                    />
-                  </div>
-
-                  <div className="form-group-base">
-                    <label htmlFor="fecha" className="form-label-base form-label-base--comfortable">
-                      Fecha *
-                    </label>
-                    <input
-                      ref={fechaRef}
-                      type="date"
-                      id="fecha"
-                      name="fecha"
-                      value={formData.fecha}
-                      onChange={handleChange}
-                      className={`form-input-base ${formErrors.fecha  ? 'input-error' : ''}`}
-                      aria-invalid={!!formErrors.fecha}
-                      {...(formErrors.fecha ? { 'aria-describedby': 'edit-fecha-error' } : {})}
-                    />
-                    {formErrors.fecha && (
-                      <span id="edit-fecha-error" className="fechas-form-error" role="alert">
-                        {formErrors.fecha}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="form-group-base">
-                    <label className="fechas-form-checkbox-label">
-                      <input
-                        type="checkbox"
-                        name="esTodoElDia"
-                        checked={formData.esTodoElDia}
-                        onChange={handleChange}
-                        className="fechas-form-checkbox"
-                      />
-                      <span>Todo el día</span>
-                    </label>
-                  </div>
-
-                  {!formData.esTodoElDia && (
-                    <div className="form-group-base">
-                      <label htmlFor="hora" className="form-label-base form-label-base--comfortable">
-                        Hora
-                      </label>
-                      <input
-                        type="time"
-                        id="hora"
-                        name="hora"
-                        value={formData.hora}
-                        onChange={handleChange}
-                        className="form-input-base"
-                      />
-                    </div>
-                  )}
-
-                  <div className="form-group-base">
-                    <label htmlFor="ubicacion" className="form-label-base form-label-base--comfortable">
-                      Ubicación
-                    </label>
-                    <input
-                      type="text"
-                      id="ubicacion"
-                      name="ubicacion"
-                      value={formData.ubicacion}
-                      onChange={handleChange}
-                      className="form-input-base"
-                    />
-                  </div>
-
-                  <div className="fechas-modal-actions">
+                  <div className="modal-actions-base lifestyle-modal__footer">
                     <button
                       type="button"
-                      className="fechas-button-secondary"
+                      className="btn-base btn-secondary lifestyle-modal__btn"
                       onClick={() => setIsEditMode(false)}
                     >
                       Cancelar
                     </button>
-                    <button type="submit" className="fechas-button-primary" disabled={isLoading}>
+                    <button type="submit" className="btn-base btn-accent lifestyle-modal__btn" disabled={isLoading}>
                       {isLoading ? 'Guardando...' : 'Actualizar'}
                     </button>
                   </div>
                 </form>
               ) : (
-                <div className="fechas-detail-content">
-                  <div className="fechas-detail-section">
-                    <h3 className="fechas-detail-label">Fecha</h3>
-                    <p className="fechas-detail-value">{formatDate(selectedEvent.fecha)}</p>
-                  </div>
-
-                  {selectedEvent.hora && !selectedEvent.esTodoElDia && (
-                    <div className="fechas-detail-section">
-                      <h3 className="fechas-detail-label">Hora</h3>
-                      <p className="fechas-detail-value">{formatTime(selectedEvent.hora)}</p>
+                <div className="modal-panel-content lifestyle-modal__body">
+                  <dl className="lifestyle-modal__info-list">
+                    <div className="lifestyle-modal__info-item">
+                      <dt className="lifestyle-modal__info-label">Fecha</dt>
+                      <dd className="lifestyle-modal__info-value">
+                        {formatEventDateLong(selectedEvent.fecha)}
+                      </dd>
                     </div>
-                  )}
+                    {selectedEvent.hora && !selectedEvent.esTodoElDia ? (
+                      <div className="lifestyle-modal__info-item">
+                        <dt className="lifestyle-modal__info-label">Hora</dt>
+                        <dd className="lifestyle-modal__info-value">
+                          {formatEventTime(selectedEvent.hora)}
+                        </dd>
+                      </div>
+                    ) : null}
+                    {selectedEvent.esTodoElDia ? (
+                      <div className="lifestyle-modal__info-item">
+                        <dt className="lifestyle-modal__info-label">Duración</dt>
+                        <dd className="lifestyle-modal__info-value">Todo el día</dd>
+                      </div>
+                    ) : null}
+                    {selectedEvent.descripcion ? (
+                      <div className="lifestyle-modal__info-item">
+                        <dt className="lifestyle-modal__info-label">Descripción</dt>
+                        <dd className="lifestyle-modal__info-value">{selectedEvent.descripcion}</dd>
+                      </div>
+                    ) : null}
+                    {selectedEvent.ubicacion ? (
+                      <div className="lifestyle-modal__info-item">
+                        <dt className="lifestyle-modal__info-label">Ubicación</dt>
+                        <dd className="lifestyle-modal__info-value">{selectedEvent.ubicacion}</dd>
+                      </div>
+                    ) : null}
+                    {formatRecurrenceLabel(selectedEvent) ? (
+                      <div className="lifestyle-modal__info-item">
+                        <dt className="lifestyle-modal__info-label">Recurrencia</dt>
+                        <dd className="lifestyle-modal__info-value">
+                          {formatRecurrenceLabel(selectedEvent)}
+                        </dd>
+                      </div>
+                    ) : null}
+                    {selectedEvent.esRecurrente ? (
+                      <div className="lifestyle-modal__info-item">
+                        <dt className="lifestyle-modal__info-label">Fecha base</dt>
+                        <dd className="lifestyle-modal__info-value">
+                          {formatEventDateLong(selectedEvent.fecha)}
+                        </dd>
+                      </div>
+                    ) : null}
+                  </dl>
 
-                  {selectedEvent.esTodoElDia && (
-                    <div className="fechas-detail-section">
-                      <h3 className="fechas-detail-label">Duración</h3>
-                      <p className="fechas-detail-value">Todo el día</p>
-                    </div>
-                  )}
-
-                  {selectedEvent.descripcion && (
-                    <div className="fechas-detail-section">
-                      <h3 className="fechas-detail-label">Descripción</h3>
-                      <p className="fechas-detail-value">{selectedEvent.descripcion}</p>
-                    </div>
-                  )}
-
-                  {selectedEvent.ubicacion && (
-                    <div className="fechas-detail-section">
-                      <h3 className="fechas-detail-label">Ubicación</h3>
-                      <p className="fechas-detail-value">📍 {selectedEvent.ubicacion}</p>
-                    </div>
-                  )}
-
-                  <div className="fechas-modal-actions">
+                  <div className="modal-actions-base lifestyle-modal__footer lifestyle-modal__footer--detail">
                     <button
                       type="button"
-                      className="fechas-button-danger"
+                      className="btn-base btn-secondary lifestyle-modal__btn lifestyle-modal__btn--danger"
                       onClick={handleDeleteClick}
                       disabled={isLoading}
                     >
-                      <DeleteIcon className="fechas-button-icon" />
+                      <DeleteIcon className="fechas-button-icon" aria-hidden="true" />
                       Eliminar
                     </button>
                     <button
                       type="button"
-                      className="fechas-button-primary"
+                      className="btn-base btn-accent lifestyle-modal__btn lifestyle-modal__btn--primary"
                       onClick={handleEditClick}
                     >
-                      <EditIcon className="fechas-button-icon" />
+                      <EditIcon className="fechas-button-icon" aria-hidden="true" />
                       Editar
                     </button>
                   </div>

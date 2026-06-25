@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import { useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import AddIcon from '@mui/icons-material/Add'
@@ -468,39 +469,20 @@ function DiseñadorPresupuestos() {
 
         <h1 className="app-page-title">Diseñador de Presupuestos</h1>
 
-        <div
-          className="crud-summary-strip"
-          role="region"
-          aria-label="Resumen del diseñador"
-        >
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Items</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--info">
-              {items.length}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Categorías</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--available">
-              {uniqueCategories}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item crud-summary-strip-item--emphasis">
-            <span className="crud-summary-strip-label">Total</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--expense">
-              {formatCurrency(grandTotal)}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Borradores</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--info">
-              {drafts.length}
-            </span>
-          </div>
-        </div>
+        <CrudSummaryStrip
+          ariaLabel="Resumen del diseñador"
+          items={[
+            { label: 'Items', value: items.length, tone: 'info' },
+            { label: 'Categorías', value: uniqueCategories, tone: 'available' },
+            {
+              label: 'Total',
+              value: formatCurrency(grandTotal),
+              tone: 'expense',
+              emphasis: true,
+            },
+            { label: 'Borradores', value: drafts.length, tone: 'info' },
+          ]}
+        />
 
         {/* Formulario para agregar items */}
         <div className="diseñador-form-section">

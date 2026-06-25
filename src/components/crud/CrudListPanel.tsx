@@ -13,9 +13,10 @@ interface CrudListPanelProps<T> {
   emptyTitle: string
   emptySubtext: string
   getItemKey: (item: T) => string
-  renderItem: (item: T) => ReactNode
+  renderItem?: (item: T) => ReactNode
   renderBody?: () => ReactNode
   listOuterClassName?: string
+  loadingListClassName?: string
 }
 
 function CrudListPanel<T>({
@@ -33,10 +34,11 @@ function CrudListPanel<T>({
   renderItem,
   renderBody,
   listOuterClassName,
+  loadingListClassName,
 }: CrudListPanelProps<T>) {
   if (isLoading && items.length === 0) {
     return (
-      <div className="glass-group">
+      <div className={loadingListClassName ?? 'glass-group'}>
         <ListSkeleton variant="inset-row" count={skeletonCount} aria-label={loadingAriaLabel} />
       </div>
     )
@@ -72,11 +74,13 @@ function CrudListPanel<T>({
     )
   }
 
-  const listContent = (
+  const listContent = renderBody ? (
+    renderBody()
+  ) : (
     <div className="glass-group">
-      {renderBody
-        ? renderBody()
-        : items.map(item => <Fragment key={getItemKey(item)}>{renderItem(item)}</Fragment>)}
+      {items.map(item => (
+        <Fragment key={getItemKey(item)}>{renderItem?.(item)}</Fragment>
+      ))}
     </div>
   )
 

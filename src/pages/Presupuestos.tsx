@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import AddIcon from '@mui/icons-material/Add'
 import CalculateIcon from '@mui/icons-material/Calculate'
 import EditIcon from '@mui/icons-material/Edit'
@@ -762,28 +763,27 @@ function Presupuestos() {
               />
 
               {/* Resumen de presupuestos */}
-              <div className="crud-summary-strip crud-summary-strip--success" role="region" aria-label="Resumen de presupuestos">
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Total presupuestado</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
-                    {formatBalance(calculateTotalBudgets())}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Total gastado</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--expense">
-                    {formatBalance(calculateTotalSpent())}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Disponible</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--available">
-                    {formatBalance(calculateTotalBudgets() - calculateTotalSpent())}
-                  </span>
-                </div>
-              </div>
+              <CrudSummaryStrip
+                ariaLabel="Resumen de presupuestos"
+                stripClassName="crud-summary-strip--success"
+                items={[
+                  {
+                    label: 'Total presupuestado',
+                    value: formatBalance(calculateTotalBudgets()),
+                    tone: 'info',
+                  },
+                  {
+                    label: 'Total gastado',
+                    value: formatBalance(calculateTotalSpent()),
+                    tone: 'expense',
+                  },
+                  {
+                    label: 'Disponible',
+                    value: formatBalance(calculateTotalBudgets() - calculateTotalSpent()),
+                    tone: 'available',
+                  },
+                ]}
+              />
 
               <button
                 type="button"
@@ -847,7 +847,7 @@ function Presupuestos() {
                               <div className="crud-row-content">
                                 <div className="crud-row-main">
                                   <span className="crud-row-title">{budget.nombre}</span>
-                                  <span className="crud-row-value">
+                                  <span className="crud-row-value crud-row-value--base">
                                     {budget.sobrePresupuesto ? (
                                       <span className="budget-over">Sobre presupuesto</span>
                                     ) : (
@@ -859,12 +859,12 @@ function Presupuestos() {
                                   <span className="crud-row-meta">
                                     {getPeriodicityLabel(budget.periodicidad)}
                                   </span>
-                                  <span className="crud-row-meta">
+                                  <span className="crud-row-meta crud-row-meta--tertiary">
                                     {formatBalance(budget.totalGastado)} /{' '}
                                     {formatBalance(budget.montoMaximo)}
                                   </span>
                                 </div>
-                                <div className="crud-row-progress">
+                                <div className="crud-row-progress crud-row-progress--inline-bar">
                                   <div
                                     className="crud-row-progress-fill"
                                     style={{

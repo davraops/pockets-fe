@@ -1,12 +1,14 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import DescriptionIcon from '@mui/icons-material/Description'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
+import SearchIcon from '@mui/icons-material/Search'
 import { api } from '../services/api'
 import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import CrudListPanel from '../components/crud/CrudListPanel'
 import ArchivoUploadModal from '../components/archivos/ArchivoUploadModal'
 import ArchivoDetailModal from '../components/archivos/ArchivoDetailModal'
 import ArchivoEditModal from '../components/archivos/ArchivoEditModal'
+import ArchivoViewerModal from '../components/archivos/ArchivoViewerModal'
 import ArchivoListRow from '../components/archivos/ArchivoListRow'
 import {
   EMPTY_ARCHIVO_METADATA_FORM,
@@ -18,9 +20,10 @@ import {
 import {
   archivoSummaryItems,
   calculateArchivoHighlights,
+  filterFilesByQuery,
 } from '../components/archivos/archivosDisplayUtils'
 import type { FileAPI } from '../components/archivos/archivosTypes'
-import { sortFilesByDate } from '../components/archivos/archivosTypes'
+import { PRESIGNED_UPLOAD_THRESHOLD_BYTES, sortFilesByDate } from '../components/archivos/archivosTypes'
 import { devError, devLog } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
 import { useConfirm } from '../contexts/ConfirmContext'
@@ -39,6 +42,7 @@ function Archivos() {
   const [error, setError] = useState<string | null>(null)
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [isViewerOpen, setIsViewerOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [selectedFile, setSelectedFile] = useState<FileAPI | null>(null)
@@ -50,6 +54,7 @@ function Archivos() {
     EMPTY_ARCHIVO_METADATA_FORM
   )
   const [selectedFileForUpload, setSelectedFileForUpload] = useState<File | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     void loadFiles()
@@ -150,10 +155,14 @@ function Archivos() {
     try {
       setIsUploading(true)
 
-      devLog('🟢 POST /files - Subiendo archivo:', {
+      devLog('🟢 Upload archivo:', {
         fileName: selectedFileForUpload.name,
         fileSize: selectedFileForUpload.size,
         fileType: selectedFileForUpload.type,
+        strategy:
+          selectedFileForUpload.size > PRESIGNED_UPLOAD_THRESHOLD_BYTES
+            ? 'presigned'
+            : 'multipart',
         title: uploadFormData.title,
         description: uploadFormData.description,
       })
@@ -242,6 +251,14 @@ function Archivos() {
     setSelectedFile(null)
   }
 
+  const handleOpenViewer = () => {
+    setIsViewerOpen(true)
+  }
+
+  const handleCloseViewer = () => {
+    setIsViewerOpen(false)
+  }
+
   const handleEditClick = () => {
     if (!selectedFile) {
       return
@@ -296,6 +313,11 @@ function Archivos() {
 
   const isFileBusy = isUploading || isProcessing || isSaving
   const highlights = calculateArchivoHighlights(files)
+  const hasSearch = searchQuery.trim().length > 0
+  const filteredFiles = useMemo(
+    () => filterFilesByQuery(files, searchQuery),
+    [files, searchQuery]
+  )
 
   return (
     <>
@@ -306,36 +328,61 @@ function Archivos() {
             context="Documentos"
             meta={
               !isLoading && !error
-                ? `${files.length} archivo${files.length !== 1 ? 's' : ''}`
+                ? hasSearch
+                  ? `${filteredFiles.length} de ${files.length} archivo${files.length !== 1 ? 's' : ''}`
+                  : `${files.length} archivo${files.length !== 1 ? 's' : ''}`
                 : undefined
             }
           />
 
-          <CrudSummaryStrip
-            ariaLabel="Resumen de archivos"
-            items={archivoSummaryItems(highlights)}
-          />
+          {!isLoading && !error && files.length > 0 ? (
+            <CrudSummaryStrip
+              ariaLabel="Resumen de archivos"
+              items={archivoSummaryItems(highlights)}
+            />
+          ) : null}
 
-          <button
-            type="button"
-            className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
-            onClick={handleOpenUploadModal}
-            aria-label="Subir archivo"
+          <div
+            className={`archivos-toolbar${!isLoading && !error && files.length === 0 ? ' archivos-toolbar--solo-cta' : ''}`}
           >
-            <CloudUploadIcon aria-hidden={true} />
-            Subir archivo
-          </button>
+            {!isLoading && !error && (files.length > 0 || hasSearch) ? (
+              <label className="archivos-search">
+                <SearchIcon className="archivos-search-icon" aria-hidden="true" />
+                <input
+                  type="search"
+                  className="archivos-search-input"
+                  value={searchQuery}
+                  onChange={event => setSearchQuery(event.target.value)}
+                  placeholder="Buscar por título o nombre…"
+                  aria-label="Buscar archivos"
+                />
+              </label>
+            ) : null}
+            <button
+              type="button"
+              className="btn-base btn-accent btn-submit crud-primary-cta archivos-toolbar-cta"
+              onClick={handleOpenUploadModal}
+              aria-label="Subir archivo"
+            >
+              <CloudUploadIcon aria-hidden={true} />
+              Subir archivo
+            </button>
+          </div>
 
           <CrudListPanel
-            items={files}
+            items={filteredFiles}
             isLoading={isLoading}
             error={error}
             onRetry={() => void loadFiles()}
             retryAriaLabel="Reintentar cargar archivos"
             loadingAriaLabel="Cargando archivos"
             emptyIcon={<DescriptionIcon className="empty-state-icon" />}
-            emptyTitle="No hay archivos subidos aún"
-            emptySubtext="Usa el botón de arriba para subir el primero"
+            emptyTitle={hasSearch ? 'Sin coincidencias' : 'No hay archivos subidos aún'}
+            emptySubtext={
+              hasSearch
+                ? 'Prueba con otro título o limpia la búsqueda'
+                : 'Usa Subir archivo para agregar el primero'
+            }
             getItemKey={file => file.id}
             listOuterClassName="archivos-list"
             renderItem={file => (
@@ -358,14 +405,23 @@ function Archivos() {
         />
       )}
 
-      {isDetailModalOpen && selectedFile && !isEditMode && (
+      {isDetailModalOpen && selectedFile && !isEditMode && !isViewerOpen && (
         <ArchivoDetailModal
           file={selectedFile}
           isBusy={isFileBusy}
           onClose={handleCloseDetailModal}
           onEdit={handleEditClick}
+          onView={handleOpenViewer}
           onDownload={() => void handleDownload(selectedFile)}
           onDelete={() => void handleDelete(selectedFile)}
+        />
+      )}
+
+      {isViewerOpen && selectedFile && (
+        <ArchivoViewerModal
+          file={selectedFile}
+          onClose={handleCloseViewer}
+          onDownload={() => void handleDownload(selectedFile)}
         />
       )}
 

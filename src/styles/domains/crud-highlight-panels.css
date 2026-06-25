@@ -298,21 +298,25 @@
 
 .crud-form-amount-row {
 
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(12rem, 1fr) 7.5rem;
   gap: var(--spacing-sm);
+  width: 100%;
 
 }
 
-.crud-form-amount-input {
+.crud-form-amount-row .crud-form-amount-input {
 
-  flex: 1;
+  min-width: 0;
+  width: 100%;
 
 }
 
-.crud-form-amount-currency {
+.crud-form-amount-row .crud-form-amount-currency {
 
-  width: 100px;
-  flex-shrink: 0;
+  width: 100%;
+  min-width: 7.5rem;
+  max-width: 7.5rem;
 
 }
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import CreditCardIcon from '@mui/icons-material/CreditCard'
@@ -1056,25 +1057,21 @@ function TarjetasCredito() {
                 }
               />
 
-              <div
-                className="crud-summary-strip"
-                role="region"
-                aria-label="Resumen de cupos"
-              >
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Cupo total</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
-                    {formatPrice(calculateTotalCreditLimit())}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Disponible</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--available">
-                    {formatPrice(calculateTotalAvailableCredit())}
-                  </span>
-                </div>
-              </div>
+              <CrudSummaryStrip
+                ariaLabel="Resumen de cupos"
+                items={[
+                  {
+                    label: 'Cupo total',
+                    value: formatPrice(calculateTotalCreditLimit()),
+                    tone: 'info',
+                  },
+                  {
+                    label: 'Disponible',
+                    value: formatPrice(calculateTotalAvailableCredit()),
+                    tone: 'available',
+                  },
+                ]}
+              />
 
               <button
                 type="button"
@@ -1143,25 +1140,25 @@ function TarjetasCredito() {
                         <div className="crud-row-content">
                           <div className="crud-row-main">
                             <span className="crud-row-title">{card.nombre}</span>
-                            <span className="crud-row-value">{formatPrice(cupoDisponible)}</span>
+                            <span className="crud-row-value crud-row-value--highlight-success">{formatPrice(cupoDisponible)}</span>
                           </div>
                           <div className="crud-row-secondary">
-                            <span className="crud-row-meta">{card.banco}</span>
+                            <span className="crud-row-meta crud-row-meta--expense">{card.banco}</span>
                             {card.cupoUsado !== undefined && card.cupoUsado > 0 && (
-                              <span className="crud-row-meta">
+                              <span className="crud-row-meta crud-row-meta--expense">
                                 {usagePercentage.toFixed(1)}% usado
                               </span>
                             )}
                             {card.beneficios.length > 0 && (
-                              <span className="crud-row-meta">
+                              <span className="crud-row-meta crud-row-meta--expense">
                                 {card.beneficios.length} beneficio
                                 {card.beneficios.length !== 1 ? 's' : ''}
                               </span>
                             )}
                           </div>
                           {card.cupoUsado !== undefined && card.cupoUsado > 0 && (
-                            <div className="crud-row-progress">
-                              <div className="crud-row-progress-bar">
+                            <div className="crud-row-progress crud-row-progress--thin">
+                              <div className="crud-row-progress-bar crud-row-progress-bar--thin crud-row-progress-bar--thin-muted">
                                 <div
                                   className="crud-row-progress-fill"
                                   style={{

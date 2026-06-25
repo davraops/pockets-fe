@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
@@ -859,41 +860,28 @@ function CriptoTransacciones() {
 
               <h1 className="app-page-title">Mi Cripto</h1>
 
-              <div
-                className="crud-summary-strip"
-                role="region"
-                aria-label="Resumen de posiciones cripto"
-              >
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Transacciones</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
-                    {highlights.totalTransacciones}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item crud-summary-strip-item--emphasis">
-                  <span className="crud-summary-strip-label">Valor USDT</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--income">
-                    {formatBalance(highlights.totalValueUSDT, 'USD')}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Posiciones</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--available">
-                    {highlights.posiciones}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Tasas</span>
-                  <span
-                    className={`crud-summary-strip-value ${highlights.tasasActualizadas ? 'crud-summary-strip-value--income' : 'crud-summary-strip-value--expense'}`}
-                  >
-                    {highlights.tasasActualizadas ? 'Hoy' : 'Pendiente'}
-                  </span>
-                </div>
-              </div>
+              <CrudSummaryStrip
+                ariaLabel="Resumen de posiciones cripto"
+                items={[
+                  {
+                    label: 'Transacciones',
+                    value: highlights.totalTransacciones,
+                    tone: 'info',
+                  },
+                  {
+                    label: 'Valor USDT',
+                    value: formatBalance(highlights.totalValueUSDT, 'USD'),
+                    tone: 'income',
+                    emphasis: true,
+                  },
+                  { label: 'Posiciones', value: highlights.posiciones, tone: 'available' },
+                  {
+                    label: 'Tasas',
+                    value: highlights.tasasActualizadas ? 'Hoy' : 'Pendiente',
+                    tone: highlights.tasasActualizadas ? 'income' : 'expense',
+                  },
+                ]}
+              />
 
               <button
                 type="button"

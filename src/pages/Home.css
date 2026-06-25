@@ -241,7 +241,7 @@
   }
 
   .hub-home-apps {
-    max-height: 220px;
+    max-height: min(50dvh, 420px);
   }
 }
 

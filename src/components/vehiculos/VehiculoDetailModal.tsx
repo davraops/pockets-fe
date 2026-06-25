@@ -2,109 +2,122 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 import ModalOverlay from '../ModalOverlay'
 import VehiculoEventosSection from './VehiculoEventosSection'
+import { formatVehicleDetailSubtitle } from './vehicleDisplayUtils'
 import type { Vehicle, VehicleSyncHandler } from './vehicleTypes'
 
 interface VehiculoDetailModalProps {
   vehicle: Vehicle
+  isBusy: boolean
   onClose: () => void
-  onEdit: (vehicle: Vehicle) => void
-  onDelete: (id: string, name: string) => Promise<void>
+  onEdit: () => void
+  onDelete: () => void
   onSync: VehicleSyncHandler
 }
 
-function VehiculoDetailModal({ vehicle, onClose, onEdit, onDelete, onSync }: VehiculoDetailModalProps) {
+function VehiculoDetailModal({
+  vehicle,
+  isBusy,
+  onClose,
+  onEdit,
+  onDelete,
+  onSync,
+}: VehiculoDetailModalProps) {
   return (
     <ModalOverlay onClose={onClose} className="modal-overlay">
-      <div className="vehiculos-modal vehiculos-modal-large" onClick={e => e.stopPropagation()}>
-        <div className="modal-panel-header">
-          <h2 className="modal-panel-title" id="modal-panel-title-detalle-del-veh-culo">
-            Detalle del Vehículo
-          </h2>
+      <div
+        className="modal-panel vehiculos-modal vehiculos-modal--detail"
+        onClick={event => event.stopPropagation()}
+        role="dialog"
+        aria-labelledby="modal-title-vehiculo-detalle"
+      >
+        <div className="vehiculos-modal__header">
+          <div className="vehiculos-modal__header-copy">
+            <p className="vehiculos-modal__kicker">Flota · Detalle</p>
+            <h2 className="modal-panel-title" id="modal-title-vehiculo-detalle">
+              {vehicle.name}
+            </h2>
+            <p className="vehiculos-modal__subtitle">{formatVehicleDetailSubtitle(vehicle)}</p>
+          </div>
           <button className="modal-panel-close" onClick={onClose} aria-label="Cerrar" type="button">
             ×
           </button>
         </div>
-        <div className="modal-panel-content">
+
+        <div className="modal-panel-content vehiculos-modal__body">
           <div className="vehiculos-detail-section">
-            <h3 className="vehiculos-detail-section-title">Información Básica</h3>
+            <h3 className="vehiculos-detail-section-title">Información básica</h3>
             <div className="vehiculos-detail-grid">
-              <div className="vehiculos-detail-item">
-                <span className="vehiculos-detail-label">Nombre:</span>
-                <span className="vehiculos-detail-value">{vehicle.name}</span>
-              </div>
-              {vehicle.data.brand && vehicle.data.model && (
+              {vehicle.data.brand && vehicle.data.model ? (
                 <div className="vehiculos-detail-item">
-                  <span className="vehiculos-detail-label">Marca y Modelo:</span>
+                  <span className="vehiculos-detail-label">Marca y modelo</span>
                   <span className="vehiculos-detail-value">
                     {vehicle.data.brand} {vehicle.data.model}
                   </span>
                 </div>
-              )}
-              {vehicle.data.year && (
+              ) : null}
+              {vehicle.data.year ? (
                 <div className="vehiculos-detail-item">
-                  <span className="vehiculos-detail-label">Año:</span>
+                  <span className="vehiculos-detail-label">Año</span>
                   <span className="vehiculos-detail-value">{vehicle.data.year}</span>
                 </div>
-              )}
-              {vehicle.data.plate && (
+              ) : null}
+              {vehicle.data.plate ? (
                 <div className="vehiculos-detail-item">
-                  <span className="vehiculos-detail-label">Placa:</span>
+                  <span className="vehiculos-detail-label">Placa</span>
                   <span className="vehiculos-detail-value">{vehicle.data.plate}</span>
                 </div>
-              )}
-              {vehicle.data.type && (
+              ) : null}
+              {vehicle.data.type ? (
                 <div className="vehiculos-detail-item">
-                  <span className="vehiculos-detail-label">Tipo:</span>
+                  <span className="vehiculos-detail-label">Tipo</span>
                   <span className="vehiculos-detail-value">{vehicle.data.type}</span>
                 </div>
-              )}
-              {vehicle.data.color && (
+              ) : null}
+              {vehicle.data.color ? (
                 <div className="vehiculos-detail-item">
-                  <span className="vehiculos-detail-label">Color:</span>
+                  <span className="vehiculos-detail-label">Color</span>
                   <span className="vehiculos-detail-value">{vehicle.data.color}</span>
                 </div>
-              )}
-              {vehicle.data.mileage && (
+              ) : null}
+              {vehicle.data.mileage ? (
                 <div className="vehiculos-detail-item">
-                  <span className="vehiculos-detail-label">Kilometraje:</span>
+                  <span className="vehiculos-detail-label">Kilometraje</span>
                   <span className="vehiculos-detail-value">
                     {vehicle.data.mileage.toLocaleString('es-CO')} km
                   </span>
                 </div>
-              )}
-              {vehicle.data.fuelType && (
+              ) : null}
+              {vehicle.data.fuelType ? (
                 <div className="vehiculos-detail-item">
-                  <span className="vehiculos-detail-label">Combustible:</span>
+                  <span className="vehiculos-detail-label">Combustible</span>
                   <span className="vehiculos-detail-value">{vehicle.data.fuelType}</span>
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
 
           <VehiculoEventosSection vehicle={vehicle} onSync={onSync} />
+        </div>
 
-          <div className="detail-actions">
-            <button
-              type="button"
-              className="detail-action-button"
-              onClick={() => onEdit(vehicle)}
-              aria-label="Editar vehículo"
-            >
-              <EditIcon />
-              <span>Editar</span>
-            </button>
-            <button
-              type="button"
-              className="detail-action-button danger"
-              onClick={() => {
-                void onDelete(vehicle.id, vehicle.name).then(() => onClose())
-              }}
-              aria-label="Eliminar vehículo"
-            >
-              <DeleteIcon />
-              <span>Eliminar</span>
-            </button>
-          </div>
+        <div className="modal-actions-base vehiculos-modal__footer vehiculos-modal__footer--detail">
+          <button
+            type="button"
+            className="btn-base btn-accent vehiculos-modal__btn vehiculos-modal__btn--primary"
+            onClick={onEdit}
+            disabled={isBusy}
+          >
+            <EditIcon aria-hidden="true" />
+            Editar
+          </button>
+          <button
+            type="button"
+            className="btn-base btn-secondary vehiculos-modal__btn vehiculos-modal__btn--danger"
+            onClick={onDelete}
+            disabled={isBusy}
+          >
+            <DeleteIcon aria-hidden="true" />
+            Eliminar
+          </button>
         </div>
       </div>
     </ModalOverlay>

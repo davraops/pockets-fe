@@ -1849,3 +1849,536 @@
   }
 }
 
+/* ─── Refactor: tabs, cierres, modales unificados ─── */
+
+.proceso-contratacion-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
+}
+
+.proceso-contratacion-form-status-note {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.proceso-contratacion-list-row__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.proceso-contratacion-list-row__badge--stale {
+  background: color-mix(in srgb, var(--color-danger-solid) 14%, transparent);
+  color: var(--color-danger-solid);
+}
+
+.proceso-contratacion-list-row__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.proceso-contratacion-list-row__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  background: var(--bg-glass-light);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.proceso-contratacion-list-row__progress {
+  display: block;
+  width: 100%;
+  height: 0.25rem;
+  margin-top: var(--spacing-xs);
+  border-radius: var(--radius-full);
+  background: var(--bg-glass-light);
+  overflow: hidden;
+}
+
+.proceso-contratacion-list-row__progress-bar {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--section-trabajo);
+}
+
+.proceso-contratacion-closure-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.proceso-contratacion-closure-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+}
+
+@media (max-width: 768px) {
+  .proceso-contratacion-closure-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.proceso-contratacion-closure-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass);
+}
+
+.proceso-contratacion-closure-kpi__label {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.proceso-contratacion-closure-kpi__value {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.proceso-contratacion-closure-kpi--danger .proceso-contratacion-closure-kpi__value {
+  color: var(--color-danger-solid);
+}
+
+.proceso-contratacion-closure-kpi--warning .proceso-contratacion-closure-kpi__value {
+  color: var(--accent-warning-text);
+}
+
+.proceso-contratacion-closure-kpi--success .proceso-contratacion-closure-kpi__value {
+  color: var(--highlight-success-text);
+}
+
+.proceso-contratacion-closure-section__header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+}
+
+.proceso-contratacion-closure-section__header-copy {
+  min-width: 0;
+}
+
+.proceso-contratacion-closure-section__hint {
+  margin: 0.2rem 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  line-height: 1.45;
+}
+
+.proceso-contratacion-closure-section__title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  color: var(--text-primary);
+}
+
+.proceso-contratacion-closure-skills {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.proceso-contratacion-closure-skill {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass-light);
+}
+
+.proceso-contratacion-closure-skill__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.proceso-contratacion-closure-skill__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--spacing-xs);
+}
+
+.proceso-contratacion-closure-skill__reinforce {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--highlight-success-border);
+  border-radius: var(--radius-sm);
+  background: var(--highlight-success-bg);
+  color: var(--highlight-success-text);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.proceso-contratacion-closure-skill__reinforce:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.proceso-contratacion-closure-skill__reinforce svg {
+  font-size: 1rem !important;
+  width: 1rem !important;
+  height: 1rem !important;
+}
+
+.proceso-contratacion-closure-skill__name {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.proceso-contratacion-closure-skill__count {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.proceso-contratacion-closure-skill__meta {
+  margin: 0.25rem 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.proceso-contratacion-closure-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  border: 1px solid var(--border-glass);
+  background: var(--bg-glass-light);
+  color: var(--text-secondary);
+}
+
+.proceso-contratacion-closure-badge--success {
+  color: var(--highlight-success-text);
+  border-color: var(--highlight-success-border);
+  background: var(--highlight-success-bg);
+}
+
+.proceso-contratacion-closure-badge--warning {
+  color: var(--accent-warning-text);
+  border-color: var(--badge-warning-border, var(--border-glass));
+  background: var(--badge-warning-bg);
+}
+
+.proceso-contratacion-closure-badge--danger {
+  color: var(--color-danger-solid);
+  border-color: color-mix(in srgb, var(--color-danger-solid) 25%, var(--border-glass));
+  background: color-mix(in srgb, var(--color-danger-solid) 10%, transparent);
+}
+
+.proceso-contratacion-closure-empty {
+  margin: 0;
+  padding: var(--spacing-lg);
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.proceso-contratacion-closure-row__skills {
+  margin: var(--spacing-xs) 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.proceso-contratacion-closure-row__skills--reinforced {
+  color: var(--highlight-success-text);
+}
+
+.proceso-contratacion-close-modal {
+  max-width: min(640px, calc(100vw - 2rem));
+}
+
+.proceso-contratacion-close-modal__kicker,
+.proceso-contratacion-detail-modal__kicker {
+  margin: 0 0 0.2rem;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--section-trabajo);
+}
+
+.proceso-contratacion-close-modal__subtitle,
+.proceso-contratacion-detail-modal__subtitle {
+  margin: var(--spacing-xs) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.proceso-contratacion-close-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.proceso-contratacion-close-modal__hint {
+  margin: 0;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent-warning-text) 12%, transparent);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.proceso-contratacion-close-modal__reasons {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.proceso-contratacion-close-modal__legend {
+  margin-bottom: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.proceso-contratacion-close-modal__reason-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+}
+
+@media (max-width: 640px) {
+  .proceso-contratacion-close-modal__reason-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .procesos-contratacion-form-interaction-input-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .procesos-contratacion-form-interaction-input-group input[type="date"],
+  .procesos-contratacion-form-interaction-input-group input[type="text"] {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .procesos-contratacion-menu {
+    min-width: min(200px, calc(100vw - 2rem));
+    max-width: calc(100vw - 2rem);
+  }
+}
+
+.proceso-contratacion-close-modal__reason {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass-light);
+  cursor: pointer;
+}
+
+.proceso-contratacion-close-modal__reason input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.proceso-contratacion-close-modal__reason--active {
+  border-color: var(--section-trabajo);
+  background: color-mix(in srgb, var(--section-trabajo) 10%, var(--bg-glass));
+}
+
+.proceso-contratacion-close-modal__reason-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.proceso-contratacion-close-modal__reason-desc {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.proceso-contratacion-close-modal__skill-input {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--spacing-sm);
+}
+
+.proceso-contratacion-close-modal__skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+}
+
+.proceso-contratacion-close-modal__skill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  font-size: var(--font-size-xs);
+}
+
+.proceso-contratacion-close-modal__skill-tag button {
+  display: inline-flex;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+}
+
+.proceso-contratacion-close-modal__footer,
+.proceso-contratacion-detail-modal__footer {
+  flex-wrap: wrap;
+}
+
+.proceso-contratacion-detail-modal__btn {
+  flex: 1;
+  min-height: 44px;
+}
+
+.proceso-contratacion-detail-hero {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.proceso-contratacion-detail-hero__label {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.proceso-contratacion-detail-hero__value {
+  display: block;
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+}
+
+.proceso-contratacion-detail-alert {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin: 0 0 var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-danger-solid) 10%, transparent);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.proceso-contratacion-detail-section + .proceso-contratacion-detail-section {
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border-glass-light);
+}
+
+.proceso-contratacion-detail-section__title {
+  margin: 0 0 var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.proceso-contratacion-detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin: 0;
+}
+
+.proceso-contratacion-detail-list__item {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.proceso-contratacion-detail-list__item dt {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.proceso-contratacion-detail-list__item dd {
+  margin: 0;
+  text-align: right;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+.proceso-contratacion-detail-text {
+  margin: 0;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.proceso-contratacion-detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.proceso-contratacion-detail-tag {
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-glass-light);
+  border: 1px solid var(--border-glass);
+  font-size: var(--font-size-xs);
+}
+
+.proceso-contratacion-detail-steps,
+.proceso-contratacion-detail-interactions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.proceso-contratacion-detail-step {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.proceso-contratacion-detail-step--done {
+  color: var(--text-primary);
+}
+
+.proceso-contratacion-detail-interactions li {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.proceso-contratacion-detail-interactions p {
+  margin: 0.15rem 0 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}

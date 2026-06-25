@@ -23,11 +23,20 @@ function ArchivoEditModal({
 }: ArchivoEditModalProps) {
   return (
     <ModalOverlay onClose={onClose} className="modal-overlay">
-      <div className="modal-panel" onClick={e => e.stopPropagation()}>
-        <div className="modal-panel-header">
-          <h2 className="modal-panel-title" id="modal-panel-title-editar-archivo">
-            Editar Archivo
-          </h2>
+      <div
+        className="modal-panel archivos-modal"
+        onClick={event => event.stopPropagation()}
+        role="dialog"
+        aria-labelledby="modal-title-editar-archivo"
+      >
+        <div className="archivos-modal__header">
+          <div className="archivos-modal__header-copy">
+            <p className="archivos-modal__kicker">Documentos · Editar</p>
+            <h2 className="modal-panel-title" id="modal-title-editar-archivo">
+              Editar archivo
+            </h2>
+            <p className="archivos-modal__subtitle">{file.file_name}</p>
+          </div>
           <button
             className="modal-panel-close"
             onClick={onClose}
@@ -39,48 +48,50 @@ function ArchivoEditModal({
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="archivos-modal-form">
-          <div className="form-group-base">
-            <label htmlFor="edit-title" className="archivos-form-label">
-              Título *
-            </label>
-            <input
-              type="text"
-              id="edit-title"
-              name="title"
-              value={formData.title}
-              onChange={onChange}
-              className="form-input-base"
-              required
-              disabled={isSaving}
-              placeholder="Ej: Contrato de arrendamiento"
-            />
+        <form className="archivos-modal__form" onSubmit={onSubmit} noValidate>
+          <div className="modal-panel-content archivos-modal__body">
+            <div className="form-group-base">
+              <label htmlFor="edit-title" className="form-label-base">
+                Título
+              </label>
+              <input
+                type="text"
+                id="edit-title"
+                name="title"
+                value={formData.title}
+                onChange={onChange}
+                className="form-input-base form-input-base--comfortable"
+                required
+                disabled={isSaving}
+                placeholder="Ej: Contrato de arrendamiento"
+              />
+            </div>
+
+            <div className="form-group-base">
+              <label htmlFor="edit-description" className="form-label-base">
+                Descripción (opcional)
+              </label>
+              <textarea
+                id="edit-description"
+                name="description"
+                value={formData.description}
+                onChange={onChange}
+                className="form-textarea-base"
+                rows={3}
+                disabled={isSaving}
+                placeholder="Notas sobre el documento…"
+              />
+            </div>
+
+            <p className="archivos-modal__callout">
+              El archivo almacenado no cambia. Solo se actualizan título y descripción.
+            </p>
           </div>
 
-          <div className="form-group-base">
-            <label htmlFor="edit-description" className="archivos-form-label">
-              Descripción (opcional)
-            </label>
-            <textarea
-              id="edit-description"
-              name="description"
-              value={formData.description}
-              onChange={onChange}
-              className="form-textarea-base"
-              rows={3}
-              disabled={isSaving}
-              placeholder="Descripción adicional del archivo..."
-            />
-          </div>
-
-          <p className="archivos-form-hint">
-            El archivo en S3 no cambia ({file.file_name}). Solo se actualizan título y descripción.
-          </p>
-
-          <div className="archivos-form-actions">
+          <div className="modal-actions-base archivos-modal__footer">
             <button
               type="button"
-              className="archivos-form-button archivos-form-button-secondary"
+              className="btn-base btn-secondary archivos-modal__btn"
               onClick={onCancel}
               disabled={isSaving}
             >
@@ -88,10 +99,10 @@ function ArchivoEditModal({
             </button>
             <button
               type="submit"
-              className="archivos-form-button archivos-form-button-primary"
+              className="btn-base btn-accent archivos-modal__btn"
               disabled={isSaving}
             >
-              {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+              {isSaving ? 'Guardando…' : 'Guardar'}
             </button>
           </div>
         </form>

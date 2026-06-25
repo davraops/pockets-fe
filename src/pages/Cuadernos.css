@@ -759,31 +759,6 @@
 
 /* Cuaderno Row - Compact List Item - HIG: Touch Target (min 72px height), Feedback */
 /* Cuaderno Row Content */
-.crud-row-preview {
-  font-size: var(--font-size-base);
-  color: var(--text-secondary);
-  font-family: var(--font-family);
-  letter-spacing: var(--letter-spacing-tight);
-  line-height: 1.5;
-  margin: 0;
-  text-align: left;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.crud-row-meta {
-  font-size: var(--font-size-sm);
-  color: var(--text-tertiary);
-  font-family: var(--font-family);
-  letter-spacing: var(--letter-spacing-tight);
-  line-height: 1.4;
-  margin: 0;
-  text-align: left;
-}
 
 /* Empty State - HIG: Clear Feedback */
 .cuadernos-empty {
@@ -1307,7 +1282,6 @@
   margin: 0;
   padding: 0;
 }
-
 
 /* Form Textarea */
 .form-textarea {

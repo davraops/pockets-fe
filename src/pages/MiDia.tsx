@@ -1,14 +1,19 @@
-import { useState, useEffect } from 'react'
-import { backToHubLabel } from '../constants/hubLabels'
+import { useState, useEffect, useMemo } from 'react'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import { useNavigate } from 'react-router-dom'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
 import RepeatIcon from '@mui/icons-material/Repeat'
+import SearchIcon from '@mui/icons-material/Search'
 import { api } from '../services/api'
 import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import ListSkeleton from '../components/ListSkeleton'
+import MiDiaRoutineRow from '../components/miDia/MiDiaRoutineRow'
+import LifestyleSubHeader from '../components/tiempo/LifestyleSubHeader'
+import {
+  filterMiDiaEventsByQuery,
+  partitionTodayRoutineEvents,
+  type MiDiaRoutineEvent,
+} from '../components/miDia/miDiaDisplayUtils'
 import './AppPage.css'
 import './MiDia.css'
 
@@ -29,40 +34,28 @@ interface RoutineAPI {
   completions_this_month?: number
 }
 
-interface RoutineEvent {
-  routine: RoutineAPI
-  isCompleted: boolean
-  completionId?: string
-  completedDate?: string
-}
-
 function MiDia() {
   const navigate = useNavigate()
   const { showNotification } = useNotification()
-  const [todayRoutines, setTodayRoutines] = useState<RoutineEvent[]>([])
-  const [weekRoutines, setWeekRoutines] = useState<RoutineEvent[]>([])
+  const [todayRoutines, setTodayRoutines] = useState<MiDiaRoutineEvent[]>([])
+  const [weekRoutines, setWeekRoutines] = useState<MiDiaRoutineEvent[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
 
-  // Obtener fecha actual en formato YYYY-MM-DD
-  const getTodayDate = () => {
-    const today = new Date()
-    return today.toISOString().split('T')[0]
-  }
+  const getTodayDate = () => new Date().toISOString().split('T')[0]
 
-  // Obtener fechas de la semana (hoy + 6 días más)
   const getWeekDates = () => {
     const dates: string[] = []
     const today = new Date()
-    for (let i = 0; i < 7; i++) {
+    for (let index = 0; index < 7; index += 1) {
       const date = new Date(today)
-      date.setDate(today.getDate() + i)
+      date.setDate(today.getDate() + index)
       dates.push(date.toISOString().split('T')[0])
     }
     return dates
   }
 
-  // Cargar rutinas y completados
   const loadRoutines = async () => {
     try {
       setIsLoading(true)
@@ -71,11 +64,9 @@ function MiDia() {
       const today = getTodayDate()
       const weekDates = getWeekDates()
 
-      // Obtener rutinas de hoy
       const todayResponse = await api.getRoutinesByDate(today)
       const todayRoutinesData = todayResponse.routines || []
 
-      // Obtener rutinas de la semana (sin duplicados)
       const weekRoutinesMap = new Map<string, RoutineAPI>()
       for (const date of weekDates) {
         const response = await api.getRoutinesByDate(date)
@@ -88,70 +79,49 @@ function MiDia() {
       }
       const weekRoutinesData = Array.from(weekRoutinesMap.values())
 
-      // Obtener completados del día
       const completionsResponse = await api.getRoutineCompletions({
         start_date: today,
         end_date: today,
       })
       const completions = completionsResponse.completions || []
-      
-      // Filtrar solo completados que realmente sean de hoy (validación adicional)
-      // Normalizar fechas para comparación (remover hora si existe)
-      const todayCompletions = completions.filter((c: any) => {
-        const completionDate = c.completed_date || c.completedDate
-        if (!completionDate) return false
-        // Normalizar fecha: tomar solo la parte de fecha (YYYY-MM-DD)
-        const normalizedDate = completionDate.split('T')[0]
-        return normalizedDate === today
+
+      const todayCompletions = completions.filter((completion: { completed_date?: string; completedDate?: string }) => {
+        const completionDate = completion.completed_date ?? completion.completedDate
+        if (!completionDate) {
+          return false
+        }
+        return completionDate.split('T')[0] === today
       })
-      
+
       const completedRoutineIds = new Set(
-        todayCompletions.map((c: any) => c.routine_id)
+        todayCompletions.map((completion: { routine_id: string }) => completion.routine_id)
       )
 
-      // Crear eventos de hoy
-      const todayEvents: RoutineEvent[] = todayRoutinesData.map((routine: RoutineAPI) => {
-        const completion = todayCompletions.find((c: any) => c.routine_id === routine.id)
+      const todayEvents: MiDiaRoutineEvent[] = todayRoutinesData.map((routine: RoutineAPI) => {
+        const completion = todayCompletions.find(
+          (item: { routine_id: string }) => item.routine_id === routine.id
+        )
         return {
           routine,
           isCompleted: completedRoutineIds.has(routine.id),
-          completionId: completion?.id,
-          completedDate: completion?.completed_date || completion?.completedDate,
+          ...(completion?.id ? { completionId: completion.id } : {}),
         }
       })
 
-      // Función para ordenar por hora programada
-      const sortByScheduledTime = (a: RoutineEvent, b: RoutineEvent) => {
-        const timeA = a.routine.scheduled_time || ''
-        const timeB = b.routine.scheduled_time || ''
-        
-        // Si ambas tienen hora, comparar por hora
-        if (timeA && timeB) {
-          return timeA.localeCompare(timeB)
-        }
-        // Si solo una tiene hora, la que tiene hora va primero
-        if (timeA && !timeB) return -1
-        if (!timeA && timeB) return 1
-        // Si ninguna tiene hora, mantener orden original
-        return 0
-      }
+      setTodayRoutines(todayEvents)
 
-      // Separar pendientes y completadas
-      const pending = todayEvents.filter(e => !e.isCompleted).sort(sortByScheduledTime)
-      const completed = todayEvents.filter(e => e.isCompleted).sort(sortByScheduledTime)
-      // Ordenar: pendientes primero (ordenadas por hora), completadas al final (ordenadas por hora)
-      setTodayRoutines([...pending, ...completed])
-
-      // Crear eventos de la semana (excluir las de hoy)
-      const weekEvents: RoutineEvent[] = weekRoutinesData
-        .filter((routine: RoutineAPI) => !todayRoutinesData.some((tr: RoutineAPI) => tr.id === routine.id))
+      const weekEvents: MiDiaRoutineEvent[] = weekRoutinesData
+        .filter(
+          (routine: RoutineAPI) =>
+            !todayRoutinesData.some((todayRoutine: RoutineAPI) => todayRoutine.id === routine.id)
+        )
         .map((routine: RoutineAPI) => ({
           routine,
           isCompleted: false,
         }))
 
       setWeekRoutines(weekEvents)
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al cargar las rutinas. Por favor, intenta de nuevo.'
@@ -164,11 +134,12 @@ function MiDia() {
   }
 
   useEffect(() => {
-    loadRoutines()
+    void loadRoutines()
   }, [])
 
-  // Marcar rutina como completada
   const handleCompleteRoutine = async (routine: RoutineAPI) => {
+    const previousRoutines = todayRoutines
+
     try {
       setIsLoading(true)
       const today = getTodayDate()
@@ -182,56 +153,27 @@ function MiDia() {
         duration: routine.duration || null,
       }
 
-      // Calcular nuevos valores de racha
       const currentStreak = (routine.current_streak || 0) + 1
       const longestStreak = Math.max(routine.longest_streak || 0, currentStreak)
 
-      // Guardar estado anterior para poder revertir en caso de error
-      const previousRoutines = todayRoutines
-
-      // Función para ordenar por hora programada
-      const sortByScheduledTime = (a: RoutineEvent, b: RoutineEvent) => {
-        const timeA = a.routine.scheduled_time || ''
-        const timeB = b.routine.scheduled_time || ''
-        
-        // Si ambas tienen hora, comparar por hora
-        if (timeA && timeB) {
-          return timeA.localeCompare(timeB)
-        }
-        // Si solo una tiene hora, la que tiene hora va primero
-        if (timeA && !timeB) return -1
-        if (!timeA && timeB) return 1
-        // Si ninguna tiene hora, mantener orden original
-        return 0
-      }
-
-      // Actualización optimista: marcar como completada y actualizar racha inmediatamente
-      setTodayRoutines(prevRoutines => {
-        const updatedRoutines = prevRoutines.map(event => {
-          if (event.routine.id === routine.id) {
-            return {
-              ...event,
-              routine: {
-                ...event.routine,
-                current_streak: currentStreak,
-                longest_streak: longestStreak,
-              },
-              isCompleted: true,
-              completedDate: today,
-            }
-          }
-          return event
-        })
-        
-        // Reordenar: pendientes primero (ordenadas por hora), completadas al final (ordenadas por hora)
-        const pending = updatedRoutines.filter(e => !e.isCompleted).sort(sortByScheduledTime)
-        const completed = updatedRoutines.filter(e => e.isCompleted).sort(sortByScheduledTime)
-        return [...pending, ...completed]
-      })
+      setTodayRoutines(previous =>
+        previous.map(event =>
+          event.routine.id === routine.id
+            ? {
+                ...event,
+                routine: {
+                  ...event.routine,
+                  current_streak: currentStreak,
+                  longest_streak: longestStreak,
+                },
+                isCompleted: true,
+              }
+            : event
+        )
+      )
 
       showNotification(`${routine.title} completada`, 'success')
 
-      // Enviar al backend (en segundo plano, sin bloquear la UI)
       try {
         await Promise.all([
           api.createRoutineCompletion(completionData),
@@ -239,10 +181,9 @@ function MiDia() {
             title: routine.title,
             current_streak: currentStreak,
             longest_streak: longestStreak,
-          })
+          }),
         ])
-      } catch (backendErr: any) {
-        // Si falla, revertir actualización optimista
+      } catch (backendErr: unknown) {
         setTodayRoutines(previousRoutines)
         const errorMessage = getTranslatedErrorMessage(
           backendErr,
@@ -250,8 +191,7 @@ function MiDia() {
         )
         showNotification(errorMessage, 'error')
       }
-    } catch (err: any) {
-      // Revertir actualización optimista en caso de error
+    } catch (err: unknown) {
       await loadRoutines()
       const errorMessage = getTranslatedErrorMessage(
         err,
@@ -263,36 +203,21 @@ function MiDia() {
     }
   }
 
-  const formatTime = (timeString: string | null) => {
-    if (!timeString) return ''
-    return timeString.slice(0, 5)
-  }
+  const hasSearch = searchQuery.trim().length > 0
+  const hasAnyRoutines = todayRoutines.length > 0 || weekRoutines.length > 0
 
-  const formatFrequency = (frequency: string): string => {
-    switch (frequency) {
-      case 'daily':
-        return 'Diaria'
-      case 'weekly':
-        return 'Semanal'
-      case 'monthly':
-        return 'Mensual'
-      default:
-        return frequency
-    }
-  }
-
-  const formatDaysOfWeek = (days: number[] | null | undefined): string => {
-    if (!days || days.length === 0) return ''
-    
-    const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
-    const sortedDays = [...days].sort((a, b) => a - b)
-    return sortedDays.map(day => dayNames[day]).join(', ')
-  }
-
-  const formatDayOfMonth = (day: number | null | undefined): string => {
-    if (day === null || day === undefined) return ''
-    return `Día ${day}`
-  }
+  const filteredToday = useMemo(
+    () => filterMiDiaEventsByQuery(todayRoutines, searchQuery),
+    [todayRoutines, searchQuery]
+  )
+  const filteredWeek = useMemo(
+    () => filterMiDiaEventsByQuery(weekRoutines, searchQuery),
+    [weekRoutines, searchQuery]
+  )
+  const { pending, completed } = useMemo(
+    () => partitionTodayRoutineEvents(filteredToday),
+    [filteredToday]
+  )
 
   const highlights = {
     hoy: todayRoutines.length,
@@ -300,68 +225,60 @@ function MiDia() {
     semana: weekRoutines.length,
   }
 
-  const formatRoutineMeta = (routine: RoutineAPI) => {
-    const parts = [formatFrequency(routine.frequency)]
-    if (routine.frequency === 'weekly' && routine.days_of_week?.length) {
-      parts.push(formatDaysOfWeek(routine.days_of_week))
-    }
-    if (routine.scheduled_time) parts.push(formatTime(routine.scheduled_time))
-    return parts.join(' • ')
-  }
+  const showStrip = !isLoading && !error && hasAnyRoutines
+
+  const headerMeta = !isLoading && !error
+    ? hasSearch
+      ? `${filteredToday.length + filteredWeek.length} de ${todayRoutines.length + weekRoutines.length} rutina${todayRoutines.length + weekRoutines.length !== 1 ? 's' : ''}`
+      : highlights.hoy === 0
+        ? 'Sin rutinas programadas hoy'
+        : `${highlights.completadas}/${highlights.hoy} completadas · ${highlights.semana} esta semana`
+    : undefined
 
   return (
     <div className="app-page-container">
-      <div className="app-page-content app-page-content-wide crud-page-content midia-content">
-        {/* Toolbar */}
-        <div className="app-toolbar">
+      <div className="app-page-content app-page-content-wide crud-page-content midia-content lifestyle-sub-content">
+        <LifestyleSubHeader title="Mi Día" context="Operativo" meta={headerMeta} />
+
+        {showStrip ? (
+          <CrudSummaryStrip
+            ariaLabel="Resumen del día"
+            items={[
+              { label: 'Hoy', value: highlights.hoy, tone: 'info' },
+              { label: 'Completadas', value: highlights.completadas, tone: 'available' },
+              { label: 'Esta semana', value: highlights.semana, tone: 'info' },
+            ]}
+          />
+        ) : null}
+
+        <div
+          className={`lifestyle-toolbar${!isLoading && !error && !hasAnyRoutines ? ' lifestyle-toolbar--solo-cta' : ''}`}
+        >
+          {!isLoading && !error && (hasAnyRoutines || hasSearch) ? (
+            <label className="lifestyle-search">
+              <SearchIcon className="lifestyle-search-icon" aria-hidden="true" />
+              <input
+                type="search"
+                className="lifestyle-search-input"
+                value={searchQuery}
+                onChange={event => setSearchQuery(event.target.value)}
+                placeholder="Buscar rutinas de hoy o de la semana…"
+                aria-label="Buscar rutinas"
+              />
+            </label>
+          ) : null}
           <button
-            className="app-toolbar-button"
-            onClick={() => navigate('/tiempo')}
-            aria-label={backToHubLabel('tiempo')}
             type="button"
+            className="btn-base btn-secondary btn-submit lifestyle-toolbar-cta"
+            onClick={() => navigate('/tiempo/rutinas')}
+            aria-label="Gestionar rutinas"
           >
-            <ArrowBackIcon className="app-toolbar-icon" />
+            <RepeatIcon aria-hidden={true} />
+            Gestionar rutinas
           </button>
         </div>
 
-        <h1 className="app-page-title">Mi Día</h1>
-
-        <div className="crud-summary-strip" role="region" aria-label="Resumen del día">
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Hoy</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--info">
-              {highlights.hoy}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Completadas</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--available">
-              {highlights.completadas}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Esta semana</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--info">
-              {highlights.semana}
-            </span>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          className="btn-base btn-secondary btn-block crud-primary-cta"
-          onClick={() => navigate('/tiempo/rutinas')}
-          aria-label="Gestionar rutinas"
-        >
-          <RepeatIcon aria-hidden={true} />
-          Gestionar rutinas
-        </button>
-
-        {/* Rutinas de Hoy */}
-        <div className="midia-section">
-          <h2 className="midia-section-title">Hoy</h2>
+        <section className="midia-section" aria-label="Rutinas de hoy">
           {isLoading && todayRoutines.length === 0 ? (
             <div className="glass-group">
               <ListSkeleton variant="inset-row" count={3} aria-label="Cargando rutinas de hoy" />
@@ -382,78 +299,75 @@ function MiDia() {
                 </button>
               </div>
             </div>
+          ) : hasSearch && pending.length === 0 && completed.length === 0 ? (
+            <div className="empty-state">
+              <RepeatIcon className="empty-state-icon" />
+              <p className="empty-text">Sin coincidencias hoy</p>
+              <p className="empty-subtext">Prueba con otro término o limpia la búsqueda</p>
+            </div>
           ) : todayRoutines.length === 0 ? (
             <div className="empty-state">
               <RepeatIcon className="empty-state-icon" />
               <p className="empty-text">No hay rutinas programadas para hoy</p>
-              <p className="empty-subtext">Usa el botón de arriba para crear o editar rutinas</p>
+              <p className="empty-subtext">Usa Gestionar rutinas para crear o editar las tuyas</p>
             </div>
           ) : (
-            <div className="glass-group">
-              {todayRoutines.map(event => (
-                <div
-                  key={event.routine.id}
-                  className={`crud-inset-row crud-row-accent-green ${event.isCompleted ? 'crud-inset-row--read' : ''}`}
-                >
-                  <button
-                    className="midia-routine-check"
-                    onClick={() => !event.isCompleted && handleCompleteRoutine(event.routine)}
-                    disabled={event.isCompleted || isLoading}
-                    aria-label={event.isCompleted ? 'Completada' : 'Marcar como completada'}
-                    type="button"
-                  >
-                    {event.isCompleted ? (
-                      <CheckCircleIcon className="midia-check-icon completed" />
-                    ) : (
-                      <RadioButtonUncheckedIcon className="midia-check-icon" />
-                    )}
-                  </button>
-                  <div className="crud-row-content">
-                    <div className="crud-row-header">
-                      <span className="crud-row-title">{event.routine.title}</span>
-                      {(event.routine.current_streak ?? 0) > 0 && (
-                        <span className="crud-row-value">{event.routine.current_streak}d</span>
-                      )}
-                    </div>
-                    <p className="crud-row-meta">{formatRoutineMeta(event.routine)}</p>
-                    {event.routine.description && (
-                      <p className="crud-row-preview">{event.routine.description}</p>
-                    )}
+            <>
+              {pending.length > 0 ? (
+                <div className="midia-subsection">
+                  <h2 className="midia-section-title">
+                    Pendientes{hasSearch ? '' : ` (${pending.length})`}
+                  </h2>
+                  <div className="glass-group">
+                    {pending.map(event => (
+                      <MiDiaRoutineRow
+                        key={event.routine.id}
+                        event={event}
+                        variant="today"
+                        isBusy={isLoading}
+                        onComplete={() => void handleCompleteRoutine(event.routine as RoutineAPI)}
+                      />
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              ) : null}
 
-        {/* Rutinas de la Semana */}
-        {weekRoutines.length > 0 && (
-          <div className="midia-section">
-            <h2 className="midia-section-title">Esta Semana</h2>
-            <div className="glass-group">
-              {weekRoutines.map(event => (
-                <div
-                  key={event.routine.id}
-                  className="crud-inset-row crud-row-accent-indigo"
-                >
-                  <div className="crud-row-content">
-                    <div className="crud-row-header">
-                      <span className="crud-row-title">{event.routine.title}</span>
-                    </div>
-                    <p className="crud-row-meta">{formatRoutineMeta(event.routine)}</p>
-                    {event.routine.description && (
-                      <p className="crud-row-preview">{event.routine.description}</p>
-                    )}
+              {completed.length > 0 ? (
+                <div className="midia-subsection">
+                  <h2 className="midia-section-title">
+                    Completadas{hasSearch ? '' : ` (${completed.length})`}
+                  </h2>
+                  <div className="glass-group">
+                    {completed.map(event => (
+                      <MiDiaRoutineRow
+                        key={event.routine.id}
+                        event={event}
+                        variant="today"
+                        isBusy={isLoading}
+                      />
+                    ))}
                   </div>
                 </div>
+              ) : null}
+            </>
+          )}
+        </section>
+
+        {!isLoading && !error && (hasSearch ? filteredWeek.length > 0 : weekRoutines.length > 0) ? (
+          <section className="midia-section" aria-label="Rutinas de la semana">
+            <h2 className="midia-section-title">
+              Esta semana ({hasSearch ? filteredWeek.length : weekRoutines.length})
+            </h2>
+            <div className="glass-group">
+              {filteredWeek.map(event => (
+                <MiDiaRoutineRow key={event.routine.id} event={event} variant="week" />
               ))}
             </div>
-          </div>
-        )}
+          </section>
+        ) : null}
       </div>
     </div>
   )
 }
 
 export default MiDia
-

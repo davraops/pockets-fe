@@ -84,6 +84,21 @@ export function translateError(errorMessage: string | undefined | null): string 
  * Extrae y traduce el mensaje de error de un objeto de error de la API
  */
 export function getTranslatedErrorMessage(err: any, fallback: string): string {
-  const errorMessage = err?.data?.error || err?.data?.message || err?.message || fallback
-  return translateError(errorMessage)
+  const status = err?.response?.status
+  const rawMessage = err?.data?.error || err?.data?.message || err?.message || fallback
+  const message = typeof rawMessage === 'string' ? rawMessage.toLowerCase().trim() : ''
+
+  if (status === 504 || status === 408) {
+    return 'La Rama Judicial no respondió a tiempo. Por favor, reintenta.'
+  }
+
+  // API Gateway returns 403 + "Missing Authentication Token" when the route is not deployed
+  if (
+    status === 403 &&
+    message.includes('missing authentication token')
+  ) {
+    return 'El endpoint no está disponible en el servidor. Ejecuta la migración y despliega pockets-lifestyle.'
+  }
+
+  return translateError(rawMessage)
 }

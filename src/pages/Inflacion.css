@@ -543,8 +543,8 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .inflacion-page-title {
-    font-size: var(--font-size-hero);
+  .inflacion-content {
+    padding-bottom: max(var(--spacing-md), env(safe-area-inset-bottom, 0px));
   }
 
   .inflacion-calculator,
@@ -553,7 +553,9 @@
     padding: var(--spacing-md);
   }
 
-  .inflacion-calculator-inputs {
+  .inflacion-calculator-inputs,
+  .inflacion-salary-stats,
+  .inflacion-purchasing-power-stats {
     grid-template-columns: 1fr;
   }
 

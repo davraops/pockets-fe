@@ -1,133 +1,104 @@
-import '../App.css'
 import './AppPage.css'
 import './Tiempo.css'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
-import RepeatIcon from '@mui/icons-material/Repeat'
-import TodayIcon from '@mui/icons-material/Today'
-import BookIcon from '@mui/icons-material/Book'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import SyncIcon from '@mui/icons-material/Sync'
+import ListSkeleton from '../components/ListSkeleton'
+import TiempoHubDashboard from '../components/tiempo/TiempoHubDashboard'
+import TiempoHubModules from '../components/tiempo/TiempoHubModules'
+import { useTiempoHubStats } from '../hooks/useTiempoHubStats'
 
 function Tiempo() {
   const navigate = useNavigate()
+  const { isLoading, loadError, data, stats, completingRoutineId, completeRoutine, loadStats } =
+    useTiempoHubStats()
+
+  const todayLabel = useMemo(() => {
+    const label = new Date().toLocaleDateString('es-CO', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    })
+    return label.charAt(0).toUpperCase() + label.slice(1)
+  }, [])
+
+  const unavailable = Boolean(loadError)
 
   return (
     <div className="app-page-container">
-      <div className="app-page-content app-page-content-wide crud-page-content tiempo-content">
-        {/* Toolbar - HIG: Navigation */}
-        <div className="app-toolbar">
-          <button
-            className="app-toolbar-button"
-            onClick={() => navigate('/')}
-            aria-label="Volver al inicio"
-            type="button"
-          >
-            <ArrowBackIcon className="app-toolbar-icon" />
-          </button>
-        </div>
+      <div className="app-page-content app-page-content-wide tiempo-hub-content">
+        <header className="tiempo-hub-header">
+          <div className="tiempo-hub-toolbar">
+            <button
+              className="app-toolbar-button"
+              onClick={() => navigate('/')}
+              aria-label="Volver al inicio"
+              type="button"
+            >
+              <ArrowBackIcon className="app-toolbar-icon" />
+            </button>
+            <button
+              type="button"
+              className="app-toolbar-button tiempo-hub-sync"
+              onClick={() => void loadStats()}
+              aria-label="Actualizar resumen de Lifestyle"
+              disabled={isLoading}
+            >
+              <SyncIcon className="app-toolbar-icon" aria-hidden="true" />
+            </button>
+          </div>
+          <div className="tiempo-hub-heading">
+            <h1 className="tiempo-hub-title">
+              <span className="tiempo-hub-title-brand">Lifestyle</span>
+              <span className="tiempo-hub-title-sep" aria-hidden="true">
+                ·
+              </span>
+              <span className="tiempo-hub-title-context">Resumen</span>
+            </h1>
+            <p className="tiempo-hub-meta">{todayLabel}</p>
+          </div>
+        </header>
 
-        <h1 className="app-page-title">Lifestyle</h1>
-
-        {/* Lista de Secciones */}
-        <div className="crud-hub-list">
-          {/* Sección: Fechas */}
-          <div className="crud-hub-section">
-            <div className="crud-hub-section-header">Fechas</div>
-            <div className="glass-group">
+        {loadError ? (
+          <div className="loader-container">
+            <div className="loader tiempo-stats-error-panel">
+              <p className="tiempo-stats-error" role="alert">
+                {loadError}
+              </p>
               <button
-                className="crud-hub-row"
-                onClick={() => navigate('/tiempo/fechas')}
-                aria-label="Ir a Fechas"
                 type="button"
+                className="btn-base btn-secondary finanzas-stats-retry-button"
+                onClick={() => void loadStats()}
+                aria-label="Reintentar cargar estadísticas"
               >
-                <div
-                  className="crud-hub-row-icon"
-                  style={{ backgroundColor: '#007AFF' }}
-                  aria-hidden="true"
-                >
-                  <CalendarTodayIcon />
-                </div>
-                <div className="crud-row-content">
-                  <span className="crud-row-title">Fechas</span>
-                  <span className="crud-row-subtitle">Gestiona tus fechas importantes</span>
-                </div>
-                <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
+                <SyncIcon aria-hidden="true" />
+                <span>Reintentar</span>
               </button>
             </div>
           </div>
+        ) : (
+          <div className="tiempo-hub-body">
+            <main className="tiempo-hub-main">
+              <TiempoHubDashboard
+                data={data}
+                isLoading={isLoading}
+                unavailable={unavailable}
+                completingRoutineId={completingRoutineId}
+                onCompleteRoutine={routineId => void completeRoutine(routineId)}
+              />
+            </main>
 
-          {/* Sección: Rutinas */}
-          <div className="crud-hub-section">
-            <div className="crud-hub-section-header">Rutinas</div>
-            <div className="glass-group">
-              <button
-                className="crud-hub-row"
-                onClick={() => navigate('/tiempo/mi-dia')}
-                aria-label="Ir a Mi Día"
-                type="button"
-              >
-                <div
-                  className="crud-hub-row-icon"
-                  style={{ backgroundColor: '#FF9500' }}
-                  aria-hidden="true"
-                >
-                  <TodayIcon />
-                </div>
-                <div className="crud-row-content">
-                  <span className="crud-row-title">Mi Día</span>
-                  <span className="crud-row-subtitle">Rutinas del día y la semana</span>
-                </div>
-                <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
-              </button>
-              <button
-                className="crud-hub-row"
-                onClick={() => navigate('/tiempo/rutinas')}
-                aria-label="Ir a Rutinas"
-                type="button"
-              >
-                <div
-                  className="crud-hub-row-icon"
-                  style={{ backgroundColor: '#34C759' }}
-                  aria-hidden="true"
-                >
-                  <RepeatIcon />
-                </div>
-                <div className="crud-row-content">
-                  <span className="crud-row-title">Rutinas</span>
-                  <span className="crud-row-subtitle">Gestiona tus rutinas diarias</span>
-                </div>
-                <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
-              </button>
-            </div>
+            <aside className="tiempo-hub-aside" aria-label="Módulos de Lifestyle">
+              <h2 className="tiempo-hub-aside-title">Módulos</h2>
+              {isLoading ? (
+                <ListSkeleton variant="hub-row" count={4} aria-label="Cargando módulos" />
+              ) : (
+                <TiempoHubModules stats={stats} statsLoading={isLoading} />
+              )}
+            </aside>
           </div>
-
-          {/* Sección: Mi Diario */}
-          <div className="crud-hub-section">
-            <div className="crud-hub-section-header">Mi Diario</div>
-            <div className="glass-group">
-              <button
-                className="crud-hub-row"
-                onClick={() => navigate('/tiempo/mi-diario')}
-                aria-label="Ir a Mi Diario"
-                type="button"
-              >
-                <div
-                  className="crud-hub-row-icon"
-                  style={{ backgroundColor: '#AF52DE' }}
-                  aria-hidden="true"
-                >
-                  <BookIcon />
-                </div>
-                <div className="crud-row-content">
-                  <span className="crud-row-title">Mi Diario</span>
-                  <span className="crud-row-subtitle">Reflexiona sobre tus días</span>
-                </div>
-                <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
-              </button>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   )

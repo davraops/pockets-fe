@@ -1,28 +1,5 @@
 .tarjetas-debito-content {}
 
-.crud-row-meta,
-.crud-row-meta,
-.crud-row-meta,
-.crud-row-meta {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-regular);
-  color: var(--text-secondary);
-  font-family: var(--font-family);
-  line-height: 1.4;
-}
-
-.crud-row-meta {
-  padding: 0.125rem 0.5rem;
-  background: var(--bg-glass-light);
-  border-radius: var(--radius-sm);
-  font-weight: var(--font-weight-medium);
-}
-
-.crud-row-meta {
-  color: var(--accent-primary);
-  font-weight: var(--font-weight-medium);
-}
-
 /* Header styles removed - now using toolbar */
 
 /* Cards Grid */
@@ -287,111 +264,6 @@
   cursor: not-allowed;
 }
 
-.detail-modal::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: var(--banco-color, #00c7be);
-  border-radius: 32px 32px 0 0;
-  opacity: 0.8;
-  z-index: 1;
-}
-
-.debug-options {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.debug-option-button {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.25rem 1.5rem;
-  background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-radius: 16px;
-  border: 1px solid var(--border-glass);
-  box-shadow: var(--shadow-sm);
-  color: var(--text-primary);
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'SF Pro Display',
-    sans-serif;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  text-align: left;
-  width: 100%;
-}
-
-.debug-option-button:hover:not(:disabled) {
-  background: var(--surface-overlay);
-  transform: translateY(var(--motion-lift-md));
-  box-shadow:
-    0 8px 24px 0 var(--text-disabled),
-    inset 0 1px 0 var(--glass-inset-highlight-strong);
-  border-color: var(--border-glass-hover);
-}
-
-.debug-option-button:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.debug-option-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.debug-option-button.create-demo:hover:not(:disabled) {
-  border-color: rgba(52, 199, 89, 0.5);
-  background: rgba(52, 199, 89, 0.1);
-}
-
-.debug-option-button.delete-all:hover:not(:disabled) {
-  border-color: var(--color-danger-border-medium);
-  background: var(--color-danger-bg-soft);
-}
-
-.debug-option-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.debug-option-title {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0;
-  letter-spacing: -0.01em;
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'SF Pro Display',
-    sans-serif;
-}
-
-.debug-option-description {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  margin: 0;
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'SF Pro Display',
-    sans-serif;
-  line-height: 1.4;
-}
-
 /* Delete Warning Modal Styles */
 .delete-warning-content {
   padding: 1.5rem;
@@ -518,104 +390,12 @@
     grid-template-columns: 1fr;
     padding: 0;
   }
-
-  .detail-actions {
-    flex-direction: column;
-  }
-
-  .detail-button {
-    width: 100%;
-  }
-
-  .detail-content {
-    padding: var(--spacing-lg) var(--spacing-md);
-  }
-
-  .detail-section {
-    padding-bottom: var(--spacing-md);
-  }
-
-  .detail-name {
-    font-size: var(--font-size-lg);
-  }
-
-  .detail-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-md) 0;
-    min-height: auto;
-  }
-
-  .detail-label {
-    min-width: auto;
-    font-size: var(--font-size-base);
-    margin-bottom: var(--spacing-xs);
-  }
-
-  .detail-value {
-    text-align: left;
-    width: 100%;
-    font-size: var(--font-size-base);
-  }
-
-  .detail-actions {
-    flex-direction: column;
-    padding: var(--spacing-md);
-    gap: var(--spacing-sm);
-  }
-
-  .detail-button {
-    width: 100%;
-    min-height: 44px;
-  }
 }@media (max-width: 480px){
   .tarjetas-debito-content {
     padding: 0 0.5rem;
   }
 
-  .crud-row-subtitle,
-  .crud-row-meta {
-    font-size: var(--font-size-sm);
-  }
-
   .error-message {
-    font-size: var(--font-size-base);
-  }
-
-  .detail-content {
-    padding: var(--spacing-lg) var(--spacing-md);
-  }
-
-  .detail-section {
-    padding-bottom: var(--spacing-md);
-  }
-
-  .detail-name {
-    font-size: var(--font-size-lg);
-  }
-
-  .detail-row {
-    padding: var(--spacing-sm) 0;
-    min-height: auto;
-  }
-
-  .detail-label {
-    font-size: var(--font-size-sm);
-    margin-bottom: var(--spacing-xs);
-  }
-
-  .detail-value {
-    font-size: var(--font-size-sm);
-  }
-
-  .detail-actions {
-    padding: var(--spacing-md);
-    gap: var(--spacing-sm);
-  }
-
-  .detail-button {
-    min-height: 44px;
     font-size: var(--font-size-base);
   }
 }

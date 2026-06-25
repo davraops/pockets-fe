@@ -551,6 +551,20 @@
   .utilidades-hero {
     padding: var(--spacing-md);
   }
+
+  .utilidades-feed-row {
+    align-items: flex-start;
+  }
+
+  .utilidades-feed-row-title,
+  .utilidades-module-sub {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    white-space: normal;
+    word-break: break-word;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

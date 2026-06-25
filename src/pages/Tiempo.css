@@ -1,14 +1,825 @@
-/* Tiempo Page Styles */
-.tiempo-content {}
+/* Lifestyle hub — dashboard layout (mirrors Utilidades / Finanzas hub patterns) */
 
-/* Page Subtitle - HIG: Typography */
-.tiempo-page-subtitle {
-  font-size: var(--font-size-base);
-  color: var(--text-secondary);
-  font-family: var(--font-family);
-  letter-spacing: var(--letter-spacing-tight);
-  line-height: 1.5;
-  margin: 0;
-  margin-bottom: var(--spacing-lg);
+@import '../styles/streak-tier.css';
+
+.tiempo-hub-content {
+  gap: var(--spacing-md);
+  max-width: min(1120px, 100%);
 }
 
+.tiempo-hub-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+.tiempo-hub-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.tiempo-hub-sync:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tiempo-hub-heading {
+  padding-right: var(--spacing-sm);
+}
+
+.tiempo-hub-title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35em;
+  margin: 0;
+  font-family: var(--font-family);
+  line-height: 1.2;
+}
+
+.tiempo-hub-title-brand {
+  font-size: clamp(1.5rem, 4vw, 1.875rem);
+  font-weight: var(--font-weight-bold);
+  color: var(--section-lifestyle);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.tiempo-hub-title-sep {
+  font-size: var(--font-size-lg);
+  color: var(--text-tertiary);
+}
+
+.tiempo-hub-title-context {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+}
+
+.tiempo-hub-meta {
+  margin: var(--spacing-xs) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+}
+
+.tiempo-hub-body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-lg);
+  align-items: start;
+}
+
+.tiempo-hub-main {
+  min-width: 0;
+}
+
+.tiempo-hub-aside {
+  min-width: 0;
+}
+
+.tiempo-hub-aside-title {
+  margin: 0 0 var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: var(--font-family);
+}
+
+/* Dashboard */
+.tiempo-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.tiempo-hero-skeleton.skeleton-list-summary-card {
+  margin-bottom: 0;
+}
+
+.tiempo-hero {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  width: 100%;
+  padding: var(--spacing-lg);
+  text-align: left;
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.tiempo-hero:hover {
+  border-color: var(--border-glass-strong, var(--border-glass));
+  box-shadow: var(--shadow-lg);
+}
+
+.tiempo-hero:active {
+  transform: scale(var(--motion-press-scale));
+}
+
+.tiempo-hero:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.tiempo-hero-icon {
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--section-color);
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.tiempo-hero-icon svg {
+  font-size: var(--font-size-xxl);
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--text-primary);
+}
+
+.tiempo-hero-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.tiempo-hero-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+.tiempo-hero-value {
+  font-size: clamp(var(--font-size-xl), 4vw, var(--font-size-hero));
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.tiempo-hero-sub {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.tiempo-dash-unavailable {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-lg);
+}
+
+.tiempo-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+}
+
+.tiempo-quick-action {
+  min-height: 44px;
+  font-size: var(--font-size-sm);
+  gap: var(--spacing-xs);
+}
+
+.tiempo-quick-action svg {
+  font-size: var(--font-size-lg) !important;
+  width: 1.125rem !important;
+  height: 1.125rem !important;
+}
+
+.tiempo-attention-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--badge-warning-bg);
+  border: 1px solid rgba(255, 149, 0, 0.35);
+  border-radius: var(--radius-md);
+}
+
+.tiempo-attention-banner p {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  flex: 1;
+  min-width: min(100%, 220px);
+}
+
+.tiempo-attention-action {
+  flex-shrink: 0;
+}
+
+/* Streak section */
+.tiempo-streak-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.tiempo-streak-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.tiempo-streak-container {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--section-lifestyle) 12%, var(--bg-glass)) 0%,
+    color-mix(in srgb, var(--row-accent-purple) 10%, var(--bg-glass)) 100%
+  );
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border: 1px solid color-mix(in srgb, var(--section-lifestyle) 28%, var(--border-glass));
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.tiempo-streak-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-width: 0;
+  padding: var(--spacing-xs);
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-family: var(--font-family);
+  border-radius: var(--radius-sm);
+}
+
+.tiempo-streak-item--action {
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.tiempo-streak-item--action:hover {
+  background: var(--bg-glass-light);
+}
+
+.tiempo-streak-item--action:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.tiempo-streak-icon {
+  flex-shrink: 0;
+  width: 1.35rem !important;
+  height: 1.35rem !important;
+  color: var(--section-lifestyle);
+}
+
+.tiempo-streak-icon--record {
+  color: var(--row-accent-purple-hover);
+}
+
+.tiempo-streak-icon--routines {
+  color: var(--highlight-success-text);
+}
+
+.tiempo-streak-icon--best {
+  color: var(--accent-warning-text, #ff9500);
+}
+
+.tiempo-streak-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.tiempo-streak-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tiempo-streak-value {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.tiempo-streak-message {
+  margin: 0;
+  padding: 0 var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.tiempo-streak-routines {
+  display: flex;
+  flex-direction: column;
+}
+
+.tiempo-streak-routine-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  border-bottom: 1px solid var(--border-glass);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition: background-color var(--transition-fast);
+}
+
+.tiempo-streak-routine-row:last-child {
+  border-bottom: none;
+}
+
+.tiempo-streak-routine-row:hover {
+  background: var(--bg-glass-light);
+}
+
+.tiempo-streak-routine-row:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: -2px;
+}
+
+.tiempo-streak-routine-badge {
+  flex-shrink: 0;
+}
+
+.tiempo-streak-routine-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tiempo-streak-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin: 0;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+}
+
+.tiempo-streak-empty svg {
+  flex-shrink: 0;
+  width: 1.125rem !important;
+  height: 1.125rem !important;
+  color: var(--text-tertiary);
+}
+
+.tiempo-dashboard-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.tiempo-feed-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  min-width: 0;
+}
+
+.tiempo-feed-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.tiempo-feed-panel-title {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+}
+
+.tiempo-feed-panel-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: none;
+  background: transparent;
+  color: var(--accent-primary-text);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  font-family: var(--font-family);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.tiempo-feed-panel-link:hover {
+  background: var(--bg-glass-light);
+}
+
+.tiempo-feed-panel-link:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.tiempo-feed-panel-link svg {
+  font-size: var(--font-size-base) !important;
+  width: 1rem !important;
+  height: 1rem !important;
+}
+
+.tiempo-feed-list {
+  display: flex;
+  flex-direction: column;
+  min-height: 120px;
+}
+
+.tiempo-feed-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-md);
+  border: none;
+  border-bottom: 1px solid var(--border-glass);
+  background: transparent;
+  text-align: left;
+  font-family: var(--font-family);
+  transition: background-color var(--transition-fast);
+}
+
+.tiempo-feed-row-routine {
+  grid-template-columns: auto auto 1fr auto;
+  padding-top: var(--spacing-sm);
+  padding-bottom: var(--spacing-sm);
+}
+
+.tiempo-feed-row-routine--completed .tiempo-feed-row-title {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
+.tiempo-feed-row-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.tiempo-feed-row-check:hover:not(:disabled) {
+  color: var(--accent-primary);
+  background: var(--bg-glass-light);
+}
+
+.tiempo-feed-row-check:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.tiempo-feed-row-check:disabled {
+  cursor: default;
+}
+
+.tiempo-feed-row-check-icon {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.tiempo-feed-row-check-icon--done {
+  color: var(--accent-success);
+}
+
+.tiempo-feed-row-more {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-md);
+  border: none;
+  border-bottom: 1px solid var(--border-glass);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition: background-color var(--transition-fast);
+}
+
+.tiempo-feed-row-event {
+  grid-template-columns: 1fr auto;
+  cursor: pointer;
+}
+
+.tiempo-feed-row-event:hover {
+  background: var(--bg-glass-light);
+}
+
+.tiempo-feed-row-more:hover {
+  background: var(--bg-glass-light);
+}
+
+.tiempo-feed-row:last-child {
+  border-bottom: none;
+}
+
+.tiempo-feed-row:hover {
+  background: var(--bg-glass-light);
+}
+
+.tiempo-feed-row:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: -2px;
+}
+
+.tiempo-feed-row-time {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  min-width: 2.5rem;
+}
+
+.tiempo-feed-row-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tiempo-feed-row-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tiempo-feed-row-sub {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.tiempo-feed-chevron {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-lg) !important;
+  width: 1.125rem !important;
+  height: 1.125rem !important;
+  flex-shrink: 0;
+}
+
+.tiempo-feed-empty {
+  margin: 0;
+  padding: var(--spacing-lg) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  text-align: center;
+  font-family: var(--font-family);
+}
+
+.tiempo-feed-success {
+  color: var(--highlight-success-text);
+}
+
+.tiempo-feed-error {
+  color: var(--color-danger-solid);
+}
+
+/* Modules sidebar */
+.tiempo-modules {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.tiempo-modules-group-title {
+  margin: 0 0 var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: var(--font-family);
+}
+
+.tiempo-module-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  border-bottom: 1px solid var(--border-glass);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition: background-color var(--transition-fast);
+}
+
+.tiempo-module-row:last-child {
+  border-bottom: none;
+}
+
+.tiempo-module-row:hover {
+  background: var(--bg-glass-light);
+}
+
+.tiempo-module-row:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: -2px;
+}
+
+.tiempo-module-icon {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--section-color);
+  flex-shrink: 0;
+}
+
+.tiempo-module-icon svg {
+  font-size: var(--font-size-lg) !important;
+  width: 1.125rem !important;
+  height: 1.125rem !important;
+  color: var(--text-primary);
+}
+
+.tiempo-module-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tiempo-module-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+.tiempo-module-sub {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tiempo-stats-error-panel {
+  text-align: center;
+}
+
+.tiempo-stats-error {
+  margin: 0;
+  font-size: var(--font-size-base);
+  color: var(--color-danger-text-strong);
+  line-height: 1.6;
+}
+
+@media (min-width: 640px) {
+  .tiempo-streak-container {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) {
+  .tiempo-hub-body {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 300px);
+    gap: var(--spacing-xl);
+  }
+
+  .tiempo-hub-aside {
+    border-left: 1px solid var(--border-glass);
+    padding-left: var(--spacing-lg);
+    position: sticky;
+    top: 0;
+    max-height: calc(100vh - var(--layout-status-bar-height, 0px) - 8rem);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 768px) {
+  .tiempo-dashboard-panels {
+    grid-template-columns: 1fr;
+  }
+
+  .tiempo-quick-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tiempo-hub-aside {
+    border-top: 1px solid var(--border-glass);
+    padding-top: var(--spacing-md);
+  }
+
+  .tiempo-hub-title-brand {
+    font-size: var(--font-size-xl);
+  }
+
+  .tiempo-hub-title-context,
+  .tiempo-hub-title-sep {
+    font-size: var(--font-size-base);
+  }
+
+  .tiempo-hero {
+    padding: var(--spacing-md);
+  }
+
+  .tiempo-streak-routine-title,
+  .tiempo-feed-row-title {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .tiempo-module-sub {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .tiempo-feed-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: flex-start;
+  }
+
+  .tiempo-feed-row-routine {
+    grid-template-columns: auto auto minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tiempo-hero,
+  .tiempo-feed-row,
+  .tiempo-module-row {
+    transition: none;
+  }
+
+  .tiempo-hero:active {
+    transform: none;
+  }
+}

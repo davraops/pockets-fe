@@ -13,6 +13,10 @@ export interface EmployeeData {
     phone?: string
     relationship?: string
   }
+  debtNormal?: number
+  debtCesantias?: number
+  debtNormalNotes?: string
+  debtCesantiasNotes?: string
   vacationDaysAvailable?: number
   vacations?: Array<{
     startDate: string

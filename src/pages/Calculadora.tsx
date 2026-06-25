@@ -5,6 +5,7 @@ import CheckIcon from '@mui/icons-material/Check'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import { useNotification } from '../contexts/NotificationContext'
 import UtilidadesSubHeader from '../components/utilidades/UtilidadesSubHeader'
+import CalculadoraIngenieriaPanel from '../components/calculadora/CalculadoraIngenieriaPanel'
 import './AppPage.css'
 import './Calculadora.css'
 import { devError } from '../utils/debugTools'
@@ -14,6 +15,8 @@ import {
   loadCalculadoraHistory,
   type CalculadoraHistoryEntry,
 } from '../utils/calculadoraHistory'
+
+type CalculadoraMode = 'basica' | 'ingenieria'
 
 function formatDisplay(value: string): string {
   if (value.length > 12) {
@@ -38,6 +41,7 @@ function formatHistoryTime(timestamp: number): string {
 
 function Calculadora() {
   const { showNotification } = useNotification()
+  const [mode, setMode] = useState<CalculadoraMode>('basica')
   const [display, setDisplay] = useState('0')
   const [previousValue, setPreviousValue] = useState<number | null>(null)
   const [operation, setOperation] = useState<string | null>(null)
@@ -135,6 +139,7 @@ function Calculadora() {
       const entry: CalculadoraHistoryEntry = {
         expression: `${formatDisplay(String(firstValue))} ${currentOperation} ${formatDisplay(String(secondValue))} = ${formatDisplay(String(result))}`,
         result: formatDisplay(String(result)),
+        kind: 'basica',
         timestamp: Date.now(),
       }
       setHistory(addCalculadoraHistoryEntry(entry))
@@ -194,6 +199,10 @@ function Calculadora() {
   }, [showNotification])
 
   useEffect(() => {
+    if (mode !== 'basica') {
+      return
+    }
+
     const handleKeyDown = (event: KeyboardEvent) => {
       const target = event.target
       if (
@@ -264,35 +273,101 @@ function Calculadora() {
     inputDecimal,
     inputNumber,
     performOperation,
+    mode,
   ])
 
-  const copyToClipboard = async (value?: string) => {
-    try {
-      const valueToCopy = value ?? formatDisplay(display)
-      await navigator.clipboard.writeText(valueToCopy)
-      setCopied(true)
-      showNotification('Número copiado al portapapeles', 'success')
-      setTimeout(() => {
-        setCopied(false)
-      }, 2000)
-    } catch (err) {
-      devError('Error al copiar:', err)
-      showNotification('Error al copiar al portapapeles', 'error')
-    }
-  }
+  const recordIngenieriaHistory = useCallback(
+    (payload: { title: string; summary: string; result: string }) => {
+      const entry: CalculadoraHistoryEntry = {
+        expression: payload.summary,
+        result: payload.result,
+        title: payload.title,
+        kind: 'ingenieria',
+        timestamp: Date.now(),
+      }
+      setHistory(addCalculadoraHistoryEntry(entry))
+    },
+    []
+  )
+
+  const copyToClipboard = useCallback(
+    async (value?: string) => {
+      try {
+        const valueToCopy = value ?? formatDisplay(display)
+        await navigator.clipboard.writeText(valueToCopy)
+        setCopied(true)
+        showNotification('Número copiado al portapapeles', 'success')
+        setTimeout(() => {
+          setCopied(false)
+        }, 2000)
+      } catch (err) {
+        devError('Error al copiar:', err)
+        showNotification('Error al copiar al portapapeles', 'error')
+      }
+    },
+    [display, showNotification]
+  )
+
+  const handleHistoryClick = useCallback(
+    (entry: CalculadoraHistoryEntry) => {
+      if (entry.kind === 'ingenieria' || mode === 'ingenieria') {
+        void copyToClipboard(entry.result)
+        return
+      }
+      applyHistoryResult(entry.result)
+    },
+    [applyHistoryResult, copyToClipboard, mode]
+  )
 
   return (
     <div className="app-page-container">
-      <div className="app-page-content app-page-content-wide calculadora-content utilidades-sub-content">
+      <div
+        className="app-page-content app-page-content-wide calculadora-content utilidades-sub-content"
+      >
         <UtilidadesSubHeader
           title="Calculadora"
-          context="Rápida"
-          meta="Teclado numérico, atajos e historial local"
+          context={mode === 'basica' ? 'Rápida' : 'Ing. económica'}
+          meta={
+            mode === 'basica'
+              ? 'Teclado numérico, atajos e historial local'
+              : 'VP, VF, VAN, TIR, gradientes y tabla de factores'
+          }
         />
 
-        <div className="utilidades-tool-workspace utilidades-tool-workspace--split">
-          <div className="utilidades-tool-main utilidades-tool-main--narrow">
-            <div className="calculadora-container" ref={calculatorRef} tabIndex={-1}>
+        <div className="calculadora-mode-tabs" role="tablist" aria-label="Modo de calculadora">
+          <button
+            type="button"
+            role="tab"
+            id="calculadora-tab-basica"
+            aria-selected={mode === 'basica'}
+            aria-controls="calculadora-panel-basica"
+            className={`calculadora-mode-tab${mode === 'basica' ? ' calculadora-mode-tab--active' : ''}`}
+            onClick={() => setMode('basica')}
+          >
+            Rápida
+          </button>
+          <button
+            type="button"
+            role="tab"
+            id="calculadora-tab-ingenieria"
+            aria-selected={mode === 'ingenieria'}
+            aria-controls="calculadora-panel-ingenieria"
+            className={`calculadora-mode-tab${mode === 'ingenieria' ? ' calculadora-mode-tab--active' : ''}`}
+            onClick={() => setMode('ingenieria')}
+          >
+            Ing. económica
+          </button>
+        </div>
+
+        {mode === 'basica' ? (
+          <div className="utilidades-tool-workspace utilidades-tool-workspace--split">
+            <div className="utilidades-tool-main utilidades-tool-main--narrow">
+              <div
+                id="calculadora-panel-basica"
+                role="tabpanel"
+                aria-labelledby="calculadora-tab-basica"
+              >
+                <div className="calculadora-container" ref={calculatorRef} tabIndex={-1}>
               <div className="calculadora-display">
                 <div className="calculadora-display-content">
                   <div className="calculadora-display-value">{formatDisplay(display)}</div>
@@ -471,15 +546,79 @@ function Calculadora() {
                   .
                 </button>
               </div>
+                </div>
+
+                <p className="utilidades-tool-hint">
+                  Atajos: números, + − × ÷, Enter (=), Backspace, Escape (limpiar)
+                </p>
+              </div>
             </div>
 
-            <p className="utilidades-tool-hint">
-              Atajos: números, + − × ÷, Enter (=), Backspace, Escape (limpiar)
-            </p>
-          </div>
+            <aside className="utilidades-tool-aside">
+              <div className="calculadora-history">
+                <div className="calculadora-history-header">
+                  <h2 className="calculadora-history-title">Historial</h2>
+                  {history.length > 0 && (
+                    <button
+                      type="button"
+                      className="calculadora-history-clear"
+                      onClick={handleClearHistory}
+                      aria-label="Borrar historial"
+                      title="Borrar historial"
+                    >
+                      <DeleteOutlineIcon className="calculadora-history-clear-icon" />
+                    </button>
+                  )}
+                </div>
 
-          <aside className="utilidades-tool-aside">
-            <div className="calculadora-history">
+                {history.length === 0 ? (
+                  <p className="calculadora-history-empty">
+                    Las operaciones completadas con = aparecerán aquí.
+                  </p>
+                ) : (
+                  <ul className="calculadora-history-list">
+                    {history.map((entry, index) => (
+                      <li key={`${entry.timestamp}-${index}`} className="calculadora-history-item">
+                        <button
+                          type="button"
+                          className="calculadora-history-use"
+                          onClick={() => handleHistoryClick(entry)}
+                          title="Usar resultado"
+                        >
+                          <span className="calculadora-history-expression">{entry.expression}</span>
+                          <span className="calculadora-history-date">
+                            {formatHistoryTime(entry.timestamp)}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          className="calculadora-history-copy"
+                          onClick={() => copyToClipboard(entry.result)}
+                          aria-label={`Copiar ${entry.result}`}
+                          title="Copiar resultado"
+                        >
+                          <ContentCopyIcon className="calculadora-history-copy-icon" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </aside>
+          </div>
+        ) : (
+          <div
+            id="calculadora-panel-ingenieria"
+            role="tabpanel"
+            aria-labelledby="calculadora-tab-ingenieria"
+            className="calculadora-ingenieria-layout"
+          >
+            <CalculadoraIngenieriaPanel
+              onResult={recordIngenieriaHistory}
+              onCopy={value => copyToClipboard(value)}
+            />
+
+            <aside className="calculadora-history calculadora-history--sidebar">
               <div className="calculadora-history-header">
                 <h2 className="calculadora-history-title">Historial</h2>
                 {history.length > 0 && (
@@ -497,39 +636,56 @@ function Calculadora() {
 
               {history.length === 0 ? (
                 <p className="calculadora-history-empty">
-                  Las operaciones completadas con = aparecerán aquí.
+                  Los cálculos aparecerán aquí al pulsar Calcular.
                 </p>
               ) : (
-                <ul className="calculadora-history-list">
-                  {history.map((entry, index) => (
-                    <li key={`${entry.timestamp}-${index}`} className="calculadora-history-item">
-                      <button
-                        type="button"
-                        className="calculadora-history-use"
-                        onClick={() => applyHistoryResult(entry.result)}
-                        title="Usar resultado"
-                      >
-                        <span className="calculadora-history-expression">{entry.expression}</span>
-                        <span className="calculadora-history-date">
-                          {formatHistoryTime(entry.timestamp)}
-                        </span>
-                      </button>
-                      <button
-                        type="button"
-                        className="calculadora-history-copy"
-                        onClick={() => copyToClipboard(entry.result)}
-                        aria-label={`Copiar ${entry.result}`}
-                        title="Copiar resultado"
-                      >
-                        <ContentCopyIcon className="calculadora-history-copy-icon" />
-                      </button>
-                    </li>
-                  ))}
+                <ul className="calculadora-history-list calculadora-history-list--compact">
+                  {history.map((entry, index) => {
+                    const isIngenieriaEntry = entry.kind === 'ingenieria'
+                    return (
+                      <li key={`${entry.timestamp}-${index}`} className="calculadora-history-item">
+                        <button
+                          type="button"
+                          className={`calculadora-history-use${
+                            isIngenieriaEntry ? ' calculadora-history-use--compact' : ''
+                          }`}
+                          onClick={() => handleHistoryClick(entry)}
+                          title={entry.expression}
+                        >
+                          {isIngenieriaEntry ? (
+                            <>
+                              <span className="calculadora-history-badge">{entry.title ?? 'Ing.'}</span>
+                              <span className="calculadora-history-result">{entry.result}</span>
+                              <span className="calculadora-history-date">
+                                {formatHistoryTime(entry.timestamp)}
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="calculadora-history-expression">{entry.expression}</span>
+                              <span className="calculadora-history-date">
+                                {formatHistoryTime(entry.timestamp)}
+                              </span>
+                            </>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          className="calculadora-history-copy"
+                          onClick={() => copyToClipboard(entry.result)}
+                          aria-label={`Copiar ${entry.result}`}
+                          title="Copiar resultado"
+                        >
+                          <ContentCopyIcon className="calculadora-history-copy-icon" />
+                        </button>
+                      </li>
+                    )
+                  })}
                 </ul>
               )}
-            </div>
-          </aside>
-        </div>
+            </aside>
+          </div>
+        )}
       </div>
     </div>
   )

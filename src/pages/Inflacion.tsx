@@ -1,4 +1,5 @@
-import { useState, useMemo, Fragment } from 'react'
+import { useState, useMemo } from 'react'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import { useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import TrendingDownIcon from '@mui/icons-material/TrendingDown'
@@ -939,35 +940,28 @@ function Inflacion() {
           </div>
 
           {devaluationResult && (
-            <div
-              className="crud-summary-strip crud-summary-strip--danger"
-              role="region"
-              aria-label="Resultado de devaluación"
-            >
-              <div className="crud-summary-strip-item">
-                <span className="crud-summary-strip-label">Valor inicial</span>
-                <span className="crud-summary-strip-value crud-summary-strip-value--info">
-                  {formatCurrency(parseFloat(amount))}
-                </span>
-              </div>
-              <div className="crud-summary-strip-separator" aria-hidden="true" />
-              <div className="crud-summary-strip-item">
-                <span className="crud-summary-strip-label">
-                  En {years} {years === '1' ? 'año' : 'años'}
-                </span>
-                <span className="crud-summary-strip-value crud-summary-strip-value--expense">
-                  {formatCurrency(devaluationResult.finalValue)}
-                </span>
-              </div>
-              <div className="crud-summary-strip-separator" aria-hidden="true" />
-              <div className="crud-summary-strip-item crud-summary-strip-item--emphasis">
-                <span className="crud-summary-strip-label">Pérdida</span>
-                <span className="crud-summary-strip-value crud-summary-strip-value--expense">
-                  {formatCurrency(devaluationResult.devaluation)} (
-                  {devaluationResult.percentage.toFixed(1)}%)
-                </span>
-              </div>
-            </div>
+            <CrudSummaryStrip
+              ariaLabel="Resultado de devaluación"
+              stripClassName="crud-summary-strip--danger"
+              items={[
+                {
+                  label: 'Valor inicial',
+                  value: formatCurrency(parseFloat(amount)),
+                  tone: 'info',
+                },
+                {
+                  label: `En ${years} ${years === '1' ? 'año' : 'años'}`,
+                  value: formatCurrency(devaluationResult.finalValue),
+                  tone: 'expense',
+                },
+                {
+                  label: 'Pérdida',
+                  value: `${formatCurrency(devaluationResult.devaluation)} (${devaluationResult.percentage.toFixed(1)}%)`,
+                  tone: 'expense',
+                  emphasis: true,
+                },
+              ]}
+            />
           )}
         </div>
 
@@ -977,30 +971,14 @@ function Inflacion() {
           <p className="inflacion-predictor-description">
             Proyección basada en la tendencia histórica reciente:
           </p>
-          <div
-            className="crud-summary-strip"
-            role="region"
-            aria-label="Proyección de inflación"
-          >
-            {[1, 2, 3, 5].map((yearsAhead, index) => {
-              const prediction = predictInflation(yearsAhead)
-              return (
-                <Fragment key={yearsAhead}>
-                  {index > 0 && (
-                    <div className="crud-summary-strip-separator" aria-hidden="true" />
-                  )}
-                  <div className="crud-summary-strip-item">
-                    <span className="crud-summary-strip-label">
-                      {yearsAhead === 1 ? '1 año' : `${yearsAhead} años`}
-                    </span>
-                    <span className="crud-summary-strip-value crud-summary-strip-value--expense">
-                      {prediction.toFixed(1)}%
-                    </span>
-                  </div>
-                </Fragment>
-              )
-            })}
-          </div>
+          <CrudSummaryStrip
+            ariaLabel="Proyección de inflación"
+            items={[1, 2, 3, 5].map(yearsAhead => ({
+              label: yearsAhead === 1 ? '1 año' : `${yearsAhead} años`,
+              value: `${predictInflation(yearsAhead).toFixed(1)}%`,
+              tone: 'expense' as const,
+            }))}
+          />
         </div>
 
         {/* Gráfico Histórico */}

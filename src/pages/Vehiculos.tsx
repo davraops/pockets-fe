@@ -1,14 +1,15 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import AddIcon from '@mui/icons-material/Add'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar'
+import SearchIcon from '@mui/icons-material/Search'
 import { api } from '../services/api'
 import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import CrudListPanel from '../components/crud/CrudListPanel'
 import VehiculoFormModal from '../components/vehiculos/VehiculoFormModal'
 import VehiculoDetailModal from '../components/vehiculos/VehiculoDetailModal'
 import VehiculoDebugModal from '../components/vehiculos/VehiculoDebugModal'
-import VehiculoListRow from '../components/vehiculos/VehiculoListRow'
+import VehiculoCard from '../components/vehiculos/VehiculoCard'
 import {
   EMPTY_VEHICLE_FORM,
   EMPTY_VEHICLE_FORM_ERRORS,
@@ -20,6 +21,7 @@ import {
 } from '../components/vehiculos/vehicleFormUtils'
 import {
   calculateVehicleHighlights,
+  filterVehiclesByQuery,
   vehicleSummaryItems,
 } from '../components/vehiculos/vehicleDisplayUtils'
 import type { Vehicle } from '../components/vehiculos/vehicleTypes'
@@ -39,12 +41,14 @@ function Vehiculos() {
   const [formData, setFormData] = useState<VehicleFormData>(EMPTY_VEHICLE_FORM)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showFormModal, setShowFormModal] = useState(false)
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const menuRef = useRef<HTMLDivElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
   const [formErrors, setFormErrors] = useState<VehicleFormErrors>(EMPTY_VEHICLE_FORM_ERRORS)
@@ -104,6 +108,21 @@ function Vehiculos() {
     setShowFormModal(false)
   }
 
+  const handleOpenCreateModal = () => {
+    setEditingId(null)
+    setFormData(EMPTY_VEHICLE_FORM)
+    setFormErrors(EMPTY_VEHICLE_FORM_ERRORS)
+    setShowFormModal(true)
+  }
+
+  const handleCancelForm = () => {
+    const returnToDetail = editingId && selectedVehicle
+    resetForm()
+    if (returnToDetail) {
+      setShowDetailModal(true)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -115,18 +134,21 @@ function Vehiculos() {
     }
 
     try {
+      setIsSaving(true)
       const vehiclePayload = formDataToVehiclePayload(formData)
 
       if (editingId) {
         await api.updateVehicle(editingId, vehiclePayload)
-        showNotification('Vehículo actualizado exitosamente', 'success')
+        showNotification('Vehículo actualizado', 'success')
       } else {
         await api.createVehicle(vehiclePayload)
-        showNotification('Vehículo agregado exitosamente', 'success')
+        showNotification('Vehículo agregado', 'success')
       }
 
       await loadRecords()
       resetForm()
+      setShowDetailModal(false)
+      setSelectedVehicle(null)
     } catch (err: unknown) {
       const errorMessage = getTranslatedErrorMessage(
         err,
@@ -135,12 +157,18 @@ function Vehiculos() {
           : 'Error al agregar el vehículo. Por favor, intenta de nuevo.'
       )
       showNotification(errorMessage, 'error')
+    } finally {
+      setIsSaving(false)
     }
   }
 
-  const handleEdit = (vehicle: Vehicle) => {
-    setFormData(vehicleToFormData(vehicle))
-    setEditingId(vehicle.id)
+  const handleEditFromDetail = () => {
+    if (!selectedVehicle) {
+      return
+    }
+    setFormData(vehicleToFormData(selectedVehicle))
+    setEditingId(selectedVehicle.id)
+    setShowDetailModal(false)
     setShowFormModal(true)
   }
 
@@ -155,23 +183,39 @@ function Vehiculos() {
     }
 
     try {
+      setIsSaving(true)
       await api.deleteVehicle(id)
-      showNotification('Vehículo eliminado exitosamente', 'success')
+      showNotification('Vehículo eliminado', 'success')
       await loadRecords()
+      setShowDetailModal(false)
+      setSelectedVehicle(null)
+      resetForm()
     } catch (err: unknown) {
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al eliminar el vehículo. Por favor, intenta de nuevo.'
       )
       showNotification(errorMessage, 'error')
+    } finally {
+      setIsSaving(false)
     }
   }
 
   const highlights = calculateVehicleHighlights(vehicles)
+  const hasSearch = searchQuery.trim().length > 0
+  const filteredVehicles = useMemo(
+    () => filterVehiclesByQuery(vehicles, searchQuery),
+    [vehicles, searchQuery]
+  )
 
   const openVehicleDetail = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle)
     setShowDetailModal(true)
+  }
+
+  const handleCloseDetailModal = () => {
+    setShowDetailModal(false)
+    setSelectedVehicle(null)
   }
 
   return (
@@ -182,7 +226,9 @@ function Vehiculos() {
           context="Flota"
           meta={
             !isLoading && !error
-              ? `${vehicles.length} registrado${vehicles.length !== 1 ? 's' : ''}`
+              ? hasSearch
+                ? `${filteredVehicles.length} de ${vehicles.length} registrado${vehicles.length !== 1 ? 's' : ''}`
+                : `${vehicles.length} registrado${vehicles.length !== 1 ? 's' : ''}`
               : undefined
           }
           toolbarActions={
@@ -216,20 +262,39 @@ function Vehiculos() {
           }
         />
 
-        <CrudSummaryStrip
-          ariaLabel="Resumen de vehículos"
-          items={vehicleSummaryItems(highlights)}
-        />
+        {!isLoading && !error && vehicles.length > 0 ? (
+          <CrudSummaryStrip
+            ariaLabel="Resumen de vehículos"
+            items={vehicleSummaryItems(highlights)}
+          />
+        ) : null}
 
-        <button
-          type="button"
-          className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
-          onClick={() => setShowFormModal(true)}
-          aria-label="Agregar vehículo"
+        <div
+          className={`vehiculos-toolbar${!isLoading && !error && vehicles.length === 0 ? ' vehiculos-toolbar--solo-cta' : ''}`}
         >
-          <AddIcon aria-hidden={true} />
-          Agregar vehículo
-        </button>
+          {!isLoading && !error && (vehicles.length > 0 || hasSearch) ? (
+            <label className="vehiculos-search">
+              <SearchIcon className="vehiculos-search-icon" aria-hidden="true" />
+              <input
+                type="search"
+                className="vehiculos-search-input"
+                value={searchQuery}
+                onChange={event => setSearchQuery(event.target.value)}
+                placeholder="Buscar por nombre, placa, marca…"
+                aria-label="Buscar vehículos"
+              />
+            </label>
+          ) : null}
+          <button
+            type="button"
+            className="btn-base btn-accent btn-submit crud-primary-cta vehiculos-toolbar-cta"
+            onClick={handleOpenCreateModal}
+            aria-label="Agregar vehículo"
+          >
+            <AddIcon aria-hidden={true} />
+            Agregar vehículo
+          </button>
+        </div>
 
         {showFormModal && (
           <VehiculoFormModal
@@ -239,35 +304,47 @@ function Vehiculos() {
             nameRef={nameRef}
             onChange={handleChange}
             onSubmit={handleSubmit}
-            onCancel={resetForm}
+            onCancel={handleCancelForm}
           />
         )}
 
         <CrudListPanel
-          items={vehicles}
+          items={filteredVehicles}
           isLoading={isLoading}
           error={error}
           onRetry={() => void loadRecords()}
           retryAriaLabel="Reintentar cargar vehículos"
           loadingAriaLabel="Cargando vehículos"
           emptyIcon={<DirectionsCarIcon className="empty-state-icon" />}
-          emptyTitle="No hay vehículos agregados"
-          emptySubtext="Usa el botón de arriba para agregar el primero"
+          emptyTitle={hasSearch ? 'Sin coincidencias' : 'No hay vehículos registrados'}
+          emptySubtext={
+            hasSearch
+              ? 'Prueba con otro término o limpia la búsqueda'
+              : 'Usa Agregar vehículo para registrar el primero'
+          }
           getItemKey={vehicle => vehicle.id}
-          renderItem={vehicle => (
-            <VehiculoListRow vehicle={vehicle} onClick={() => openVehicleDetail(vehicle)} />
+          listOuterClassName="vehiculos-list"
+          renderBody={() => (
+            <div className="vehiculos-card-grid">
+              {filteredVehicles.map(vehicle => (
+                <VehiculoCard
+                  key={vehicle.id}
+                  vehicle={vehicle}
+                  onClick={() => openVehicleDetail(vehicle)}
+                />
+              ))}
+            </div>
           )}
+          renderItem={() => null}
         />
 
-        {showDetailModal && selectedVehicle && (
+        {showDetailModal && selectedVehicle && !showFormModal && (
           <VehiculoDetailModal
             vehicle={selectedVehicle}
-            onClose={() => setShowDetailModal(false)}
-            onEdit={vehicle => {
-              handleEdit(vehicle)
-              setShowDetailModal(false)
-            }}
-            onDelete={handleDelete}
+            isBusy={isSaving}
+            onClose={handleCloseDetailModal}
+            onEdit={handleEditFromDetail}
+            onDelete={() => void handleDelete(selectedVehicle.id, selectedVehicle.name)}
             onSync={syncVehicle}
           />
         )}

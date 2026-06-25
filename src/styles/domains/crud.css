@@ -208,6 +208,42 @@
 }
 
 /* Detail panel (modal body) — shared across finanzas CRUD pages */
+.detail-modal {
+  position: relative;
+}
+
+.detail-modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(
+    --detail-modal-accent,
+    var(
+      --debt-color,
+      var(
+        --debtor-color,
+        var(
+          --project-color,
+          var(
+            --subscription-color,
+            var(
+              --budget-color,
+              var(--banco-color, var(--transaction-color, var(--accent-primary)))
+            )
+          )
+        )
+      )
+    )
+  );
+  border-radius: 32px 32px 0 0;
+  opacity: 0.8;
+  z-index: 1;
+  pointer-events: none;
+}
+
 .detail-content {
   padding: var(--spacing-xl);
 }
@@ -370,6 +406,75 @@
   font-size: var(--font-size-lg);
 }
 
+.detail-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  min-height: 44px;
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  letter-spacing: var(--letter-spacing-tight);
+  flex: 1;
+}
+
+.detail-action-button:hover:not(:disabled) {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-glass-hover);
+  transform: translateY(var(--motion-lift-sm));
+  box-shadow: var(--shadow-sm);
+}
+
+.detail-action-button:active:not(:disabled) {
+  transform: translateY(0);
+  transition: transform var(--transition-fast);
+}
+
+.detail-action-button:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.detail-action-button.danger {
+  background: var(--btn-detail-danger-bg);
+  border-color: var(--btn-detail-danger-border);
+  color: var(--btn-detail-danger-color);
+}
+
+.detail-action-button.danger:hover:not(:disabled) {
+  background: var(--btn-detail-danger-hover-bg);
+  border-color: var(--btn-detail-danger-hover-border);
+}
+
+@media (max-width: 768px) {
+  .detail-content {
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+
+  .detail-section {
+    padding-bottom: var(--spacing-md);
+  }
+
+  .detail-name {
+    font-size: var(--font-size-lg);
+  }
+
+  .detail-action-button {
+    width: 100%;
+    min-height: var(--touch-target-min);
+  }
+}
+
 /* ─── Loading state ─── */
 .crud-loader-container,
 .loader-container {
@@ -458,5 +563,39 @@
   margin: 0;
   line-height: 1.5;
   font-family: var(--font-family);
+}
+
+@media (max-width: 768px) {
+  .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) 0;
+    min-height: auto;
+  }
+
+  .detail-label {
+    min-width: 0;
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .detail-value {
+    text-align: left;
+    width: 100%;
+  }
+
+  .detail-actions {
+    flex-direction: column;
+    flex-wrap: wrap;
+    padding: var(--spacing-md);
+    padding-bottom: calc(var(--spacing-md) + var(--safe-bottom));
+    margin-top: var(--spacing-md);
+  }
+
+  .detail-button {
+    width: 100%;
+    flex: none;
+    min-height: 44px;
+  }
 }
 

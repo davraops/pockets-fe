@@ -148,9 +148,6 @@
   box-sizing: border-box;
 }
 
-
-
-
 .cryptovendors-form-actions {
   display: flex;
   gap: var(--spacing-sm);
@@ -211,7 +208,6 @@
   transition: all var(--transition-base);
 }
 
-
 .cryptovendors-item:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(var(--motion-lift-md));
@@ -256,7 +252,6 @@
   border: 1px solid var(--highlight-success-border);
 }
 
-
 [data-theme='dark'] .cryptovendors-item-price {
   color: #30D158;
   background: rgba(48, 209, 88, 0.15);
@@ -277,7 +272,6 @@
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-sm);
 }
-
 
 .cryptovendors-item-separator {
   font-size: var(--font-size-sm);
@@ -305,7 +299,6 @@
   height: 16px;
   color: var(--accent-primary);
 }
-
 
 .cryptovendors-form-subsection-title {
   display: flex;
@@ -382,9 +375,6 @@
   background: rgba(0, 122, 255, 0.1);
   border-color: var(--accent-primary);
 }
-
-
-
 
 [data-theme='dark'] .cryptovendors-crypto-checkbox:has(input[type="checkbox"]:checked) {
   background: rgba(10, 132, 255, 0.15);
@@ -478,7 +468,6 @@
   box-shadow: var(--shadow-sm);
 }
 
-
 .cryptovendors-empty-text {
   font-size: var(--font-size-lg);
   color: var(--text-secondary);
@@ -538,7 +527,6 @@
   }
 }
 
-
 .cryptovendors-modal-header {
   display: flex;
   align-items: center;
@@ -574,7 +562,6 @@
   background: var(--btn-icon-hover-bg);
   color: var(--text-primary);
 }
-
 
 .cryptovendors-modal-content {
   padding: var(--spacing-lg);
@@ -621,7 +608,6 @@
   padding: var(--spacing-md);
   transition: all var(--transition-base);
 }
-
 
 .cryptovendors-record-item:hover {
   background: var(--bg-glass-hover);
@@ -702,7 +688,6 @@
   transition: all var(--transition-base);
 }
 
-
 .cryptovendors-list-item:hover {
   background: var(--bg-glass-hover);
   border-color: var(--border-glass-hover);
@@ -770,6 +755,10 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .cryptovendors-content {
+    padding-bottom: max(var(--spacing-md), env(safe-area-inset-bottom, 0px));
+  }
+
   .cryptovendors-page-title {
     font-size: var(--font-size-xl);
   }
@@ -799,15 +788,37 @@
     align-items: stretch;
   }
 
-  .cryptovendors-modal {
-    max-width: 100%;
-    max-height: 100vh;
-    border-radius: 0;
-    margin: 0;
+  .cryptovendors-save-button {
+    width: 100%;
+    justify-content: center;
+    white-space: normal;
+    min-height: var(--touch-target-min);
   }
 
   .cryptovendors-modal-overlay {
+    align-items: flex-end;
+    justify-content: stretch;
     padding: 0;
+    padding-top: var(--safe-top);
+  }
+
+  .cryptovendors-modal {
+    max-width: 100%;
+    max-height: min(92dvh, calc(100dvh - var(--safe-top)));
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    margin: 0;
+    animation: ui-sheet-up 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  .cryptovendors-modal-close {
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+  }
+
+  .cryptovendors-modal-content {
+    padding-bottom: calc(var(--spacing-lg) + var(--safe-bottom));
   }
 
   .cryptovendors-list-item {
@@ -818,6 +829,7 @@
   .cryptovendors-list-delete {
     align-self: flex-end;
     margin-top: var(--spacing-sm);
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
   }
 }
-

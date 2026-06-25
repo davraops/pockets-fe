@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import { useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
@@ -390,28 +391,26 @@ function Notificaciones() {
 
         <h1 className="app-page-title">Notificaciones</h1>
 
-        <div className="crud-summary-strip" role="region" aria-label="Resumen de notificaciones">
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Total</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--info">
-              {stripStats === null ? '…' : stripStats.total}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">No leídas</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--expense">
-              {stripStats === null ? '…' : stripStats.unread}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Leídas</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--available">
-              {stripStats === null ? '…' : stripStats.read}
-            </span>
-          </div>
-        </div>
+        <CrudSummaryStrip
+          ariaLabel="Resumen de notificaciones"
+          items={[
+            {
+              label: 'Total',
+              value: stripStats === null ? '…' : stripStats.total,
+              tone: 'info',
+            },
+            {
+              label: 'No leídas',
+              value: stripStats === null ? '…' : stripStats.unread,
+              tone: 'expense',
+            },
+            {
+              label: 'Leídas',
+              value: stripStats === null ? '…' : stripStats.read,
+              tone: 'available',
+            },
+          ]}
+        />
 
         {/* Filtros */}
         <div className="notificaciones-filters">
@@ -546,7 +545,7 @@ function Notificaciones() {
                     <div className="notificaciones-item-meta">
                       <span className="crud-row-meta">{formatDate(notification.created_at)}</span>
                       {notification.type && (
-                        <span className="crud-row-meta">{notification.type}</span>
+                        <span className="crud-row-meta crud-row-meta--badge">{notification.type}</span>
                       )}
                     </div>
                   </div>

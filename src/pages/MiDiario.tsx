@@ -1,21 +1,35 @@
-import { useState, useEffect, useRef } from 'react'
-import { backToHubLabel } from '../constants/hubLabels'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import AddIcon from '@mui/icons-material/Add'
+import SearchIcon from '@mui/icons-material/Search'
 import BookIcon from '@mui/icons-material/Book'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { api } from '../services/api'
 import { useNotification } from '../contexts/NotificationContext'
 import { useConfirm } from '../contexts/ConfirmContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
 import ModalOverlay from '../components/ModalOverlay'
-import ListSkeleton from '../components/ListSkeleton'
+import MiDiarioCardSkeleton from '../components/miDiario/MiDiarioCardSkeleton'
+import MiDiarioEntryCard from '../components/miDiario/MiDiarioEntryCard'
+import MiDiarioReader from '../components/miDiario/MiDiarioReader'
+import MiDiarioStreakStrip from '../components/miDiario/MiDiarioStreakStrip'
+import MiDiarioTodayPanel from '../components/miDiario/MiDiarioTodayPanel'
+import LifestyleSubHeader from '../components/tiempo/LifestyleSubHeader'
 import './MiDiario.css'
 import { devError, devLog } from '../utils/debugTools'
+import {
+  calculateDiaryStreaks,
+  filterDiaryEntriesByQuery,
+  formatDiaryCardWeekday,
+  formatDiaryDateLong,
+  formatDiaryListTitle,
+  formatDiaryWordCount,
+  getDiaryStreakMessage,
+  groupDiaryEntriesByMonth,
+  hasDiaryEntryToday,
+  splitTodayDiaryEntry,
+} from '../components/miDiario/miDiarioDisplayUtils'
 
 interface DiaryEntryAPI {
   id: string
@@ -26,7 +40,6 @@ interface DiaryEntryAPI {
 }
 
 function MiDiario() {
-  const navigate = useNavigate()
   const { showNotification } = useNotification()
   const { confirm } = useConfirm()
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
@@ -44,6 +57,7 @@ function MiDiario() {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [currentStreak, setCurrentStreak] = useState(0)
   const [longestStreak, setLongestStreak] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     loadEntries()
@@ -51,122 +65,10 @@ function MiDiario() {
 
   // Calcular racha cuando cambian las entradas
   useEffect(() => {
-    if (entries.length > 0) {
-      calculateStreaks()
-    } else {
-      setCurrentStreak(0)
-      setLongestStreak(0)
-    }
+    const streaks = calculateDiaryStreaks(entries.map(entry => entry.entry_date))
+    setCurrentStreak(streaks.current)
+    setLongestStreak(streaks.longest)
   }, [entries])
-
-  const calculateStreaks = () => {
-    // Obtener todas las fechas únicas de las entradas
-    const entryDates = new Set<string>()
-    entries.forEach(entry => {
-      const dateStr = entry.entry_date.split('T')[0] // Asegurar formato YYYY-MM-DD
-      entryDates.add(dateStr)
-    })
-
-    // Convertir a array y ordenar
-    const sortedDates = Array.from(entryDates)
-      .map(dateStr => new Date(dateStr + 'T00:00:00'))
-      .sort((a, b) => b.getTime() - a.getTime()) // Más recientes primero
-
-    if (sortedDates.length === 0) {
-      setCurrentStreak(0)
-      setLongestStreak(0)
-      return
-    }
-
-    // Calcular racha actual (desde hoy o ayer hacia atrás)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    
-    const yesterday = new Date(today)
-    yesterday.setDate(yesterday.getDate() - 1)
-
-    // Verificar si hay entrada hoy o ayer
-    const hasToday = sortedDates.some(date => {
-      const dateStr = date.toISOString().split('T')[0]
-      const todayStr = today.toISOString().split('T')[0]
-      return dateStr === todayStr
-    })
-
-    const hasYesterday = sortedDates.some(date => {
-      const dateStr = date.toISOString().split('T')[0]
-      const yesterdayStr = yesterday.toISOString().split('T')[0]
-      return dateStr === yesterdayStr
-    })
-
-    let startDate: Date
-    if (hasToday) {
-      startDate = new Date(today)
-    } else if (hasYesterday) {
-      startDate = new Date(yesterday)
-    } else {
-      // No hay entrada hoy ni ayer, racha = 0
-      setCurrentStreak(0)
-      // Calcular racha más larga
-      calculateLongestStreak(sortedDates)
-      return
-    }
-
-    // Contar días consecutivos desde startDate hacia atrás
-    let streak = 0
-    const checkDate = new Date(startDate)
-    let hasEntry = true
-
-    while (hasEntry) {
-      const checkDateStr = checkDate.toISOString().split('T')[0]
-      hasEntry = sortedDates.some(date => {
-        const dateStr = date.toISOString().split('T')[0]
-        return dateStr === checkDateStr
-      })
-
-      if (!hasEntry) {
-        break
-      }
-
-      streak++
-      checkDate.setDate(checkDate.getDate() - 1)
-    }
-
-    setCurrentStreak(streak)
-    calculateLongestStreak(sortedDates)
-  }
-
-  const calculateLongestStreak = (sortedDates: Date[]) => {
-    if (sortedDates.length === 0) {
-      setLongestStreak(0)
-      return
-    }
-
-    // Ordenar de más antiguo a más reciente para calcular racha más larga
-    const datesAsc = [...sortedDates].sort((a, b) => a.getTime() - b.getTime())
-    
-    let longestStreakCount = 1
-    let currentStreakCount = 1
-
-    for (let i = 1; i < datesAsc.length; i++) {
-      const prevDate = new Date(datesAsc[i - 1])
-      const currDate = new Date(datesAsc[i])
-      
-      // Calcular diferencia en días
-      const diffTime = currDate.getTime() - prevDate.getTime()
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-
-      if (diffDays === 1) {
-        // Días consecutivos
-        currentStreakCount++
-        longestStreakCount = Math.max(longestStreakCount, currentStreakCount)
-      } else {
-        // Rompió la racha
-        currentStreakCount = 1
-      }
-    }
-
-    setLongestStreak(longestStreakCount)
-  }
 
   const loadEntries = async () => {
     try {
@@ -380,87 +282,89 @@ function MiDiario() {
     }
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
-  }
-
-  const formatDateShort = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
-  }
+  const filteredEntries = useMemo(
+    () => filterDiaryEntriesByQuery(entries, searchQuery),
+    [entries, searchQuery]
+  )
+  const hasSearch = searchQuery.trim().length > 0
+  const hasTodayEntry = useMemo(() => hasDiaryEntryToday(entries), [entries])
+  const { todayEntry, rest: restEntries } = useMemo(
+    () => splitTodayDiaryEntry(filteredEntries),
+    [filteredEntries]
+  )
+  const feedEntries = hasSearch ? filteredEntries : restEntries
+  const monthGroups = useMemo(
+    () => groupDiaryEntriesByMonth(feedEntries),
+    [feedEntries]
+  )
 
   const highlights = {
     total: entries.length,
     rachaActual: currentStreak,
     rachaLarga: longestStreak,
   }
+  const streakMessage = getDiaryStreakMessage(
+    highlights.rachaActual,
+    hasTodayEntry,
+    highlights.total
+  )
+
+  const headerMeta = !isLoading && !error
+    ? hasSearch
+      ? `${filteredEntries.length} de ${entries.length} entrada${entries.length !== 1 ? 's' : ''}`
+      : entries.length === 0
+        ? 'Empieza tu primera entrada'
+        : currentStreak > 0
+          ? `${entries.length} entradas · racha ${currentStreak} días`
+          : `${entries.length} entrada${entries.length !== 1 ? 's' : ''}`
+    : undefined
 
   return (
     <>
       <div className="app-page-container">
-        <div className="app-page-content app-page-content-wide crud-page-content midiario-content">
-          {/* Toolbar */}
-          <div className="app-toolbar">
-            <button
-              className="app-toolbar-button"
-              onClick={() => navigate('/tiempo')}
-              aria-label={backToHubLabel('tiempo')}
-              type="button"
-            >
-              <ArrowBackIcon className="app-toolbar-icon" />
-            </button>
+        <div className="app-page-content app-page-content-wide crud-page-content midiario-content lifestyle-sub-content">
+          <LifestyleSubHeader title="Mi Diario" context="Reflexión" meta={headerMeta} />
 
-          </div>
+          {!isLoading && !error && entries.length > 0 ? (
+            <MiDiarioStreakStrip
+              totalEntries={highlights.total}
+              currentStreak={highlights.rachaActual}
+              longestStreak={highlights.rachaLarga}
+              message={streakMessage}
+            />
+          ) : null}
 
-          <h1 className="app-page-title">Mi Diario</h1>
-
-          <div className="crud-summary-strip" role="region" aria-label="Resumen del diario">
-            <div className="crud-summary-strip-item">
-              <span className="crud-summary-strip-label">Entradas</span>
-              <span className="crud-summary-strip-value crud-summary-strip-value--info">
-                {highlights.total}
-              </span>
-            </div>
-            <div className="crud-summary-strip-separator" aria-hidden="true" />
-            <div className="crud-summary-strip-item">
-              <span className="crud-summary-strip-label">Racha actual</span>
-              <span className="crud-summary-strip-value crud-summary-strip-value--available">
-                {highlights.rachaActual}
-              </span>
-            </div>
-            <div className="crud-summary-strip-separator" aria-hidden="true" />
-            <div className="crud-summary-strip-item">
-              <span className="crud-summary-strip-label">Récord</span>
-              <span className="crud-summary-strip-value crud-summary-strip-value--info">
-                {highlights.rachaLarga}
-              </span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
-            onClick={handleOpenCreateModal}
-            aria-label="Nueva entrada de diario"
+          <div
+            className={`lifestyle-toolbar${!isLoading && !error && entries.length === 0 ? ' lifestyle-toolbar--solo-cta' : ''}`}
           >
-            <AddIcon aria-hidden={true} />
-            Nueva entrada
-          </button>
+            {!isLoading && !error && (entries.length > 0 || hasSearch) ? (
+              <label className="lifestyle-search">
+                <SearchIcon className="lifestyle-search-icon" aria-hidden="true" />
+                <input
+                  type="search"
+                  className="lifestyle-search-input"
+                  value={searchQuery}
+                  onChange={event => setSearchQuery(event.target.value)}
+                  placeholder="Buscar en el contenido o por fecha…"
+                  aria-label="Buscar entradas de diario"
+                />
+              </label>
+            ) : null}
+            <button
+              type="button"
+              className="btn-base btn-accent btn-submit crud-primary-cta lifestyle-toolbar-cta"
+              onClick={handleOpenCreateModal}
+              aria-label="Nueva entrada de diario"
+            >
+              <AddIcon aria-hidden={true} />
+              Nueva entrada
+            </button>
+          </div>
 
           {/* Lista de Entradas */}
           {isLoading && entries.length === 0 ? (
-            <div className="glass-group">
-              <ListSkeleton variant="inset-row" count={4} aria-label="Cargando entradas de diario" />
+            <div role="status" aria-label="Cargando entradas de diario">
+              <MiDiarioCardSkeleton count={4} />
             </div>
           ) : error && entries.length === 0 ? (
             <div className="loader-container">
@@ -478,33 +382,75 @@ function MiDiario() {
                 </button>
               </div>
             </div>
-          ) : entries.length === 0 ? (
+          ) : hasSearch && filteredEntries.length === 0 ? (
             <div className="empty-state">
               <BookIcon className="empty-state-icon" />
-              <p className="empty-text">No hay entradas de diario aún</p>
-              <p className="empty-subtext">Usa el botón de arriba para escribir la primera</p>
+              <p className="empty-text">Sin coincidencias</p>
+              <p className="empty-subtext">Prueba con otro término o limpia la búsqueda</p>
+            </div>
+          ) : entries.length === 0 ? (
+            <div className="midiario-welcome">
+              <BookIcon className="midiario-welcome__icon" aria-hidden="true" />
+              <h2 className="midiario-welcome__title">Tu espacio de reflexión</h2>
+              <p className="midiario-welcome__text">
+                Escribe unas líneas al final del día. Sin presión, sin formato perfecto: solo tú y
+                tus pensamientos.
+              </p>
+              <button
+                type="button"
+                className="btn-base btn-accent midiario-welcome__cta"
+                onClick={handleOpenCreateModal}
+              >
+                <AddIcon aria-hidden="true" />
+                Escribir la primera entrada
+              </button>
             </div>
           ) : (
-            <div className="midiario-list">
-              <div className="glass-group">
-                {entries.map(entry => (
-                  <button
-                    key={entry.id}
-                    className="crud-inset-row crud-row-accent-purple"
-                    onClick={() => handleOpenDetailModal(entry)}
-                    type="button"
-                  >
-                    <div className="crud-row-content">
-                      <div className="crud-row-header">
-                        <span className="crud-row-title">{formatDate(entry.entry_date)}</span>
-                        <ChevronRightIcon className="crud-row-chevron" />
-                      </div>
-                      <p className="crud-row-preview">{entry.content}</p>
-                      <span className="crud-row-meta">{formatDateShort(entry.entry_date)}</span>
+            <div className="midiario-feed">
+              {!hasSearch ? (
+                <MiDiarioTodayPanel
+                  todayEntry={todayEntry}
+                  streakMessage={streakMessage}
+                  onWriteToday={handleOpenCreateModal}
+                  onOpenEntry={handleOpenDetailModal}
+                />
+              ) : (
+                <p className="midiario-search-meta" role="status">
+                  {filteredEntries.length} resultado{filteredEntries.length === 1 ? '' : 's'}
+                </p>
+              )}
+
+              {hasSearch ? (
+                <div className="midiario-card-list">
+                  {filteredEntries.map(entry => (
+                    <MiDiarioEntryCard
+                      key={entry.id}
+                      entry={entry}
+                      onClick={() => handleOpenDetailModal(entry)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                monthGroups.map(group => (
+                  <section key={group.monthKey} className="midiario-month-group">
+                    <div className="midiario-month-header">
+                      <h2 className="midiario-month-label">{group.label}</h2>
+                      <span className="midiario-month-count">
+                        {group.entries.length} entrada{group.entries.length === 1 ? '' : 's'}
+                      </span>
                     </div>
-                  </button>
-                ))}
-              </div>
+                    <div className="midiario-card-list">
+                      {group.entries.map(entry => (
+                        <MiDiarioEntryCard
+                          key={entry.id}
+                          entry={entry}
+                          onClick={() => handleOpenDetailModal(entry)}
+                        />
+                      ))}
+                    </div>
+                  </section>
+                ))
+              )}
             </div>
           )}
         </div>
@@ -513,16 +459,37 @@ function MiDiario() {
       {/* Modal de Detalle/Edición/Creación */}
       {isDetailModalOpen && (
         <ModalOverlay onClose={handleCloseDetailModal} className="modal-overlay">
-          <div className="modal-panel" onClick={e => e.stopPropagation()}>
-            <div className="modal-panel-header">
-              <h2 className="modal-panel-title" id="modal-panel-title-selectedentry-iseditmode-editar-entrada-formatdate-selectedentry-entry-date-nueva-entrada">
-                {selectedEntry ? (isEditMode ? 'Editar Entrada' : formatDate(selectedEntry.entry_date)) : 'Nueva Entrada'}
-              </h2>
-              <div className="midiario-modal-actions">
-                {selectedEntry && !isEditMode && (
+          <div
+            className={`modal-panel midiario-modal lifestyle-modal${isEditMode || !selectedEntry ? ' lifestyle-modal--form' : ' lifestyle-modal--reader'}`}
+            onClick={e => e.stopPropagation()}
+            role="dialog"
+            aria-labelledby="modal-title-midiario"
+          >
+            <div className="lifestyle-modal__header">
+              <div className="lifestyle-modal__header-copy">
+                <p className="lifestyle-modal__kicker">
+                  Mi Diario · {selectedEntry ? (isEditMode ? 'Editar' : 'Detalle') : 'Nuevo'}
+                </p>
+                <h2 className="modal-panel-title" id="modal-title-midiario">
+                  {selectedEntry
+                    ? isEditMode
+                      ? 'Editar entrada'
+                      : formatDiaryListTitle(selectedEntry.content, selectedEntry.entry_date)
+                    : 'Nueva entrada'}
+                </h2>
+                {selectedEntry && !isEditMode ? (
+                  <p className="lifestyle-modal__subtitle">
+                    {formatDiaryCardWeekday(selectedEntry.entry_date)} ·{' '}
+                    {formatDiaryDateLong(selectedEntry.entry_date)} ·{' '}
+                    {formatDiaryWordCount(selectedEntry.content)}
+                  </p>
+                ) : null}
+              </div>
+              <div className="lifestyle-modal__header-actions">
+                {selectedEntry && !isEditMode ? (
                   <>
                     <button
-                      className="midiario-modal-action-button"
+                      className="lifestyle-modal__action-button"
                       onClick={() => {
                         if (selectedEntry) {
                           setFormData({
@@ -538,7 +505,7 @@ function MiDiario() {
                       <EditIcon />
                     </button>
                     <button
-                      className="midiario-modal-action-button midiario-modal-delete-button"
+                      className="lifestyle-modal__action-button lifestyle-modal__action-button--danger"
                       onClick={handleDelete}
                       aria-label="Eliminar"
                       type="button"
@@ -547,7 +514,7 @@ function MiDiario() {
                       <DeleteIcon />
                     </button>
                   </>
-                )}
+                ) : null}
                 <button
                   className="modal-panel-close"
                   onClick={handleCloseDetailModal}
@@ -607,10 +574,10 @@ function MiDiario() {
                   )}
                 </div>
 
-                <div className="midiario-form-actions">
+                <div className="modal-actions-base lifestyle-modal__footer">
                   <button
                     type="button"
-                    className="midiario-form-button midiario-form-button-secondary"
+                    className="btn-base btn-secondary lifestyle-modal__btn"
                     onClick={handleCloseDetailModal}
                     disabled={isLoading}
                   >
@@ -618,23 +585,52 @@ function MiDiario() {
                   </button>
                   <button
                     type="submit"
-                    className="midiario-form-button midiario-form-button-primary"
+                    className="btn-base btn-accent lifestyle-modal__btn"
                     disabled={isLoading}
                   >
                     {isLoading
-                      ? (selectedEntry ? 'Guardando...' : 'Creando...')
-                      : (selectedEntry ? 'Guardar Cambios' : 'Crear Entrada')
-                    }
+                      ? selectedEntry
+                        ? 'Guardando...'
+                        : 'Creando...'
+                      : selectedEntry
+                        ? 'Guardar cambios'
+                        : 'Crear entrada'}
                   </button>
                 </div>
               </form>
-            ) : (
-              <div className="midiario-detail-content">
-                <div className="midiario-detail-section">
-                  <p className="midiario-detail-content-text">{selectedEntry.content}</p>
+            ) : selectedEntry ? (
+              <div className="modal-panel-content lifestyle-modal__body">
+                <MiDiarioReader
+                  entryDate={selectedEntry.entry_date}
+                  content={selectedEntry.content}
+                />
+                <div className="modal-actions-base lifestyle-modal__footer lifestyle-modal__footer--detail">
+                  <button
+                    type="button"
+                    className="btn-base btn-secondary lifestyle-modal__btn lifestyle-modal__btn--danger"
+                    onClick={handleDelete}
+                    disabled={isLoading}
+                  >
+                    <DeleteIcon aria-hidden="true" />
+                    Eliminar
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-base btn-accent lifestyle-modal__btn lifestyle-modal__btn--primary"
+                    onClick={() => {
+                      setFormData({
+                        entry_date: formatDateForInput(selectedEntry.entry_date),
+                        content: selectedEntry.content,
+                      })
+                      setIsEditMode(true)
+                    }}
+                  >
+                    <EditIcon aria-hidden="true" />
+                    Editar
+                  </button>
                 </div>
               </div>
-            )}
+            ) : null}
           </div>
         </ModalOverlay>
       )}

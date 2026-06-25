@@ -1,161 +1,91 @@
-import { useState, useCallback, useEffect } from 'react'
-import { sectionColor } from '../constants/sectionColors'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import RefreshIcon from '@mui/icons-material/Refresh'
-import LockIcon from '@mui/icons-material/Lock'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import LockIcon from '@mui/icons-material/Lock'
 import { useNotification } from '../contexts/NotificationContext'
 import UtilidadesSubHeader from '../components/utilidades/UtilidadesSubHeader'
+import GeneradorGuardarSecretoModal from '../components/generador/GeneradorGuardarSecretoModal'
+import { api } from '../services/api'
+import { getTranslatedErrorMessage } from '../utils/errorTranslations'
+import {
+  calculatePasswordStrength,
+  formatPasswordHistoryDate,
+  generatePassword,
+  hasSelectedCharset,
+  maskPasswordPreview,
+  type PasswordGeneratorOptions,
+} from '../utils/generadorContrasenasUtils'
+import { devError } from '../utils/debugTools'
 import './AppPage.css'
 import './GeneradorContrasenas.css'
-import { devError } from '../utils/debugTools'
 
 interface PasswordHistory {
   password: string
   timestamp: number
 }
 
+const DEFAULT_OPTIONS: PasswordGeneratorOptions = {
+  length: 16,
+  includeUppercase: true,
+  includeLowercase: true,
+  includeNumbers: true,
+  includeSymbols: true,
+  excludeAmbiguous: true,
+}
+
+type CharsetToggleKey =
+  | 'includeUppercase'
+  | 'includeLowercase'
+  | 'includeNumbers'
+  | 'includeSymbols'
+
+const CHARSET_TOGGLES: { key: CharsetToggleKey; label: string; hint: string }[] = [
+  { key: 'includeUppercase', label: 'Mayúsculas', hint: 'A-Z' },
+  { key: 'includeLowercase', label: 'Minúsculas', hint: 'a-z' },
+  { key: 'includeNumbers', label: 'Números', hint: '0-9' },
+  { key: 'includeSymbols', label: 'Símbolos', hint: '!@#…' },
+]
+
 function GeneradorContrasenas() {
   const { showNotification } = useNotification()
-  const [password, setPassword] = useState<string>('')
-  const [length, setLength] = useState<number>(16)
-  const [includeUppercase, setIncludeUppercase] = useState<boolean>(true)
-  const [includeLowercase, setIncludeLowercase] = useState<boolean>(true)
-  const [includeNumbers, setIncludeNumbers] = useState<boolean>(true)
-  const [includeSymbols, setIncludeSymbols] = useState<boolean>(true)
-  const [excludeAmbiguous, setExcludeAmbiguous] = useState<boolean>(true)
-  const [copied, setCopied] = useState<boolean>(false)
+  const [password, setPassword] = useState('')
+  const [options, setOptions] = useState<PasswordGeneratorOptions>(DEFAULT_OPTIONS)
+  const [copied, setCopied] = useState(false)
   const [history, setHistory] = useState<PasswordHistory[]>([])
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false)
+  const [isSavingSecret, setIsSavingSecret] = useState(false)
 
-  // Caracteres disponibles
-  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  const lowercase = 'abcdefghijklmnopqrstuvwxyz'
-  const numbers = '0123456789'
-  const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?'
-  const ambiguous = '0O1lI'
+  const strength = useMemo(() => calculatePasswordStrength(password), [password])
+  const canGenerate = hasSelectedCharset(options)
 
-  // Generar contraseña
-  const generatePassword = useCallback(() => {
-    let charset = ''
-
-    if (includeUppercase) charset += uppercase
-    if (includeLowercase) charset += lowercase
-    if (includeNumbers) charset += numbers
-    if (includeSymbols) charset += symbols
-
-    if (excludeAmbiguous && charset.length > 0) {
-      charset = charset
-        .split('')
-        .filter(char => !ambiguous.includes(char))
-        .join('')
-    }
-
-    if (charset.length === 0) {
-      showNotification('Debes seleccionar al menos un tipo de carácter', 'warning')
+  const runGenerate = useCallback(() => {
+    const generated = generatePassword(options)
+    if (!generated) {
+      showNotification('Selecciona al menos un tipo de carácter', 'warning')
       return
     }
 
-    let generatedPassword = ''
-    const charsetArray = charset.split('')
-
-    // Asegurar que al menos un carácter de cada tipo seleccionado esté presente
-    if (includeUppercase) {
-      const upperChars = uppercase
-        .split('')
-        .filter(c => !excludeAmbiguous || !ambiguous.includes(c))
-      if (upperChars.length > 0) {
-        generatedPassword += upperChars[Math.floor(Math.random() * upperChars.length)]
-      }
-    }
-    if (includeLowercase) {
-      const lowerChars = lowercase
-        .split('')
-        .filter(c => !excludeAmbiguous || !ambiguous.includes(c))
-      if (lowerChars.length > 0) {
-        generatedPassword += lowerChars[Math.floor(Math.random() * lowerChars.length)]
-      }
-    }
-    if (includeNumbers) {
-      const numChars = numbers.split('').filter(c => !excludeAmbiguous || !ambiguous.includes(c))
-      if (numChars.length > 0) {
-        generatedPassword += numChars[Math.floor(Math.random() * numChars.length)]
-      }
-    }
-    if (includeSymbols) {
-      generatedPassword += symbols[Math.floor(Math.random() * symbols.length)]
-    }
-
-    // Completar el resto de la contraseña
-    for (let i = generatedPassword.length; i < length; i++) {
-      generatedPassword += charsetArray[Math.floor(Math.random() * charsetArray.length)]
-    }
-
-    // Mezclar los caracteres
-    generatedPassword = generatedPassword
-      .split('')
-      .sort(() => Math.random() - 0.5)
-      .join('')
-
-    setPassword(generatedPassword)
+    setPassword(generated)
     setCopied(false)
+    setHistory(prev => [{ password: generated, timestamp: Date.now() }, ...prev.slice(0, 9)])
+  }, [options, showNotification])
 
-    // Agregar al historial
-    const newHistory: PasswordHistory = {
-      password: generatedPassword,
-      timestamp: Date.now(),
-    }
-    setHistory(prev => [newHistory, ...prev.slice(0, 9)]) // Mantener solo las últimas 10
-  }, [
-    length,
-    includeUppercase,
-    includeLowercase,
-    includeNumbers,
-    includeSymbols,
-    excludeAmbiguous,
-    showNotification,
-  ])
+  useEffect(() => {
+    runGenerate()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  // Calcular fortaleza de la contraseña
-  const calculateStrength = (pwd: string): { level: number; label: string; color: string } => {
-    if (!pwd) return { level: 0, label: '', color: 'transparent' }
-
-    let strength = 0
-
-    // Longitud
-    if (pwd.length >= 8) strength += 1
-    if (pwd.length >= 12) strength += 1
-    if (pwd.length >= 16) strength += 1
-    if (pwd.length >= 20) strength += 1
-
-    // Variedad de caracteres
-    if (/[a-z]/.test(pwd)) strength += 1
-    if (/[A-Z]/.test(pwd)) strength += 1
-    if (/[0-9]/.test(pwd)) strength += 1
-    if (/[^a-zA-Z0-9]/.test(pwd)) strength += 1
-
-    // Complejidad adicional
-    const uniqueChars = new Set(pwd).size
-    if (uniqueChars / pwd.length > 0.5) strength += 1
-
-    if (strength <= 2) return { level: 1, label: 'Débil', color: sectionColor.danger }
-    if (strength <= 4) return { level: 2, label: 'Media', color: sectionColor.lifestyle }
-    if (strength <= 6) return { level: 3, label: 'Fuerte', color: sectionColor.yellow }
-    return { level: 4, label: 'Muy Fuerte', color: sectionColor.success }
-  }
-
-  const strength = calculateStrength(password)
-
-  // Copiar al portapapeles
-  const copyToClipboard = async () => {
-    if (!password) {
+  const copyToClipboard = async (value: string, message = 'Contraseña copiada al portapapeles') => {
+    if (!value) {
       showNotification('No hay contraseña para copiar', 'warning')
       return
     }
 
     try {
-      await navigator.clipboard.writeText(password)
+      await navigator.clipboard.writeText(value)
       setCopied(true)
-      showNotification('Contraseña copiada al portapapeles', 'success')
+      showNotification(message, 'success')
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
       devError('Error al copiar:', err)
@@ -163,27 +93,53 @@ function GeneradorContrasenas() {
     }
   }
 
-  // Formatear fecha del historial
-  const formatHistoryDate = (timestamp: number) => {
-    const date = new Date(timestamp)
-    const now = new Date()
-    const diff = now.getTime() - date.getTime()
-    const minutes = Math.floor(diff / 60000)
-
-    if (minutes < 1) return 'Hace un momento'
-    if (minutes < 60) return `Hace ${minutes} minuto${minutes > 1 ? 's' : ''}`
-    const hours = Math.floor(minutes / 60)
-    if (hours < 24) return `Hace ${hours} hora${hours > 1 ? 's' : ''}`
-    const days = Math.floor(hours / 24)
-    if (days < 7) return `Hace ${days} día${days > 1 ? 's' : ''}`
-    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
+  const updateOption = <K extends keyof PasswordGeneratorOptions>(
+    key: K,
+    value: PasswordGeneratorOptions[K]
+  ) => {
+    setOptions(prev => ({ ...prev, [key]: value }))
   }
 
-  // Generar contraseña automáticamente al cargar
-  useEffect(() => {
-    generatePassword()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  const toggleCharset = (key: CharsetToggleKey) => {
+    updateOption(key, !options[key])
+  }
+
+  const handleOpenSaveModal = () => {
+    if (!password) {
+      showNotification('Genera una contraseña antes de guardarla', 'warning')
+      return
+    }
+    setIsSaveModalOpen(true)
+  }
+
+  const handleCloseSaveModal = () => {
+    if (isSavingSecret) {
+      return
+    }
+    setIsSaveModalOpen(false)
+  }
+
+  const handleSaveToSecrets = async (title: string) => {
+    if (!password) {
+      return
+    }
+
+    try {
+      setIsSavingSecret(true)
+      await api.createSecret({ title, value: password })
+      setIsSaveModalOpen(false)
+      showNotification('Contraseña guardada en Secretos', 'success')
+    } catch (err: unknown) {
+      devError('Error al guardar secreto:', err)
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al guardar en Secretos. Por favor, intenta de nuevo.'
+      )
+      showNotification(errorMessage, 'error')
+    } finally {
+      setIsSavingSecret(false)
+    }
+  }
 
   return (
     <div className="app-page-container">
@@ -191,194 +147,191 @@ function GeneradorContrasenas() {
         <UtilidadesSubHeader
           title="Generador"
           context="Contraseñas"
-          meta="Historial de sesión local"
+          meta="Sesión local · no se envía al servidor"
         />
 
-        <div className="utilidades-tool-workspace utilidades-tool-workspace--split">
-          <div className="utilidades-tool-main">
-            <div className="password-display">
-              <div className="password-output">
-                <input
-                  type="text"
-                  value={password}
-                  readOnly
-                  className="password-input"
-                  placeholder="Tu contraseña aparecerá aquí"
+        <div className="generador-layout utilidades-tool-workspace utilidades-tool-workspace--centered">
+          <article className="generador-shell">
+            <header className="generador-shell-head">
+              <p className="generador-kicker">Utilidades · Herramienta</p>
+              <h2 className="generador-shell-title">Generador de contraseñas</h2>
+            </header>
+
+            <div className="generador-hero">
+              <div className="generador-hero-display">
+                <output
+                  id="generador-password"
+                  className="generador-hero-value"
+                  aria-live="polite"
                   aria-label="Contraseña generada"
-                />
-                <div className="password-actions">
-                  <button
-                    className="password-action-button"
-                    onClick={copyToClipboard}
-                    aria-label="Copiar contraseña"
-                    type="button"
-                    disabled={!password}
-                  >
-                    {copied ? (
-                      <CheckCircleIcon className="password-action-icon" />
-                    ) : (
-                      <ContentCopyIcon className="password-action-icon" />
-                    )}
-                  </button>
-                  <button
-                    className="password-action-button"
-                    onClick={generatePassword}
-                    aria-label="Generar nueva contraseña"
-                    type="button"
-                  >
-                    <RefreshIcon className="password-action-icon" />
-                  </button>
-                </div>
+                >
+                  {password || 'Pulsa Generar'}
+                </output>
+                <button
+                  className="generador-hero-copy"
+                  onClick={() => void copyToClipboard(password)}
+                  aria-label="Copiar contraseña"
+                  type="button"
+                  disabled={!password}
+                >
+                  {copied ? (
+                    <CheckCircleIcon className="generador-hero-copy-icon" aria-hidden />
+                  ) : (
+                    <ContentCopyIcon className="generador-hero-copy-icon" aria-hidden />
+                  )}
+                </button>
               </div>
 
-              {password && (
-                <div className="password-strength">
-                  <div className="password-strength-label">
-                    <LockIcon className="password-strength-icon" />
-                    <span>Fortaleza: {strength.label}</span>
-                  </div>
-                  <div className="password-strength-bar">
+              {password ? (
+                <div className="generador-hero-meta">
+                  <span className={`generador-strength-badge generador-strength-badge--${strength.tone}`}>
+                    {strength.label}
+                  </span>
+                  <span className="generador-hero-length">{password.length} caracteres</span>
+                  <div className="generador-strength-track" aria-hidden>
                     <div
-                      className="password-strength-fill"
-                      style={{
-                        width: `${(strength.level / 4) * 100}%`,
-                        backgroundColor: strength.color,
-                      }}
+                      className={`generador-strength-fill generador-strength-fill--${strength.tone}`}
+                      style={{ width: `${(strength.level / 4) * 100}%` }}
                     />
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
 
-            <button
-              className="password-generate-button"
-              onClick={generatePassword}
-              type="button"
-              disabled={
-                !includeUppercase && !includeLowercase && !includeNumbers && !includeSymbols
-              }
-            >
-              <RefreshIcon className="password-generate-icon" />
-              <span>Generar contraseña</span>
-            </button>
-          </div>
-
-          <div className="utilidades-tool-aside">
-            <div className="password-settings">
-              <h3 className="password-settings-title">Configuración</h3>
-
-              <div className="password-setting-group">
-                <div className="password-setting-header">
-                  <label htmlFor="length" className="password-setting-label">
-                    Longitud: {length} caracteres
-                  </label>
-                  <span className="password-setting-value">{length}</span>
-                </div>
-                <input
-                  type="range"
-                  id="length"
-                  min="4"
-                  max="64"
-                  value={length}
-                  onChange={e => setLength(parseInt(e.target.value))}
-                  className="password-range-input"
-                />
-                <div className="password-range-labels">
-                  <span>4</span>
-                  <span>64</span>
-                </div>
+            <section className="generador-section" aria-labelledby="generador-length-heading">
+              <div className="generador-section-head">
+                <h3 id="generador-length-heading" className="generador-section-title">
+                  Longitud
+                </h3>
+                <span className="generador-length-value">{options.length}</span>
               </div>
-
-              <div className="password-options">
-                <label className="password-option">
-                  <input
-                    type="checkbox"
-                    checked={includeUppercase}
-                    onChange={e => setIncludeUppercase(e.target.checked)}
-                    className="password-checkbox"
-                  />
-                  <span className="password-option-label">Mayúsculas (A-Z)</span>
-                </label>
-
-                <label className="password-option">
-                  <input
-                    type="checkbox"
-                    checked={includeLowercase}
-                    onChange={e => setIncludeLowercase(e.target.checked)}
-                    className="password-checkbox"
-                  />
-                  <span className="password-option-label">Minúsculas (a-z)</span>
-                </label>
-
-                <label className="password-option">
-                  <input
-                    type="checkbox"
-                    checked={includeNumbers}
-                    onChange={e => setIncludeNumbers(e.target.checked)}
-                    className="password-checkbox"
-                  />
-                  <span className="password-option-label">Números (0-9)</span>
-                </label>
-
-                <label className="password-option">
-                  <input
-                    type="checkbox"
-                    checked={includeSymbols}
-                    onChange={e => setIncludeSymbols(e.target.checked)}
-                    className="password-checkbox"
-                  />
-                  <span className="password-option-label">Símbolos (!@#$%...)</span>
-                </label>
-
-                <label className="password-option">
-                  <input
-                    type="checkbox"
-                    checked={excludeAmbiguous}
-                    onChange={e => setExcludeAmbiguous(e.target.checked)}
-                    className="password-checkbox"
-                  />
-                  <span className="password-option-label">
-                    Excluir caracteres ambiguos (0, O, l, 1, I)
-                  </span>
-                </label>
+              <input
+                type="range"
+                id="generador-length"
+                min="8"
+                max="64"
+                value={options.length}
+                onChange={event => updateOption('length', parseInt(event.target.value, 10))}
+                className="generador-range"
+                aria-valuemin={8}
+                aria-valuemax={64}
+                aria-valuenow={options.length}
+              />
+              <div className="generador-range-labels">
+                <span>8</span>
+                <span>64</span>
               </div>
+            </section>
+
+            <section className="generador-section" aria-labelledby="generador-charset-heading">
+              <h3 id="generador-charset-heading" className="generador-section-title">
+                Caracteres
+              </h3>
+              <div className="generador-chips" role="group" aria-label="Tipos de carácter">
+                {CHARSET_TOGGLES.map(({ key, label, hint }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    className={`generador-chip${options[key] ? ' generador-chip--active' : ''}`}
+                    onClick={() => toggleCharset(key)}
+                    aria-pressed={options[key]}
+                  >
+                    <span className="generador-chip-label">{label}</span>
+                    <span className="generador-chip-hint">{hint}</span>
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className={`generador-chip generador-chip--wide${options.excludeAmbiguous ? ' generador-chip--active' : ''}`}
+                  onClick={() => updateOption('excludeAmbiguous', !options.excludeAmbiguous)}
+                  aria-pressed={options.excludeAmbiguous}
+                >
+                  <span className="generador-chip-label">Sin ambiguos</span>
+                  <span className="generador-chip-hint">0, O, l, 1, I</span>
+                </button>
+              </div>
+            </section>
+
+            <div className="generador-actions">
+              <button
+                className="btn-base btn-accent generador-generate-btn"
+                onClick={runGenerate}
+                type="button"
+                disabled={!canGenerate}
+              >
+                <RefreshIcon aria-hidden />
+                Generar contraseña
+              </button>
+              <button
+                className="btn-base btn-secondary generador-save-btn"
+                onClick={handleOpenSaveModal}
+                type="button"
+                disabled={!password}
+              >
+                <LockIcon aria-hidden />
+                <span>Guardar en Secretos</span>
+              </button>
             </div>
 
-            {history.length > 0 && (
-              <div className="password-history">
-                <h3 className="password-history-title">Historial</h3>
-                <div className="password-history-list">
+            <section className="generador-history-section" aria-labelledby="generador-history-heading">
+              <div className="generador-history-head">
+                <h3 id="generador-history-heading" className="generador-history-title">
+                  Historial
+                </h3>
+                <span className="generador-history-meta">
+                  {history.length > 0 ? `${history.length} · máx. 10` : 'Vacío'}
+                </span>
+              </div>
+
+              {history.length === 0 ? (
+                <p className="generador-history-empty">
+                  Las contraseñas generadas en esta sesión aparecerán aquí.
+                </p>
+              ) : (
+                <ul className="generador-history-list">
                   {history.map((item, index) => (
-                    <div key={index} className="password-history-item">
-                      <div className="password-history-content">
-                        <code className="password-history-password">{item.password}</code>
-                        <span className="password-history-date">
-                          {formatHistoryDate(item.timestamp)}
-                        </span>
-                      </div>
+                    <li key={`${item.timestamp}-${index}`} className="generador-history-item">
                       <button
-                        className="password-history-copy"
-                        onClick={async () => {
-                          try {
-                            await navigator.clipboard.writeText(item.password)
-                            showNotification('Contraseña copiada', 'success')
-                          } catch {
-                            showNotification('Error al copiar', 'error')
-                          }
-                        }}
-                        aria-label="Copiar contraseña del historial"
                         type="button"
+                        className="generador-history-use"
+                        onClick={() => {
+                          setPassword(item.password)
+                          setCopied(false)
+                        }}
+                        title={item.password}
                       >
-                        <ContentCopyIcon className="password-history-copy-icon" />
+                        <code className="generador-history-preview">
+                          {maskPasswordPreview(item.password)}
+                        </code>
+                        <span className="generador-history-date">
+                          {formatPasswordHistoryDate(item.timestamp)}
+                        </span>
                       </button>
-                    </div>
+                      <button
+                        type="button"
+                        className="generador-history-copy"
+                        onClick={() => void copyToClipboard(item.password, 'Contraseña copiada')}
+                        aria-label="Copiar contraseña del historial"
+                      >
+                        <ContentCopyIcon className="generador-history-copy-icon" aria-hidden />
+                      </button>
+                    </li>
                   ))}
-                </div>
-              </div>
-            )}
-          </div>
+                </ul>
+              )}
+            </section>
+          </article>
         </div>
       </div>
+
+      {isSaveModalOpen && password ? (
+        <GeneradorGuardarSecretoModal
+          password={password}
+          isSaving={isSavingSecret}
+          onClose={handleCloseSaveModal}
+          onSave={title => void handleSaveToSecrets(title)}
+        />
+      ) : null}
     </div>
   )
 }

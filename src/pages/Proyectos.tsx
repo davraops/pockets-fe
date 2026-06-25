@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import FolderSpecialIcon from '@mui/icons-material/FolderSpecial'
@@ -696,39 +697,25 @@ function Proyectos() {
                 }
               />
 
-              <div
-                className="crud-summary-strip crud-summary-strip--success"
-                role="region"
-                aria-label="Resumen de proyectos"
-              >
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Total</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
-                    {highlights.totalProyectos}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Activos</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--available">
-                    {highlights.proyectosActivos}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item crud-summary-strip-item--emphasis">
-                  <span className="crud-summary-strip-label">Ahorrado</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--income">
-                    {formatPrice(highlights.totalAhorrado)}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Progreso prom.</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
-                    {highlights.porcentajePromedio.toFixed(1)}%
-                  </span>
-                </div>
-              </div>
+              <CrudSummaryStrip
+                ariaLabel="Resumen de proyectos"
+                stripClassName="crud-summary-strip--success"
+                items={[
+                  { label: 'Total', value: highlights.totalProyectos, tone: 'info' },
+                  { label: 'Activos', value: highlights.proyectosActivos, tone: 'available' },
+                  {
+                    label: 'Ahorrado',
+                    value: formatPrice(highlights.totalAhorrado),
+                    tone: 'income',
+                    emphasis: true,
+                  },
+                  {
+                    label: 'Progreso prom.',
+                    value: `${highlights.porcentajePromedio.toFixed(1)}%`,
+                    tone: 'info',
+                  },
+                ]}
+              />
 
               <button
                 type="button"
@@ -777,17 +764,17 @@ function Proyectos() {
                                   }}
                                 />
                               </div>
-                              <span className="crud-row-progress-text">
+                              <span className="crud-row-progress-text crud-row-progress-text--compact">
                                 {project.porcentajeProgreso.toFixed(1)}%
                               </span>
                             </div>
-                            <span className="crud-row-meta">
+                            <span className="crud-row-meta crud-row-meta--sm">
                               {formatPrice(project.montoActual)} / {formatPrice(project.montoObjetivo)}
                             </span>
-                            <span className="crud-row-meta">
+                            <span className="crud-row-meta crud-row-meta--sm">
                               Restante: {formatPrice(project.restante)}
                             </span>
-                            <span className="crud-row-meta">
+                            <span className="crud-row-meta crud-row-meta--sm">
                               {project.duracionMeses} mes{project.duracionMeses !== 1 ? 'es' : ''}
                             </span>
                           </div>

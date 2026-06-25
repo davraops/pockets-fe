@@ -79,7 +79,6 @@
   background: var(--bg-glass-hover);
 }
 
-
 /* Items List */
 .diseñador-items-list {
   display: flex;
@@ -148,7 +147,6 @@
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-sm);
 }
-
 
 .diseñador-item-actions {
   display: flex;
@@ -415,8 +413,6 @@
   transition: transform var(--transition-base);
 }
 
-
-
 .diseñador-drafts-list {
   display: flex;
   flex-direction: column;
@@ -501,22 +497,36 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .diseñador-content {
+    padding-bottom: max(var(--spacing-md), env(safe-area-inset-bottom, 0px));
+  }
+
   .diseñador-page-title {
     font-size: var(--font-size-xl);
+  }
+
+  .diseñador-section-header {
+    flex-wrap: wrap;
+    align-items: flex-start;
   }
 
   .diseñador-form {
     padding: var(--spacing-md);
   }
 
-  .diseñador-item {
+  .diseñador-form-actions {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .diseñador-item-actions {
-    justify-content: flex-end;
-    margin-top: var(--spacing-sm);
+  .diseñador-form-button {
+    width: 100%;
+    min-height: var(--touch-target-min);
+  }
+
+  .diseñador-item {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .diseñador-item-header {
@@ -525,21 +535,50 @@
     gap: var(--spacing-xs);
   }
 
+  .diseñador-item-name,
+  .diseñador-item-value {
+    white-space: normal;
+    word-break: break-word;
+    width: 100%;
+  }
+
+  .diseñador-item-value {
+    align-self: flex-start;
+  }
+
+  .diseñador-item-meta {
+    flex-wrap: wrap;
+  }
+
+  .diseñador-item-actions {
+    justify-content: flex-end;
+    margin-top: var(--spacing-sm);
+  }
+
+  .diseñador-total-header,
+  .diseñador-grand-total {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+
+  .diseñador-total-category,
+  .diseñador-total-value,
+  .diseñador-grand-total-value {
+    white-space: normal;
+    word-break: break-word;
+  }
+
   .diseñador-save-form {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .diseñador-total-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-xs);
-  }
-
-  .diseñador-grand-total {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-xs);
+  .diseñador-save-button {
+    width: 100%;
+    justify-content: center;
+    white-space: normal;
+    min-height: var(--touch-target-min);
   }
 
   .diseñador-draft-item {
@@ -547,78 +586,16 @@
     align-items: stretch;
   }
 
+  .diseñador-draft-info {
+    flex-wrap: wrap;
+  }
+
   .diseñador-draft-delete {
     align-self: flex-end;
     margin-top: var(--spacing-sm);
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
   }
 }
 
 /* Debug Modal Styles */
-.debug-options {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
-}
-
-.debug-option-button {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-lg);
-  background: var(--bg-glass);
-  backdrop-filter: var(--backdrop-blur);
-  -webkit-backdrop-filter: var(--backdrop-blur);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  text-align: left;
-  width: 100%;
-}
-
-.debug-option-button:hover:not(:disabled) {
-  background: var(--bg-glass-hover);
-  border-color: var(--border-glass-hover);
-  transform: translateY(var(--motion-lift-md));
-  box-shadow: var(--shadow-md);
-}
-
-.debug-option-button:active:not(:disabled) {
-  transform: translateY(0);
-  transition: transform var(--transition-fast);
-}
-
-.debug-option-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.debug-option-button-danger:hover:not(:disabled) {
-  border-color: var(--color-danger-solid);
-}
-
-.debug-option-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-.debug-option-title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0;
-  font-family: var(--font-family);
-}
-
-.debug-option-description {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  margin: 0;
-  line-height: 1.5;
-  font-family: var(--font-family);
-}
-
-

@@ -1,0 +1,13 @@
+/* Shared row density tokens — hub, inset, card, and crypto list rows */
+
+:root {
+  --crud-row-min-height: 64px;
+  --crud-row-min-height-tall: 80px;
+  --crud-row-padding-block: var(--spacing-md);
+  --crud-row-padding-inline: var(--spacing-lg);
+  --crud-row-padding-block-mobile: var(--spacing-sm);
+  --crud-row-padding-inline-mobile: var(--spacing-md);
+  --crud-row-gap: var(--spacing-md);
+  --crud-row-accent-width: 3px;
+  --crud-row-accent-width-emphasis: 4px;
+}

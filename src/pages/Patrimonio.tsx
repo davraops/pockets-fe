@@ -1,12 +1,14 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import AddIcon from '@mui/icons-material/Add'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import InventoryIcon from '@mui/icons-material/Inventory'
+import SearchIcon from '@mui/icons-material/Search'
 import { api } from '../services/api'
 import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import CrudListPanel from '../components/crud/CrudListPanel'
 import PatrimonioFormModal from '../components/patrimonio/PatrimonioFormModal'
-import PatrimonioListRow from '../components/patrimonio/PatrimonioListRow'
+import PatrimonioDetailModal from '../components/patrimonio/PatrimonioDetailModal'
+import PatrimonioCard from '../components/patrimonio/PatrimonioCard'
 import PatrimonioDebugModal from '../components/patrimonio/PatrimonioDebugModal'
 import {
   EMPTY_PATRIMONY_FORM,
@@ -19,6 +21,7 @@ import {
 } from '../components/patrimonio/patrimonioFormUtils'
 import {
   calculatePatrimonyHighlights,
+  filterPatrimonyByQuery,
   patrimonySummaryItems,
 } from '../components/patrimonio/patrimonioDisplayUtils'
 import type { PatrimonyItem } from '../components/patrimonio/patrimonioTypes'
@@ -37,11 +40,15 @@ function Patrimonio() {
   const [patrimonyItems, setPatrimonyItems] = useState<PatrimonyItem[]>([])
   const [formData, setFormData] = useState<PatrimonyFormData>(EMPTY_PATRIMONY_FORM)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [selectedItem, setSelectedItem] = useState<PatrimonyItem | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showFormModal, setShowFormModal] = useState(false)
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const menuRef = useRef<HTMLDivElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
   const [formErrors, setFormErrors] = useState<PatrimonyFormErrors>(EMPTY_PATRIMONY_FORM_ERRORS)
@@ -104,6 +111,21 @@ function Patrimonio() {
     setShowFormModal(false)
   }
 
+  const handleOpenCreateModal = () => {
+    setEditingId(null)
+    setFormData(EMPTY_PATRIMONY_FORM)
+    setFormErrors(EMPTY_PATRIMONY_FORM_ERRORS)
+    setShowFormModal(true)
+  }
+
+  const handleCancelForm = () => {
+    const returnToDetail = editingId && selectedItem
+    resetForm()
+    if (returnToDetail) {
+      setIsDetailModalOpen(true)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -115,39 +137,58 @@ function Patrimonio() {
     }
 
     try {
+      setIsSaving(true)
       const patrimonyPayload = formDataToPatrimonyPayload(formData)
 
       if (editingId) {
         await api.updatePatrimonyItem(editingId, patrimonyPayload)
-        showNotification('Item de Patrimonio actualizado exitosamente', 'success')
+        showNotification('Ítem de patrimonio actualizado', 'success')
       } else {
         await api.createPatrimonyItem(patrimonyPayload)
-        showNotification('Item de Patrimonio agregado exitosamente', 'success')
+        showNotification('Ítem de patrimonio agregado', 'success')
       }
 
       await loadRecords()
       resetForm()
+      setIsDetailModalOpen(false)
+      setSelectedItem(null)
     } catch (err: unknown) {
       const errorMessage = getTranslatedErrorMessage(
         err,
         editingId
-          ? 'Error al actualizar el item. Por favor, intenta de nuevo.'
-          : 'Error al agregar el item. Por favor, intenta de nuevo.'
+          ? 'Error al actualizar el ítem. Por favor, intenta de nuevo.'
+          : 'Error al agregar el ítem. Por favor, intenta de nuevo.'
       )
       showNotification(errorMessage, 'error')
+    } finally {
+      setIsSaving(false)
     }
   }
 
-  const handleEdit = (item: PatrimonyItem) => {
-    setFormData(patrimonyItemToFormData(item))
-    setEditingId(item.id)
+  const handleOpenDetailModal = (item: PatrimonyItem) => {
+    setSelectedItem(item)
+    setIsDetailModalOpen(true)
+  }
+
+  const handleCloseDetailModal = () => {
+    setIsDetailModalOpen(false)
+    setSelectedItem(null)
+  }
+
+  const handleEditFromDetail = () => {
+    if (!selectedItem) {
+      return
+    }
+    setFormData(patrimonyItemToFormData(selectedItem))
+    setEditingId(selectedItem.id)
+    setIsDetailModalOpen(false)
     setShowFormModal(true)
   }
 
   const handleDelete = async (id: string, name: string) => {
     if (
       !(await confirm({
-        message: `¿Estás seguro de que quieres eliminar el item "${name}"?`,
+        message: `¿Estás seguro de que quieres eliminar "${name}"?`,
         variant: 'danger',
       }))
     ) {
@@ -155,29 +196,30 @@ function Patrimonio() {
     }
 
     try {
+      setIsSaving(true)
       await api.deletePatrimonyItem(id)
-      showNotification('Item de Patrimonio eliminado exitosamente', 'success')
+      showNotification('Ítem de patrimonio eliminado', 'success')
       await loadRecords()
+      handleCloseDetailModal()
+      resetForm()
     } catch (err: unknown) {
       const errorMessage = getTranslatedErrorMessage(
         err,
-        'Error al eliminar el item. Por favor, intenta de nuevo.'
+        'Error al eliminar el ítem. Por favor, intenta de nuevo.'
       )
       showNotification(errorMessage, 'error')
+    } finally {
+      setIsSaving(false)
     }
-  }
-
-  const handleDeleteFromForm = () => {
-    const item = patrimonyItems.find(i => i.id === editingId)
-    if (!item) {
-      return
-    }
-    void handleDelete(item.id, item.name).then(() => {
-      resetForm()
-    })
   }
 
   const highlights = calculatePatrimonyHighlights(patrimonyItems)
+  const hasSearch = searchQuery.trim().length > 0
+  const filteredItems = useMemo(
+    () => filterPatrimonyByQuery(patrimonyItems, searchQuery),
+    [patrimonyItems, searchQuery]
+  )
+  const isBusy = isSaving
 
   return (
     <div className="app-page-container">
@@ -187,7 +229,9 @@ function Patrimonio() {
           context="Bienes"
           meta={
             !isLoading && !error
-              ? `${patrimonyItems.length} ítem${patrimonyItems.length !== 1 ? 's' : ''}`
+              ? hasSearch
+                ? `${filteredItems.length} de ${patrimonyItems.length} ítem${patrimonyItems.length !== 1 ? 's' : ''}`
+                : `${patrimonyItems.length} ítem${patrimonyItems.length !== 1 ? 's' : ''}`
               : undefined
           }
           toolbarActions={
@@ -221,20 +265,70 @@ function Patrimonio() {
           }
         />
 
-        <CrudSummaryStrip
-          ariaLabel="Resumen de patrimonio"
-          items={patrimonySummaryItems(highlights)}
-        />
+        {!isLoading && !error && patrimonyItems.length > 0 ? (
+          <CrudSummaryStrip
+            ariaLabel="Resumen de patrimonio"
+            items={patrimonySummaryItems(highlights)}
+          />
+        ) : null}
 
-        <button
-          type="button"
-          className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
-          onClick={() => setShowFormModal(true)}
-          aria-label="Agregar item de patrimonio"
+        <div
+          className={`patrimonio-toolbar${!isLoading && !error && patrimonyItems.length === 0 ? ' patrimonio-toolbar--solo-cta' : ''}`}
         >
-          <AddIcon aria-hidden={true} />
-          Agregar item
-        </button>
+          {!isLoading && !error && (patrimonyItems.length > 0 || hasSearch) ? (
+            <label className="patrimonio-search">
+              <SearchIcon className="patrimonio-search-icon" aria-hidden="true" />
+              <input
+                type="search"
+                className="patrimonio-search-input"
+                value={searchQuery}
+                onChange={event => setSearchQuery(event.target.value)}
+                placeholder="Buscar por nombre, categoría, marca…"
+                aria-label="Buscar ítems de patrimonio"
+              />
+            </label>
+          ) : null}
+          <button
+            type="button"
+            className="btn-base btn-accent btn-submit crud-primary-cta patrimonio-toolbar-cta"
+            onClick={handleOpenCreateModal}
+            aria-label="Agregar ítem de patrimonio"
+          >
+            <AddIcon aria-hidden={true} />
+            Agregar ítem
+          </button>
+        </div>
+
+        <CrudListPanel
+          items={filteredItems}
+          isLoading={isLoading}
+          error={error}
+          onRetry={() => void loadRecords()}
+          retryAriaLabel="Reintentar cargar patrimonio"
+          loadingAriaLabel="Cargando patrimonio"
+          skeletonCount={6}
+          emptyIcon={<InventoryIcon className="empty-state-icon" />}
+          emptyTitle={hasSearch ? 'Sin coincidencias' : 'No hay ítems de patrimonio'}
+          emptySubtext={
+            hasSearch
+              ? 'Prueba con otro término o limpia la búsqueda'
+              : 'Usa Agregar ítem para registrar el primero'
+          }
+          getItemKey={item => item.id}
+          listOuterClassName="patrimonio-list"
+          loadingListClassName="patrimonio-card-grid patrimonio-card-grid--loading"
+          renderBody={() => (
+            <div className="patrimonio-card-grid" role="list">
+              {filteredItems.map(item => (
+                <PatrimonioCard
+                  key={item.id}
+                  item={item}
+                  onClick={() => handleOpenDetailModal(item)}
+                />
+              ))}
+            </div>
+          )}
+        />
 
         {showFormModal && (
           <PatrimonioFormModal
@@ -244,26 +338,19 @@ function Patrimonio() {
             nameRef={nameRef}
             onChange={handleChange}
             onSubmit={handleSubmit}
-            onCancel={resetForm}
-            onDelete={editingId ? handleDeleteFromForm : undefined}
+            onCancel={handleCancelForm}
           />
         )}
 
-        <CrudListPanel
-          items={patrimonyItems}
-          isLoading={isLoading}
-          error={error}
-          onRetry={() => void loadRecords()}
-          retryAriaLabel="Reintentar cargar patrimonio"
-          loadingAriaLabel="Cargando patrimonio"
-          emptyIcon={<InventoryIcon className="empty-state-icon" />}
-          emptyTitle="No hay items de patrimonio agregados"
-          emptySubtext="Usa el botón de arriba para agregar el primero"
-          getItemKey={item => item.id}
-          renderItem={item => (
-            <PatrimonioListRow item={item} onClick={() => handleEdit(item)} />
-          )}
-        />
+        {isDetailModalOpen && selectedItem && !showFormModal && (
+          <PatrimonioDetailModal
+            item={selectedItem}
+            isBusy={isBusy}
+            onClose={handleCloseDetailModal}
+            onEdit={handleEditFromDetail}
+            onDelete={() => void handleDelete(selectedItem.id, selectedItem.name)}
+          />
+        )}
 
         {isDebugModalOpen && isDebugToolsEnabled() && (
           <PatrimonioDebugModal

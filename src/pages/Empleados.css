@@ -1,3 +1,691 @@
+/* Empleados — listado, toolbar, modales (2026 polish) */
+.empleados-content {
+  gap: var(--spacing-md);
+}
+
+.empleados-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--spacing-sm);
+  align-items: stretch;
+  width: 100%;
+}
+
+.empleados-toolbar-filters {
+  display: flex;
+  align-items: stretch;
+  gap: var(--spacing-sm);
+  min-width: 0;
+  width: 100%;
+}
+
+.empleados-filter-chip {
+  flex-shrink: 0;
+  min-height: 52px;
+  padding: 0 var(--spacing-md);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass);
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.empleados-filter-chip:hover {
+  border-color: color-mix(in srgb, var(--section-utilidades) 30%, var(--border-glass));
+  color: var(--text-primary);
+}
+
+.empleados-filter-chip--active {
+  border-color: color-mix(in srgb, var(--color-danger-solid) 35%, var(--border-glass));
+  background: color-mix(in srgb, var(--color-danger-solid) 8%, var(--bg-glass));
+  color: var(--color-danger-solid);
+}
+
+.empleados-search {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-width: 0;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 var(--spacing-md);
+  box-sizing: border-box;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass);
+}
+
+.empleados-search-icon {
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  color: var(--text-tertiary);
+}
+
+.empleados-search-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  outline: none;
+}
+
+.empleados-search-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.empleados-toolbar-cta {
+  margin-bottom: 0;
+  white-space: nowrap;
+  align-self: stretch;
+}
+
+.empleados-toolbar--solo-cta {
+  grid-template-columns: 1fr;
+}
+
+.empleados-toolbar--solo-cta .empleados-toolbar-cta {
+  width: 100%;
+  justify-content: center;
+}
+
+.empleados-list {
+  width: 100%;
+}
+
+.empleados-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17.5rem, 1fr));
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+.empleados-card-grid--loading {
+  pointer-events: none;
+}
+
+.empleado-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  width: 100%;
+  min-height: 8.5rem;
+  padding: var(--spacing-md);
+  box-sizing: border-box;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.empleado-card:hover {
+  border-color: color-mix(in srgb, var(--section-utilidades) 35%, var(--border-glass));
+  box-shadow: var(--shadow-md);
+  transform: translateY(var(--motion-lift-sm));
+}
+
+.empleado-card:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.empleado-card--has-debt {
+  border-color: color-mix(in srgb, var(--color-danger-solid) 22%, var(--border-glass));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-danger-solid) 5%, var(--bg-glass)) 0%,
+    var(--bg-glass) 42%
+  );
+}
+
+.empleado-card--has-debt:hover {
+  border-color: color-mix(in srgb, var(--color-danger-solid) 35%, var(--border-glass));
+}
+
+.empleado-card__top {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  min-width: 0;
+}
+
+.empleado-card__avatar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    145deg,
+    hsl(var(--empleado-avatar-hue, 258) 62% 58%) 0%,
+    hsl(var(--empleado-avatar-hue, 258) 48% 42%) 100%
+  );
+  color: #fff;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 8px color-mix(in srgb, hsl(var(--empleado-avatar-hue, 258) 50% 40%) 35%, transparent);
+}
+
+.empleado-card__identity {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.empleado-card__name {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  line-height: 1.3;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+
+.empleado-card__role {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.35;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.empleado-card__chevron {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.15rem;
+  color: var(--text-tertiary);
+  transition: transform var(--transition-fast);
+}
+
+.empleado-card:hover .empleado-card__chevron {
+  transform: translateX(2px);
+  color: var(--text-secondary);
+}
+
+.empleado-card__debt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-danger-solid) 6%, var(--bg-glass-light));
+  border: 1px solid color-mix(in srgb, var(--color-danger-solid) 14%, var(--border-glass-light));
+}
+
+.empleado-card__debt-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.empleado-card__debt-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.empleado-card__debt-total {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-danger-solid);
+}
+
+.empleado-card__debt-bar {
+  display: flex;
+  width: 100%;
+  height: 0.35rem;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--bg-glass);
+}
+
+.empleado-card__debt-segment {
+  display: block;
+  height: 100%;
+  min-width: 0;
+}
+
+.empleado-card__debt-segment--normal {
+  background: var(--color-danger-solid);
+}
+
+.empleado-card__debt-segment--cesantias {
+  background: color-mix(in srgb, var(--section-utilidades) 70%, var(--color-danger-solid));
+}
+
+.empleado-card__debt-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.65rem;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.empleado-card__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.empleado-card__salary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-sm);
+  background: var(--highlight-success-bg);
+  border: 1px solid var(--highlight-success-border);
+  color: var(--highlight-success-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.3;
+}
+
+.empleado-card__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 100%;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-glass-light);
+  border: 1px solid var(--border-glass-light);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  line-height: 1.3;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.empleado-card__chip--contract {
+  color: color-mix(in srgb, var(--section-utilidades) 75%, var(--text-primary));
+  border-color: color-mix(in srgb, var(--section-utilidades) 25%, var(--border-glass));
+  background: color-mix(in srgb, var(--section-utilidades) 8%, var(--bg-glass-light));
+  font-weight: var(--font-weight-medium);
+}
+
+.empleado-card__chip--vacation {
+  color: var(--highlight-success-text);
+  border-color: var(--highlight-success-border);
+  background: color-mix(in srgb, var(--highlight-success-bg) 80%, transparent);
+}
+
+.empleado-card__chip--debt {
+  color: var(--color-danger-solid);
+  border-color: color-mix(in srgb, var(--color-danger-solid) 30%, var(--border-glass));
+  background: color-mix(in srgb, var(--color-danger-solid) 8%, var(--bg-glass-light));
+  font-weight: var(--font-weight-medium);
+}
+
+.empleado-card__chip--cesantias {
+  color: color-mix(in srgb, var(--section-utilidades) 80%, var(--color-danger-solid));
+  border-color: color-mix(in srgb, var(--section-utilidades) 30%, var(--border-glass));
+  background: color-mix(in srgb, var(--section-utilidades) 10%, var(--bg-glass-light));
+}
+
+.empleado-card__chip-icon {
+  flex-shrink: 0;
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.empleados-card-grid--loading .skeleton-list {
+  display: contents;
+}
+
+.empleados-card-grid--loading .skeleton-item {
+  min-height: 8.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-glass-light);
+  background: var(--bg-glass);
+}
+
+@media (max-width: 768px) {
+  .empleados-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .empleados-detail-grid,
+  .empleados-deudas-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.empleados-modal {
+  max-width: min(720px, calc(100vw - 2rem));
+}
+
+.empleados-modal--detail {
+  max-width: min(840px, calc(100vw - 2rem));
+}
+
+.empleados-debt-badge {
+  display: inline-flex;
+  align-items: center;
+  margin: var(--spacing-xs) 0 0;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-danger-solid) 10%, var(--bg-glass-light));
+  border: 1px solid color-mix(in srgb, var(--color-danger-solid) 25%, var(--border-glass));
+  color: var(--color-danger-solid);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.empleados-deudas-hint {
+  margin: 0 0 var(--spacing-md);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.empleados-deudas-hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--color-danger-solid) 20%, var(--border-glass));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-danger-solid) 8%, var(--bg-glass-light)) 0%,
+    color-mix(in srgb, var(--section-utilidades) 6%, var(--bg-glass-light)) 100%
+  );
+}
+
+.empleados-deudas-hero__copy {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.empleados-deudas-hero__label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.empleados-deudas-hero__value {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-danger-solid);
+}
+
+.empleados-deudas-hero__bar {
+  display: flex;
+  width: 100%;
+  height: 0.45rem;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--bg-glass);
+}
+
+.empleados-deudas-hero__segment {
+  display: block;
+  height: 100%;
+  min-width: 0;
+}
+
+.empleados-deudas-hero__segment--normal {
+  background: var(--color-danger-solid);
+}
+
+.empleados-deudas-hero__segment--cesantias {
+  background: color-mix(in srgb, var(--section-utilidades) 70%, var(--color-danger-solid));
+}
+
+.empleados-deudas-hero__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm) var(--spacing-md);
+}
+
+.empleados-deudas-hero__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.empleados-deudas-hero__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+}
+
+.empleados-deudas-hero__dot--normal {
+  background: var(--color-danger-solid);
+}
+
+.empleados-deudas-hero__dot--cesantias {
+  background: color-mix(in srgb, var(--section-utilidades) 70%, var(--color-danger-solid));
+}
+
+.empleados-deudas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.empleados-deudas-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass-light);
+}
+
+.empleados-deudas-card--cesantias {
+  border-color: color-mix(in srgb, var(--section-utilidades) 25%, var(--border-glass));
+  background: color-mix(in srgb, var(--section-utilidades) 6%, var(--bg-glass-light));
+}
+
+.empleados-deudas-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.empleados-deudas-card__icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--accent-primary);
+}
+
+.empleados-deudas-card--cesantias .empleados-deudas-card__icon {
+  color: var(--section-utilidades);
+}
+
+.empleados-deudas-card__label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.empleados-deudas-card__current {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-danger-solid);
+}
+
+.empleados-deudas-card--cesantias .empleados-deudas-card__current {
+  color: color-mix(in srgb, var(--section-utilidades) 75%, var(--color-danger-solid));
+}
+
+.empleados-deudas-card__empty {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+}
+
+.empleados-deudas-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+}
+
+.empleados-deudas-abono {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--spacing-xs);
+}
+
+.empleados-deudas-abono__input {
+  min-width: 0;
+}
+
+.empleados-deudas-card__action {
+  min-height: 2.25rem;
+  padding: 0 var(--spacing-sm);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  background: var(--bg-glass);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.empleados-deudas-card__action:hover {
+  background: var(--bg-glass-hover);
+}
+
+.empleados-deudas-card__action--danger {
+  color: var(--color-danger-solid);
+  border-color: color-mix(in srgb, var(--color-danger-solid) 25%, var(--border-glass));
+}
+
+.empleados-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-glass-light);
+}
+
+.empleados-modal__header-copy {
+  min-width: 0;
+}
+
+.empleados-modal__kicker {
+  margin: 0 0 0.2rem;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--section-utilidades);
+  font-family: var(--font-family);
+}
+
+.empleados-modal__subtitle {
+  margin: var(--spacing-xs) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.empleados-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.empleados-modal__footer {
+  margin-top: 0;
+}
+
+.empleados-modal__footer--detail {
+  flex-wrap: wrap;
+}
+
+.empleados-modal__btn {
+  flex: 1;
+  min-height: 44px;
+  justify-content: center;
+}
+
+.empleados-modal__btn--primary {
+  flex: 1 1 100%;
+}
+
+.empleados-modal__btn--danger {
+  color: var(--color-danger-solid);
+}
+
+@media (max-width: 768px) {
+  .empleados-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .empleados-toolbar-filters {
+    flex-direction: column;
+  }
+
+  .empleados-filter-chip {
+    min-height: 48px;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .empleados-search {
+    min-height: 48px;
+  }
+
+  .empleados-toolbar-cta {
+    width: 100%;
+    justify-content: center;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .empleados-modal__footer--detail .empleados-modal__btn {
+    flex: 1 1 100%;
+  }
+}
+
 /* Empleados Page Styles */
 .empleados-content {
   flex-direction: column;
@@ -137,83 +825,6 @@
 }
 
 /* Debug Options */
-.debug-options {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
-}
-
-.debug-option-button {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-lg);
-  background: var(--bg-glass);
-  backdrop-filter: var(--backdrop-blur);
-  -webkit-backdrop-filter: var(--backdrop-blur);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  text-align: left;
-  width: 100%;
-}
-
-.debug-option-button:hover:not(:disabled) {
-  background: var(--bg-glass-hover);
-  border-color: var(--border-glass-hover);
-  transform: translateY(var(--motion-lift-md));
-  box-shadow: var(--shadow-md);
-}
-
-.debug-option-button:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.debug-option-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.debug-option-info {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  flex: 1;
-}
-
-.debug-option-title {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.debug-option-description {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  margin: 0;
-  line-height: 1.4;
-}
-
-.debug-option-button.create-demo {
-  border-color: rgba(0, 122, 255, 0.3);
-}
-
-.debug-option-button.create-demo:hover:not(:disabled) {
-  border-color: rgba(0, 122, 255, 0.5);
-  background: rgba(0, 122, 255, 0.05);
-}
-
-.debug-option-button.delete-all {
-  border-color: rgba(255, 59, 48, 0.3);
-}
-
-.debug-option-button.delete-all:hover:not(:disabled) {
-  border-color: rgba(255, 59, 48, 0.5);
-  background: rgba(255, 59, 48, 0.05);
-}
 
 /* Modal Large */
 .empleados-modal-large {
@@ -329,7 +940,6 @@
   border-radius: var(--radius-md);
   gap: var(--spacing-md);
 }
-
 
 .empleados-detail-list-item-content {
   display: flex;
@@ -466,10 +1076,6 @@
   box-shadow: var(--shadow-sm);
 }
 
-
-
-
-
 .empleados-form-subsection-title {
   display: flex;
   align-items: center;
@@ -540,7 +1146,6 @@
   transition: all var(--transition-base);
   cursor: pointer;
 }
-
 
 .empleados-item:hover {
   box-shadow: var(--shadow-md);
@@ -723,346 +1328,8 @@
   box-shadow: var(--shadow-sm);
 }
 
-
 .empleados-empty-text {
   font-size: var(--font-size-lg);
   color: var(--text-secondary);
   margin: 0;
 }
-
-/* Modal */
-.empleados-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--text-tertiary);
-  backdrop-filter: blur(4px);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--spacing-md);
-  animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.empleados-modal {
-  background: var(--bg-glass);
-  backdrop-filter: var(--backdrop-blur);
-  -webkit-backdrop-filter: var(--backdrop-blur);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xl);
-  width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-
-.empleados-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-lg);
-  border-bottom: 1px solid var(--border-glass-light);
-}
-
-.empleados-modal-title {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.empleados-modal-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: transparent;
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  color: var(--text-secondary);
-  font-size: var(--font-size-xl);
-  line-height: 1;
-}
-
-.empleados-modal-close:hover {
-  background: var(--btn-icon-hover-bg);
-  color: var(--text-primary);
-}
-
-
-.empleados-modal-content {
-  padding: var(--spacing-lg);
-  overflow-y: auto;
-  flex: 1;
-}
-
-.empleados-loading,
-.empleados-modal-loading {
-  text-align: center;
-  padding: var(--spacing-xl);
-  color: var(--text-secondary);
-}
-
-.empleados-modal-empty {
-  text-align: center;
-  padding: var(--spacing-xl);
-  color: var(--text-secondary);
-}
-
-.empleados-list-section {
-  margin-bottom: var(--spacing-xl);
-}
-
-.empleados-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
-
-.empleados-records-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
-
-.empleados-record-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  background: var(--bg-glass-light);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-md);
-  transition: all var(--transition-base);
-}
-
-
-.empleados-record-item:hover {
-  background: var(--bg-glass-hover);
-  border-color: var(--border-glass-hover);
-  box-shadow: var(--shadow-sm);
-}
-
-.empleados-record-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.empleados-record-name {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-xs) 0;
-}
-
-.empleados-record-meta {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  flex-wrap: wrap;
-  margin-bottom: var(--spacing-xs);
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-}
-
-.empleados-record-date {
-  font-size: var(--font-size-xs);
-  color: var(--text-tertiary);
-  margin: 0;
-}
-
-.empleados-record-actions {
-  display: flex;
-  gap: var(--spacing-xs);
-}
-
-.empleados-record-action-button {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  background: var(--bg-glass);
-  color: var(--text-primary);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-  transition: all var(--transition-base);
-}
-
-.empleados-record-action-button:hover {
-  background: var(--bg-glass-hover);
-  border-color: var(--border-glass-hover);
-}
-
-.empleados-record-action-button-delete:hover {
-  background: rgba(255, 59, 48, 0.1);
-  border-color: #FF3B30;
-  color: #FF3B30;
-}
-
-.empleados-lists-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
-
-.empleados-list-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  background: var(--bg-glass-light);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-md);
-  transition: all var(--transition-base);
-}
-
-
-.empleados-list-item:hover {
-  background: var(--bg-glass-hover);
-  border-color: var(--border-glass-hover);
-  box-shadow: var(--shadow-sm);
-}
-
-.empleados-list-content {
-  flex: 1;
-  cursor: pointer;
-  min-width: 0;
-}
-
-.empleados-list-name {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-xs) 0;
-}
-
-.empleados-list-info {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  flex-wrap: wrap;
-  margin-bottom: var(--spacing-xs);
-}
-
-.empleados-list-meta {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-}
-
-.empleados-list-separator {
-  font-size: var(--font-size-sm);
-  color: var(--text-tertiary);
-  opacity: 0.5;
-}
-
-.empleados-list-date {
-  font-size: var(--font-size-xs);
-  color: var(--text-tertiary);
-  margin: 0;
-}
-
-.empleados-list-delete {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: transparent;
-  border: 1px solid var(--btn-icon-border);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  color: var(--btn-icon-color);
-  flex-shrink: 0;
-}
-
-.empleados-list-delete:hover {
-  background: rgba(255, 59, 48, 0.1);
-  border-color: #FF3B30;
-  color: #FF3B30;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .empleados-page-title {
-    font-size: var(--font-size-xl);
-  }
-
-  .empleados-form {
-    padding: var(--spacing-md);
-  }
-
-  .empleados-item {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .empleados-item-actions {
-    justify-content: flex-end;
-    margin-top: var(--spacing-sm);
-  }
-
-  .empleados-item-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-xs);
-  }
-
-  .empleados-save-form {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .empleados-modal {
-    max-width: 100%;
-    max-height: 100vh;
-    border-radius: 0;
-    margin: 0;
-  }
-
-  .empleados-modal-overlay {
-    padding: 0;
-  }
-
-  .empleados-list-item {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .empleados-list-delete {
-    align-self: flex-end;
-    margin-top: var(--spacing-sm);
-  }
-}
-

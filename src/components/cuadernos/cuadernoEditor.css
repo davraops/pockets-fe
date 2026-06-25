@@ -1706,6 +1706,21 @@
   }
 }
 
+@media (max-width: 480px) {
+  .cuaderno-workspace--mobile .cuaderno-workspace__action {
+    min-height: var(--touch-target-min);
+    padding-inline: var(--spacing-md);
+  }
+
+  .cuaderno-workspace--mobile .cuaderno-workspace__back {
+    min-height: var(--touch-target-min);
+  }
+
+  .cuaderno-workspace--mobile .cuaderno-workspace__page-body {
+    padding-bottom: calc(var(--spacing-lg) + var(--safe-bottom));
+  }
+}
+
 .cuaderno-block-input {
   flex: 1;
   width: 100%;

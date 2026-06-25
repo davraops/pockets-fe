@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import AddIcon from '@mui/icons-material/Add'
 import PersonIcon from '@mui/icons-material/Person'
 import EditIcon from '@mui/icons-material/Edit'
@@ -570,46 +571,33 @@ function MeDeben() {
               />
 
               {/* Resumen de deudores */}
-              <div
-                className="crud-summary-strip crud-summary-strip--success"
-                role="region"
-                aria-label="Resumen de deudores"
-              >
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Total deudores</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
-                    {highlights.totalDeudores}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Pendiente</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--danger">
-                    {formatBalance(highlights.totalPendiente)}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Pagado</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--positive">
-                    {formatBalance(highlights.totalPagado)}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Pendientes</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--expense">
-                    {highlights.deudoresPendientes}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Completos</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--available">
-                    {highlights.deudoresCompletos}
-                  </span>
-                </div>
-              </div>
+              <CrudSummaryStrip
+                ariaLabel="Resumen de deudores"
+                stripClassName="crud-summary-strip--success"
+                items={[
+                  { label: 'Total deudores', value: highlights.totalDeudores, tone: 'info' },
+                  {
+                    label: 'Pendiente',
+                    value: formatBalance(highlights.totalPendiente),
+                    tone: 'negative',
+                  },
+                  {
+                    label: 'Pagado',
+                    value: formatBalance(highlights.totalPagado),
+                    tone: 'positive',
+                  },
+                  {
+                    label: 'Pendientes',
+                    value: highlights.deudoresPendientes,
+                    tone: 'expense',
+                  },
+                  {
+                    label: 'Completos',
+                    value: highlights.deudoresCompletos,
+                    tone: 'available',
+                  },
+                ]}
+              />
 
               <button
                 type="button"
@@ -652,13 +640,13 @@ function MeDeben() {
                             </span>
                           </div>
                           <div className="crud-row-secondary">
-                            <span className="crud-row-value">{formatBalance(debtor.valor)}</span>
+                            <span className="crud-row-value crud-row-value--prominent">{formatBalance(debtor.valor)}</span>
                             <div className="crud-row-bottom">
-                              <span className="crud-row-meta">
+                              <span className="crud-row-meta crud-row-meta--medium">
                                 Pendiente: {formatBalance(pending)}
                               </span>
-                              <div className="crud-row-progress">
-                                <div className="crud-row-progress-bar">
+                              <div className="crud-row-progress crud-row-progress--compact">
+                                <div className="crud-row-progress-bar crud-row-progress-bar--compact">
                                   <div
                                     className="crud-row-progress-fill"
                                     style={{
@@ -667,7 +655,7 @@ function MeDeben() {
                                     }}
                                   />
                                 </div>
-                                <span className="crud-row-progress-text">
+                                <span className="crud-row-progress-text crud-row-progress-text--compact">
                                   {paidPercentage.toFixed(1)}%
                                 </span>
                               </div>

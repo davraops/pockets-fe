@@ -208,6 +208,27 @@
   gap: var(--spacing-md);
   padding: var(--spacing-lg) var(--spacing-xl);
   border-top: 1px solid var(--border-glass);
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .modal-actions-base {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    background: var(--bg-glass-lighter);
+    backdrop-filter: var(--backdrop-blur-light);
+    -webkit-backdrop-filter: var(--backdrop-blur-light);
+    padding: var(--spacing-md) var(--spacing-lg);
+    padding-bottom: calc(var(--spacing-md) + var(--safe-bottom));
+    flex-wrap: wrap;
+  }
+
+  .modal-actions-base .btn-base,
+  .modal-actions-base .modal-button {
+    flex: 1 1 calc(50% - var(--spacing-sm));
+    min-height: var(--touch-target-min);
+  }
 }
 
 /* Typography Base */
@@ -278,6 +299,20 @@
   align-items: center;
   gap: var(--spacing-xs);
   color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.form-label-base--inline-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+  margin: 0;
+  font-size: 1.125rem !important;
+  color: var(--text-secondary);
+}
+
+label .form-label-base--inline-icon {
+  display: block;
 }
 
 .form-label-icon {

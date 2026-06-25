@@ -1,5 +1,5 @@
-import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
+import EditIcon from '@mui/icons-material/Edit'
 import LockOpenIcon from '@mui/icons-material/LockOpen'
 import ModalOverlay from '../ModalOverlay'
 import type { Secret } from './secretosTypes'
@@ -22,73 +22,78 @@ function SecretoDetailModal({
   onEdit,
   onDelete,
 }: SecretoDetailModalProps) {
+  const wasUpdated = secret.fechaCreacion !== secret.fechaActualizacion
+
   return (
     <ModalOverlay onClose={onClose} className="modal-overlay">
-      <div className="modal-content detail-modal" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2 className="modal-title" id="modal-title-selectedsecret-titulo">
-            {secret.titulo}
-          </h2>
-          <button className="modal-close" onClick={onClose} aria-label="Cerrar modal" type="button">
+      <div
+        className="modal-panel secretos-modal"
+        onClick={event => event.stopPropagation()}
+        role="dialog"
+        aria-labelledby="modal-panel-title-secreto"
+      >
+        <div className="secretos-modal__header">
+          <div className="secretos-modal__header-copy">
+            <p className="secretos-modal__kicker">Vault · Detalle</p>
+            <h2 className="modal-panel-title" id="modal-panel-title-secreto">
+              {secret.titulo}
+            </h2>
+          </div>
+          <button className="modal-panel-close" onClick={onClose} aria-label="Cerrar" type="button">
             ×
           </button>
         </div>
 
-        <div className="detail-content">
-          <div className="detail-section">
-            <div className="detail-info">
-              <h3 className="detail-name">{secret.titulo}</h3>
+        <div className="modal-panel-content secretos-modal__body">
+          <dl className="secretos-modal__info-list">
+            <div className="secretos-modal__info-item">
+              <dt className="secretos-modal__info-label">Estado</dt>
+              <dd className="secretos-modal__info-value">
+                <span className="secretos-row-badge">Cifrado</span>
+              </dd>
             </div>
-          </div>
-
-          <div className="detail-row">
-            <span className="detail-label">Título</span>
-            <span className="detail-value">{secret.titulo}</span>
-          </div>
-
-          <div className="detail-row">
-            <span className="detail-label">Fecha de Creación</span>
-            <span className="detail-value">{formatSecretDate(secret.fechaCreacion)}</span>
-          </div>
-
-          {secret.fechaCreacion !== secret.fechaActualizacion && (
-            <div className="detail-row">
-              <span className="detail-label">Última Actualización</span>
-              <span className="detail-value">{formatSecretDate(secret.fechaActualizacion)}</span>
+            <div className="secretos-modal__info-item">
+              <dt className="secretos-modal__info-label">Creado</dt>
+              <dd className="secretos-modal__info-value">{formatSecretDate(secret.fechaCreacion)}</dd>
             </div>
-          )}
+            {wasUpdated ? (
+              <div className="secretos-modal__info-item">
+                <dt className="secretos-modal__info-label">Actualizado</dt>
+                <dd className="secretos-modal__info-value">
+                  {formatSecretDate(secret.fechaActualizacion)}
+                </dd>
+              </div>
+            ) : null}
+          </dl>
         </div>
 
-        <div className="detail-actions">
+        <div className="modal-actions-base secretos-modal__footer secretos-modal__footer--detail">
           <button
             type="button"
-            className="detail-action-button"
+            className="btn-base btn-danger secretos-modal__btn secretos-modal__btn--primary"
             onClick={onDecrypt}
-            aria-label="Desencriptar Secreto"
             disabled={isSaving}
           >
-            <LockOpenIcon />
-            <span>Desencriptar</span>
+            <LockOpenIcon aria-hidden="true" />
+            Desencriptar
           </button>
           <button
             type="button"
-            className="detail-action-button"
+            className="btn-base btn-secondary secretos-modal__btn"
             onClick={onEdit}
-            aria-label="Editar Secreto"
             disabled={isSaving}
           >
-            <EditIcon />
-            <span>Editar</span>
+            <EditIcon aria-hidden="true" />
+            Editar
           </button>
           <button
             type="button"
-            className="detail-action-button danger"
+            className="btn-base btn-secondary secretos-modal__btn secretos-modal__btn--danger"
             onClick={onDelete}
-            aria-label="Eliminar Secreto"
             disabled={isSaving}
           >
-            <DeleteIcon />
-            <span>Eliminar</span>
+            <DeleteIcon aria-hidden="true" />
+            Eliminar
           </button>
         </div>
       </div>

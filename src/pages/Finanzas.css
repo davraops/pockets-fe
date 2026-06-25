@@ -597,6 +597,21 @@
   .finanzas-finance-hero {
     padding: var(--spacing-md);
   }
+
+  .finanzas-feed-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: flex-start;
+  }
+
+  .finanzas-feed-row-title,
+  .finanzas-module-sub {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    white-space: normal;
+    word-break: break-word;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -6,6 +6,7 @@ export type CrudSummaryTone =
   | 'positive'
   | 'negative'
   | 'savings'
+  | 'danger'
 
 export interface CrudSummaryItem {
   label: string

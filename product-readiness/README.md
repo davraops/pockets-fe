@@ -59,7 +59,26 @@ Pockets FE es **invite-only**: no hay registro público ni flujo de recuperació
 - **P1–P4 cerrados** en FE; E2E en `e2e/smoke/registros.spec.ts`
 - **Code-split:** Empleados, Vehículos, Secretos, Patrimonio (`React.lazy`)
 
-\*E2E auth smoke corre sin credenciales; flujos CRUD requieren `E2E_USERNAME` / `E2E_PASSWORD`. Ver [finanzas.md](./finanzas.md).
+\*E2E auth smoke corre sin credenciales; flujos CRUD requieren `E2E_USERNAME` / `E2E_PASSWORD`. Ver [e2e/README.md](../e2e/README.md).
+
+## E2E (Playwright)
+
+| Suite | Archivo | Backend |
+|-------|---------|---------|
+| Auth | `e2e/smoke/auth.spec.ts` | Opcional |
+| Finanzas | `e2e/smoke/finanzas.spec.ts` | core + financial |
+| Registros | `e2e/smoke/registros.spec.ts` | lifestyle |
+| Tiempo | `e2e/smoke/tiempo.spec.ts` | lifestyle (metas, valores) |
+| Trabajo | `e2e/smoke/trabajo.spec.ts` | lifestyle (hiring) |
+| Archivos | `e2e/smoke/archivos.spec.ts` | lifestyle + S3 |
+| Justicia | `e2e/smoke/justicia.spec.ts` | Mocked (sin Rama Judicial) |
+
+```bash
+npm run test:e2e:smoke          # todos los smoke
+npm run test:e2e:nightly        # presigned upload (@nightly)
+```
+
+Stack local y variables: [e2e/README.md](../e2e/README.md).
 
 ## Cómo usar estos documentos
 

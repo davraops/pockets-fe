@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import { backToHubLabel } from '../constants/hubLabels'
 import { useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
@@ -618,28 +619,20 @@ function Contratos() {
 
         <h1 className="app-page-title">Contratos</h1>
 
-        <div className="crud-summary-strip crud-summary-strip--success" role="region" aria-label="Resumen de contratos">
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Contratos</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--info">
-              {highlights.total}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item crud-summary-strip-item--emphasis">
-            <span className="crud-summary-strip-label">Ingresos / mes</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--available">
-              {highlights.ingresos}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Exclusivos</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--info">
-              {highlights.exclusivos}
-            </span>
-          </div>
-        </div>
+        <CrudSummaryStrip
+          ariaLabel="Resumen de contratos"
+          stripClassName="crud-summary-strip--success"
+          items={[
+            { label: 'Contratos', value: highlights.total, tone: 'info' },
+            {
+              label: 'Ingresos / mes',
+              value: highlights.ingresos,
+              tone: 'available',
+              emphasis: true,
+            },
+            { label: 'Exclusivos', value: highlights.exclusivos, tone: 'info' },
+          ]}
+        />
 
         <button
           type="button"
@@ -717,7 +710,10 @@ function Contratos() {
             }}
             className="modal-overlay"
           >
-            <div className="crud-form-panel-shell crud-form-panel-shell--large" onClick={e => e.stopPropagation()}>
+            <div
+              className="crud-form-panel-shell crud-form-panel-shell--large contratos-form-modal"
+              onClick={e => e.stopPropagation()}
+            >
               <div className="modal-panel-header">
                 <h2 className="modal-panel-title" id="modal-panel-title-editingid-editar-contrato-crear-contrato">{editingId ? 'Editar Contrato' : 'Crear Contrato'}</h2>
                 <button
@@ -857,9 +853,10 @@ function Contratos() {
                           value={formData.salary}
                           onChange={handleChange}
                           className="form-input-base crud-form-amount-input"
-                          placeholder="0"
+                          placeholder="Ej: 5000000"
                           min="0"
                           step="0.01"
+                          inputMode="decimal"
                         />
                         <select
                           id="currency"

@@ -28,16 +28,24 @@ function VehiculoFormModal({
 }: VehiculoFormModalProps) {
   return (
     <ModalOverlay onClose={onCancel} className="modal-overlay">
-      <div className="vehiculos-modal vehiculos-modal-large" onClick={e => e.stopPropagation()}>
-        <div className="modal-panel-header">
-          <h2 className="modal-panel-title" id="modal-panel-title-editingid-editar-veh-culo-agregar-veh-culo">
-            {editingId ? 'Editar Vehículo' : 'Agregar Vehículo'}
-          </h2>
+      <div
+        className="modal-panel vehiculos-modal vehiculos-modal--form"
+        onClick={event => event.stopPropagation()}
+        role="dialog"
+        aria-labelledby="modal-title-vehiculo-form"
+      >
+        <div className="vehiculos-modal__header">
+          <div className="vehiculos-modal__header-copy">
+            <p className="vehiculos-modal__kicker">Flota · {editingId ? 'Editar' : 'Nuevo'}</p>
+            <h2 className="modal-panel-title" id="modal-title-vehiculo-form">
+              {editingId ? 'Editar vehículo' : 'Agregar vehículo'}
+            </h2>
+          </div>
           <button className="modal-panel-close" onClick={onCancel} aria-label="Cerrar" type="button">
             ×
           </button>
         </div>
-        <div className="modal-panel-content">
+        <div className="modal-panel-content vehiculos-modal__body">
           <form onSubmit={onSubmit} className="vehiculos-form" noValidate>
             <div className="form-group-base form-group-base--compact">
               <label htmlFor="name" className="form-label-base form-label-base--inline">
@@ -453,18 +461,12 @@ function VehiculoFormModal({
               />
             </div>
 
-            <div className="vehiculos-form-actions">
-              {editingId && (
-                <button
-                  type="button"
-                  className="vehiculos-form-button vehiculos-form-button-secondary"
-                  onClick={onCancel}
-                >
-                  Cancelar
-                </button>
-              )}
-              <button type="submit" className="vehiculos-form-button vehiculos-form-button-primary">
-                {editingId ? 'Actualizar' : 'Agregar'}
+            <div className="modal-actions-base vehiculos-modal__footer">
+              <button type="button" className="btn-base btn-secondary vehiculos-modal__btn" onClick={onCancel}>
+                Cancelar
+              </button>
+              <button type="submit" className="btn-base btn-accent vehiculos-modal__btn">
+                {editingId ? 'Guardar cambios' : 'Agregar vehículo'}
               </button>
             </div>
           </form>

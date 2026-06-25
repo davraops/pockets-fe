@@ -58,3 +58,24 @@
   outline: var(--focus-outline-width) solid var(--focus-danger-outline-color);
   outline-offset: var(--focus-outline-offset);
 }
+
+@media (max-width: 768px) {
+  .ajustes-static-row,
+  .ajustes-profile-header,
+  .ajustes-danger-info {
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .ajustes-profile-zone,
+  .ajustes-danger-zone {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .ajustes-danger-button {
+    width: 100%;
+    min-height: var(--touch-target-min);
+    justify-content: center;
+  }
+}

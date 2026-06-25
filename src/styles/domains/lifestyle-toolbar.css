@@ -1,0 +1,82 @@
+/* Lifestyle CRUD — toolbar búsqueda + CTA */
+
+.lifestyle-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--spacing-sm);
+  align-items: stretch;
+  width: 100%;
+}
+
+.lifestyle-search {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-width: 0;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 var(--spacing-md);
+  box-sizing: border-box;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass);
+}
+
+.lifestyle-search-icon {
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  color: var(--text-tertiary);
+}
+
+.lifestyle-search-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  outline: none;
+}
+
+.lifestyle-search-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.lifestyle-toolbar-cta {
+  margin-bottom: 0;
+  white-space: nowrap;
+  align-self: stretch;
+}
+
+.lifestyle-toolbar--solo-cta {
+  grid-template-columns: 1fr;
+}
+
+.lifestyle-toolbar--solo-cta .lifestyle-toolbar-cta {
+  width: 100%;
+  justify-content: center;
+}
+
+.lifestyle-list-meta {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+}
+
+@media (max-width: 768px) {
+  .lifestyle-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .lifestyle-toolbar-cta {
+    width: 100%;
+    justify-content: center;
+    white-space: normal;
+    text-align: center;
+  }
+}

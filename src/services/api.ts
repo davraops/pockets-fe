@@ -1,24 +1,26 @@
 import { cacheDisplayNameFromAuthResponse, clearCachedDisplayName } from '../utils/userDisplayName'
+import {
+  PRESIGNED_UPLOAD_THRESHOLD_BYTES,
+  resolveUploadMimeType,
+} from '../components/archivos/archivosTypes'
 // Arquitectura de múltiples servicios: 3 servicios independientes
 // Para desarrollo local, configurar variables de entorno en el archivo .env
 
-// Configuración de APIs por servicio (VITE_* override; en dev local usa localhost por defecto)
+// Configuración de APIs por servicio.
+// En dev, las peticiones pasan por el proxy de Vite (/api/*) para evitar CORS.
 const API_CONFIG = {
-  core:
-    import.meta.env.VITE_API_CORE_URL ??
-    (import.meta.env.DEV
-      ? 'http://localhost:7000'
-      : 'https://qe765aps3a.execute-api.us-east-1.amazonaws.com/dev'),
-  financial:
-    import.meta.env.VITE_API_FINANCIAL_URL ??
-    (import.meta.env.DEV
-      ? 'http://localhost:7001'
-      : 'https://l1nfx233y1.execute-api.us-east-1.amazonaws.com/dev'),
-  lifestyle:
-    import.meta.env.VITE_API_LIFESTYLE_URL ??
-    (import.meta.env.DEV
-      ? 'http://localhost:7002'
-      : 'https://kstxcg0o0g.execute-api.us-east-1.amazonaws.com/dev'),
+  core: import.meta.env.PROD
+    ? (import.meta.env.VITE_API_CORE_URL ??
+      'https://qe765aps3a.execute-api.us-east-1.amazonaws.com/dev')
+    : '/api/core',
+  financial: import.meta.env.PROD
+    ? (import.meta.env.VITE_API_FINANCIAL_URL ??
+      'https://l1nfx233y1.execute-api.us-east-1.amazonaws.com/dev')
+    : '/api/financial',
+  lifestyle: import.meta.env.PROD
+    ? (import.meta.env.VITE_API_LIFESTYLE_URL ??
+      'https://kstxcg0o0g.execute-api.us-east-1.amazonaws.com/dev')
+    : '/api/lifestyle',
 }
 
 class PocketsAPI {
@@ -76,7 +78,9 @@ class PocketsAPI {
       endpoint.startsWith('/crypto-vendors') ||
       endpoint.startsWith('/contracts') ||
       endpoint.startsWith('/client-activities') ||
-      endpoint.startsWith('/hiring-processes')
+      endpoint.startsWith('/hiring-processes') ||
+      endpoint.startsWith('/goals') ||
+      endpoint.startsWith('/values')
     ) {
       return 'lifestyle'
     }
@@ -123,6 +127,34 @@ class PocketsAPI {
     }
   }
 
+  private async parseResponseData(response: Response): Promise<any> {
+    const text = await response.text()
+    if (!text.trim()) {
+      return {}
+    }
+
+    try {
+      return JSON.parse(text) as Record<string, unknown>
+    } catch {
+      return { error: text, message: text }
+    }
+  }
+
+  private buildConnectionError(error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+    const isFailedFetch = errorMessage.toLowerCase().includes('failed to fetch')
+
+    return {
+      response: null,
+      data: {
+        error: isFailedFetch
+          ? 'No se pudo conectar con el servidor. Verifica que el backend lifestyle esté activo.'
+          : 'Error de conexión',
+        details: { message: errorMessage },
+      },
+    }
+  }
+
   /**
    * Método base para realizar requests a la API.
    *
@@ -141,28 +173,34 @@ class PocketsAPI {
     const baseURL = this.getBaseURL(service)
     const url = `${baseURL}${endpoint}`
     const token = this.getToken()
+    const isFormData = options.body instanceof FormData
+    const isAuthEndpoint = endpoint.startsWith('/auth/')
 
-    const config: RequestInit = {
-      headers: {
-        'Content-Type': 'application/json',
-        // Incluir token JWT en todos los endpoints excepto /auth/register y /auth/login
-        // El backend usa este token para filtrar automáticamente los datos por usuario
-        ...(token && !endpoint.startsWith('/auth/') && { Authorization: `Bearer ${token}` }),
-        ...options.headers,
-      },
-      ...options,
+    const headers: Record<string, string> = {
+      ...(token && !isAuthEndpoint && { Authorization: `Bearer ${token}` }),
+      ...(options.headers ?? {}),
     }
 
-    if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
-      config.body = JSON.stringify(options.body)
+    if (!isFormData && options.body !== undefined && options.body !== null) {
+      headers['Content-Type'] = 'application/json'
+    }
+
+    let body: BodyInit | undefined = options.body
+    if (body && typeof body === 'object' && !isFormData) {
+      body = JSON.stringify(body)
+    }
+
+    const config: RequestInit = {
+      method: options.method ?? 'GET',
+      headers,
+      body,
     }
 
     try {
       const response = await fetch(url, config)
-      const data = await response.json()
+      const data = await this.parseResponseData(response)
 
       if (!response.ok) {
-        // Si recibimos un 401 (Unauthorized), el token puede estar expirado o ser inválido
         if (response.status === 401) {
           this.handleUnauthorized(response, data)
         }
@@ -174,11 +212,7 @@ class PocketsAPI {
       if (error && typeof error === 'object' && 'response' in error) {
         throw error
       }
-      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-      throw {
-        response: null,
-        data: { error: 'Error de conexión', details: { message: errorMessage } },
-      }
+      throw this.buildConnectionError(error)
     }
   }
 
@@ -1514,7 +1548,7 @@ class PocketsAPI {
   }
 
   // User Files (Archivos/Documentos)
-  async uploadFile(file: File, title: string, description?: string) {
+  async uploadFileDirectMultipart(file: File, title: string, description?: string) {
     const formData = new FormData()
     formData.append('file', file)
     formData.append('title', title)
@@ -1522,71 +1556,110 @@ class PocketsAPI {
       formData.append('description', description)
     }
 
-    const service = this.getServiceForEndpoint('/files')
-    const baseURL = this.getBaseURL(service)
-    const url = `${baseURL}/files`
-    const token = this.getToken()
-
-    const config: RequestInit = {
+    return this.request('/files', {
       method: 'POST',
-      headers: {
-        // NO incluir Content-Type, el navegador lo agregará automáticamente con el boundary
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
       body: formData,
+    })
+  }
+
+  async createFileUploadUrl(data: {
+    title: string
+    description?: string
+    file_name: string
+    file_size: number
+    mime_type: string
+  }) {
+    return this.request('/files/upload-url', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async completeFileUpload(fileId: string) {
+    return this.request(`/files/${fileId}/complete`, {
+      method: 'POST',
+    })
+  }
+
+  private async uploadFileToPresignedUrl(
+    uploadUrl: string,
+    file: File,
+    headers: Record<string, string>
+  ): Promise<void> {
+    const response = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers,
+      body: file,
+    })
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => '')
+      throw {
+        response,
+        data: {
+          error: 'No se pudo subir el archivo al almacenamiento.',
+          message: text || response.statusText,
+        },
+      }
+    }
+  }
+
+  /**
+   * ≤ 10 MB → POST /files (multipart).
+   * > 10 MB → POST /files/upload-url → PUT S3 → POST /files/{id}/complete.
+   */
+  async uploadFile(file: File, title: string, description?: string) {
+    const mimeType = resolveUploadMimeType(file)
+
+    if (file.size <= PRESIGNED_UPLOAD_THRESHOLD_BYTES) {
+      return this.uploadFileDirectMultipart(file, title, description)
     }
 
+    let pendingFileId: string | undefined
+    let s3UploadSucceeded = false
+
     try {
-      const response = await fetch(url, config)
-      
-      // Intentar parsear JSON, pero manejar errores si no es JSON válido
-      let data: any
-      const contentType = response.headers.get('content-type')
-      if (contentType && contentType.includes('application/json')) {
-        try {
-          data = await response.json()
-        } catch (jsonError) {
-          const text = await response.text()
-          console.error('Error al parsear JSON de respuesta:', jsonError)
-          console.error('Respuesta del servidor:', text)
-          throw {
-            response,
-            data: { error: 'Error al procesar la respuesta del servidor', details: { message: text } },
+      const urlResponse = await this.createFileUploadUrl({
+        title,
+        description,
+        file_name: file.name,
+        file_size: file.size,
+        mime_type: mimeType,
+      })
+
+      pendingFileId = urlResponse.file?.id as string | undefined
+      const upload = urlResponse.upload as
+        | {
+            upload_url?: string
+            method?: string
+            headers?: Record<string, string>
           }
+        | undefined
+
+      if (!pendingFileId || !upload?.upload_url) {
+        throw {
+          response: { status: 500 },
+          data: { error: 'Respuesta inválida al preparar la subida del archivo.' },
         }
-      } else {
-        const text = await response.text()
-        console.error('Respuesta no es JSON. Content-Type:', contentType)
-        console.error('Respuesta del servidor:', text)
-        data = { error: text || 'Error desconocido del servidor' }
       }
 
-      if (!response.ok) {
-        console.error('Error en respuesta:', {
-          status: response.status,
-          statusText: response.statusText,
-          data,
-        })
-        if (response.status === 401) {
-          this.handleUnauthorized(response, data)
-        }
-        throw { response, data }
-      }
+      await this.uploadFileToPresignedUrl(
+        upload.upload_url,
+        file,
+        upload.headers ?? { 'Content-Type': mimeType }
+      )
+      s3UploadSucceeded = true
 
-      return data
-    } catch (error: unknown) {
-      // Si ya es un error formateado, re-lanzarlo
-      if (error && typeof error === 'object' && 'response' in error) {
-        console.error('Error de API:', error)
-        throw error
+      return await this.completeFileUpload(pendingFileId)
+    } catch (err) {
+      if (pendingFileId && !s3UploadSucceeded) {
+        try {
+          await this.deleteFile(pendingFileId)
+        } catch {
+          // Limpieza best-effort de registros pending abandonados
+        }
       }
-      // Error de red u otro error
-      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('Error de conexión o red:', errorMessage)
-      throw {
-        response: null,
-        data: { error: 'Error de conexión', details: { message: errorMessage } },
-      }
+      throw err
     }
   }
 
@@ -1998,6 +2071,99 @@ class PocketsAPI {
 
   async deleteAllHiringProcesses() {
     return this.request('/hiring-processes', {
+      method: 'DELETE',
+    })
+  }
+
+  // Goals (Metas)
+  async createGoal(data: {
+    title: string
+    description?: string | null
+    tasks?: Array<{ id?: string; title: string; status?: string }>
+  }) {
+    return this.request('/goals', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getGoals(goalId: string | null = null) {
+    const endpoint = goalId ? `/goals?id=${goalId}` : '/goals'
+    return this.request(endpoint)
+  }
+
+  async updateGoal(
+    goalId: string,
+    updates: {
+      title?: string
+      description?: string | null
+      tasks?: Array<{ id?: string; title: string; status?: string }>
+    }
+  ) {
+    return this.request(`/goals/${goalId}`, {
+      method: 'PUT',
+      body: updates,
+    })
+  }
+
+  async deleteGoal(goalId: string) {
+    return this.request(`/goals/${goalId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllGoals() {
+    return this.request('/goals', {
+      method: 'DELETE',
+    })
+  }
+
+  // Personal Values (Valores y creencias)
+  async createPersonalValue(data: {
+    kind: 'value' | 'belief'
+    title: string
+    description?: string | null
+  }) {
+    return this.request('/values', {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async getPersonalValues(options: { id?: string; kind?: 'value' | 'belief' } = {}) {
+    const params = new URLSearchParams()
+    if (options.id) {
+      params.set('id', options.id)
+    }
+    if (options.kind) {
+      params.set('kind', options.kind)
+    }
+    const query = params.toString()
+    return this.request(query ? `/values?${query}` : '/values')
+  }
+
+  async updatePersonalValue(
+    entryId: string,
+    updates: {
+      kind?: 'value' | 'belief'
+      title?: string
+      description?: string | null
+    }
+  ) {
+    return this.request(`/values/${entryId}`, {
+      method: 'PUT',
+      body: updates,
+    })
+  }
+
+  async deletePersonalValue(entryId: string) {
+    return this.request(`/values/${entryId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async deleteAllPersonalValues() {
+    return this.request('/values', {
       method: 'DELETE',
     })
   }

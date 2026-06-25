@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import AddIcon from '@mui/icons-material/Add'
 import LockIcon from '@mui/icons-material/Lock'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
+import SearchIcon from '@mui/icons-material/Search'
 import { api } from '../services/api'
 import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import CrudListPanel from '../components/crud/CrudListPanel'
@@ -22,7 +23,9 @@ import {
 } from '../components/secretos/secretoFormUtils'
 import {
   calculateSecretoHighlights,
+  filterSecretsByQuery,
   secretoSummaryItems,
+  sortSecretsByRecent,
 } from '../components/secretos/secretoDisplayUtils'
 import type { Secret } from '../components/secretos/secretosTypes'
 import { mapSecretsFromAPI } from '../components/secretos/secretosTypes'
@@ -57,6 +60,8 @@ function Secretos() {
   const valorRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState<SecretoFormData>(EMPTY_SECRETO_FORM)
   const [formErrors, setFormErrors] = useState<SecretoFormErrors>(EMPTY_SECRETO_FORM_ERRORS)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [openedViaQuickDecrypt, setOpenedViaQuickDecrypt] = useState(false)
 
   const loadSecrets = useCallback(async () => {
     setIsLoading(true)
@@ -114,6 +119,15 @@ function Secretos() {
     setShowDecryptedValue(false)
   }
 
+  const handleCloseDecryptModal = () => {
+    resetDecryptState()
+    if (openedViaQuickDecrypt) {
+      setIsDetailModalOpen(false)
+      setSelectedSecret(null)
+      setOpenedViaQuickDecrypt(false)
+    }
+  }
+
   const handleOpenModal = () => {
     setIsModalOpen(true)
     setIsEditMode(false)
@@ -130,6 +144,8 @@ function Secretos() {
     setSelectedSecret(secret)
     setIsDetailModalOpen(true)
     setIsEditMode(false)
+    setOpenedViaQuickDecrypt(false)
+    resetDecryptState()
     setFormData(secretToFormData(secret))
   }
 
@@ -137,12 +153,23 @@ function Secretos() {
     setIsDetailModalOpen(false)
     setSelectedSecret(null)
     setIsEditMode(false)
+    setOpenedViaQuickDecrypt(false)
     resetDecryptState()
     resetForm()
   }
 
   const handleEditClick = () => {
+    resetDecryptState()
+    setOpenedViaQuickDecrypt(false)
     setIsEditMode(true)
+  }
+
+  const handleCancelEdit = () => {
+    setIsEditMode(false)
+    setFormErrors(EMPTY_SECRETO_FORM_ERRORS)
+    if (selectedSecret) {
+      setFormData(secretToFormData(selectedSecret))
+    }
   }
 
   const handleDeleteClick = async () => {
@@ -175,8 +202,20 @@ function Secretos() {
   }
 
   const handleDecryptClick = () => {
+    setOpenedViaQuickDecrypt(false)
     setIsDecryptModalOpen(true)
     setIsEditMode(false)
+    setDecryptPassword('')
+    setDecryptedValue(null)
+    setShowDecryptedValue(false)
+  }
+
+  const handleQuickDecrypt = (secret: Secret) => {
+    setSelectedSecret(secret)
+    setIsDetailModalOpen(true)
+    setOpenedViaQuickDecrypt(true)
+    setIsEditMode(false)
+    setIsDecryptModalOpen(true)
     setDecryptPassword('')
     setDecryptedValue(null)
     setShowDecryptedValue(false)
@@ -283,6 +322,12 @@ function Secretos() {
   }
 
   const highlights = calculateSecretoHighlights(secrets)
+  const sortedSecrets = useMemo(() => sortSecretsByRecent(secrets), [secrets])
+  const filteredSecrets = useMemo(
+    () => filterSecretsByQuery(sortedSecrets, searchQuery),
+    [sortedSecrets, searchQuery]
+  )
+  const hasSearch = searchQuery.trim().length > 0
 
   return (
     <>
@@ -293,7 +338,9 @@ function Secretos() {
             context="Vault"
             meta={
               !isLoading && !error
-                ? `${secrets.length} guardado${secrets.length !== 1 ? 's' : ''}`
+                ? hasSearch
+                  ? `${filteredSecrets.length} de ${secrets.length} guardado${secrets.length !== 1 ? 's' : ''}`
+                  : `${secrets.length} guardado${secrets.length !== 1 ? 's' : ''}`
                 : undefined
             }
             toolbarActions={
@@ -327,35 +374,62 @@ function Secretos() {
             }
           />
 
-          <CrudSummaryStrip
-            ariaLabel="Resumen de secretos"
-            stripClassName="crud-summary-strip--danger"
-            items={secretoSummaryItems(highlights)}
-          />
+          {!isLoading && !error && secrets.length > 0 ? (
+            <CrudSummaryStrip
+              ariaLabel="Resumen de secretos"
+              stripClassName="crud-summary-strip--danger"
+              items={secretoSummaryItems(highlights)}
+            />
+          ) : null}
 
-          <button
-            type="button"
-            className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
-            onClick={handleOpenModal}
-            aria-label="Agregar secreto"
+          <div
+            className={`secretos-toolbar${!isLoading && !error && secrets.length === 0 ? ' secretos-toolbar--solo-cta' : ''}`}
           >
-            <AddIcon aria-hidden={true} />
-            Agregar secreto
-          </button>
+            {!isLoading && !error && (secrets.length > 0 || hasSearch) ? (
+              <label className="secretos-search">
+                <SearchIcon className="secretos-search-icon" aria-hidden="true" />
+                <input
+                  type="search"
+                  className="secretos-search-input"
+                  value={searchQuery}
+                  onChange={event => setSearchQuery(event.target.value)}
+                  placeholder="Buscar por título…"
+                  aria-label="Buscar secretos por título"
+                />
+              </label>
+            ) : null}
+            <button
+              type="button"
+              className="btn-base btn-accent btn-submit crud-primary-cta secretos-toolbar-cta"
+              onClick={handleOpenModal}
+              aria-label="Agregar secreto"
+            >
+              <AddIcon aria-hidden={true} />
+              Agregar secreto
+            </button>
+          </div>
 
           <CrudListPanel
-            items={secrets}
+            items={filteredSecrets}
             isLoading={isLoading}
             error={error}
             onRetry={() => void loadSecrets()}
             retryAriaLabel="Reintentar cargar secretos"
             loadingAriaLabel="Cargando secretos"
             emptyIcon={<LockIcon className="empty-state-icon" />}
-            emptyTitle="No hay secretos registrados"
-            emptySubtext="Usa el botón de arriba para agregar el primero"
+            emptyTitle={hasSearch ? 'Sin coincidencias' : 'No hay secretos registrados'}
+            emptySubtext={
+              hasSearch
+                ? 'Prueba con otro título o limpia la búsqueda'
+                : 'Usa Agregar secreto para guardar el primero'
+            }
             getItemKey={secret => secret.id}
             renderItem={secret => (
-              <SecretoListRow secret={secret} onClick={() => handleOpenDetailModal(secret)} />
+              <SecretoListRow
+                secret={secret}
+                onClick={() => handleOpenDetailModal(secret)}
+                onDecrypt={() => handleQuickDecrypt(secret)}
+              />
             )}
           />
         </div>
@@ -400,7 +474,7 @@ function Secretos() {
           onToggleShow={() => setShowDecryptedValue(prev => !prev)}
           onCopy={() => void handleCopyDecryptedValue()}
           onDecryptAnother={handleDecryptAnother}
-          onClose={handleCloseDetailModal}
+          onClose={handleCloseDecryptModal}
         />
       )}
 
@@ -418,7 +492,7 @@ function Secretos() {
           overlayClassName="edit-modal-overlay"
           onChange={handleChange}
           onSubmit={handleSubmit}
-          onClose={handleCloseDetailModal}
+          onClose={handleCancelEdit}
         />
       )}
 

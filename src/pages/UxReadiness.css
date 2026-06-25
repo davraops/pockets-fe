@@ -170,7 +170,14 @@
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   word-break: break-all;
-}@media (max-width: 768px){
+}
+
+@media (max-width: 768px) {
+  .ux-readiness-metrics,
+  .ux-readiness-refs {
+    grid-template-columns: 1fr;
+  }
+
   .ux-readiness-sections-header {
     display: none;
   }
@@ -180,7 +187,18 @@
     gap: var(--spacing-xs);
   }
 
+  .ux-readiness-sections-row > span {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    word-break: break-word;
+  }
+
   .ux-readiness-login-header {
     flex-direction: column;
+  }
+
+  .ux-readiness-login-score {
+    font-size: var(--font-size-3xl);
   }
 }

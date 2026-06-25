@@ -158,6 +158,20 @@
 }
 
 @media (max-width: 768px) {
+  .finanzas-sub-toolbar {
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    height: auto;
+    min-height: 44px;
+  }
+
+  .finanzas-sub-toolbar-actions {
+    width: 100%;
+    margin-left: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
   .finanzas-sub-title-brand {
     font-size: var(--font-size-xl);
   }

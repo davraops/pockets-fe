@@ -1,27 +1,38 @@
 # Space Audit — Generador de Contraseñas
 
-**Última auditoría:** 2026-06-22  
+**Última auditoría:** 2026-06-23  
 **Ruta:** `/registros/generador-contrasenas`  
-**Score Space:** **3.6 / 5**
+**Archivos:** `GeneradorContrasenas.tsx`, `GeneradorContrasenas.css`, `generadorContrasenasUtils.ts`  
+**Score Space:** **4.5 / 5**
 
 ---
 
 ## Resumen ejecutivo
 
-Herramienta de generación. Toolbar + título (sin subtitle) + panel de contraseña y opciones.
+Herramienta split: panel único (output + opciones + CTA) + historial sidebar. Centrada en desktop como Calculadora.
 
 | Veredicto | Detalle |
 |-----------|---------|
-| **CTA primario** | Generar / copiar en panel (no CRUD) |
-| **Hallazgos abiertos** | Opciones largas en scroll |
+| **CTA primario** | ✅ `Generar contraseña` full-width en panel |
+| **Jerarquía** | ✅ Output mono → fortaleza → opciones compactas → historial secundario |
+| **Mobile** | ✅ Stack; opciones 1 col; historial acotado |
+| **Hallazgos abiertos** | 0 |
 
 ---
 
-## Resueltos
+## Mapa de layout
 
-| Hallazgo | Fix |
-|----------|-----|
-| P2 subtitle | Eliminado |
+```
+Desktop (≥900px, centrado):
+┌── generador-shell (~420px) ──┐  ┌── historial sticky ──┐
+│ Contraseña + copiar           │  │ Ab12••••    hace 2m  │
+│ Fortaleza + barra             │  │ …                     │
+│ Longitud + grid 2×2 opciones  │  └───────────────────────┘
+│ [ Generar contraseña ]        │
+└───────────────────────────────┘
+
+Mobile: panel arriba, historial abajo
+```
 
 ---
 
@@ -29,4 +40,5 @@ Herramienta de generación. Toolbar + título (sin subtitle) + panel de contrase
 
 | Fecha | Cambio |
 |-------|--------|
+| 2026-06-23 | Rediseño split + utils + historial enmascarado — **4.5/5** |
 | 2026-06-22 | Subtitle eliminado — **3.6/5** |

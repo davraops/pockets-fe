@@ -62,3 +62,21 @@ export function archivoSummaryItems(
     { label: 'Imágenes', value: highlights.imagenes, tone: 'info' },
   ]
 }
+
+export function filterFilesByQuery(files: FileAPI[], query: string): FileAPI[] {
+  const normalized = query.trim().toLowerCase()
+  if (!normalized) {
+    return files
+  }
+
+  return files.filter(file => {
+    const haystack = [file.title, file.file_name, file.description ?? '']
+      .join(' ')
+      .toLowerCase()
+    return haystack.includes(normalized)
+  })
+}
+
+export function formatFileListMeta(file: FileAPI): string {
+  return `${file.file_name} · ${formatFileDate(file.created_at)}`
+}

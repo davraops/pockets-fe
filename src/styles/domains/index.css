@@ -1,7 +1,9 @@
 /* Domain-level shared styles — imported via shared.css */
+@import './crud-row-metrics.css';
 @import './crud.css';
 @import './crud-list-rows.css';
 @import './crud-row-slots.css';
+@import './crud-row-overrides.css';
 @import './crud-hub-rows.css';
 @import './crud-card-rows.css';
 @import './crud-crypto-rows.css';
@@ -13,3 +15,6 @@
 @import './crud-form-panels.css';
 @import './finanzas-submodule.css';
 @import './utilidades-submodule.css';
+@import './lifestyle-toolbar.css';
+@import './lifestyle-modals.css';
+@import './lifestyle-submodule.css';

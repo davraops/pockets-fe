@@ -20,7 +20,7 @@ test.describe('Registros smoke', () => {
 
   test('cuadernos and secretos modules render', async ({ page }) => {
     await page.goto('/registros/cuadernos')
-    await expect(page.getByRole('button', { name: 'Nuevo cuaderno' })).toBeVisible({
+    await expect(page.getByRole('button', { name: 'Nuevo cuaderno' }).first()).toBeVisible({
       timeout: 20_000,
     })
 
@@ -45,7 +45,7 @@ test.describe('Registros smoke', () => {
     const secretTitle = `Secreto ${label}`
 
     await page.goto('/registros/cuadernos')
-    await page.getByRole('button', { name: 'Nuevo cuaderno' }).click()
+    await page.getByRole('button', { name: 'Nuevo cuaderno' }).first().click()
     await page.locator('#titulo').fill(noteTitle)
     await page.getByRole('button', { name: 'Crear y abrir' }).click()
     await expect(page.getByLabel('Título del cuaderno')).toHaveValue(noteTitle, {
@@ -54,11 +54,11 @@ test.describe('Registros smoke', () => {
     await page.getByRole('textbox', { name: 'Texto' }).click()
     await page.keyboard.type(`Contenido ${label}`)
     await expect(page.getByText('Guardado')).toBeVisible({ timeout: 15_000 })
-    await expect(page.locator('.cuaderno-tree-sidebar-link', { hasText: noteTitle })).toBeVisible({
+    await expect(page.getByRole('treeitem', { name: new RegExp(noteTitle) })).toBeVisible({
       timeout: 15_000,
     })
+
     await page.reload()
-    await page.getByRole('button', { name: 'Editar' }).click({ timeout: 15_000 })
     await expect(page.getByLabel('Título del cuaderno')).toHaveValue(noteTitle, {
       timeout: 15_000,
     })

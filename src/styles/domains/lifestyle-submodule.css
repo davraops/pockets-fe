@@ -1,0 +1,127 @@
+/* Shared Lifestyle submodule layout — sub-header, toolbar */
+
+.lifestyle-sub-content,
+.fechas-content.lifestyle-sub-content,
+.rutinas-content.lifestyle-sub-content,
+.midia-content.lifestyle-sub-content,
+.midiario-content.lifestyle-sub-content,
+.metas-content.lifestyle-sub-content,
+.valores-content.lifestyle-sub-content {
+  gap: var(--spacing-md);
+  max-width: min(1120px, 100%);
+}
+
+.lifestyle-sub-toolbar {
+  justify-content: space-between;
+  width: 100%;
+}
+
+.lifestyle-sub-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-left: auto;
+}
+
+.lifestyle-sub-menu-container {
+  position: relative;
+}
+
+.lifestyle-sub-menu {
+  position: absolute;
+  top: calc(100% + var(--spacing-xs));
+  right: 0;
+  min-width: 160px;
+  padding: var(--spacing-xs);
+  background: var(--modal-surface);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 10;
+}
+
+.lifestyle-sub-menu-item {
+  display: block;
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  text-align: left;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.lifestyle-sub-menu-item:hover {
+  background: var(--bg-glass-light);
+}
+
+.lifestyle-sub-header {
+  margin-bottom: var(--spacing-xs);
+}
+
+.lifestyle-sub-title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35em;
+  margin: 0;
+  font-family: var(--font-family);
+  line-height: 1.2;
+}
+
+.lifestyle-sub-title-brand {
+  font-size: clamp(1.5rem, 4vw, 1.875rem);
+  font-weight: var(--font-weight-bold);
+  color: var(--section-lifestyle);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.lifestyle-sub-title-sep {
+  font-size: var(--font-size-lg);
+  color: var(--text-tertiary);
+}
+
+.lifestyle-sub-title-context {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+}
+
+.lifestyle-sub-meta {
+  margin: var(--spacing-xs) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+}
+
+@media (max-width: 768px) {
+  .lifestyle-sub-toolbar,
+  .utilidades-sub-toolbar,
+  .finanzas-sub-toolbar {
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    height: auto;
+    min-height: 44px;
+  }
+
+  .lifestyle-sub-toolbar-actions,
+  .utilidades-sub-toolbar-actions,
+  .finanzas-sub-toolbar-actions {
+    width: 100%;
+    margin-left: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .lifestyle-sub-title-brand {
+    font-size: var(--font-size-xl);
+  }
+
+  .lifestyle-sub-title-context,
+  .lifestyle-sub-title-sep {
+    font-size: var(--font-size-base);
+  }
+}

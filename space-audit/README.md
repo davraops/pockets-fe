@@ -177,7 +177,7 @@ Coexisten: `btn-base`, `finanzas-add-transaction-button`, `empty-state-cta`, `fi
 | **Empleados** | `/registros/empleados` | [empleados.md](./empleados.md) | **3.8** | ✅ Auditado 2026-06-22 |
 | **Vehículos** | `/registros/vehiculos` | [vehiculos.md](./vehiculos.md) | **3.8** | ✅ Auditado 2026-06-22 |
 | **Patrimonio** | `/registros/patrimonio` | [patrimonio.md](./patrimonio.md) | **3.8** | ✅ Auditado 2026-06-22 |
-| **Calculadora** | `/registros/calculadora` | [calculadora.md](./calculadora.md) | **3.5** | ✅ Auditado 2026-06-22 |
+| **Calculadora** | `/registros/calculadora` | [calculadora.md](./calculadora.md) | **4.0** | ✅ Auditado 2026-06-23 |
 | **Generador contraseñas** | `/registros/generador-contrasenas` | [generador-contrasenas.md](./generador-contrasenas.md) | **3.6** | ✅ Auditado 2026-06-22 |
 | **Lifestyle hub** | `/tiempo` | [tiempo.md](./tiempo.md) | **3.8** | ✅ Auditado 2026-06-22 |
 | **Fechas** | `/tiempo/fechas` | [fechas.md](./fechas.md) | **3.9** | ✅ Auditado 2026-06-22 |

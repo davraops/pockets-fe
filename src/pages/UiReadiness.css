@@ -384,7 +384,65 @@
 .ui-readiness-spacing-block {
   background: var(--accent-primary-border);
   height: 12px;
-}@media (max-width: 768px){
+}
+
+@media (max-width: 768px) {
+  .ui-readiness-content {
+    gap: var(--spacing-lg);
+    max-width: 100%;
+  }
+
+  .ui-readiness-hero {
+    padding: var(--spacing-md) 0;
+  }
+
+  .ui-readiness-section {
+    padding: var(--spacing-md);
+    border-radius: var(--radius-lg);
+  }
+
+  .ui-readiness-dimensions,
+  .ui-readiness-token-grid,
+  .ui-readiness-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .ui-readiness-swatches {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ui-readiness-swatch-label {
+    white-space: normal;
+    word-break: break-all;
+    overflow: visible;
+    text-overflow: unset;
+  }
+
+  .ui-readiness-architecture-item {
+    grid-template-columns: 1fr;
+  }
+
+  .ui-readiness-architecture-layer {
+    grid-row: auto;
+    align-self: flex-start;
+  }
+
+  .ui-readiness-components {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ui-readiness-components .btn-base {
+    width: 100%;
+    min-height: var(--touch-target-min);
+    justify-content: center;
+  }
+
+  .ui-readiness-section-colors {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .ui-readiness-type-row {
     flex-direction: column;
     gap: var(--spacing-xs);

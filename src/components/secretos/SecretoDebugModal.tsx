@@ -77,16 +77,25 @@ function SecretoDebugModal({ onClose, onReload, onClearList }: SecretoDebugModal
 
   return (
     <ModalOverlay onClose={onClose} className="modal-overlay">
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2 className="modal-title" id="modal-title-debug-secretos">
-            Debug - Secretos
-          </h2>
-          <button className="modal-close" onClick={onClose} aria-label="Cerrar modal" type="button">
+      <div
+        className="modal-panel secretos-modal secretos-modal--debug"
+        onClick={event => event.stopPropagation()}
+        role="dialog"
+        aria-labelledby="modal-title-debug-secretos"
+      >
+        <div className="secretos-modal__header">
+          <div className="secretos-modal__header-copy">
+            <p className="secretos-modal__kicker">Debug</p>
+            <h2 className="modal-panel-title" id="modal-title-debug-secretos">
+              Secretos
+            </h2>
+          </div>
+          <button className="modal-panel-close" onClick={onClose} aria-label="Cerrar" type="button">
             ×
           </button>
         </div>
-        <div className="modal-panel-content">
+
+        <div className="modal-panel-content secretos-modal__body">
           <div className="debug-options">
             <button
               className="debug-option-button create-demo"
@@ -96,7 +105,7 @@ function SecretoDebugModal({ onClose, onReload, onClearList }: SecretoDebugModal
             >
               <span className="debug-option-icon">📦</span>
               <div className="debug-option-info">
-                <h3 className="debug-option-title">Crear Secretos Demo</h3>
+                <h3 className="debug-option-title">Crear secretos demo</h3>
                 <p className="debug-option-description">Crea 5 secretos de ejemplo para pruebas</p>
               </div>
             </button>
@@ -108,16 +117,17 @@ function SecretoDebugModal({ onClose, onReload, onClearList }: SecretoDebugModal
             >
               <span className="debug-option-icon">🗑️</span>
               <div className="debug-option-info">
-                <h3 className="debug-option-title">Eliminar Todos los Secretos</h3>
+                <h3 className="debug-option-title">Eliminar todos los secretos</h3>
                 <p className="debug-option-description">
-                  ⚠️ PELIGROSO: Elimina todos los secretos (IRREVERSIBLE)
+                  Peligroso: elimina todos los secretos (irreversible)
                 </p>
               </div>
             </button>
           </div>
         </div>
-        <div className="modal-actions">
-          <button type="button" className="modal-button secondary" onClick={onClose}>
+
+        <div className="modal-actions-base secretos-modal__footer">
+          <button type="button" className="btn-base btn-secondary secretos-modal__btn" onClick={onClose}>
             Cerrar
           </button>
         </div>

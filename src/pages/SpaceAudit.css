@@ -119,6 +119,45 @@
   opacity: 1;
 }
 
+@media (max-width: 768px) {
+  .space-audit-content {
+    max-width: 100%;
+    padding-bottom: max(var(--spacing-md), env(safe-area-inset-bottom, 0px));
+  }
+
+  .space-audit-compare {
+    grid-template-columns: 1fr;
+  }
+
+  .space-audit-compare-card {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .space-audit-demo-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-sm);
+  }
+
+  .space-audit-pattern-header,
+  .space-audit-pattern-row {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-xs);
+    align-items: flex-start;
+  }
+
+  .space-audit-pattern-header span:nth-child(3),
+  .space-audit-pattern-header span:nth-child(4),
+  .space-audit-pattern-row span:nth-child(3),
+  .space-audit-pattern-row span:nth-child(4) {
+    display: none;
+  }
+
+  .space-audit-pattern-row code {
+    word-break: break-all;
+  }
+}
+
 @media (max-width: 640px) {
   .space-audit-pattern-header,
   .space-audit-pattern-row {

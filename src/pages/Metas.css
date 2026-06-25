@@ -1,0 +1,383 @@
+/* Metas — lifestyle goals with embedded tasks */
+
+.metas-content {
+  gap: var(--spacing-md);
+}
+
+.metas-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.metas-search {
+  position: relative;
+  flex: 1 1 220px;
+}
+
+.metas-search-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  font-size: 1.1rem !important;
+}
+
+.metas-search-input {
+  width: 100%;
+  padding: 0.7rem 0.9rem 0.7rem 2.5rem;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass-light);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+}
+
+.metas-primary-button,
+.metas-secondary-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.65rem 0.95rem;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.metas-primary-button {
+  background: var(--section-lifestyle);
+  color: #fff;
+}
+
+.metas-secondary-button {
+  background: var(--bg-glass-light);
+  border-color: var(--border-glass);
+  color: var(--text-primary);
+}
+
+.metas-goal-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.metas-goal-card {
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  background: var(--bg-glass);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.metas-goal-card--complete {
+  border-color: color-mix(in srgb, var(--section-lifestyle) 35%, var(--border-glass));
+}
+
+.metas-goal-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-md);
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.metas-goal-card__title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  color: var(--text-primary);
+}
+
+.metas-goal-card__meta {
+  margin: 0.2rem 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--section-lifestyle);
+}
+
+.metas-goal-card__description {
+  margin: 0.35rem 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.metas-goal-card__chevron {
+  color: var(--text-tertiary);
+  transition: transform var(--transition-base);
+}
+
+.metas-goal-card__chevron--open {
+  transform: rotate(90deg);
+}
+
+.metas-goal-card__progress {
+  height: 4px;
+  background: color-mix(in srgb, var(--section-lifestyle) 12%, var(--bg-glass-light));
+}
+
+.metas-goal-card__progress-fill {
+  height: 100%;
+  background: var(--section-lifestyle);
+  transition: width var(--transition-base);
+}
+
+.metas-goal-card__body {
+  padding: 0 var(--spacing-md) var(--spacing-md);
+}
+
+.metas-goal-card__empty,
+.metas-form-hint {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+}
+
+.metas-task-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.metas-task-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.metas-task-status {
+  flex-shrink: 0;
+  min-width: 5.5rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-glass);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.metas-task-status--pending {
+  background: color-mix(in srgb, var(--text-tertiary) 12%, transparent);
+  color: var(--text-secondary);
+}
+
+.metas-task-status--in_progress {
+  background: color-mix(in srgb, #007aff 14%, transparent);
+  color: #007aff;
+}
+
+.metas-task-status--done {
+  background: color-mix(in srgb, #34c759 16%, transparent);
+  color: #34c759;
+}
+
+.metas-task-title {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+.metas-task-title--done {
+  text-decoration: line-through;
+  color: var(--text-tertiary);
+}
+
+.metas-goal-card__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  margin-top: var(--spacing-sm);
+}
+
+.metas-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  background: var(--bg-glass-light);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.metas-icon-button--danger {
+  color: #ff3b30;
+}
+
+.metas-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xl) var(--spacing-md);
+  text-align: center;
+}
+
+.metas-empty-icon {
+  font-size: 2.5rem !important;
+  color: var(--section-lifestyle);
+}
+
+.metas-empty-title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  color: var(--text-primary);
+}
+
+.metas-empty-subtitle {
+  margin: 0;
+  max-width: 28rem;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.metas-modal {
+  width: min(560px, calc(100vw - 2rem));
+  max-width: min(560px, calc(100vw - 2rem));
+  max-height: min(90vh, calc(100dvh - 4rem));
+  overflow: hidden;
+  padding: 0;
+  border-radius: var(--radius-lg);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  box-shadow: var(--shadow-xl);
+}
+
+.metas-modal__body {
+  padding: var(--spacing-md) var(--spacing-lg);
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.metas-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--border-glass-light);
+  flex-shrink: 0;
+}
+
+.metas-modal-title {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  color: var(--text-primary);
+}
+
+.metas-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.metas-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.metas-field input,
+.metas-field textarea {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass-light);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+}
+
+.metas-form-task-input {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.metas-form-task-input input {
+  flex: 1;
+}
+
+.metas-form-task-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.metas-form-task-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-glass-light);
+  font-size: var(--font-size-sm);
+}
+
+.metas-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .metas-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .metas-primary-button {
+    justify-content: center;
+  }
+
+  .metas-goal-card__header {
+    flex-wrap: wrap;
+  }
+
+  .metas-goal-card__title {
+    word-break: break-word;
+  }
+
+  .metas-form-task-input {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 768px) {
+  .metas-form-actions {
+    flex-wrap: wrap;
+  }
+
+  .metas-form-actions .metas-primary-button,
+  .metas-form-actions .metas-secondary-button {
+    flex: 1 1 calc(50% - 0.25rem);
+    min-height: var(--touch-target-min);
+    justify-content: center;
+  }
+}

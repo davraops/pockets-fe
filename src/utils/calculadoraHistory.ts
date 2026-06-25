@@ -1,10 +1,14 @@
 const STORAGE_KEY = 'pockets-calculadora-history'
 const MAX_ENTRIES = 50
 
+export type CalculadoraHistoryKind = 'basica' | 'ingenieria'
+
 export interface CalculadoraHistoryEntry {
   expression: string
   result: string
   timestamp: number
+  kind?: CalculadoraHistoryKind
+  title?: string
 }
 
 function isValidEntry(value: unknown): value is CalculadoraHistoryEntry {
@@ -13,7 +17,9 @@ function isValidEntry(value: unknown): value is CalculadoraHistoryEntry {
   return (
     typeof entry.expression === 'string' &&
     typeof entry.result === 'string' &&
-    typeof entry.timestamp === 'number'
+    typeof entry.timestamp === 'number' &&
+    (entry.kind === undefined || entry.kind === 'basica' || entry.kind === 'ingenieria') &&
+    (entry.title === undefined || typeof entry.title === 'string')
   )
 }
 

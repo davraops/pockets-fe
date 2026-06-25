@@ -26,83 +26,95 @@ function ArchivoUploadModal({
 }: ArchivoUploadModalProps) {
   return (
     <ModalOverlay onClose={onClose} className="modal-overlay">
-      <div className="modal-panel" onClick={e => e.stopPropagation()}>
-        <div className="modal-panel-header">
-          <h2 className="modal-panel-title" id="modal-panel-title-subir-archivo">
-            Subir Archivo
-          </h2>
+      <div
+        className="modal-panel archivos-modal"
+        onClick={event => event.stopPropagation()}
+        role="dialog"
+        aria-labelledby="modal-title-subir-archivo"
+      >
+        <div className="archivos-modal__header">
+          <div className="archivos-modal__header-copy">
+            <p className="archivos-modal__kicker">Documentos · Subir</p>
+            <h2 className="modal-panel-title" id="modal-title-subir-archivo">
+              Subir archivo
+            </h2>
+          </div>
           <button className="modal-panel-close" onClick={onClose} aria-label="Cerrar" type="button">
             ×
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="archivos-modal-form">
-          <div className="form-group-base">
-            <label htmlFor="file" className="archivos-form-label">
-              Archivo *
-            </label>
-            <input
-              ref={fileInputRef}
-              type="file"
-              id="file"
-              name="file"
-              onChange={onFileSelect}
-              className="archivos-form-file-input"
-              accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,image/*"
-              required
-            />
-            {selectedFile && (
-              <div className="archivos-file-selected">
-                <span className="archivos-file-selected-icon">{getFileIcon(selectedFile.type)}</span>
-                <div className="archivos-file-selected-info">
-                  <span className="archivos-file-selected-name">{selectedFile.name}</span>
-                  <span className="archivos-file-selected-size">
-                    {formatFileSize(selectedFile.size)}
+        <form className="archivos-modal__form" onSubmit={onSubmit} noValidate>
+          <div className="modal-panel-content archivos-modal__body">
+            <div className="form-group-base">
+              <label htmlFor="file" className="form-label-base">
+                Archivo
+              </label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                id="file"
+                name="file"
+                onChange={onFileSelect}
+                className="archivos-modal__file-input"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,image/*"
+                required
+              />
+              {selectedFile ? (
+                <div className="archivos-modal__file-selected">
+                  <span className="archivos-modal__file-selected-icon">
+                    {getFileIcon(selectedFile.type)}
                   </span>
+                  <div className="archivos-modal__file-selected-copy">
+                    <span className="archivos-modal__file-selected-name">{selectedFile.name}</span>
+                    <span className="archivos-modal__file-selected-size">
+                      {formatFileSize(selectedFile.size)}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            )}
-            <p className="archivos-form-hint">
-              Tamaño máximo: 25MB. Formatos permitidos: PDF, Word, Excel, PowerPoint, texto, CSV,
-              imágenes
-            </p>
+              ) : null}
+              <p className="archivos-modal__hint">
+                Máx. 50 MB · hasta 10 MB subida directa; archivos mayores usan almacenamiento seguro
+                · PDF, Office, texto, CSV e imágenes
+              </p>
+            </div>
+
+            <div className="form-group-base">
+              <label htmlFor="title" className="form-label-base">
+                Título
+              </label>
+              <input
+                type="text"
+                id="title"
+                name="title"
+                value={formData.title}
+                onChange={onChange}
+                className="form-input-base form-input-base--comfortable"
+                required
+                placeholder="Ej: Contrato de arrendamiento"
+              />
+            </div>
+
+            <div className="form-group-base">
+              <label htmlFor="description" className="form-label-base">
+                Descripción (opcional)
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={onChange}
+                className="form-textarea-base"
+                rows={3}
+                placeholder="Notas sobre el documento…"
+              />
+            </div>
           </div>
 
-          <div className="form-group-base">
-            <label htmlFor="title" className="archivos-form-label">
-              Título *
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={formData.title}
-              onChange={onChange}
-              className="form-input-base"
-              required
-              placeholder="Ej: Contrato de arrendamiento"
-            />
-          </div>
-
-          <div className="form-group-base">
-            <label htmlFor="description" className="archivos-form-label">
-              Descripción (opcional)
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={onChange}
-              className="form-textarea-base"
-              rows={3}
-              placeholder="Descripción adicional del archivo..."
-            />
-          </div>
-
-          <div className="archivos-form-actions">
+          <div className="modal-actions-base archivos-modal__footer">
             <button
               type="button"
-              className="archivos-form-button archivos-form-button-secondary"
+              className="btn-base btn-secondary archivos-modal__btn"
               onClick={onClose}
               disabled={isUploading}
             >
@@ -110,10 +122,10 @@ function ArchivoUploadModal({
             </button>
             <button
               type="submit"
-              className="archivos-form-button archivos-form-button-primary"
+              className="btn-base btn-accent archivos-modal__btn"
               disabled={isUploading || !selectedFile}
             >
-              {isUploading ? 'Subiendo...' : 'Subir Archivo'}
+              {isUploading ? 'Subiendo…' : 'Subir archivo'}
             </button>
           </div>
         </form>

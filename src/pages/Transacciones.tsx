@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import { useNavigate, useLocation } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz'
@@ -16,6 +17,24 @@ import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import { emitTransactionSyncEvents } from '../utils/transactionMutation'
 import FinanzasSubHeader from '../components/finanzas/FinanzasSubHeader'
+import TransaccionPatrimonioFields from '../components/transacciones/TransaccionPatrimonioFields'
+import TransaccionPatrimonioToggle from '../components/transacciones/TransaccionPatrimonioToggle'
+import {
+  EMPTY_PATRIMONY_FORM,
+  EMPTY_PATRIMONY_FORM_ERRORS,
+  formDataToPatrimonyPayload,
+  validatePatrimonyForm,
+  type PatrimonyFormData,
+  type PatrimonyFormErrors,
+} from '../components/patrimonio/patrimonioFormUtils'
+import {
+  buildPatrimonyFormFromTransaction,
+  canAddTransactionToPatrimony,
+  mergeCategorySuggestions,
+  mergePatrimonyFromTransaction,
+  shouldSuggestPatrimonio,
+  type PatrimonySyncField,
+} from '../utils/transactionPatrimonyUtils'
 import './AppPage.css'
 import './Transacciones.css'
 
@@ -129,7 +148,17 @@ function Transacciones() {
     creditCardId: '',
     isDebtorPayment: false,
     debtorId: '',
+    addToPatrimonio: false,
   })
+  const [patrimonyFormData, setPatrimonyFormData] =
+    useState<PatrimonyFormData>(EMPTY_PATRIMONY_FORM)
+  const [patrimonyFormErrors, setPatrimonyFormErrors] = useState<PatrimonyFormErrors>(
+    EMPTY_PATRIMONY_FORM_ERRORS
+  )
+  const [patrimonyTouchedFields, setPatrimonyTouchedFields] = useState<Set<PatrimonySyncField>>(
+    () => new Set()
+  )
+  const [patrimonyCategorySuggestions, setPatrimonyCategorySuggestions] = useState<string[]>([])
   const [formErrors, setFormErrors] = useState({
     monto: '',
     descripcion: '',
@@ -345,7 +374,11 @@ function Transacciones() {
       creditCardId: '',
       isDebtorPayment: false,
       debtorId: '',
+      addToPatrimonio: false,
     })
+    setPatrimonyFormData(EMPTY_PATRIMONY_FORM)
+    setPatrimonyFormErrors(EMPTY_PATRIMONY_FORM_ERRORS)
+    setPatrimonyTouchedFields(new Set())
     setFormErrors({
       monto: '',
       descripcion: '',
@@ -388,7 +421,11 @@ function Transacciones() {
       creditCardId: '',
       isDebtorPayment: false,
       debtorId: '',
+      addToPatrimonio: false,
     })
+    setPatrimonyFormData(EMPTY_PATRIMONY_FORM)
+    setPatrimonyFormErrors(EMPTY_PATRIMONY_FORM_ERRORS)
+    setPatrimonyTouchedFields(new Set())
     setFormErrors({
       monto: '',
       descripcion: '',
@@ -434,7 +471,11 @@ function Transacciones() {
       creditCardId: selectedTransaction.creditCardId || '',
       isDebtorPayment: Boolean(selectedTransaction.debtorId),
       debtorId: selectedTransaction.debtorId || '',
+      addToPatrimonio: false,
     })
+    setPatrimonyFormData(EMPTY_PATRIMONY_FORM)
+    setPatrimonyFormErrors(EMPTY_PATRIMONY_FORM_ERRORS)
+    setPatrimonyTouchedFields(new Set())
   }
 
   const handleDeleteClick = async () => {
@@ -661,10 +702,127 @@ function Transacciones() {
     return isValid
   }
 
+  const validatePatrimonySection = (): boolean => {
+    if (!formData.addToPatrimonio) {
+      setPatrimonyFormErrors(EMPTY_PATRIMONY_FORM_ERRORS)
+      return true
+    }
+
+    const { isValid, errors } = validatePatrimonyForm(patrimonyFormData)
+    setPatrimonyFormErrors(errors)
+    return isValid
+  }
+
+  const handlePatrimonyFieldTouch = (field: PatrimonySyncField) => {
+    setPatrimonyTouchedFields(prev => {
+      if (prev.has(field)) {
+        return prev
+      }
+      const next = new Set(prev)
+      next.add(field)
+      return next
+    })
+  }
+
+  const handlePatrimonioToggle = (checked: boolean) => {
+    if (checked) {
+      setFormData(prev => ({ ...prev, addToPatrimonio: true }))
+      setPatrimonyTouchedFields(new Set())
+      setPatrimonyFormData(
+        buildPatrimonyFormFromTransaction({
+          descripcion: formData.descripcion,
+          categoria: formData.categoria,
+          monto: formData.monto,
+          fecha: formData.fecha,
+          moneda: formData.moneda,
+        })
+      )
+      setPatrimonyFormErrors(EMPTY_PATRIMONY_FORM_ERRORS)
+      return
+    }
+
+    setFormData(prev => ({ ...prev, addToPatrimonio: false }))
+    setPatrimonyFormData(EMPTY_PATRIMONY_FORM)
+    setPatrimonyFormErrors(EMPTY_PATRIMONY_FORM_ERRORS)
+    setPatrimonyTouchedFields(new Set())
+  }
+
+  useEffect(() => {
+    if (!formData.addToPatrimonio) {
+      return
+    }
+
+    setPatrimonyFormData(prev =>
+      mergePatrimonyFromTransaction(
+        prev,
+        {
+          descripcion: formData.descripcion,
+          categoria: formData.categoria,
+          monto: formData.monto,
+          fecha: formData.fecha,
+          moneda: formData.moneda,
+        },
+        patrimonyTouchedFields
+      )
+    )
+  }, [
+    formData.addToPatrimonio,
+    formData.descripcion,
+    formData.categoria,
+    formData.monto,
+    formData.fecha,
+    formData.moneda,
+    patrimonyTouchedFields,
+  ])
+
+  useEffect(() => {
+    if (!formData.addToPatrimonio) {
+      return
+    }
+
+    let cancelled = false
+
+    void (async () => {
+      try {
+        const response = await api.getPatrimony()
+        if (cancelled) {
+          return
+        }
+
+        const existingCategories =
+          response.items && Array.isArray(response.items)
+            ? response.items
+                .map((item: { data?: { category?: string } }) => item.data?.category?.trim())
+                .filter((category: string | undefined): category is string => Boolean(category))
+            : []
+
+        setPatrimonyCategorySuggestions(mergeCategorySuggestions(existingCategories))
+      } catch {
+        if (!cancelled) {
+          setPatrimonyCategorySuggestions(mergeCategorySuggestions([]))
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [formData.addToPatrimonio])
+
+  const handlePatrimonyChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target
+    setPatrimonyFormData(prev => ({ ...prev, [name]: value }))
+    if (patrimonyFormErrors[name as keyof PatrimonyFormErrors]) {
+      setPatrimonyFormErrors(prev => ({ ...prev, [name]: '' }))
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!validateForm()) {
+    if (!validateForm() || !validatePatrimonySection()) {
       return
     }
 
@@ -762,6 +920,24 @@ function Transacciones() {
         await api.createTransaction(transactionData)
       }
 
+      let patrimonyCreated = false
+      let patrimonyError: string | null = null
+      if (
+        !isEditMode &&
+        formData.addToPatrimonio &&
+        canAddTransactionToPatrimony(formData.tipo, formData.isDebtPayment, isEditMode)
+      ) {
+        try {
+          await api.createPatrimonyItem(formDataToPatrimonyPayload(patrimonyFormData))
+          patrimonyCreated = true
+        } catch (patrimonyErr: unknown) {
+          patrimonyError = getTranslatedErrorMessage(
+            patrimonyErr,
+            'No se pudo registrar el ítem en Patrimonio.'
+          )
+        }
+      }
+
       setIsModalOpen(false)
       setIsEditMode(false)
       setSelectedTransaction(null)
@@ -781,7 +957,11 @@ function Transacciones() {
         creditCardId: '',
         isDebtorPayment: false,
         debtorId: '',
+        addToPatrimonio: false,
       })
+      setPatrimonyFormData(EMPTY_PATRIMONY_FORM)
+      setPatrimonyFormErrors(EMPTY_PATRIMONY_FORM_ERRORS)
+      setPatrimonyTouchedFields(new Set())
       setFormErrors({
         monto: '',
         descripcion: '',
@@ -795,7 +975,16 @@ function Transacciones() {
 
       await reloadTransactions()
       emitTransactionSyncEvents()
-      showSuccess(successMessage)
+      if (patrimonyError) {
+        showNotification(
+          `Transacción guardada, pero no se pudo agregar a Patrimonio: ${patrimonyError}`,
+          'warning'
+        )
+      } else if (patrimonyCreated) {
+        showSuccess('Transacción creada y agregada a Patrimonio')
+      } else {
+        showSuccess(successMessage)
+      }
     } catch (err: any) {
       console.error('Error al guardar transacción:', err)
       showError(
@@ -862,7 +1051,11 @@ function Transacciones() {
           debtId: '',
           isCreditCardPayment: false,
           creditCardId: '',
+          addToPatrimonio: false,
         }))
+        setPatrimonyFormData(EMPTY_PATRIMONY_FORM)
+        setPatrimonyFormErrors(EMPTY_PATRIMONY_FORM_ERRORS)
+        setPatrimonyTouchedFields(new Set())
         return
       } else if (value === 'ahorro') {
         setFormData(prev => ({
@@ -874,7 +1067,11 @@ function Transacciones() {
           debtId: '',
           isCreditCardPayment: false,
           creditCardId: '',
+          addToPatrimonio: false,
         }))
+        setPatrimonyFormData(EMPTY_PATRIMONY_FORM)
+        setPatrimonyFormErrors(EMPTY_PATRIMONY_FORM_ERRORS)
+        setPatrimonyTouchedFields(new Set())
         return
       } else if (value === 'egreso') {
         setFormData(prev => ({
@@ -894,7 +1091,11 @@ function Transacciones() {
         presupuestoId: '',
         isCreditCardPayment: false,
         creditCardId: '',
+        addToPatrimonio: false,
       }))
+      setPatrimonyFormData(EMPTY_PATRIMONY_FORM)
+      setPatrimonyFormErrors(EMPTY_PATRIMONY_FORM_ERRORS)
+      setPatrimonyTouchedFields(new Set())
     }
 
     // Si se activa el toggle de pago con tarjeta de crédito, limpiar el presupuesto y pago de deuda
@@ -1362,45 +1563,31 @@ function Transacciones() {
                 }
               />
 
-              <div
-                className="crud-summary-strip"
-                role="region"
-                aria-label="Resumen de transacciones"
-              >
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Ingresos</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--income">
-                    {formatBalance(totals.ingresos, 'COP')}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Egresos</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--expense">
-                    {formatBalance(totals.egresos, 'COP')}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Balance</span>
-                  <span
-                    className={`crud-summary-strip-value ${
-                      totals.balance >= 0
-                        ? 'crud-summary-strip-value--positive'
-                        : 'crud-summary-strip-value--negative'
-                    }`}
-                  >
-                    {formatBalance(totals.balance, 'COP')}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Ahorro</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--savings">
-                    {formatBalance(totals.ahorros, 'COP')}
-                  </span>
-                </div>
-              </div>
+              <CrudSummaryStrip
+                ariaLabel="Resumen de transacciones"
+                items={[
+                  {
+                    label: 'Ingresos',
+                    value: formatBalance(totals.ingresos, 'COP'),
+                    tone: 'income',
+                  },
+                  {
+                    label: 'Egresos',
+                    value: formatBalance(totals.egresos, 'COP'),
+                    tone: 'expense',
+                  },
+                  {
+                    label: 'Balance',
+                    value: formatBalance(totals.balance, 'COP'),
+                    tone: totals.balance >= 0 ? 'positive' : 'negative',
+                  },
+                  {
+                    label: 'Ahorro',
+                    value: formatBalance(totals.ahorros, 'COP'),
+                    tone: 'savings',
+                  },
+                ]}
+              />
 
               <button
                 type="button"
@@ -1572,7 +1759,11 @@ function Transacciones() {
             {isSubmitting ? (
               <div className="modal-loading">
                 <div className="loading-spinner"></div>
-                <p className="loading-text">Guardando transacción...</p>
+                <p className="loading-text">
+                  {formData.addToPatrimonio && !isEditMode
+                    ? 'Guardando transacción y patrimonio...'
+                    : 'Guardando transacción...'}
+                </p>
               </div>
             ) : (
               <form className="modal-form" onSubmit={handleSubmit}>
@@ -1903,12 +2094,44 @@ function Transacciones() {
                     </div>
                   </>
                 )}
+
+                {canAddTransactionToPatrimony(
+                  formData.tipo,
+                  formData.isDebtPayment,
+                  isEditMode
+                ) && (
+                  <TransaccionPatrimonioToggle
+                    checked={formData.addToPatrimonio}
+                    showSuggestion={shouldSuggestPatrimonio(formData.categoria)}
+                    onChange={handlePatrimonioToggle}
+                  />
+                )}
+
+                {formData.addToPatrimonio &&
+                  canAddTransactionToPatrimony(
+                    formData.tipo,
+                    formData.isDebtPayment,
+                    isEditMode
+                  ) && (
+                    <TransaccionPatrimonioFields
+                      formData={patrimonyFormData}
+                      formErrors={patrimonyFormErrors}
+                      categorySuggestions={patrimonyCategorySuggestions}
+                      onChange={handlePatrimonyChange}
+                      onFieldTouch={handlePatrimonyFieldTouch}
+                    />
+                  )}
+
                 <div className="modal-actions">
                   <button type="button" className="modal-button cancel" onClick={handleCloseModal}>
                     Cancelar
                   </button>
                   <button type="submit" className="modal-button submit">
-                    {isEditMode ? 'Guardar Cambios' : 'Agregar'}
+                    {isEditMode
+                      ? 'Guardar Cambios'
+                      : formData.addToPatrimonio
+                        ? 'Agregar y registrar en Patrimonio'
+                        : 'Agregar'}
                   </button>
                 </div>
               </form>

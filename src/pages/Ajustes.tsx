@@ -1,3 +1,4 @@
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import '../App.css'
 import './AppPage.css'
 import './Ajustes.css'
@@ -193,28 +194,18 @@ function Ajustes() {
 
         <h1 className="app-page-title">Ajustes</h1>
 
-        <div className="crud-summary-strip" role="region" aria-label="Resumen de ajustes">
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Nombre</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--info">
-              {isLoadingProfile ? '…' : displayName.trim() || '—'}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Tema</span>
-            <span className="crud-summary-strip-value">
-              {isDarkMode ? 'Oscuro' : 'Claro'}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Cuenta</span>
-            <span className="crud-summary-strip-value">
-              {accountUsername || '—'}
-            </span>
-          </div>
-        </div>
+        <CrudSummaryStrip
+          ariaLabel="Resumen de ajustes"
+          items={[
+            {
+              label: 'Nombre',
+              value: isLoadingProfile ? '…' : displayName.trim() || '—',
+              tone: 'info',
+            },
+            { label: 'Tema', value: isDarkMode ? 'Oscuro' : 'Claro' },
+            { label: 'Cuenta', value: accountUsername || '—' },
+          ]}
+        />
 
         <div className="crud-hub-list">
           <div className="crud-hub-section">

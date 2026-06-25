@@ -1,1 +1,86 @@
-.contratos-content {}
+/* Contratos — modal de formulario */
+
+.contratos-content {
+  padding-bottom: max(var(--spacing-md), env(safe-area-inset-bottom, 0px));
+}
+
+.contratos-form-modal {
+  width: min(100%, calc(100vw - 2rem));
+  max-width: min(920px, calc(100vw - 2rem));
+}
+
+.contratos-form-modal .modal-panel-content {
+  padding: var(--spacing-lg);
+}
+
+.contratos-form-modal .crud-form-panel {
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.contratos-form-modal .form-input-base,
+.contratos-form-modal .form-textarea-base {
+  background: var(--input-surface);
+  border-color: var(--border-glass-hover);
+}
+
+.contratos-form-modal .crud-form-panel-section-title {
+  margin-top: var(--spacing-xs);
+}
+
+.contratos-form-modal .crud-form-panel-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  padding-bottom: var(--spacing-xs);
+  background: linear-gradient(
+    to top,
+    var(--bg-glass) 75%,
+    color-mix(in srgb, var(--bg-glass) 88%, transparent)
+  );
+  border-top: 1px solid var(--border-glass-light);
+}
+
+.contratos-form-modal .crud-form-amount-row {
+  grid-template-columns: minmax(10rem, 1fr) 6.5rem;
+}
+
+@media (max-width: 768px) {
+  .contratos-content .crud-inset-row .crud-row-header {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .contratos-content .crud-row-chevron {
+    align-self: flex-end;
+    margin-left: auto;
+  }
+
+  .contratos-content .crud-row-preview {
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .contratos-form-modal {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .contratos-form-modal .modal-panel-content {
+    padding: var(--spacing-md);
+    padding-bottom: calc(var(--spacing-md) + var(--safe-bottom));
+  }
+
+  .contratos-form-modal .crud-form-amount-row {
+    grid-template-columns: 1fr;
+  }
+
+  .contratos-form-modal .crud-form-panel-actions {
+    padding-bottom: calc(var(--spacing-md) + var(--safe-bottom));
+  }
+}

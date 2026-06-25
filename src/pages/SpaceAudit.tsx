@@ -876,7 +876,7 @@ const SECTIONS = [
   { name: 'Empleados', route: '/registros/empleados', score: 4.0, status: 'done' as const, doc: 'empleados.md' },
   { name: 'Vehículos', route: '/registros/vehiculos', score: 4.0, status: 'done' as const, doc: 'vehiculos.md' },
   { name: 'Patrimonio', route: '/registros/patrimonio', score: 4.0, status: 'done' as const, doc: 'patrimonio.md' },
-  { name: 'Calculadora', route: '/registros/calculadora', score: 3.5, status: 'done' as const, doc: 'calculadora.md' },
+  { name: 'Calculadora', route: '/registros/calculadora', score: 4.0, status: 'done' as const, doc: 'calculadora.md' },
   { name: 'Generador contraseñas', route: '/registros/generador-contrasenas', score: 3.6, status: 'done' as const, doc: 'generador-contrasenas.md' },
   { name: 'Trabajo hub', route: '/trabajo', score: 3.8, status: 'done' as const, doc: 'trabajo.md' },
   { name: 'Contratos', route: '/trabajo/contratos', score: 4.0, status: 'done' as const, doc: 'contratos.md' },

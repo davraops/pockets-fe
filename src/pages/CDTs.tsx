@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import AddIcon from '@mui/icons-material/Add'
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
 import EditIcon from '@mui/icons-material/Edit'
@@ -623,41 +624,29 @@ function CDTs() {
                 }
               />
 
-              <div
-                className="crud-summary-strip crud-summary-strip--success"
-                role="region"
-                aria-label="Resumen de CDTs"
-              >
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Total CDTs</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
-                    {highlights.totalCDTs}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item crud-summary-strip-item--emphasis">
-                  <span className="crud-summary-strip-label">Invertido</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--income">
-                    {formatCurrency(highlights.totalInvertido)}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Tasa prom.</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--available">
-                    {highlights.tasaPromedio.toFixed(1)}%
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Ganancia real</span>
-                  <span
-                    className={`crud-summary-strip-value ${highlights.gananciaRealTotal >= 0 ? 'crud-summary-strip-value--income' : 'crud-summary-strip-value--expense'}`}
-                  >
-                    {formatCurrency(highlights.gananciaRealTotal)}
-                  </span>
-                </div>
-              </div>
+              <CrudSummaryStrip
+                ariaLabel="Resumen de CDTs"
+                stripClassName="crud-summary-strip--success"
+                items={[
+                  { label: 'Total CDTs', value: highlights.totalCDTs, tone: 'info' },
+                  {
+                    label: 'Invertido',
+                    value: formatCurrency(highlights.totalInvertido),
+                    tone: 'income',
+                    emphasis: true,
+                  },
+                  {
+                    label: 'Tasa prom.',
+                    value: `${highlights.tasaPromedio.toFixed(1)}%`,
+                    tone: 'available',
+                  },
+                  {
+                    label: 'Ganancia real',
+                    value: formatCurrency(highlights.gananciaRealTotal),
+                    tone: highlights.gananciaRealTotal >= 0 ? 'income' : 'expense',
+                  },
+                ]}
+              />
 
               <button
                 type="button"
@@ -708,7 +697,7 @@ function CDTs() {
                             </span>
                           </div>
                         )}
-                        <div className="crud-row-meta">
+                        <div className="crud-row-meta crud-row-meta--stack">
                           <p className="crud-row-meta">Retiro: {formatDate(cdt.fechaRetiro)}</p>
                           {cdt.created_at && (
                             <p className="crud-row-highlight">

@@ -119,6 +119,13 @@
 
 .utilidades-tool-main--narrow {
   max-width: 400px;
+  width: 100%;
+}
+
+@media (min-width: 900px) {
+  .utilidades-tool-workspace--split .utilidades-tool-main--narrow {
+    justify-self: start;
+  }
 }
 
 .utilidades-tool-aside {
@@ -145,14 +152,28 @@
 
   .utilidades-tool-aside {
     position: sticky;
-    top: 0;
-    max-height: calc(100vh - var(--layout-status-bar-height, 0px) - 8rem);
+    top: var(--layout-chrome-offset-top);
+    max-height: calc(100vh - var(--layout-chrome-offset-top) - var(--layout-chrome-offset-bottom) - 2rem);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
 }
 
 @media (max-width: 768px) {
+  .utilidades-sub-toolbar {
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    height: auto;
+    min-height: 44px;
+  }
+
+  .utilidades-sub-toolbar-actions {
+    width: 100%;
+    margin-left: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
   .utilidades-sub-title-brand {
     font-size: var(--font-size-xl);
   }

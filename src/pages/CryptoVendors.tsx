@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import { useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import AddIcon from '@mui/icons-material/Add'
@@ -548,39 +549,20 @@ function CryptoVendors() {
 
         <h1 className="app-page-title">Vendedores de Cripto</h1>
 
-        <div
-          className="crud-summary-strip"
-          role="region"
-          aria-label="Resumen de vendedores"
-        >
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Vendedores</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--info">
-              {highlights.totalVendors}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Con descuento</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--available">
-              {highlights.withDiscount}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Criptos</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--info">
-              {highlights.cryptoTypes}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item crud-summary-strip-item--emphasis">
-            <span className="crud-summary-strip-label">Lista</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--info">
-              {highlights.listaLabel}
-            </span>
-          </div>
-        </div>
+        <CrudSummaryStrip
+          ariaLabel="Resumen de vendedores"
+          items={[
+            { label: 'Vendedores', value: highlights.totalVendors, tone: 'info' },
+            { label: 'Con descuento', value: highlights.withDiscount, tone: 'available' },
+            { label: 'Criptos', value: highlights.cryptoTypes, tone: 'info' },
+            {
+              label: 'Lista',
+              value: highlights.listaLabel,
+              tone: 'info',
+              emphasis: true,
+            },
+          ]}
+        />
 
         {/* Formulario para agregar vendedor */}
         <div className="cryptovendors-form-section">

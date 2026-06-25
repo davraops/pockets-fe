@@ -45,6 +45,7 @@ const ROUTE_TITLES: Record<string, string> = {
   '/ux-readiness': 'UX Readiness',
   '/product-readiness': 'Product Readiness',
   '/space-audit': 'Space Audit',
+  '/e2e': 'E2E Flows',
   '/blank-2': '',
   '/blank-3': '',
   '/blank-4': '',
@@ -79,6 +80,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   'ux-readiness': 'UX Readiness',
   'product-readiness': 'Product Readiness',
   'space-audit': 'Space Audit',
+  e2e: 'E2E Flows',
 }
 
 function titleCaseFromSegment(segment: string): string {

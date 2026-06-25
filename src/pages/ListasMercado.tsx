@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import { useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import AddIcon from '@mui/icons-material/Add'
@@ -508,39 +509,20 @@ function ListasMercado() {
           {listName && items.length > 0 ? listName : 'Listas de Mercado'}
         </h1>
 
-        <div
-          className="crud-summary-strip"
-          role="region"
-          aria-label="Resumen de lista de mercado"
-        >
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Total</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--info">
-              {totalItems}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Pendientes</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--expense">
-              {pendingCount}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Comprados</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--income">
-              {checkedCount}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item crud-summary-strip-item--emphasis">
-            <span className="crud-summary-strip-label">Precio</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--info">
-              ${totalPrice.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-            </span>
-          </div>
-        </div>
+        <CrudSummaryStrip
+          ariaLabel="Resumen de lista de mercado"
+          items={[
+            { label: 'Total', value: totalItems, tone: 'info' },
+            { label: 'Pendientes', value: pendingCount, tone: 'expense' },
+            { label: 'Comprados', value: checkedCount, tone: 'income' },
+            {
+              label: 'Precio',
+              value: `$${totalPrice.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+              tone: 'info',
+              emphasis: true,
+            },
+          ]}
+        />
 
         <button
           type="button"

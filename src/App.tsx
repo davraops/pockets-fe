@@ -37,6 +37,8 @@ import Fechas from './pages/Fechas'
 import Rutinas from './pages/Rutinas'
 import MiDia from './pages/MiDia'
 import MiDiario from './pages/MiDiario'
+import Metas from './pages/Metas'
+import Valores from './pages/Valores'
 import Notificaciones from './pages/Notificaciones'
 import Justicia from './pages/Justicia'
 import Procesos from './pages/Procesos'
@@ -49,6 +51,7 @@ import UiReadiness from './pages/UiReadiness'
 import UxReadiness from './pages/UxReadiness'
 import ProductReadiness from './pages/ProductReadiness'
 import SpaceAudit from './pages/SpaceAudit'
+import E2e from './pages/E2e'
 import StatusBar from './components/StatusBar'
 import ProtectedRoute from './components/ProtectedRoute'
 import Footer from './components/Footer'
@@ -382,6 +385,22 @@ function AppContent() {
           }
         />
         <Route
+          path="/tiempo/metas"
+          element={
+            <ProtectedRoute>
+              <Metas />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tiempo/valores"
+          element={
+            <ProtectedRoute>
+              <Valores />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/notificaciones"
           element={
             <ProtectedRoute>
@@ -450,6 +469,7 @@ function AppContent() {
         <Route path="/product-readiness" element={<ProductReadiness />} />
         <Route path="/product-readiness/:docId" element={<ProductReadiness />} />
         <Route path="/space-audit" element={<SpaceAudit />} />
+        <Route path="/e2e" element={<E2e />} />
         <Route path="/blank-2" element={<AppPage title="" />} />
         <Route path="/blank-3" element={<AppPage title="" />} />
         <Route path="/blank-4" element={<AppPage title="" />} />

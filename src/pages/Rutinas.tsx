@@ -1,16 +1,11 @@
-import { useState, useEffect, useRef } from 'react'
-import { backToHubLabel } from '../constants/hubLabels'
+import { useState, useEffect, useRef, useMemo } from 'react'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import { useNavigate } from 'react-router-dom'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import RepeatIcon from '@mui/icons-material/Repeat'
-import EditIcon from '@mui/icons-material/Edit'
-import DeleteIcon from '@mui/icons-material/Delete'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import AccessTimeIcon from '@mui/icons-material/AccessTime'
-import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment'
-import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import AddIcon from '@mui/icons-material/Add'
+import SearchIcon from '@mui/icons-material/Search'
+import TodayIcon from '@mui/icons-material/Today'
 import { api } from '../services/api'
 import { devError, isDebugToolsEnabled, isDestructiveDebugEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
@@ -19,59 +14,49 @@ import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
 import ModalOverlay from '../components/ModalOverlay'
 import ListSkeleton from '../components/ListSkeleton'
+import LifestyleSubHeader from '../components/tiempo/LifestyleSubHeader'
+import RutinaDetailModalBody from '../components/rutinas/RutinaDetailModalBody'
+import RutinaFormModalBody from '../components/rutinas/RutinaFormModalBody'
+import RutinaFrequencyFilters from '../components/rutinas/RutinaFrequencyFilters'
+import RutinaListRow from '../components/rutinas/RutinaListRow'
+import {
+  calculateRoutineHighlights,
+  filterRoutinesByFrequency,
+  filterRoutinesByQuery,
+  formatRoutineMeta,
+  groupRoutinesByFrequency,
+  routineFormDataFromRoutine,
+  sortRoutinesForDisplay,
+} from '../components/rutinas/routineDisplayUtils'
+import {
+  DEFAULT_ROUTINE_FORM,
+  type Routine,
+  type RoutineFormData,
+  type RoutineFrequencyFilter,
+} from '../components/rutinas/routineTypes'
 import './Rutinas.css'
-
-// Interfaz que coincide con la respuesta de la API
-interface RoutineAPI {
-  id: string
-  title: string
-  description?: string | null
-  frequency: 'daily' | 'weekly' | 'monthly'
-  days_of_week?: number[] | null
-  day_of_month?: number | null
-  scheduled_time?: string | null
-  start_date: string
-  end_date?: string | null
-  is_active: boolean
-  color?: string | null
-  target_count?: number | null
-  duration?: number | null
-  current_streak?: number
-  longest_streak?: number
-  last_completed_date?: string | null
-  total_completions?: number
-  completions_this_month?: number
-  created_at: string
-  updated_at: string
-}
 
 function Rutinas() {
   const navigate = useNavigate()
   const { showNotification } = useNotification()
   const { confirm } = useConfirm()
-  const [routines, setRoutines] = useState<RoutineAPI[]>([])
+  const [routines, setRoutines] = useState<Routine[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
-  const [selectedRoutine, setSelectedRoutine] = useState<RoutineAPI | null>(null)
+  const [selectedRoutine, setSelectedRoutine] = useState<Routine | null>(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const titleRef = useRef<HTMLInputElement>(null)
   const dayOfMonthRef = useRef<HTMLInputElement>(null)
   const daysOfWeekRef = useRef<HTMLDivElement>(null)
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    frequency: 'daily' as 'daily' | 'weekly' | 'monthly',
-    days_of_week: [] as number[],
-    day_of_month: null as number | null,
-    scheduled_time: '',
-    color: '#007AFF',
-    duration: null as number | null,
-  })
+  const [formData, setFormData] = useState<RoutineFormData>(DEFAULT_ROUTINE_FORM)
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+  const [searchQuery, setSearchQuery] = useState('')
+  const [frequencyFilter, setFrequencyFilter] = useState<RoutineFrequencyFilter>('all')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     loadRoutines()
@@ -81,7 +66,7 @@ function Rutinas() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement
-      if (isMenuOpen && !target.closest('.rutinas-toolbar-menu-container')) {
+      if (isMenuOpen && !target.closest('.lifestyle-sub-menu-container')) {
         setIsMenuOpen(false)
       }
     }
@@ -126,33 +111,15 @@ function Rutinas() {
     setSelectedRoutine(null)
     setIsDetailModalOpen(true)
     setIsEditMode(false)
-    setFormData({
-      title: '',
-      description: '',
-      frequency: 'daily',
-      days_of_week: [],
-      day_of_month: null,
-      scheduled_time: '',
-      color: '#007AFF',
-      duration: null,
-    })
+    setFormData(DEFAULT_ROUTINE_FORM)
     setFormErrors({})
   }
 
-  const handleOpenDetailModal = (routine: RoutineAPI) => {
+  const handleOpenDetailModal = (routine: Routine) => {
     setSelectedRoutine(routine)
     setIsDetailModalOpen(true)
     setIsEditMode(false)
-    setFormData({
-      title: routine.title,
-      description: routine.description || '',
-      frequency: routine.frequency,
-      days_of_week: routine.days_of_week || [],
-      day_of_month: routine.day_of_month ?? null,
-      scheduled_time: routine.scheduled_time ? routine.scheduled_time.slice(0, 5) : '',
-      color: routine.color || '#007AFF',
-      duration: routine.duration ?? null,
-    })
+    setFormData(routineFormDataFromRoutine(routine))
     setFormErrors({})
   }
 
@@ -160,17 +127,18 @@ function Rutinas() {
     setIsDetailModalOpen(false)
     setSelectedRoutine(null)
     setIsEditMode(false)
-    setFormData({
-      title: '',
-      description: '',
-      frequency: 'daily',
-      days_of_week: [],
-      day_of_month: null,
-      scheduled_time: '',
-      color: '#007AFF',
-      duration: null,
-    })
+    setFormData(DEFAULT_ROUTINE_FORM)
     setFormErrors({})
+  }
+
+  const handleFormCancel = () => {
+    if (selectedRoutine) {
+      setIsEditMode(false)
+      setFormData(routineFormDataFromRoutine(selectedRoutine))
+      setFormErrors({})
+      return
+    }
+    handleCloseDetailModal()
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -259,86 +227,53 @@ function Rutinas() {
     }
 
     try {
-      setIsLoading(true)
+      setIsSubmitting(true)
 
-      const routineData: any = {
+      const routineData = {
         title: formData.title.trim(),
         frequency: formData.frequency,
+        days_of_week: null as number[] | null,
+        day_of_month: null as number | null,
+        ...(formData.description.trim() ? { description: formData.description.trim() } : {}),
+        ...(formData.scheduled_time ? { scheduled_time: formData.scheduled_time } : {}),
+        color: formData.color,
+        ...(formData.duration != null ? { duration: formData.duration } : {}),
       }
 
-      if (formData.description) {
-        routineData.description = formData.description.trim()
-      }
-
-      // Limpiar y establecer campos según la frecuencia
-      routineData.days_of_week = null
-      routineData.day_of_month = null
-
-      // Solo establecer el campo relevante según la frecuencia
       if (formData.frequency === 'weekly') {
         routineData.days_of_week = formData.days_of_week.length > 0 ? formData.days_of_week : null
       } else if (formData.frequency === 'monthly') {
-        routineData.day_of_month = formData.day_of_month !== null ? formData.day_of_month : null
-      }
-      // Para 'daily', ambos campos quedan en null
-
-      if (formData.scheduled_time) {
-        routineData.scheduled_time = formData.scheduled_time
-      }
-
-      routineData.color = formData.color
-
-      if (formData.duration !== null && formData.duration !== undefined) {
-        routineData.duration = formData.duration
+        routineData.day_of_month = formData.day_of_month
       }
 
       if (selectedRoutine) {
-        // Modo edición
-        const updateResponse = await api.updateRoutine(selectedRoutine.id, routineData)
-        
-        // Recargar todas las rutinas
+        await api.updateRoutine(selectedRoutine.id, routineData)
         await loadRoutines()
-        
-        // Recargar la rutina específica para actualizar el modal
+
         const updatedRoutineResponse = await api.getRoutines(selectedRoutine.id)
         if (updatedRoutineResponse.routines && updatedRoutineResponse.routines.length > 0) {
-          const updatedRoutine = updatedRoutineResponse.routines[0]
+          const updatedRoutine = updatedRoutineResponse.routines[0] as Routine
           setSelectedRoutine(updatedRoutine)
-          // Actualizar el formData con los nuevos datos
-          setFormData({
-            title: updatedRoutine.title,
-            description: updatedRoutine.description || '',
-            frequency: updatedRoutine.frequency,
-            days_of_week: updatedRoutine.days_of_week || [],
-            day_of_month: updatedRoutine.day_of_month ?? null,
-            scheduled_time: updatedRoutine.scheduled_time ? updatedRoutine.scheduled_time.slice(0, 5) : '',
-            color: updatedRoutine.color || '#007AFF',
-            duration: updatedRoutine.duration ?? null,
-          })
+          setFormData(routineFormDataFromRoutine(updatedRoutine))
         }
+        setIsEditMode(false)
         showNotification('Rutina actualizada exitosamente', 'success')
       } else {
-        // Modo creación
-        const createResponse = await api.createRoutine(routineData)
-        
-        // Recargar todas las rutinas
+        await api.createRoutine(routineData)
         await loadRoutines()
-        
-        // Cerrar el modal
         handleCloseDetailModal()
         showNotification('Rutina creada exitosamente', 'success')
       }
-      
-      setIsEditMode(false)
-      showNotification('Rutina actualizada exitosamente', 'success')
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMessage = getTranslatedErrorMessage(
         err,
-        'Error al actualizar la rutina. Por favor, intenta de nuevo.'
+        selectedRoutine
+          ? 'Error al actualizar la rutina. Por favor, intenta de nuevo.'
+          : 'Error al crear la rutina. Por favor, intenta de nuevo.'
       )
       showNotification(errorMessage, 'error')
     } finally {
-      setIsLoading(false)
+      setIsSubmitting(false)
     }
   }
 
@@ -365,42 +300,6 @@ function Rutinas() {
       setIsLoading(false)
     }
   }
-
-  const formatFrequency = (frequency: string): string => {
-    switch (frequency) {
-      case 'daily':
-        return 'Diaria'
-      case 'weekly':
-        return 'Semanal'
-      case 'monthly':
-        return 'Mensual'
-      default:
-        return frequency
-    }
-  }
-
-  const formatDaysOfWeek = (days: number[] | null | undefined): string => {
-    if (!days || days.length === 0) return ''
-    
-    const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
-    const sortedDays = [...days].sort((a, b) => a - b)
-    return sortedDays.map(day => dayNames[day]).join(', ')
-  }
-
-  const formatDayOfMonth = (day: number | null | undefined): string => {
-    if (day === null || day === undefined) return ''
-    return `Día ${day} del mes`
-  }
-
-  const daysOfWeekOptions = [
-    { value: 0, label: 'Dom' },
-    { value: 1, label: 'Lun' },
-    { value: 2, label: 'Mar' },
-    { value: 3, label: 'Mié' },
-    { value: 4, label: 'Jue' },
-    { value: 5, label: 'Vie' },
-    { value: 6, label: 'Sáb' },
-  ]
 
   // Función de debug para crear rutinas dummy
   const handleDebugCreateRoutines = async () => {
@@ -612,46 +511,50 @@ function Rutinas() {
     }
   }
 
-  const calculateHighlights = () => {
-    const total = routines.length
-    const diarias = routines.filter(r => r.frequency === 'daily').length
-    const semanales = routines.filter(r => r.frequency === 'weekly').length
-    const conRacha = routines.filter(r => (r.current_streak ?? 0) > 0).length
+  const hasSearch = searchQuery.trim().length > 0
 
-    return { total, diarias, semanales, conRacha }
-  }
+  const filteredRoutines = useMemo(() => {
+    const searched = filterRoutinesByQuery(routines, searchQuery)
+    const filtered = filterRoutinesByFrequency(searched, frequencyFilter)
+    return sortRoutinesForDisplay(filtered)
+  }, [routines, searchQuery, frequencyFilter])
 
-  const highlights = calculateHighlights()
-
-  const formatRoutineMeta = (routine: RoutineAPI) => {
-    const parts = [formatFrequency(routine.frequency)]
-    if (routine.frequency === 'weekly' && routine.days_of_week?.length) {
-      parts.push(formatDaysOfWeek(routine.days_of_week))
+  const routineGroups = useMemo(() => {
+    if (hasSearch || frequencyFilter !== 'all') {
+      return []
     }
-    if (routine.frequency === 'monthly' && routine.day_of_month != null) {
-      parts.push(formatDayOfMonth(routine.day_of_month))
-    }
-    if (routine.scheduled_time) parts.push(routine.scheduled_time.slice(0, 5))
-    return parts.join(' • ')
-  }
+    return groupRoutinesByFrequency(filteredRoutines)
+  }, [filteredRoutines, frequencyFilter, hasSearch])
+
+  const frequencyCounts = useMemo(
+    () => ({
+      all: routines.length,
+      daily: routines.filter(routine => routine.frequency === 'daily').length,
+      weekly: routines.filter(routine => routine.frequency === 'weekly').length,
+      monthly: routines.filter(routine => routine.frequency === 'monthly').length,
+    }),
+    [routines]
+  )
+  const highlights = calculateRoutineHighlights(routines)
+
+  const headerMeta = !isLoading && !error
+    ? hasSearch
+      ? `${filteredRoutines.length} de ${routines.length} rutina${routines.length !== 1 ? 's' : ''}`
+      : routines.length === 0
+        ? 'Aún no tienes rutinas'
+        : `${highlights.total} rutinas · ${highlights.diarias} diarias · ${highlights.conRacha} con racha`
+    : undefined
 
   return (
     <div className="app-page-container">
-      <div className="app-page-content app-page-content-wide crud-page-content rutinas-content">
-        {/* Toolbar */}
-        <div className="app-toolbar">
-          <button
-            className="app-toolbar-button"
-            onClick={() => navigate('/tiempo')}
-            aria-label={backToHubLabel('tiempo')}
-            type="button"
-          >
-            <ArrowBackIcon className="app-toolbar-icon" />
-          </button>
-
-          <div className="app-toolbar-menu-container" ref={menuRef}>
-            {isDebugToolsEnabled() && (
-              <>
+      <div className="app-page-content app-page-content-wide crud-page-content rutinas-content lifestyle-sub-content">
+        <LifestyleSubHeader
+          title="Rutinas"
+          context="Hábitos"
+          meta={headerMeta}
+          toolbarActions={
+            isDebugToolsEnabled() ? (
+              <div className="lifestyle-sub-menu-container" ref={menuRef}>
                 <button
                   className="app-toolbar-button"
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -661,66 +564,83 @@ function Rutinas() {
                 >
                   <MoreVertIcon className="app-toolbar-icon" />
                 </button>
-                {isMenuOpen && (
-                  <div className="crud-dropdown-menu">
+                {isMenuOpen ? (
+                  <div className="lifestyle-sub-menu">
                     <button
-                      className="crud-dropdown-menu-item"
+                      className="lifestyle-sub-menu-item"
                       onClick={() => {
                         setIsDebugModalOpen(true)
                         setIsMenuOpen(false)
                       }}
                       type="button"
                     >
-                      <span>🐛 Debug</span>
+                      🐛 Debug
                     </button>
                   </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
+                ) : null}
+              </div>
+            ) : null
+          }
+        />
 
-        <h1 className="app-page-title">Rutinas</h1>
+        {!isLoading && !error && routines.length > 0 ? (
+        <CrudSummaryStrip
+          ariaLabel="Resumen de rutinas"
+          items={[
+            { label: 'Total', value: highlights.total, tone: 'info' },
+            { label: 'Diarias', value: highlights.diarias, tone: 'available' },
+            { label: 'Semanales', value: highlights.semanales, tone: 'info' },
+            { label: 'Mensuales', value: highlights.mensuales, tone: 'info' },
+            { label: 'Con racha', value: highlights.conRacha, tone: 'available' },
+          ]}
+        />
+        ) : null}
 
-        <div className="crud-summary-strip" role="region" aria-label="Resumen de rutinas">
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Total</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--info">
-              {highlights.total}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Diarias</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--available">
-              {highlights.diarias}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Semanales</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--info">
-              {highlights.semanales}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Con racha</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--info">
-              {highlights.conRacha}
-            </span>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          className="btn-base btn-accent btn-block btn-submit crud-primary-cta"
-          onClick={handleOpenCreateModal}
-          aria-label="Agregar rutina"
+        <div
+          className={`lifestyle-toolbar${!isLoading && !error && routines.length === 0 ? ' lifestyle-toolbar--solo-cta' : ''}`}
         >
-          <AddIcon aria-hidden={true} />
-          Agregar rutina
-        </button>
+          {!isLoading && !error && (routines.length > 0 || hasSearch) ? (
+            <label className="lifestyle-search">
+              <SearchIcon className="lifestyle-search-icon" aria-hidden="true" />
+              <input
+                type="search"
+                className="lifestyle-search-input"
+                value={searchQuery}
+                onChange={event => setSearchQuery(event.target.value)}
+                placeholder="Buscar por título, frecuencia…"
+                aria-label="Buscar rutinas"
+              />
+            </label>
+          ) : null}
+          {!isLoading && !error && routines.length > 0 ? (
+            <button
+              type="button"
+              className="btn-base btn-secondary lifestyle-toolbar-cta"
+              onClick={() => navigate('/tiempo/mi-dia')}
+              aria-label="Ir a Mi Día"
+            >
+              <TodayIcon aria-hidden="true" />
+              Mi Día
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className="btn-base btn-accent btn-submit crud-primary-cta lifestyle-toolbar-cta"
+            onClick={handleOpenCreateModal}
+            aria-label="Agregar rutina"
+          >
+            <AddIcon aria-hidden={true} />
+            Agregar rutina
+          </button>
+        </div>
+
+        {!isLoading && !error && routines.length > 0 ? (
+          <RutinaFrequencyFilters
+            value={frequencyFilter}
+            counts={frequencyCounts}
+            onChange={setFrequencyFilter}
+          />
+        ) : null}
 
         {/* Lista de Rutinas */}
         {isLoading && routines.length === 0 ? (
@@ -743,47 +663,63 @@ function Rutinas() {
               </button>
             </div>
           </div>
+        ) : hasSearch && filteredRoutines.length === 0 ? (
+          <div className="empty-state">
+            <RepeatIcon className="empty-state-icon" />
+            <p className="empty-text">Sin coincidencias</p>
+            <p className="empty-subtext">Prueba con otro término o limpia la búsqueda</p>
+          </div>
         ) : routines.length === 0 ? (
           <div className="empty-state">
             <RepeatIcon className="empty-state-icon" />
-            <p className="empty-text">No hay rutinas registradas aún</p>
-            <p className="empty-subtext">Usa el botón de arriba para agregar la primera</p>
+            <p className="empty-text">Aún no tienes rutinas</p>
+            <p className="empty-subtext">
+              Crea hábitos recurrentes y complétalos cada día desde Mi Día.
+            </p>
+            <div className="rutinas-empty-actions">
+              <button
+                type="button"
+                className="btn-base btn-accent"
+                onClick={handleOpenCreateModal}
+              >
+                <AddIcon aria-hidden="true" />
+                Crear primera rutina
+              </button>
+              <button
+                type="button"
+                className="btn-base btn-secondary"
+                onClick={() => navigate('/tiempo/mi-dia')}
+              >
+                <TodayIcon aria-hidden="true" />
+                Ver Mi Día
+              </button>
+            </div>
+          </div>
+        ) : routineGroups.length > 0 ? (
+          <div className="rutinas-sections">
+            {routineGroups.map(group => (
+              <section key={group.key} className="rutinas-section" aria-label={group.label}>
+                <h2 className="rutinas-section-title">{group.label}</h2>
+                <div className="glass-group">
+                  {group.routines.map(routine => (
+                    <RutinaListRow
+                      key={routine.id}
+                      routine={routine}
+                      onClick={() => handleOpenDetailModal(routine)}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
           </div>
         ) : (
           <div className="glass-group">
-            {routines.map(routine => (
-              <button
+            {filteredRoutines.map(routine => (
+              <RutinaListRow
                 key={routine.id}
-                type="button"
-                className="crud-inset-row crud-row-accent-green"
+                routine={routine}
                 onClick={() => handleOpenDetailModal(routine)}
-                aria-label={`Ver rutina ${routine.title}`}
-              >
-                <div className="crud-row-content">
-                  <div className="crud-row-header">
-                    <div className="crud-row-title-section">
-                      {routine.color && (
-                        <span
-                          className="crud-row-icon"
-                          style={{ color: routine.color }}
-                          aria-hidden="true"
-                        >
-                          ●
-                        </span>
-                      )}
-                      <span className="crud-row-title">{routine.title}</span>
-                    </div>
-                    {(routine.current_streak ?? 0) > 0 && (
-                      <span className="crud-row-value">{routine.current_streak}d</span>
-                    )}
-                    <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
-                  </div>
-                  <p className="crud-row-meta">{formatRoutineMeta(routine)}</p>
-                  {routine.description && (
-                    <p className="crud-row-preview">{routine.description}</p>
-                  )}
-                </div>
-              </button>
+              />
             ))}
           </div>
         )}
@@ -791,36 +727,30 @@ function Rutinas() {
         {/* Modal de Detalle/Edición/Creación */}
         {isDetailModalOpen && (
           <ModalOverlay onClose={handleCloseDetailModal} className="modal-overlay">
-            <div className="modal-panel" onClick={e => e.stopPropagation()}>
-              <div className="modal-panel-header">
-                <h2 className="modal-panel-title" id="modal-panel-title-selectedroutine-iseditmode-editar-rutina-selectedroutine-title-crear-rutina">
-                  {selectedRoutine 
-                    ? (isEditMode ? 'Editar Rutina' : selectedRoutine.title)
-                    : 'Crear Rutina'
-                  }
-                </h2>
-                <div className="rutinas-modal-actions">
-                  {selectedRoutine && !isEditMode && (
-                    <>
-                      <button
-                        className="rutinas-modal-action-button"
-                        onClick={() => setIsEditMode(true)}
-                        aria-label="Editar"
-                        type="button"
-                      >
-                        <EditIcon />
-                      </button>
-                      <button
-                        className="rutinas-modal-action-button rutinas-modal-delete-button"
-                        onClick={handleDelete}
-                        aria-label="Eliminar"
-                        type="button"
-                        disabled={isLoading}
-                      >
-                        <DeleteIcon />
-                      </button>
-                    </>
-                  )}
+            <div
+              className={`modal-panel rutinas-modal lifestyle-modal${isEditMode || !selectedRoutine ? ' lifestyle-modal--form' : ''}`}
+              onClick={e => e.stopPropagation()}
+              role="dialog"
+              aria-labelledby="modal-title-rutinas"
+            >
+              <div className="lifestyle-modal__header">
+                <div className="lifestyle-modal__header-copy">
+                  <p className="lifestyle-modal__kicker">
+                    Rutinas ·{' '}
+                    {selectedRoutine ? (isEditMode ? 'Editar' : 'Detalle') : 'Nuevo'}
+                  </p>
+                  <h2 className="modal-panel-title" id="modal-title-rutinas">
+                    {selectedRoutine
+                      ? isEditMode
+                        ? 'Editar rutina'
+                        : selectedRoutine.title
+                      : 'Nueva rutina'}
+                  </h2>
+                  {selectedRoutine && !isEditMode ? (
+                    <p className="lifestyle-modal__subtitle">{formatRoutineMeta(selectedRoutine)}</p>
+                  ) : null}
+                </div>
+                <div className="lifestyle-modal__header-actions">
                   <button
                     className="modal-panel-close"
                     onClick={handleCloseDetailModal}
@@ -833,278 +763,27 @@ function Rutinas() {
               </div>
 
               {(isEditMode || !selectedRoutine) ? (
-                <form onSubmit={handleSubmit} className="rutinas-modal-form" noValidate>
-                  {/* Advertencia sobre cambios - Solo en modo edición */}
-                  {selectedRoutine && isEditMode && (
-                    <div className="rutinas-warning-message">
-                      <div className="rutinas-warning-icon">⚠️</div>
-                      <div className="rutinas-warning-content">
-                        <p className="rutinas-warning-title">Advertencia sobre cambios</p>
-                        <p className="rutinas-warning-text">
-                          Modificar la frecuencia, días de la semana o día del mes de esta rutina puede afectar tus rachas existentes. 
-                          Recuerda que una rutina es un compromiso contigo mismo para cumplirla desde el principio.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="rutinas-form-group">
-                    <label htmlFor="title" className="form-label-base">
-                      Título *
-                    </label>
-                    <input
-                      ref={titleRef}
-                      type="text"
-                      id="title"
-                      name="title"
-                      value={formData.title}
-                      onChange={handleChange}
-                      className={`form-input-base ${formErrors.title  ? 'input-error' : ''}`}
-                      placeholder="Ej: Ejercicio matutino"
-                      autoFocus={!selectedRoutine}
-                      aria-invalid={!!formErrors.title}
-                      {...(formErrors.title ? { 'aria-describedby': 'title-error' } : {})}
-                    />
-                    {formErrors.title && (
-                      <span id="title-error" className="rutinas-form-error" role="alert">
-                        {formErrors.title}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="rutinas-form-group">
-                    <label htmlFor="description" className="form-label-base">
-                      Descripción
-                    </label>
-                    <textarea
-                      id="description"
-                      name="description"
-                      value={formData.description}
-                      onChange={handleChange}
-                      className="form-textarea-base"
-                      rows={3}
-                      placeholder="Descripción de la rutina (opcional)"
-                    />
-                  </div>
-
-                  <div className="rutinas-form-group">
-                    <label htmlFor="frequency" className="form-label-base">
-                      Frecuencia *
-                    </label>
-                    <select
-                      id="frequency"
-                      name="frequency"
-                      value={formData.frequency}
-                      onChange={handleChange}
-                      className={`form-select-base ${formErrors.frequency ? 'input-error' : ''}`}
-                    >
-                      <option value="daily">Diaria</option>
-                      <option value="weekly">Semanal</option>
-                      <option value="monthly">Mensual</option>
-                    </select>
-                  </div>
-
-                  {formData.frequency === 'weekly' && (
-                    <div className="rutinas-form-group">
-                      <label className="form-label-base">Días de la semana *</label>
-                      <div id="days-of-week-group" ref={daysOfWeekRef} className="rutinas-days-selector">
-                        {daysOfWeekOptions.map(day => (
-                          <button
-                            key={day.value}
-                            type="button"
-                            className={`rutinas-day-button ${formData.days_of_week.includes(day.value) ? 'selected' : ''}`}
-                            onClick={() => handleDayToggle(day.value)}
-                          >
-                            {day.label}
-                          </button>
-                        ))}
-                      </div>
-                      {formErrors.days_of_week && (
-                        <span id="days-of-week-error" className="rutinas-form-error" role="alert">
-                          {formErrors.days_of_week}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {formData.frequency === 'monthly' && (
-                    <div className="rutinas-form-group">
-                      <label htmlFor="day_of_month" className="form-label-base">
-                        Día del mes *
-                      </label>
-                      <input
-                        ref={dayOfMonthRef}
-                        type="number"
-                        id="day_of_month"
-                        name="day_of_month"
-                        value={formData.day_of_month ?? ''}
-                        onChange={handleChange}
-                        min="1"
-                        max="31"
-                        className={`form-input-base ${formErrors.day_of_month  ? 'input-error' : ''}`}
-                        placeholder="1-31"
-                        aria-invalid={!!formErrors.day_of_month}
-                        {...(formErrors.day_of_month ? { 'aria-describedby': 'day-of-month-error' } : {})}
-                      />
-                      {formErrors.day_of_month && (
-                        <span id="day-of-month-error" className="rutinas-form-error" role="alert">
-                          {formErrors.day_of_month}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="rutinas-form-group">
-                    <label htmlFor="scheduled_time" className="form-label-base">
-                      Hora programada
-                    </label>
-                    <input
-                      type="time"
-                      id="scheduled_time"
-                      name="scheduled_time"
-                      value={formData.scheduled_time}
-                      onChange={handleChange}
-                      className="form-input-base"
-                    />
-                  </div>
-
-                  <div className="rutinas-form-group">
-                    <label htmlFor="duration" className="form-label-base">
-                      Duración esperada (minutos)
-                    </label>
-                    <input
-                      type="number"
-                      id="duration"
-                      name="duration"
-                      value={formData.duration ?? ''}
-                      onChange={handleChange}
-                      min="0"
-                      className="form-input-base"
-                      placeholder="Ej: 30"
-                    />
-                    <p className="rutinas-form-help-text">
-                      Duración estimada que tomará completar esta rutina (opcional)
-                    </p>
-                  </div>
-
-                  <div className="rutinas-form-group">
-                    <label htmlFor="color" className="form-label-base">
-                      Color
-                    </label>
-                    <input
-                      type="color"
-                      id="color"
-                      name="color"
-                      value={formData.color}
-                      onChange={handleChange}
-                      className="rutinas-form-color-input"
-                    />
-                  </div>
-
-                  <div className="rutinas-modal-form-actions">
-                    <button
-                      type="button"
-                      className="rutinas-form-button rutinas-form-button-secondary"
-                      onClick={() => setIsEditMode(false)}
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      type="submit"
-                      className="rutinas-form-button rutinas-form-button-primary"
-                      disabled={isLoading}
-                    >
-                      {isLoading 
-                        ? (selectedRoutine ? 'Guardando...' : 'Creando...') 
-                        : (selectedRoutine ? 'Guardar Cambios' : 'Crear Rutina')
-                      }
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <div className="rutinas-detail-content">
-                  {selectedRoutine.description && (
-                    <div className="rutinas-detail-section">
-                      <h3 className="rutinas-detail-label">Descripción</h3>
-                      <p className="rutinas-detail-value">{selectedRoutine.description}</p>
-                    </div>
-                  )}
-
-                  <div className="rutinas-detail-section">
-                    <h3 className="rutinas-detail-label">Frecuencia</h3>
-                    <p className="rutinas-detail-value">{formatFrequency(selectedRoutine.frequency)}</p>
-                  </div>
-
-                  {selectedRoutine.frequency === 'weekly' && selectedRoutine.days_of_week && selectedRoutine.days_of_week.length > 0 && (
-                    <div className="rutinas-detail-section">
-                      <h3 className="rutinas-detail-label">Días de la semana</h3>
-                      <p className="rutinas-detail-value">{formatDaysOfWeek(selectedRoutine.days_of_week)}</p>
-                    </div>
-                  )}
-
-                  {selectedRoutine.frequency === 'monthly' && selectedRoutine.day_of_month !== null && selectedRoutine.day_of_month !== undefined && (
-                    <div className="rutinas-detail-section">
-                      <h3 className="rutinas-detail-label">Día del mes</h3>
-                      <p className="rutinas-detail-value">Día {selectedRoutine.day_of_month}</p>
-                    </div>
-                  )}
-
-                  {selectedRoutine.scheduled_time && (
-                    <div className="rutinas-detail-section">
-                      <h3 className="rutinas-detail-label">Hora programada</h3>
-                      <p className="rutinas-detail-value">{selectedRoutine.scheduled_time.slice(0, 5)}</p>
-                    </div>
-                  )}
-
-                  {selectedRoutine.duration !== null && selectedRoutine.duration !== undefined && (
-                    <div className="rutinas-detail-section">
-                      <h3 className="rutinas-detail-label">Duración esperada</h3>
-                      <p className="rutinas-detail-value">{selectedRoutine.duration} minutos</p>
-                    </div>
-                  )}
-
-                  <div className="rutinas-detail-stats">
-                    <div className="rutinas-detail-stat">
-                      <h3 className="rutinas-detail-label">Racha actual</h3>
-                      <p className="rutinas-detail-value rutinas-detail-streak">
-                        <LocalFireDepartmentIcon className="rutinas-detail-streak-icon" />
-                        {selectedRoutine.current_streak !== undefined ? selectedRoutine.current_streak : 0} días
-                      </p>
-                    </div>
-                    <div className="rutinas-detail-stat">
-                      <h3 className="rutinas-detail-label">Racha más larga</h3>
-                      <p className="rutinas-detail-value">
-                        {selectedRoutine.longest_streak !== undefined ? selectedRoutine.longest_streak : 0} días
-                      </p>
-                    </div>
-                    <div className="rutinas-detail-stat">
-                      <h3 className="rutinas-detail-label">Total completados</h3>
-                      <p className="rutinas-detail-value rutinas-detail-completions">
-                        <CheckCircleIcon className="rutinas-detail-completions-icon" />
-                        {selectedRoutine.total_completions !== undefined ? selectedRoutine.total_completions : 0}
-                      </p>
-                    </div>
-                    {selectedRoutine.completions_this_month !== undefined && selectedRoutine.completions_this_month > 0 && (
-                      <div className="rutinas-detail-stat">
-                        <h3 className="rutinas-detail-label">Completados este mes</h3>
-                        <p className="rutinas-detail-value">{selectedRoutine.completions_this_month}</p>
-                      </div>
-                    )}
-                    {selectedRoutine.last_completed_date && (
-                      <div className="rutinas-detail-stat">
-                        <h3 className="rutinas-detail-label">Último completado</h3>
-                        <p className="rutinas-detail-value">
-                          {new Date(selectedRoutine.last_completed_date).toLocaleDateString('es-ES', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+                <RutinaFormModalBody
+                  formData={formData}
+                  formErrors={formErrors}
+                  isLoading={isSubmitting}
+                  isEditing={Boolean(selectedRoutine && isEditMode)}
+                  titleRef={titleRef}
+                  dayOfMonthRef={dayOfMonthRef}
+                  daysOfWeekRef={daysOfWeekRef}
+                  onChange={handleChange}
+                  onDayToggle={handleDayToggle}
+                  onSubmit={handleSubmit}
+                  onCancel={handleFormCancel}
+                />
+              ) : selectedRoutine ? (
+                <RutinaDetailModalBody
+                  routine={selectedRoutine}
+                  isLoading={isLoading || isSubmitting}
+                  onEdit={() => setIsEditMode(true)}
+                  onDelete={handleDelete}
+                />
+              ) : null}
             </div>
         </ModalOverlay>
         )}

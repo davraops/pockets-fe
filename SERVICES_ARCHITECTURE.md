@@ -170,6 +170,7 @@ El proyecto Pockets está dividido en **3 servicios Serverless independientes** 
 - `POST /patrimony`, `GET /patrimony`, `PUT /patrimony/{id}`, `DELETE /patrimony/{id}`, `DELETE /patrimony` (nuevo - patrimonio/items valiosos)
 - `POST /contracts`, `GET /contracts`, `PUT /contracts/{id}`, `DELETE /contracts/{id}`, `DELETE /contracts` (nuevo - contratos activos)
 - `POST /client-activities`, `GET /client-activities`, `PUT /client-activities/{id}`, `DELETE /client-activities/{id}`, `DELETE /client-activities` (nuevo - actividades de clientes)
+- `POST /hiring-processes`, `GET /hiring-processes`, `PUT /hiring-processes/{id}`, `DELETE /hiring-processes/{id}`, `DELETE /hiring-processes` (nuevo - procesos de contratación)
 - `POST /secrets`, `GET /secrets`, `PUT /secrets/{id}`, `POST /secrets/{id}/verify`, `POST /secrets/{id}/value`, `DELETE /secrets/{id}`, `DELETE /secrets`
 - `POST /notifications`, `GET /notifications`, `PUT /notifications/{id}/read`, `DELETE /notifications/{id}`, `POST /notifications/mark-all-read`, `DELETE /notifications`
 

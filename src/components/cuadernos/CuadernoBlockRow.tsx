@@ -154,11 +154,51 @@ function blockContentEqual(a: CuadernoBlock, b: CuadernoBlock): boolean {
   )
 }
 
+/** Child count for composite blocks; used to re-render while focused when Enter adds rows/items. */
+function blockChildCount(block: CuadernoBlock): number | null {
+  switch (block.type) {
+    case 'to_do':
+      return getBlockTodoItems(block).length
+    case 'bulleted_list_item':
+    case 'numbered_list_item':
+      return getBlockListItems(block).length
+    case 'column_2':
+      return getBlockColumnCells(block).length
+    case 'table':
+      return getBlockTableRows(block).length
+    default:
+      return null
+  }
+}
+
+function blockChildStructureEqual(a: CuadernoBlock, b: CuadernoBlock): boolean {
+  if (a.type !== b.type) {
+    return false
+  }
+  const countA = blockChildCount(a)
+  const countB = blockChildCount(b)
+  if (countA === null && countB === null) {
+    return true
+  }
+  return countA === countB
+}
+
 function areBlockRowPropsEqual(
   prev: CuadernoBlockRowProps,
   next: CuadernoBlockRowProps
 ): boolean {
   if (isCuadernoBlockInputFocused(next.block.id)) {
+    if (!blockChildStructureEqual(prev.block, next.block)) {
+      return false
+    }
+    if (
+      prev.focusCaret !== next.focusCaret ||
+      prev.autoFocus !== next.autoFocus ||
+      prev.isDragging !== next.isDragging ||
+      prev.isDropTarget !== next.isDropTarget
+    ) {
+      return false
+    }
     return true
   }
 

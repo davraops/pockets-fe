@@ -40,6 +40,8 @@ function CuadernoTodoBlockEditor({
   onRemoveBlock,
 }: CuadernoTodoBlockEditorProps) {
   const inputRefs = useRef<Array<CuadernoBlockInputHandle | null>>([])
+  const itemsRef = useRef(items)
+  itemsRef.current = items
   const [focusHint, setFocusHint] = useState<TodoFocusHint | null>(null)
 
   const focusItem = (index: number, caret: number) => {
@@ -63,7 +65,7 @@ function CuadernoTodoBlockEditor({
   }, [focusHint])
 
   const updateItem = (index: number, patch: Partial<CuadernoTodoItem>) => {
-    const next = items.map((item, itemIndex) =>
+    const next = itemsRef.current.map((item, itemIndex) =>
       itemIndex === index ? { ...item, ...patch } : item
     )
     onItemsChange(next)
@@ -80,14 +82,16 @@ function CuadernoTodoBlockEditor({
   }
 
   const handleItemKeyDown = (index: number, event: React.KeyboardEvent<HTMLDivElement>) => {
+    const currentItems = itemsRef.current
     const input = inputRefs.current[index]
     const el = input?.getElement()
-    const value = input?.getText() ?? richTextToPlain(items[index]?.richText ?? [{ text: '' }])
+    const value =
+      input?.getText() ?? richTextToPlain(currentItems[index]?.richText ?? [{ text: '' }])
 
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault()
       if (!el) {
-        const next = [...items]
+        const next = [...currentItems]
         next.splice(index + 1, 0, createTodoItem())
         onItemsChange(next)
         focusItem(index + 1, 0)
@@ -97,8 +101,8 @@ function CuadernoTodoBlockEditor({
       const richText = richTextFromElement(el)
       const caret = input?.getCaret() ?? richTextToPlain(richText).length
       const { before, after } = splitRichTextAt(richText, caret)
-      const next = [...items]
-      next[index] = { ...items[index], richText: before }
+      const next = [...currentItems]
+      next[index] = { ...currentItems[index], richText: before }
       next.splice(index + 1, 0, createTodoItem(after))
       input.applyRichText(before, richTextToPlain(before).length, { focus: false })
       onItemsChange(next)
@@ -108,8 +112,8 @@ function CuadernoTodoBlockEditor({
 
     if (event.key === 'Backspace' && value === '') {
       event.preventDefault()
-      if (items.length > 1) {
-        const next = items.filter((_, itemIndex) => itemIndex !== index)
+      if (currentItems.length > 1) {
+        const next = currentItems.filter((_, itemIndex) => itemIndex !== index)
         onItemsChange(next)
         focusItem(Math.max(index - 1, 0), -1)
         return
@@ -122,7 +126,7 @@ function CuadernoTodoBlockEditor({
       focusItem(index - 1, -1)
     }
 
-    if (event.key === 'ArrowDown' && el && input && index < items.length - 1) {
+    if (event.key === 'ArrowDown' && el && input && index < currentItems.length - 1) {
       const caretAtEnd = input.getCaret() === value.length
       if (caretAtEnd) {
         event.preventDefault()

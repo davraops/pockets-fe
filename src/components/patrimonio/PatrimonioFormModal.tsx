@@ -19,7 +19,6 @@ interface PatrimonioFormModalProps {
   ) => void
   onSubmit: (event: React.FormEvent) => void
   onCancel: () => void
-  onDelete?: () => void
 }
 
 function PatrimonioFormModal({
@@ -30,23 +29,29 @@ function PatrimonioFormModal({
   onChange,
   onSubmit,
   onCancel,
-  onDelete,
 }: PatrimonioFormModalProps) {
   return (
     <ModalOverlay onClose={onCancel} className="modal-overlay">
-      <div className="patrimonio-modal patrimonio-modal-large" onClick={e => e.stopPropagation()}>
-        <div className="modal-panel-header">
-          <h2
-            className="modal-panel-title"
-            id="modal-panel-title-editingid-editar-item-de-patrimonio-agregar-item-de-patrimonio"
-          >
-            {editingId ? 'Editar Item de Patrimonio' : 'Agregar Item de Patrimonio'}
-          </h2>
+      <div
+        className="modal-panel patrimonio-modal patrimonio-modal--form"
+        onClick={event => event.stopPropagation()}
+        role="dialog"
+        aria-labelledby="modal-title-patrimonio-form"
+      >
+        <div className="patrimonio-modal__header">
+          <div className="patrimonio-modal__header-copy">
+            <p className="patrimonio-modal__kicker">
+              Bienes · {editingId ? 'Editar' : 'Nuevo'}
+            </p>
+            <h2 className="modal-panel-title" id="modal-title-patrimonio-form">
+              {editingId ? 'Editar ítem' : 'Agregar ítem'}
+            </h2>
+          </div>
           <button className="modal-panel-close" onClick={onCancel} aria-label="Cerrar" type="button">
             ×
           </button>
         </div>
-        <div className="modal-panel-content">
+        <div className="modal-panel-content patrimonio-modal__body">
           <form onSubmit={onSubmit} className="patrimonio-form" noValidate>
             <div className="form-group-base form-group-base--compact">
               <label htmlFor="name" className="form-label-base form-label-base--inline">
@@ -339,29 +344,16 @@ function PatrimonioFormModal({
               />
             </div>
 
-            <div className="patrimonio-form-actions">
-              {editingId && (
-                <>
-                  <button
-                    type="button"
-                    className="patrimonio-form-button patrimonio-form-button-secondary"
-                    onClick={onCancel}
-                  >
-                    Cancelar
-                  </button>
-                  {onDelete && (
-                    <button
-                      type="button"
-                      className="patrimonio-form-button patrimonio-form-button-secondary"
-                      onClick={onDelete}
-                    >
-                      Eliminar
-                    </button>
-                  )}
-                </>
-              )}
-              <button type="submit" className="patrimonio-form-button patrimonio-form-button-primary">
-                {editingId ? 'Actualizar' : 'Agregar'}
+            <div className="modal-actions-base patrimonio-modal__footer">
+              <button
+                type="button"
+                className="btn-base btn-secondary patrimonio-modal__btn"
+                onClick={onCancel}
+              >
+                Cancelar
+              </button>
+              <button type="submit" className="btn-base btn-accent patrimonio-modal__btn">
+                {editingId ? 'Guardar cambios' : 'Agregar ítem'}
               </button>
             </div>
           </form>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import PaymentIcon from '@mui/icons-material/Payment'
@@ -983,35 +984,19 @@ function TarjetasDebito() {
                 }
               />
 
-              <div
-                className="crud-summary-strip"
-                role="region"
-                aria-label="Resumen de tarjetas de débito"
-              >
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Total</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
-                    {highlights.totalTarjetas}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Físicas</span>
-                  <span className="crud-summary-strip-value">{highlights.tarjetasFisicas}</span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Virtuales</span>
-                  <span className="crud-summary-strip-value">{highlights.tarjetasVirtuales}</span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Con subscripciones</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--available">
-                    {highlights.tarjetasConSubscripciones}
-                  </span>
-                </div>
-              </div>
+              <CrudSummaryStrip
+                ariaLabel="Resumen de tarjetas de débito"
+                items={[
+                  { label: 'Total', value: highlights.totalTarjetas, tone: 'info' },
+                  { label: 'Físicas', value: highlights.tarjetasFisicas },
+                  { label: 'Virtuales', value: highlights.tarjetasVirtuales },
+                  {
+                    label: 'Con subscripciones',
+                    value: highlights.tarjetasConSubscripciones,
+                    tone: 'available',
+                  },
+                ]}
+              />
 
               <button
                 type="button"
@@ -1052,14 +1037,14 @@ function TarjetasDebito() {
                           </div>
                           <div className="crud-row-secondary">
                             <span className="crud-row-meta">{formatCardNumber(card.ultimos4Digitos)}</span>
-                            <span className="crud-row-meta">{card.esVirtual ? 'Virtual' : 'Física'}</span>
+                            <span className="crud-row-meta crud-row-meta--chip">{card.esVirtual ? 'Virtual' : 'Física'}</span>
                             {subscriptionCount > 0 && (
                               <span className="crud-row-meta">
                                 {subscriptionCount} subscripción
                                 {subscriptionCount !== 1 ? 'es' : ''}
                               </span>
                             )}
-                            <span className="crud-row-meta">
+                            <span className="crud-row-meta crud-row-meta--accent">
                               Vence {formatDate(card.fechaVencimiento)}
                             </span>
                           </div>

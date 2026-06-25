@@ -15,7 +15,7 @@ function PatrimonioListRow({ item, onClick }: PatrimonioListRowProps) {
   return (
     <CrudInsetRow
       accentClass="crud-row-accent-green"
-      ariaLabel={`Editar item ${item.name}`}
+      ariaLabel={`Ver item ${item.name}`}
       onClick={onClick}
       title={item.name}
       value={formatPatrimonyRowValue(item)}

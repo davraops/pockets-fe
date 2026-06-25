@@ -1,6 +1,6 @@
 import CrudInsetRow from '../crud/CrudInsetRow'
 import type { Employee } from './employeeTypes'
-import { formatEmployeeMeta, formatEmployeePreview } from './employeeDisplayUtils'
+import { formatEmployeeMeta, formatEmployeePreview, formatEmployeeSalary } from './employeeDisplayUtils'
 
 interface EmpleadoListRowProps {
   employee: Employee
@@ -8,10 +8,7 @@ interface EmpleadoListRowProps {
 }
 
 function EmpleadoListRow({ employee, onClick }: EmpleadoListRowProps) {
-  const salaryValue =
-    employee.data.salary != null && employee.data.salary > 0
-      ? `$${employee.data.salary.toLocaleString('es-CO')}`
-      : undefined
+  const salaryValue = formatEmployeeSalary(employee)
 
   return (
     <CrudInsetRow

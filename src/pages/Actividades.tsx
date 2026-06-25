@@ -1,4 +1,30 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
+import ActividadKanbanBoard from '../components/trabajo/ActividadKanbanBoard'
+import ActividadMetricsPanel from '../components/trabajo/ActividadMetricsPanel'
+import {
+  buildActivityClientOptions,
+  getContractClientNames,
+  mergeClientFilterOptions,
+} from '../components/trabajo/activityFormUtils'
+import {
+  addManualTimeLog,
+  buildNewActivityData,
+  formatDurationMinutes,
+  normalizeActivityData,
+  patchActivityFields,
+  startTimer,
+  stopTimer,
+  summarizeActivityMetrics,
+  transitionActivityStatus,
+} from '../components/trabajo/activityMetricsUtils'
+import {
+  ACTIVITY_STATUS_LABELS,
+  KANBAN_ACTIVE_COLUMNS,
+  KANBAN_COMPLETED_COLUMNS,
+  type ActivityStatus,
+  type ClientActivity,
+} from '../components/trabajo/activityTypes'
 import { backToHubLabel } from '../constants/hubLabels'
 import { useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
@@ -28,22 +54,6 @@ import ModalOverlay from '../components/ModalOverlay'
 import ListSkeleton from '../components/ListSkeleton'
 import './Actividades.css'
 
-interface ClientActivity {
-  id: string
-  name: string
-  data: {
-    client?: string
-    activity?: string
-    ticket?: string
-    priority?: string
-    assignmentDate?: string
-    status?: 'defined' | 'in_progress' | 'blocked' | 'done' | 'wont_do'
-    completedDate?: string
-  }
-  created_at?: string
-  updated_at?: string
-}
-
 interface ClientActivityRecord {
   id: string
   name: string
@@ -52,11 +62,14 @@ interface ClientActivityRecord {
   updated_at: string
 }
 
+type ViewMode = 'list' | 'kanban'
+
 function Actividades() {
   const navigate = useNavigate()
   const { showNotification } = useNotification()
   const { confirm } = useConfirm()
   const [activities, setActivities] = useState<ClientActivity[]>([])
+  const [contractClients, setContractClients] = useState<string[]>([])
   const [formData, setFormData] = useState({
     name: '',
     client: '',
@@ -64,9 +77,11 @@ function Actividades() {
     ticket: '',
     priority: '',
     assignmentDate: '',
-    status: 'defined' as 'defined' | 'in_progress' | 'blocked' | 'done' | 'wont_do',
+    status: 'defined' as ActivityStatus,
   })
   const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active')
+  const [viewMode, setViewMode] = useState<ViewMode>('kanban')
+  const [isUpdatingActivityId, setIsUpdatingActivityId] = useState<string | null>(null)
   const [clientFilter, setClientFilter] = useState<string>('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
@@ -80,12 +95,27 @@ function Actividades() {
   const [isDebugLoading, setIsDebugLoading] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
-  const clientRef = useRef<HTMLInputElement>(null)
+  const clientRef = useRef<HTMLSelectElement>(null)
   const [formErrors, setFormErrors] = useState({ name: '', client: '' })
 
   useEffect(() => {
     loadRecords()
+    void loadContractClients()
   }, [])
+
+  const loadContractClients = async () => {
+    try {
+      const response = await api.getContracts()
+      if (response.contracts && Array.isArray(response.contracts)) {
+        setContractClients(getContractClientNames(response.contracts))
+      } else {
+        setContractClients([])
+      }
+    } catch (err: unknown) {
+      devError('Error al cargar clientes de contratos:', err)
+      setContractClients([])
+    }
+  }
 
   // Cerrar menú al hacer clic fuera
   useEffect(() => {
@@ -163,7 +193,7 @@ function Actividades() {
     }
 
     if (!formData.client.trim()) {
-      errors.client = 'El cliente es requerido'
+      errors.client = 'Selecciona un cliente'
       isValid = false
     }
 
@@ -181,6 +211,24 @@ function Actividades() {
     return isValid
   }
 
+  const persistActivity = async (
+    activity: ClientActivity,
+    options?: { successMessage?: string; reload?: boolean }
+  ) => {
+    await api.updateClientActivity(activity.id, {
+      name: activity.name,
+      data: activity.data,
+    })
+
+    if (options?.successMessage) {
+      showNotification(options.successMessage, 'success')
+    }
+
+    if (options?.reload !== false) {
+      await loadRecords()
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -191,28 +239,34 @@ function Actividades() {
     try {
       setIsSaving(true)
 
-      const activityData = {
-        name: formData.name.trim(),
-        data: {
-          client: formData.client.trim(),
-          activity: formData.activity.trim() || undefined,
-          ticket: formData.ticket.trim() || undefined,
-          priority: formData.priority || undefined,
-          assignmentDate: formData.assignmentDate || undefined,
-          status: formData.status || 'defined',
-        },
+      const fieldPatch = {
+        client: formData.client.trim(),
+        activity: formData.activity.trim() || undefined,
+        ticket: formData.ticket.trim() || undefined,
+        priority: formData.priority || undefined,
+        assignmentDate: formData.assignmentDate || undefined,
+        status: formData.status || 'defined',
       }
 
       if (editingId) {
-        await api.updateClientActivity(editingId, activityData)
-        showNotification('Actividad actualizada exitosamente', 'success')
+        const existing = activities.find(activity => activity.id === editingId)
+        const data = existing
+          ? patchActivityFields(existing.data, fieldPatch, existing.created_at)
+          : buildNewActivityData(fieldPatch)
+
+        await persistActivity(
+          { id: editingId, name: formData.name.trim(), data },
+          { successMessage: 'Actividad actualizada exitosamente' }
+        )
         setEditingId(null)
       } else {
-        await api.createClientActivity(activityData)
+        await api.createClientActivity({
+          name: formData.name.trim(),
+          data: buildNewActivityData(fieldPatch),
+        })
         showNotification('Actividad creada exitosamente', 'success')
+        await loadRecords()
       }
-
-      await loadRecords()
 
       setFormData({
         name: '',
@@ -286,20 +340,95 @@ function Actividades() {
     }
   }
 
+  const handleStatusChange = async (activity: ClientActivity, status: ActivityStatus) => {
+    try {
+      setIsUpdatingActivityId(activity.id)
+      const data = transitionActivityStatus(
+        normalizeActivityData(activity.data, activity.created_at),
+        status
+      )
+      await persistActivity(
+        { ...activity, data },
+        { successMessage: `Movida a ${ACTIVITY_STATUS_LABELS[status]}` }
+      )
+    } catch (err: unknown) {
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al actualizar el estado. Por favor, intenta de nuevo.'
+      )
+      showNotification(errorMessage, 'error')
+    } finally {
+      setIsUpdatingActivityId(null)
+    }
+  }
+
+  const handleToggleTimer = async (activity: ClientActivity) => {
+    try {
+      setIsUpdatingActivityId(activity.id)
+      const normalized = normalizeActivityData(activity.data, activity.created_at)
+      const wasRunning = Boolean(normalized.activeTimerStartedAt)
+      const data = wasRunning ? stopTimer(normalized) : startTimer(normalized)
+
+      await persistActivity(
+        { ...activity, data },
+        {
+          successMessage: wasRunning ? 'Tiempo registrado' : 'Cronómetro iniciado',
+        }
+      )
+    } catch (err: unknown) {
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al actualizar el cronómetro. Por favor, intenta de nuevo.'
+      )
+      showNotification(errorMessage, 'error')
+    } finally {
+      setIsUpdatingActivityId(null)
+    }
+  }
+
+  const handleAddManualLog = async (minutes: number, note?: string) => {
+    if (!editingId) {
+      return
+    }
+
+    const activity = activities.find(item => item.id === editingId)
+    if (!activity) {
+      return
+    }
+
+    try {
+      setIsSaving(true)
+      const data = addManualTimeLog(
+        normalizeActivityData(activity.data, activity.created_at),
+        minutes,
+        note
+      )
+      await persistActivity(
+        { ...activity, data },
+        { successMessage: 'Tiempo registrado', reload: true }
+      )
+    } catch (err: unknown) {
+      const errorMessage = getTranslatedErrorMessage(
+        err,
+        'Error al registrar el tiempo. Por favor, intenta de nuevo.'
+      )
+      showNotification(errorMessage, 'error')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   const handleComplete = async (activity: ClientActivity) => {
     try {
-      const activityData = {
-        name: activity.name,
-        data: {
-          ...activity.data,
-          status: 'done' as const,
-          completedDate: new Date().toISOString().split('T')[0],
-        },
-      }
-      await api.updateClientActivity(activity.id, activityData)
-      showNotification('Actividad completada exitosamente', 'success')
-      await loadRecords()
-    } catch (err: any) {
+      const data = transitionActivityStatus(
+        normalizeActivityData(activity.data, activity.created_at),
+        'done'
+      )
+      await persistActivity(
+        { ...activity, data },
+        { successMessage: 'Actividad completada exitosamente' }
+      )
+    } catch (err: unknown) {
       const errorMessage = getTranslatedErrorMessage(
         err,
         'Error al completar la actividad. Por favor, intenta de nuevo.'
@@ -363,10 +492,19 @@ function Actividades() {
     }
   }
 
-  // Obtener lista única de clientes para el filtro
-  const uniqueClients = Array.from(
-    new Set(activities.map(a => a.data.client).filter(Boolean))
-  ).sort()
+  const formClientOptions = useMemo(
+    () => buildActivityClientOptions(contractClients, formData.client),
+    [contractClients, formData.client]
+  )
+
+  const uniqueClients = useMemo(
+    () =>
+      mergeClientFilterOptions(
+        contractClients,
+        activities.map(activity => activity.data.client ?? '').filter(Boolean)
+      ),
+    [contractClients, activities]
+  )
 
   // Obtener valor numérico de prioridad para ordenar
   const getPriorityValue = (priority: string | undefined) => {
@@ -437,6 +575,8 @@ function Actividades() {
   }
 
   const stats = calculateStats()
+  const timeStats = summarizeActivityMetrics(activities)
+  const editingActivity = editingId ? activities.find(activity => activity.id === editingId) : null
 
   const getEmptyStateCopy = () => {
     if (activities.length === 0) {
@@ -489,22 +629,8 @@ function Actividades() {
   }
 
   // Obtener label del estado
-  const getStatusLabel = (status: string | undefined) => {
-    switch (status) {
-      case 'defined':
-        return 'Definida'
-      case 'in_progress':
-        return 'En Progreso'
-      case 'blocked':
-        return 'Bloqueada'
-      case 'done':
-        return 'Completada'
-      case 'wont_do':
-        return 'No se hará'
-      default:
-        return 'Definida'
-    }
-  }
+  const getStatusLabel = (status: ActivityStatus | undefined) =>
+    ACTIVITY_STATUS_LABELS[status ?? 'defined']
 
   const formatActivityMeta = (activity: ClientActivity) => {
     const parts = [
@@ -568,35 +694,29 @@ function Actividades() {
 
         <h1 className="app-page-title">Actividades</h1>
 
-        <div className="crud-summary-strip" role="region" aria-label="Resumen de actividades">
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Activas</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--info">
-              {stats.total}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Alta</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--expense">
-              {stats.alta}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Media</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--info">
-              {stats.media}
-            </span>
-          </div>
-          <div className="crud-summary-strip-separator" aria-hidden="true" />
-          <div className="crud-summary-strip-item">
-            <span className="crud-summary-strip-label">Baja</span>
-            <span className="crud-summary-strip-value crud-summary-strip-value--available">
-              {stats.baja}
-            </span>
-          </div>
-        </div>
+        <CrudSummaryStrip
+          ariaLabel="Resumen de actividades"
+          items={[
+            { label: 'Activas', value: stats.total, tone: 'info' },
+            { label: 'Alta', value: stats.alta, tone: 'expense' },
+            { label: 'Media', value: stats.media, tone: 'info' },
+            { label: 'Baja', value: stats.baja, tone: 'available' },
+            {
+              label: 'Trabajado',
+              value: formatDurationMinutes(timeStats.totalLoggedMinutes),
+              tone: 'info',
+            },
+            ...(timeStats.resolvedCount > 0
+              ? [
+                  {
+                    label: 'Resolución media',
+                    value: formatDurationMinutes(timeStats.averageLeadTimeMinutes),
+                    tone: 'info' as const,
+                  },
+                ]
+              : []),
+          ]}
+        />
 
         <button
           type="button"
@@ -664,7 +784,29 @@ function Actividades() {
                   </select>
                 </div>
               )}
+              <div className="actividades-view-toggle" role="group" aria-label="Vista de actividades">
+                <button
+                  type="button"
+                  className={`crud-segmented-tab ${viewMode === 'kanban' ? 'crud-segmented-tab--active' : ''}`}
+                  onClick={() => setViewMode('kanban')}
+                >
+                  Kanban
+                </button>
+                <button
+                  type="button"
+                  className={`crud-segmented-tab ${viewMode === 'list' ? 'crud-segmented-tab--active' : ''}`}
+                  onClick={() => setViewMode('list')}
+                >
+                  Lista
+                </button>
+              </div>
             </div>
+
+            {isUpdatingActivityId && (
+              <p className="form-hint" role="status" aria-live="polite">
+                Actualizando actividad…
+              </p>
+            )}
 
             {filteredActivities.length === 0 ? (
               <div className="empty-state">
@@ -676,6 +818,15 @@ function Actividades() {
                     : emptyStateCopy.subtext}
                 </p>
               </div>
+            ) : viewMode === 'kanban' ? (
+              <ActividadKanbanBoard
+                className={activeTab === 'completed' ? 'actividad-kanban-board--completed' : undefined}
+                columns={activeTab === 'active' ? KANBAN_ACTIVE_COLUMNS : KANBAN_COMPLETED_COLUMNS}
+                activities={filteredActivities}
+                onOpen={handleEdit}
+                onStatusChange={(activity, status) => void handleStatusChange(activity, status)}
+                onToggleTimer={activity => void handleToggleTimer(activity)}
+              />
             ) : (
               <div className="glass-group">
                 {filteredActivities.map(activity => (
@@ -761,18 +912,37 @@ function Actividades() {
                         <PersonIcon className="form-label-base form-label-base--inline-icon" />
                         Cliente *
                       </label>
-                      <input
+                      <select
                         ref={clientRef}
-                        type="text"
                         id="client"
                         name="client"
                         value={formData.client}
                         onChange={handleChange}
                         className={`form-input-base ${formErrors.client ? 'input-error' : ''}`}
-                        placeholder="Nombre del cliente"
                         aria-invalid={!!formErrors.client}
-                        {...(formErrors.client ? { 'aria-describedby': 'activity-client-error' } : {})}
-                      />
+                        disabled={formClientOptions.length === 0}
+                        {...(formErrors.client
+                          ? { 'aria-describedby': 'activity-client-error' }
+                          : contractClients.length === 0
+                            ? { 'aria-describedby': 'activity-client-hint' }
+                            : {})}
+                      >
+                        <option value="">
+                          {formClientOptions.length === 0
+                            ? 'Sin contratos disponibles'
+                            : 'Selecciona un cliente'}
+                        </option>
+                        {formClientOptions.map(client => (
+                          <option key={client} value={client}>
+                            {client}
+                          </option>
+                        ))}
+                      </select>
+                      {contractClients.length === 0 && (
+                        <p id="activity-client-hint" className="form-hint">
+                          Crea un contrato en Contratos para registrar actividades por cliente.
+                        </p>
+                      )}
                       {formErrors.client && (
                         <span id="activity-client-error" className="error-message" role="alert">
                           {formErrors.client}
@@ -855,10 +1025,12 @@ function Actividades() {
                         id="status"
                         name="status"
                         value={formData.status}
-                        onChange={(e) => setFormData(prev => ({
-                          ...prev,
-                          status: e.target.value as 'defined' | 'in_progress' | 'blocked' | 'done' | 'wont_do'
-                        }))}
+                        onChange={(e) =>
+                          setFormData(prev => ({
+                            ...prev,
+                            status: e.target.value as ActivityStatus,
+                          }))
+                        }
                         className="form-input-base"
                       >
                         <option value="defined">Definida</option>
@@ -869,6 +1041,13 @@ function Actividades() {
                       </select>
                     </div>
                 </div>
+
+                  {editingActivity && (
+                    <ActividadMetricsPanel
+                      activity={editingActivity}
+                      onAddManualLog={(minutes, note) => void handleAddManualLog(minutes, note)}
+                    />
+                  )}
 
                   <div className="crud-form-panel-actions">
                     {editingId ? (

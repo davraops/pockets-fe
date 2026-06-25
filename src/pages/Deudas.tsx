@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import CreditCardIcon from '@mui/icons-material/CreditCard'
@@ -719,32 +720,22 @@ function Deudas() {
                 }
               />
 
-              <div
-                className="crud-summary-strip crud-summary-strip--danger"
-                role="region"
-                aria-label="Resumen de deudas"
-              >
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Total adeudado</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--danger">
-                    {formatBalance(calculateTotalOwed())}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Activas</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
-                    {calculateActiveDebts()}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Tasa promedio</span>
-                  <span className="crud-summary-strip-value">
-                    {calculateAverageInterestRate().toFixed(2)}%
-                  </span>
-                </div>
-              </div>
+              <CrudSummaryStrip
+                ariaLabel="Resumen de deudas"
+                stripClassName="crud-summary-strip--danger"
+                items={[
+                  {
+                    label: 'Total adeudado',
+                    value: formatBalance(calculateTotalOwed()),
+                    tone: 'danger',
+                  },
+                  { label: 'Activas', value: calculateActiveDebts(), tone: 'info' },
+                  {
+                    label: 'Tasa promedio',
+                    value: `${calculateAverageInterestRate().toFixed(2)}%`,
+                  },
+                ]}
+              />
 
               <button
                 type="button"
@@ -813,15 +804,15 @@ function Deudas() {
                           {(debt.referencia || debt.tasaInteres > 0) && (
                             <div className="crud-row-secondary">
                               {debt.referencia && (
-                                <span className="crud-row-meta">{debt.referencia}</span>
+                                <span className="crud-row-meta crud-row-meta--expense">{debt.referencia}</span>
                               )}
                               {debt.tasaInteres > 0 && (
-                                <span className="crud-row-meta">{debt.tasaInteres}% interés</span>
+                                <span className="crud-row-meta crud-row-meta--expense">{debt.tasaInteres}% interés</span>
                               )}
                             </div>
                           )}
-                          <div className="crud-row-progress">
-                            <div className="crud-row-progress-bar">
+                          <div className="crud-row-progress crud-row-progress--thin">
+                            <div className="crud-row-progress-bar crud-row-progress-bar--thin crud-row-progress-bar--thin-glass">
                               <div
                                 className="crud-row-progress-fill"
                                 style={{

@@ -1,123 +1,120 @@
-import '../App.css'
 import './AppPage.css'
 import './Trabajo.css'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import AssignmentIcon from '@mui/icons-material/Assignment'
-import WorkIcon from '@mui/icons-material/Work'
-import PersonSearchIcon from '@mui/icons-material/PersonSearch'
-import type { SvgIconProps } from '@mui/material'
-import { sectionColor } from '../constants/sectionColors'
-
-interface TrabajoItem {
-  id: string
-  title: string
-  subtitle: string
-  Icon: React.ComponentType<SvgIconProps>
-  color: string
-  path?: string
-}
-
-const trabajoItems: TrabajoItem[] = [
-  {
-    id: '1',
-    title: 'Contratos',
-    subtitle: 'Gestiona tus contratos laborales',
-    Icon: AssignmentIcon,
-    color: sectionColor.blue,
-    path: '/trabajo/contratos',
-  },
-  {
-    id: '2',
-    title: 'Actividades',
-    subtitle: 'Gestiona tus actividades de trabajo',
-    Icon: WorkIcon,
-    color: sectionColor.lifestyle,
-    path: '/trabajo/actividades',
-  },
-  {
-    id: '3',
-    title: 'Procesos',
-    subtitle: 'Procesos de contratación abiertos',
-    Icon: PersonSearchIcon,
-    color: '#34C759',
-    path: '/trabajo/procesos',
-  },
-]
+import SyncIcon from '@mui/icons-material/Sync'
+import ListSkeleton from '../components/ListSkeleton'
+import TrabajoHubDashboard from '../components/trabajo/TrabajoHubDashboard'
+import TrabajoHubModules from '../components/trabajo/TrabajoHubModules'
+import { useTrabajoHubStats } from '../hooks/useTrabajoHubStats'
 
 function Trabajo() {
   const navigate = useNavigate()
+  const { isLoading, loadError, statsWarning, failedSources, data, stats, loadStats } =
+    useTrabajoHubStats()
 
-  const handleItemClick = (item: TrabajoItem) => {
-    if (item.path) {
-      navigate(item.path)
-    }
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent, item: TrabajoItem) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      handleItemClick(item)
-    }
-  }
+  const todayLabel = useMemo(() => {
+    const label = new Date().toLocaleDateString('es-CO', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    })
+    return label.charAt(0).toUpperCase() + label.slice(1)
+  }, [])
 
   return (
     <div className="app-page-container">
-      <div className="app-page-content app-page-content-wide crud-page-content trabajo-content">
-        {/* Toolbar */}
-        <div className="app-toolbar">
-          <button
-            className="app-toolbar-button"
-            onClick={() => navigate('/')}
-            aria-label="Volver al inicio"
-            type="button"
-          >
-            <ArrowBackIcon className="app-toolbar-icon" />
-          </button>
-        </div>
-
-        <h1 className="app-page-title">Trabajo</h1>
-
-        {/* Lista de Secciones */}
-        {trabajoItems.length === 0 ? (
-          <div className="trabajo-empty-state">
-            <p className="empty-state-text">No hay secciones disponibles aún.</p>
+      <div className="app-page-content app-page-content-wide trabajo-hub-content">
+        <header className="trabajo-hub-header">
+          <div className="trabajo-hub-toolbar">
+            <button
+              className="app-toolbar-button"
+              onClick={() => navigate('/')}
+              aria-label="Volver al inicio"
+              type="button"
+            >
+              <ArrowBackIcon className="app-toolbar-icon" />
+            </button>
+            <button
+              type="button"
+              className="app-toolbar-button trabajo-hub-sync"
+              onClick={() => void loadStats()}
+              aria-label="Actualizar resumen de Trabajo"
+              disabled={isLoading}
+            >
+              <SyncIcon className="app-toolbar-icon" aria-hidden="true" />
+            </button>
           </div>
-        ) : (
-          <div className="crud-hub-list">
-            <div className="crud-hub-section">
-              <div className="crud-hub-section-header">Trabajo</div>
-              <div className="glass-group">
-                {trabajoItems.map(item => {
-                  const IconComponent = item.Icon
-                  return (
-                    <button
-                      key={item.id}
-                      className="crud-hub-row"
-                      onClick={() => handleItemClick(item)}
-                      onKeyDown={e => handleKeyDown(e, item)}
-                      aria-label={`Ir a ${item.title}`}
-                      type="button"
-                    >
-                      <div
-                        className="crud-hub-row-icon"
-                        style={{ backgroundColor: item.color }}
-                        aria-hidden="true"
-                      >
-                        <IconComponent />
-                      </div>
-                      <div className="crud-row-content">
-                        <span className="crud-row-title">{item.title}</span>
-                        <span className="crud-row-subtitle">{item.subtitle}</span>
-                      </div>
-                      <ChevronRightIcon className="crud-row-chevron" aria-hidden="true" />
-                    </button>
-                  )
-                })}
-              </div>
+          <div className="trabajo-hub-heading">
+            <h1 className="trabajo-hub-title">
+              <span className="trabajo-hub-title-brand">Trabajo</span>
+              <span className="trabajo-hub-title-sep" aria-hidden="true">
+                ·
+              </span>
+              <span className="trabajo-hub-title-context">Resumen</span>
+            </h1>
+            <p className="trabajo-hub-meta">{todayLabel}</p>
+          </div>
+        </header>
+
+        {loadError ? (
+          <div className="loader-container">
+            <div className="loader trabajo-stats-error-panel">
+              <p className="trabajo-stats-error" role="alert">
+                {loadError}
+              </p>
+              <button
+                type="button"
+                className="btn-base btn-secondary finanzas-stats-retry-button"
+                onClick={() => void loadStats()}
+                aria-label="Reintentar cargar estadísticas"
+              >
+                <SyncIcon aria-hidden="true" />
+                <span>Reintentar</span>
+              </button>
             </div>
           </div>
+        ) : (
+          <>
+            {statsWarning && (
+              <div className="trabajo-stats-warning" role="status" aria-live="polite">
+                <p>{statsWarning}</p>
+                <button
+                  type="button"
+                  className="btn-base btn-secondary finanzas-stats-retry-button finanzas-stats-retry-button-inline"
+                  onClick={() => void loadStats()}
+                  aria-label="Reintentar cargar estadísticas"
+                >
+                  <SyncIcon aria-hidden="true" />
+                  <span>Reintentar</span>
+                </button>
+              </div>
+            )}
+
+            <div className="trabajo-hub-body">
+              <main className="trabajo-hub-main">
+                <TrabajoHubDashboard
+                  data={data}
+                  failedSources={failedSources}
+                  isLoading={isLoading}
+                />
+              </main>
+
+              <aside className="trabajo-hub-aside" aria-label="Módulos de Trabajo">
+                <h2 className="trabajo-hub-aside-title">Módulos</h2>
+                {isLoading ? (
+                  <ListSkeleton variant="hub-row" count={3} aria-label="Cargando módulos" />
+                ) : (
+                  <TrabajoHubModules
+                    stats={stats}
+                    failedSources={failedSources}
+                    statsLoading={isLoading}
+                  />
+                )}
+              </aside>
+            </div>
+          </>
         )}
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
 import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
@@ -480,39 +481,15 @@ function CriptoWallet() {
 
               <h1 className="app-page-title">Cripto Wallet</h1>
 
-              <div
-                className="crud-summary-strip"
-                role="region"
-                aria-label="Resumen de wallets"
-              >
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Total</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
-                    {highlights.totalWallets}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Criptos</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--available">
-                    {highlights.distinctCryptos}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Bitcoin</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
-                    {highlights.bitcoinWallets}
-                  </span>
-                </div>
-                <div className="crud-summary-strip-separator" aria-hidden="true" />
-                <div className="crud-summary-strip-item">
-                  <span className="crud-summary-strip-label">Ethereum</span>
-                  <span className="crud-summary-strip-value crud-summary-strip-value--info">
-                    {highlights.ethereumWallets}
-                  </span>
-                </div>
-              </div>
+              <CrudSummaryStrip
+                ariaLabel="Resumen de wallets"
+                items={[
+                  { label: 'Total', value: highlights.totalWallets, tone: 'info' },
+                  { label: 'Criptos', value: highlights.distinctCryptos, tone: 'available' },
+                  { label: 'Bitcoin', value: highlights.bitcoinWallets, tone: 'info' },
+                  { label: 'Ethereum', value: highlights.ethereumWallets, tone: 'info' },
+                ]}
+              />
 
               <button
                 type="button"

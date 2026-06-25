@@ -27,7 +27,7 @@
 **API:** Todas las pantallas con backend usan **pockets-lifestyle** (`VITE_API_LIFESTYLE_URL`).  
 **StatusBar:** ✅ `getRouteTitle()` cubre todas las rutas (título hub: "Utilidades").  
 **Code-split:** `React.lazy` en todas las sub-rutas de Registros (hub estático).  
-**E2E:** Playwright en `e2e/smoke/` — `npm run test:e2e`.
+**E2E:** Playwright en `e2e/smoke/` — ver [e2e/README.md](../e2e/README.md) para stack completo y variables de entorno.
 
 ---
 
@@ -91,7 +91,7 @@ Ningún gap bloqueante pendiente (2026-06-22).
 
 ### Pendiente (opcional)
 
-Ninguno bloqueante. E2E adicional (Archivos/Patrimonio) fuera de alcance por ahora.
+E2E adicional para Archivos (multipart y presigned) en `e2e/smoke/archivos.spec.ts` — ver [e2e/README.md](../e2e/README.md).
 
 ---
 
@@ -101,8 +101,8 @@ Ninguno bloqueante. E2E adicional (Archivos/Patrimonio) fuera de alcance por aho
 # Smoke sin backend (login UI + redirect)
 npm run test:e2e -- e2e/smoke/auth.spec.ts
 
-# Smoke completo Registros (requiere API + credenciales)
-E2E_USERNAME=tu_usuario E2E_PASSWORD=tu_clave npm run test:e2e -- e2e/smoke/registros.spec.ts
+# Smoke completo (credenciales locales por defecto)
+E2E_USERNAME=e2e E2E_PASSWORD='123qweZ!' npm run test:e2e -- e2e/smoke/registros.spec.ts
 ```
 
 Variables opcionales: `E2E_BASE_URL` (default `http://localhost:3000`).
