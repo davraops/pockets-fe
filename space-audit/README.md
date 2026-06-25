@@ -41,60 +41,40 @@ Escala **1–5** (igual que UX/UI readiness): 5 = referencia; 3 = usable pero in
 |-------|-------|---------|
 | Familias de fila distintas | 3 (`crud-hub-row`, `crud-inset-row`, `crud-card-row`) | Media |
 | Archivos con `.summary-*` duplicado | 10+ en `src/pages/*.css` | Alta |
-| CRUD con acción crear solo en ⋮ | ~0 (pendiente Trabajo) | Baja |
+| CRUD con acción crear solo en ⋮ | ~0 | Baja |
 | `back-button-container` en TSX | 0 usos (CSS muerto) | Baja |
 | Max-width hub → wide al entrar CRUD | 800px → 1200px | Media |
 | Altura mínima fila hub vs CRUD | 56px vs 72px | Media |
 
 ## Hallazgos prioritarios
 
-### P0 — Acciones primarias ocultas
+### P0 — Acciones primarias ocultas ✅ (2026-06-25)
 
-Los CRUD de los sub-hubs **crédito**, **ahorro** y **cripto** y los principales de Finanzas ya muestran CTA visible. ~4 pantallas restantes con Agregar en ⋮.
+CTA visible en Procesos de contratación, Metas y Valores. Los CRUD de sub-hubs Finanzas ya tenían botón primario; ⋮ reservado para secundarias/debug.
 
-**Fix sugerido:** toolbar con botón primario visible (`+ Agregar`) o FAB; reservar ⋮ para secundarias/debug.
+### P0 — Resúmenes numéricos inconsistentes ✅
 
-### P0 — Resúmenes numéricos inconsistentes
+`CrudSummaryStrip` + `crud-summary-strip` en capa compartida (`src/styles/domains/crud.css`). Pendiente: limpiar `.summary-*` legacy en CSS de página.
 
-`.summary-label`, `.summary-value`, `.transactions-summary-block` están **redefinidos en ~10 CSS de página** con variaciones (centrado vs izquierda, uppercase, tamaños). Misma información financiera, distinta lectura según pantalla.
+### P1 — Overhead vertical fijo ✅ (parcial)
 
-**Fix sugerido:** componente/patrón único `crud-summary-strip` en `ui-patterns.css`.
+Tokens `--layout-chrome-offset-top-mobile`, `--layout-chrome-offset-top-mobile-compact` y `--layout-chrome-min-height-mobile` en `index.css`. `AppPage.css` y Cuadernos móvil usan los tokens (sin compensar StatusBar oculto con padding de escritorio).
 
-### P1 — Overhead vertical fijo
+### P1 — Tres lenguajes visuales para listas ✅ (parcial)
 
-Cada página paga: StatusBar 44px + `padding-top: calc(xs + 44px)` + Footer ~60px + `margin-bottom: 30px` en container y content. En móvil StatusBar se oculta pero el padding no siempre se compensa igual.
+`crud-hub-row` unificado en `crud-hub-rows.css` (64px). Filas inset y card siguen como familias distintas cuando aportan densidad/progreso.
 
-**Fix sugerido:** token `--layout-chrome-height`; una sola regla de offset; eliminar márgenes duplicados.
+### P1 — Hub Finanzas demasiado largo ✅
 
-### P1 — Tres lenguajes visuales para listas
+Hub principal reducido a ~10 entradas con sub-hubs `/finanzas/credito`, `/finanzas/cripto`, `/finanzas/ahorro`.
 
-| Patrón | Dónde | Altura | Contenedor |
-|--------|-------|--------|------------|
-| `settings-row` | Hubs (Finanzas, Ajustes…) | 56px | `glass-group` inset |
-| `crud-inset-row` | Cuentas, Transacciones, Deudas… | 72–88px | `glass-group` |
-| `crud-card-row` | Deudas, proyectos, tarjetas | variable | card suelta / grupo |
+### P2 — Labels de resumen en ALL CAPS ✅ (parcial)
 
-Misma tarea (“ver ítem y entrar al detalle”), distinta densidad y ruido visual.
+`crud-summary-strip-label` en sentence case. Títulos de aside/módulos en hubs (`hub-dashboard.css`) sin uppercase.
 
-**Fix sugerido:** unificar altura (64px), borde izquierdo opcional, sombra solo en card-rows cuando haga falta separación.
+### P2 — `settings-row-*` no está en capa compartida ✅
 
-### P1 — Hub Finanzas demasiado largo
-
-15+ entradas en 6 secciones + resumen + CTA full-width → **scroll excesivo** antes de llegar a módulos inferiores (CDTs, Cripto).
-
-**Fix sugerido:** sub-hub “Cripto” / “Crédito”; o grid compacto tipo Home para sub-módulos frecuentes.
-
-### P2 — Labels de resumen en ALL CAPS
-
-`.summary-label` usa `text-transform: uppercase` y `letter-spacing: 0.1em`. Reduce legibilidad en español y en pantallas estrechas.
-
-**Fix sugerido:** sentence case + `--font-size-xs` + color `--text-secondary` sin tracking extra.
-
-### P2 — `settings-row-*` no está en capa compartida
-
-Estilos viven en `Finanzas.css` pero los usan Ajustes, Trabajo, Tiempo, Registros. Acoplamiento confuso para mantener espaciado.
-
-**Fix sugerido:** mover a `ui-patterns.css` como `hub-settings-row`.
+Migrado a `crud-hub-row` en `crud-hub-rows.css`. Layout de dashboard hub en `hub-dashboard.css` (Finanzas, Trabajo, Tiempo, Registros).
 
 ### P2 — Modales de formulario densos
 
@@ -138,12 +118,13 @@ Coexisten: `btn-base`, `finanzas-add-transaction-button`, `empty-state-cta`, `fi
 
 ## Roadmap sugerido
 
-1. **P0** — CTA visible en CRUD Finanzas (top 5 pantallas por uso)
-2. **P0** — `crud-summary-strip` compartido
-3. **P1** — Unificar filas hub + CRUD (altura, padding)
-4. **P1** — Recortar chrome vertical (tokens layout)
-5. **P2** — Mover `settings-row` a ui-patterns; acortar hub Finanzas
-6. **P2** — Secciones en modales largos
+1. ~~**P0** — CTA visible en CRUD~~ ✅
+2. ~~**P0** — `crud-summary-strip` compartido~~ ✅
+3. ~~**P1** — Unificar filas hub + CRUD (altura, padding)~~ ✅ parcial
+4. ~~**P1** — Recortar chrome vertical (tokens layout)~~ ✅ parcial
+5. ~~**P2** — Hub rows + dashboard layout compartidos; hub Finanzas acortado~~ ✅
+6. **P2** — Secciones en modales largos (Transacciones)
+7. **P3** — Ancho hub vs CRUD; limpiar `.summary-*` legacy en page CSS
 
 ## Secciones auditadas
 

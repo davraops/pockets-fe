@@ -5,6 +5,7 @@
 @import './crud-row-slots.css';
 @import './crud-row-overrides.css';
 @import './crud-hub-rows.css';
+@import './hub-dashboard.css';
 @import './crud-card-rows.css';
 @import './crud-crypto-rows.css';
 @import './semantic-surfaces.css';

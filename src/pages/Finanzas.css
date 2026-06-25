@@ -1,92 +1,11 @@
-/* Finanzas hub — dashboard layout (mirrors Home hub patterns) */
-
-.finanzas-hub-content {
-  gap: var(--spacing-md);
-  max-width: min(1120px, 100%);
-}
-
-.finanzas-hub-header {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  flex-shrink: 0;
-}
-
-.finanzas-hub-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.finanzas-hub-sync:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.finanzas-hub-heading {
-  padding-right: var(--spacing-sm);
-}
-
-.finanzas-hub-title {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 0.35em;
-  margin: 0;
-  font-family: var(--font-family);
-  line-height: 1.2;
-}
+/* Finanzas hub — dashboard layout (shared shell in hub-dashboard.css) */
 
 .finanzas-hub-title-brand {
-  font-size: clamp(1.5rem, 4vw, 1.875rem);
-  font-weight: var(--font-weight-bold);
   color: var(--section-finanzas);
-  letter-spacing: var(--letter-spacing-tight);
-}
-
-.finanzas-hub-title-sep {
-  font-size: var(--font-size-lg);
-  color: var(--text-tertiary);
-}
-
-.finanzas-hub-title-context {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-secondary);
 }
 
 .finanzas-hub-meta {
-  margin: var(--spacing-xs) 0 0;
-  font-size: var(--font-size-sm);
-  color: var(--text-tertiary);
-  font-family: var(--font-family);
   text-transform: capitalize;
-}
-
-.finanzas-hub-body {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--spacing-lg);
-  align-items: start;
-}
-
-.finanzas-hub-main {
-  min-width: 0;
-}
-
-.finanzas-hub-aside {
-  min-width: 0;
-}
-
-.finanzas-hub-aside-title {
-  margin: 0 0 var(--spacing-sm);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-family: var(--font-family);
 }
 
 /* Dashboard */
@@ -433,14 +352,10 @@
   gap: var(--spacing-md);
 }
 
-.finanzas-modules-group-title {
-  margin: 0 0 var(--spacing-xs);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-family: var(--font-family);
+.finanzas-modules-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
 }
 
 .finanzas-module-row {
@@ -557,41 +472,10 @@
   font-style: italic;
 }
 
-@media (min-width: 900px) {
-  .finanzas-hub-body {
-    grid-template-columns: minmax(0, 1fr) minmax(260px, 300px);
-    gap: var(--spacing-xl);
-  }
-
-  .finanzas-hub-aside {
-    border-left: 1px solid var(--border-glass);
-    padding-left: var(--spacing-lg);
-    position: sticky;
-    top: 0;
-    max-height: calc(100vh - var(--layout-status-bar-height, 0px) - 8rem);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-}
-
 @media (max-width: 768px) {
   .finanzas-dashboard-panels,
   .finanzas-quick-actions {
     grid-template-columns: 1fr;
-  }
-
-  .finanzas-hub-aside {
-    border-top: 1px solid var(--border-glass);
-    padding-top: var(--spacing-md);
-  }
-
-  .finanzas-hub-title-brand {
-    font-size: var(--font-size-xl);
-  }
-
-  .finanzas-hub-title-context,
-  .finanzas-hub-title-sep {
-    font-size: var(--font-size-base);
   }
 
   .finanzas-finance-hero {

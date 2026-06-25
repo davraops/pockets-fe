@@ -1,91 +1,7 @@
-/* Utilidades hub — dashboard layout (mirrors Finanzas / Home hub patterns) */
-
-.utilidades-hub-content {
-  gap: var(--spacing-md);
-  max-width: min(1120px, 100%);
-}
-
-.utilidades-hub-header {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  flex-shrink: 0;
-}
-
-.utilidades-hub-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.utilidades-hub-sync:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.utilidades-hub-heading {
-  padding-right: var(--spacing-sm);
-}
-
-.utilidades-hub-title {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 0.35em;
-  margin: 0;
-  font-family: var(--font-family);
-  line-height: 1.2;
-}
+/* Utilidades hub — dashboard layout (shared shell in hub-dashboard.css) */
 
 .utilidades-hub-title-brand {
-  font-size: clamp(1.5rem, 4vw, 1.875rem);
-  font-weight: var(--font-weight-bold);
   color: var(--section-utilidades);
-  letter-spacing: var(--letter-spacing-tight);
-}
-
-.utilidades-hub-title-sep {
-  font-size: var(--font-size-lg);
-  color: var(--text-tertiary);
-}
-
-.utilidades-hub-title-context {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-secondary);
-}
-
-.utilidades-hub-meta {
-  margin: var(--spacing-xs) 0 0;
-  font-size: var(--font-size-sm);
-  color: var(--text-tertiary);
-  font-family: var(--font-family);
-}
-
-.utilidades-hub-body {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--spacing-lg);
-  align-items: start;
-}
-
-.utilidades-hub-main {
-  min-width: 0;
-}
-
-.utilidades-hub-aside {
-  min-width: 0;
-}
-
-.utilidades-hub-aside-title {
-  margin: 0 0 var(--spacing-sm);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-family: var(--font-family);
 }
 
 /* Dashboard */
@@ -389,16 +305,6 @@
   gap: var(--spacing-md);
 }
 
-.utilidades-modules-group-title {
-  margin: 0 0 var(--spacing-xs);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-family: var(--font-family);
-}
-
 .utilidades-module-row {
   display: flex;
   align-items: center;
@@ -508,23 +414,6 @@
   align-self: flex-start;
 }
 
-@media (min-width: 900px) {
-  .utilidades-hub-body {
-    grid-template-columns: minmax(0, 1fr) minmax(260px, 300px);
-    gap: var(--spacing-xl);
-  }
-
-  .utilidades-hub-aside {
-    border-left: 1px solid var(--border-glass);
-    padding-left: var(--spacing-lg);
-    position: sticky;
-    top: 0;
-    max-height: calc(100vh - var(--layout-status-bar-height, 0px) - 8rem);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-}
-
 @media (max-width: 768px) {
   .utilidades-dashboard-panels {
     grid-template-columns: 1fr;
@@ -532,20 +421,6 @@
 
   .utilidades-quick-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .utilidades-hub-aside {
-    border-top: 1px solid var(--border-glass);
-    padding-top: var(--spacing-md);
-  }
-
-  .utilidades-hub-title-brand {
-    font-size: var(--font-size-xl);
-  }
-
-  .utilidades-hub-title-context,
-  .utilidades-hub-title-sep {
-    font-size: var(--font-size-base);
   }
 
   .utilidades-hero {

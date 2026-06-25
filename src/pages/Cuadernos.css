@@ -1184,11 +1184,11 @@
 @media (max-width: 768px) {
   .cuadernos-page .app-page-content.cuadernos-shell {
     flex-direction: column;
-    padding-top: var(--spacing-md);
+    padding-top: var(--layout-chrome-offset-top-mobile);
     padding-right: var(--spacing-sm);
     padding-left: var(--spacing-sm);
     padding-bottom: var(--layout-chrome-offset-bottom-mobile);
-    min-height: calc(100vh - var(--layout-footer-height-mobile));
+    min-height: var(--layout-chrome-min-height-mobile);
     border-radius: var(--radius-lg);
   }
 

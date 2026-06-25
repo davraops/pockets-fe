@@ -139,8 +139,8 @@
 
   .app-page-content {
     padding: var(--spacing-md) var(--spacing-lg) var(--layout-chrome-offset-bottom-mobile) var(--spacing-lg);
-    padding-top: var(--spacing-md);
-    min-height: calc(100vh - var(--layout-footer-height-mobile));
+    padding-top: var(--layout-chrome-offset-top-mobile);
+    min-height: var(--layout-chrome-min-height-mobile);
   }
 
   .glass-content {
@@ -159,8 +159,8 @@
 
   .app-page-content {
     padding: var(--spacing-sm) var(--spacing-md) var(--layout-chrome-offset-bottom-mobile) var(--spacing-md);
-    padding-top: var(--spacing-sm);
-    min-height: calc(100vh - var(--layout-footer-height-mobile));
+    padding-top: var(--layout-chrome-offset-top-mobile-compact);
+    min-height: var(--layout-chrome-min-height-mobile);
   }
 
   .glass-content {

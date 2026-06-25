@@ -72,8 +72,11 @@ button {
   --layout-footer-height: 60px;
   --layout-footer-height-mobile: calc(100px + var(--safe-bottom));
   --layout-chrome-offset-top: calc(var(--spacing-xs) + var(--layout-status-bar-height) + var(--safe-top));
+  --layout-chrome-offset-top-mobile: calc(var(--spacing-md) + var(--safe-top));
+  --layout-chrome-offset-top-mobile-compact: calc(var(--spacing-sm) + var(--safe-top));
   --layout-chrome-offset-bottom: var(--layout-footer-height);
   --layout-chrome-offset-bottom-mobile: var(--layout-footer-height-mobile);
+  --layout-chrome-min-height-mobile: calc(100vh - var(--layout-footer-height-mobile));
 
   /* Section accents — iOS system palette (solid, theme-independent) */
   --section-finanzas: #34c759;

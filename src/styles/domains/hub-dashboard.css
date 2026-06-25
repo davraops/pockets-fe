@@ -1,0 +1,188 @@
+/* Section hub dashboards — shared layout for Finanzas, Trabajo, Tiempo, Registros */
+
+.finanzas-hub-content,
+.trabajo-hub-content,
+.tiempo-hub-content,
+.utilidades-hub-content {
+  gap: var(--spacing-md);
+  max-width: min(1120px, 100%);
+}
+
+.finanzas-hub-header,
+.trabajo-hub-header,
+.tiempo-hub-header,
+.utilidades-hub-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+.finanzas-hub-toolbar,
+.trabajo-hub-toolbar,
+.tiempo-hub-toolbar,
+.utilidades-hub-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.finanzas-hub-sync:disabled,
+.trabajo-hub-sync:disabled,
+.tiempo-hub-sync:disabled,
+.utilidades-hub-sync:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.finanzas-hub-heading,
+.trabajo-hub-heading,
+.tiempo-hub-heading,
+.utilidades-hub-heading {
+  padding-right: var(--spacing-sm);
+}
+
+.finanzas-hub-title,
+.trabajo-hub-title,
+.tiempo-hub-title,
+.utilidades-hub-title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35em;
+  margin: 0;
+  font-family: var(--font-family);
+  line-height: 1.2;
+}
+
+.finanzas-hub-title-sep,
+.trabajo-hub-title-sep,
+.tiempo-hub-title-sep,
+.utilidades-hub-title-sep {
+  font-size: var(--font-size-lg);
+  color: var(--text-tertiary);
+}
+
+.finanzas-hub-title-context,
+.trabajo-hub-title-context,
+.tiempo-hub-title-context,
+.utilidades-hub-title-context {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+}
+
+.finanzas-hub-title-brand,
+.trabajo-hub-title-brand,
+.tiempo-hub-title-brand,
+.utilidades-hub-title-brand {
+  font-size: clamp(1.5rem, 4vw, 1.875rem);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.finanzas-hub-meta,
+.trabajo-hub-meta,
+.tiempo-hub-meta,
+.utilidades-hub-meta {
+  margin: var(--spacing-xs) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+}
+
+.finanzas-hub-body,
+.trabajo-hub-body,
+.tiempo-hub-body,
+.utilidades-hub-body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-lg);
+  align-items: start;
+}
+
+.finanzas-hub-main,
+.trabajo-hub-main,
+.tiempo-hub-main,
+.utilidades-hub-main,
+.finanzas-hub-aside,
+.trabajo-hub-aside,
+.tiempo-hub-aside,
+.utilidades-hub-aside {
+  min-width: 0;
+}
+
+.finanzas-hub-aside-title,
+.trabajo-hub-aside-title,
+.tiempo-hub-aside-title,
+.utilidades-hub-aside-title,
+.finanzas-modules-group-title,
+.utilidades-modules-group-title,
+.tiempo-modules-group-title {
+  margin: 0 0 var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-tertiary);
+  text-transform: none;
+  letter-spacing: var(--letter-spacing-tight);
+  font-family: var(--font-family);
+}
+
+.finanzas-modules-group-title,
+.utilidades-modules-group-title,
+.tiempo-modules-group-title {
+  margin-bottom: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+}
+
+@media (min-width: 900px) {
+  .finanzas-hub-body,
+  .trabajo-hub-body,
+  .tiempo-hub-body,
+  .utilidades-hub-body {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 300px);
+    gap: var(--spacing-xl);
+  }
+
+  .finanzas-hub-aside,
+  .trabajo-hub-aside,
+  .tiempo-hub-aside,
+  .utilidades-hub-aside {
+    border-left: 1px solid var(--border-glass);
+    padding-left: var(--spacing-lg);
+    position: sticky;
+    top: 0;
+    max-height: calc(100vh - var(--layout-status-bar-height, 0px) - 8rem);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 768px) {
+  .finanzas-hub-aside,
+  .trabajo-hub-aside,
+  .tiempo-hub-aside,
+  .utilidades-hub-aside {
+    border-top: 1px solid var(--border-glass);
+    padding-top: var(--spacing-md);
+  }
+
+  .finanzas-hub-title-brand,
+  .trabajo-hub-title-brand,
+  .tiempo-hub-title-brand,
+  .utilidades-hub-title-brand {
+    font-size: var(--font-size-xl);
+  }
+
+  .finanzas-hub-title-context,
+  .finanzas-hub-title-sep,
+  .trabajo-hub-title-context,
+  .trabajo-hub-title-sep,
+  .tiempo-hub-title-context,
+  .tiempo-hub-title-sep,
+  .utilidades-hub-title-context,
+  .utilidades-hub-title-sep {
+    font-size: var(--font-size-base);
+  }
+}

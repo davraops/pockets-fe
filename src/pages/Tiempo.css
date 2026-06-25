@@ -1,93 +1,9 @@
-/* Lifestyle hub — dashboard layout (mirrors Utilidades / Finanzas hub patterns) */
+/* Lifestyle hub — dashboard layout (shared shell in hub-dashboard.css) */
 
 @import '../styles/streak-tier.css';
 
-.tiempo-hub-content {
-  gap: var(--spacing-md);
-  max-width: min(1120px, 100%);
-}
-
-.tiempo-hub-header {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  flex-shrink: 0;
-}
-
-.tiempo-hub-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.tiempo-hub-sync:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.tiempo-hub-heading {
-  padding-right: var(--spacing-sm);
-}
-
-.tiempo-hub-title {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 0.35em;
-  margin: 0;
-  font-family: var(--font-family);
-  line-height: 1.2;
-}
-
 .tiempo-hub-title-brand {
-  font-size: clamp(1.5rem, 4vw, 1.875rem);
-  font-weight: var(--font-weight-bold);
   color: var(--section-lifestyle);
-  letter-spacing: var(--letter-spacing-tight);
-}
-
-.tiempo-hub-title-sep {
-  font-size: var(--font-size-lg);
-  color: var(--text-tertiary);
-}
-
-.tiempo-hub-title-context {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-secondary);
-}
-
-.tiempo-hub-meta {
-  margin: var(--spacing-xs) 0 0;
-  font-size: var(--font-size-sm);
-  color: var(--text-tertiary);
-  font-family: var(--font-family);
-}
-
-.tiempo-hub-body {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--spacing-lg);
-  align-items: start;
-}
-
-.tiempo-hub-main {
-  min-width: 0;
-}
-
-.tiempo-hub-aside {
-  min-width: 0;
-}
-
-.tiempo-hub-aside-title {
-  margin: 0 0 var(--spacing-sm);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-family: var(--font-family);
 }
 
 /* Dashboard */
@@ -643,16 +559,6 @@
   gap: var(--spacing-md);
 }
 
-.tiempo-modules-group-title {
-  margin: 0 0 var(--spacing-xs);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-family: var(--font-family);
-}
-
 .tiempo-module-row {
   display: flex;
   align-items: center;
@@ -739,23 +645,6 @@
   }
 }
 
-@media (min-width: 900px) {
-  .tiempo-hub-body {
-    grid-template-columns: minmax(0, 1fr) minmax(260px, 300px);
-    gap: var(--spacing-xl);
-  }
-
-  .tiempo-hub-aside {
-    border-left: 1px solid var(--border-glass);
-    padding-left: var(--spacing-lg);
-    position: sticky;
-    top: 0;
-    max-height: calc(100vh - var(--layout-status-bar-height, 0px) - 8rem);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-}
-
 @media (max-width: 768px) {
   .tiempo-dashboard-panels {
     grid-template-columns: 1fr;
@@ -763,20 +652,6 @@
 
   .tiempo-quick-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .tiempo-hub-aside {
-    border-top: 1px solid var(--border-glass);
-    padding-top: var(--spacing-md);
-  }
-
-  .tiempo-hub-title-brand {
-    font-size: var(--font-size-xl);
-  }
-
-  .tiempo-hub-title-context,
-  .tiempo-hub-title-sep {
-    font-size: var(--font-size-base);
   }
 
   .tiempo-hero {

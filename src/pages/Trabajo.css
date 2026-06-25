@@ -1,92 +1,11 @@
-/* Trabajo hub — dashboard layout (mirrors Finanzas / Lifestyle hub patterns) */
-
-.trabajo-hub-content {
-  gap: var(--spacing-md);
-  max-width: min(1120px, 100%);
-}
-
-.trabajo-hub-header {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  flex-shrink: 0;
-}
-
-.trabajo-hub-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.trabajo-hub-sync:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.trabajo-hub-heading {
-  padding-right: var(--spacing-sm);
-}
-
-.trabajo-hub-title {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 0.35em;
-  margin: 0;
-  font-family: var(--font-family);
-  line-height: 1.2;
-}
+/* Trabajo hub — dashboard layout (shared shell in hub-dashboard.css) */
 
 .trabajo-hub-title-brand {
-  font-size: clamp(1.5rem, 4vw, 1.875rem);
-  font-weight: var(--font-weight-bold);
   color: var(--section-trabajo);
-  letter-spacing: var(--letter-spacing-tight);
-}
-
-.trabajo-hub-title-sep {
-  font-size: var(--font-size-lg);
-  color: var(--text-tertiary);
-}
-
-.trabajo-hub-title-context {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-secondary);
 }
 
 .trabajo-hub-meta {
-  margin: var(--spacing-xs) 0 0;
-  font-size: var(--font-size-sm);
-  color: var(--text-tertiary);
-  font-family: var(--font-family);
   text-transform: capitalize;
-}
-
-.trabajo-hub-body {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--spacing-lg);
-  align-items: start;
-}
-
-.trabajo-hub-main {
-  min-width: 0;
-}
-
-.trabajo-hub-aside {
-  min-width: 0;
-}
-
-.trabajo-hub-aside-title {
-  margin: 0 0 var(--spacing-sm);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-family: var(--font-family);
 }
 
 /* Dashboard */
@@ -567,41 +486,10 @@
   line-height: 1.4;
 }
 
-@media (min-width: 900px) {
-  .trabajo-hub-body {
-    grid-template-columns: minmax(0, 1fr) minmax(260px, 300px);
-    gap: var(--spacing-xl);
-  }
-
-  .trabajo-hub-aside {
-    border-left: 1px solid var(--border-glass);
-    padding-left: var(--spacing-lg);
-    position: sticky;
-    top: 0;
-    max-height: calc(100vh - var(--layout-status-bar-height, 0px) - 8rem);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-}
-
 @media (max-width: 768px) {
   .trabajo-dashboard-panels,
   .trabajo-quick-actions {
     grid-template-columns: 1fr;
-  }
-
-  .trabajo-hub-aside {
-    border-top: 1px solid var(--border-glass);
-    padding-top: var(--spacing-md);
-  }
-
-  .trabajo-hub-title-brand {
-    font-size: var(--font-size-xl);
-  }
-
-  .trabajo-hub-title-context,
-  .trabajo-hub-title-sep {
-    font-size: var(--font-size-base);
   }
 
   .trabajo-hero {
