@@ -1767,21 +1767,113 @@ function Transacciones() {
               </div>
             ) : (
               <form className="modal-form" onSubmit={handleSubmit}>
-                <div className="form-group-base">
-                  <label htmlFor="tipo" className="form-label-base">Tipo</label>
-                  <select
-                    id="tipo"
-                    name="tipo"
-                    value={formData.tipo}
-                    onChange={handleChange}
-                    required
-                    className="form-select-base"
-                  >
-                    <option value="ingreso">Ingreso</option>
-                    <option value="egreso">Egreso</option>
-                    <option value="ahorro">Ahorro</option>
-                  </select>
-                </div>
+                <section className="crud-form-section" aria-labelledby="tx-form-classification">
+                  <h3 className="crud-form-section-title" id="tx-form-classification">
+                    Clasificación
+                  </h3>
+                  <div className="crud-form-section__fields glass-group">
+                    <div className="form-group-base">
+                      <label htmlFor="tipo" className="form-label-base">Tipo</label>
+                      <select
+                        id="tipo"
+                        name="tipo"
+                        value={formData.tipo}
+                        onChange={handleChange}
+                        required
+                        className="form-select-base"
+                      >
+                        <option value="ingreso">Ingreso</option>
+                        <option value="egreso">Egreso</option>
+                        <option value="ahorro">Ahorro</option>
+                      </select>
+                    </div>
+                    <div className="form-group-base">
+                      <label htmlFor="fecha" className="form-label-base">Fecha</label>
+                      <input
+                        type="date"
+                        id="fecha"
+                        name="fecha"
+                        value={formData.fecha}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                    {formData.tipo !== 'ahorro' &&
+                      !(formData.tipo === 'ingreso' && formData.isDebtorPayment) && (
+                        <>
+                          <div className="form-group-base">
+                            <label htmlFor="descripcion" className="form-label-base">Descripción</label>
+                            <input
+                              type="text"
+                              id="descripcion"
+                              name="descripcion"
+                              value={formData.descripcion}
+                              onChange={handleChange}
+                              required
+                              placeholder="Ej: Compra de supermercado"
+                              className={`form-input-base ${formErrors.descripcion ? 'input-error' : ''}`}
+                            />
+                            {formErrors.descripcion && (
+                              <span className="error-message">{formErrors.descripcion}</span>
+                            )}
+                          </div>
+                          <div className="form-group-base">
+                            <label htmlFor="categoria" className="form-label-base">Categoría</label>
+                            <input
+                              type="text"
+                              id="categoria"
+                              name="categoria"
+                              value={formData.categoria}
+                              onChange={handleChange}
+                              required
+                              placeholder="Ej: Compras, Salario, etc."
+                              className={`form-input-base ${formErrors.categoria ? 'input-error' : ''}`}
+                            />
+                            {formErrors.categoria && (
+                              <span className="error-message">{formErrors.categoria}</span>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    <div className="form-group-base">
+                      <label htmlFor="monto" className="form-label-base">Monto</label>
+                      <input
+                        type="number"
+                        id="monto"
+                        name="monto"
+                        value={formData.monto}
+                        onChange={handleChange}
+                        required
+                        step="0.01"
+                        min="0.01"
+                        placeholder="0.00"
+                        className={`form-input-base ${formErrors.monto ? 'input-error' : ''}`}
+                      />
+                      {formErrors.monto && <span className="error-message">{formErrors.monto}</span>}
+                    </div>
+                    <div className="form-group-base">
+                      <label htmlFor="moneda" className="form-label-base">Moneda</label>
+                      <select
+                        id="moneda"
+                        name="moneda"
+                        value={formData.moneda}
+                        onChange={handleChange}
+                        required
+                        className="form-select-base"
+                      >
+                        <option value="COP">COP</option>
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                      </select>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="crud-form-section" aria-labelledby="tx-form-origin">
+                  <h3 className="crud-form-section-title" id="tx-form-origin">
+                    Origen del pago
+                  </h3>
+                  <div className="crud-form-section__fields glass-group">
                 {formData.tipo === 'ingreso' && (
                   <div className="form-group-base checkbox-group">
                     <label htmlFor="isDebtorPayment" className="checkbox-label">
@@ -1820,86 +1912,6 @@ function Transacciones() {
                     )}
                   </div>
                 )}
-                <div className="form-group-base">
-                  <label htmlFor="fecha" className="form-label-base">Fecha</label>
-                  <input
-                    type="date"
-                    id="fecha"
-                    name="fecha"
-                    value={formData.fecha}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                {formData.tipo !== 'ahorro' &&
-                  !(formData.tipo === 'ingreso' && formData.isDebtorPayment) && (
-                    <>
-                      <div className="form-group-base">
-                        <label htmlFor="descripcion" className="form-label-base">Descripción</label>
-                        <input
-                          type="text"
-                          id="descripcion"
-                          name="descripcion"
-                          value={formData.descripcion}
-                          onChange={handleChange}
-                          required
-                          placeholder="Ej: Compra de supermercado"
-                          className={`form-input-base ${formErrors.descripcion ? 'input-error' : ''}`}
-                        />
-                        {formErrors.descripcion && (
-                          <span className="error-message">{formErrors.descripcion}</span>
-                        )}
-                      </div>
-                      <div className="form-group-base">
-                        <label htmlFor="categoria" className="form-label-base">Categoría</label>
-                        <input
-                          type="text"
-                          id="categoria"
-                          name="categoria"
-                          value={formData.categoria}
-                          onChange={handleChange}
-                          required
-                          placeholder="Ej: Compras, Salario, etc."
-                          className={`form-input-base ${formErrors.categoria ? 'input-error' : ''}`}
-                        />
-                        {formErrors.categoria && (
-                          <span className="error-message">{formErrors.categoria}</span>
-                        )}
-                      </div>
-                    </>
-                  )}
-                <div className="form-group-base">
-                  <label htmlFor="monto" className="form-label-base">Monto</label>
-                  <input
-                    type="number"
-                    id="monto"
-                    name="monto"
-                    value={formData.monto}
-                    onChange={handleChange}
-                    required
-                    step="0.01"
-                    min="0.01"
-                    placeholder="0.00"
-                    className={`form-input-base ${formErrors.monto ? 'input-error' : ''}`}
-                  />
-                  {formErrors.monto && <span className="error-message">{formErrors.monto}</span>}
-                </div>
-                <div className="form-group-base">
-                  <label htmlFor="moneda" className="form-label-base">Moneda</label>
-                  <select
-                    id="moneda"
-                    name="moneda"
-                    value={formData.moneda}
-                    onChange={handleChange}
-                    required
-                    className="form-select-base"
-                  >
-                    <option value="COP">COP</option>
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                  </select>
-                </div>
-
                 {formData.tipo === 'egreso' && (
                   <div className="form-group-base checkbox-group">
                     <label htmlFor="isCreditCardPayment" className="checkbox-label">
@@ -2094,33 +2106,34 @@ function Transacciones() {
                     </div>
                   </>
                 )}
+                  </div>
+                </section>
 
                 {canAddTransactionToPatrimony(
                   formData.tipo,
                   formData.isDebtPayment,
                   isEditMode
                 ) && (
-                  <TransaccionPatrimonioToggle
-                    checked={formData.addToPatrimonio}
-                    showSuggestion={shouldSuggestPatrimonio(formData.categoria)}
-                    onChange={handlePatrimonioToggle}
-                  />
-                )}
-
-                {formData.addToPatrimonio &&
-                  canAddTransactionToPatrimony(
-                    formData.tipo,
-                    formData.isDebtPayment,
-                    isEditMode
-                  ) && (
-                    <TransaccionPatrimonioFields
-                      formData={patrimonyFormData}
-                      formErrors={patrimonyFormErrors}
-                      categorySuggestions={patrimonyCategorySuggestions}
-                      onChange={handlePatrimonyChange}
-                      onFieldTouch={handlePatrimonyFieldTouch}
+                  <section className="crud-form-section" aria-labelledby="tx-form-patrimonio">
+                    <h3 className="crud-form-section-title" id="tx-form-patrimonio">
+                      Patrimonio
+                    </h3>
+                    <TransaccionPatrimonioToggle
+                      checked={formData.addToPatrimonio}
+                      showSuggestion={shouldSuggestPatrimonio(formData.categoria)}
+                      onChange={handlePatrimonioToggle}
                     />
-                  )}
+                    {formData.addToPatrimonio && (
+                      <TransaccionPatrimonioFields
+                        formData={patrimonyFormData}
+                        formErrors={patrimonyFormErrors}
+                        categorySuggestions={patrimonyCategorySuggestions}
+                        onChange={handlePatrimonyChange}
+                        onFieldTouch={handlePatrimonyFieldTouch}
+                      />
+                    )}
+                  </section>
+                )}
 
                 <div className="modal-actions">
                   <button type="button" className="modal-button cancel" onClick={handleCloseModal}>

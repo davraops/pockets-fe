@@ -1,5 +1,13 @@
 .transacciones-content {}
 
+.modal-form .crud-form-section__fields.glass-group .checkbox-group {
+  margin-bottom: 0;
+}
+
+.modal-form .crud-form-section__fields.glass-group .credit-card-warning {
+  margin-bottom: 0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .transacciones-content {
@@ -301,8 +309,8 @@
   margin: 0 0 0.35rem;
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-tight);
+  text-transform: none;
   color: var(--text-tertiary);
   font-family: var(--font-family);
 }

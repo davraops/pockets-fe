@@ -278,7 +278,7 @@ function Metas() {
 
   return (
     <div className="app-page-container">
-      <div className="app-page-content lifestyle-sub-content metas-content">
+      <div className="app-page-content app-page-content-wide crud-page-content lifestyle-sub-content metas-content">
         <LifestyleSubHeader
           title="Metas"
           context="Objetivos"

@@ -76,17 +76,17 @@ Hub principal reducido a ~10 entradas con sub-hubs `/finanzas/credito`, `/finanz
 
 Migrado a `crud-hub-row` en `crud-hub-rows.css`. Layout de dashboard hub en `hub-dashboard.css` (Finanzas, Trabajo, Tiempo, Registros).
 
-### P2 — Modales de formulario densos
+### P2 — Modales de formulario densos ✅ (parcial)
 
-Transacciones: toggles condicionales (deuda, tarjeta, deudor, ahorro) en un solo scroll. Sin agrupación visual “Origen del pago” / “Clasificación”.
+Modal de Transacciones agrupado en secciones `crud-form-section` (Clasificación, Origen del pago, Patrimonio) con `glass-group`.
 
-**Fix sugerido:** secciones con `glass-group` + headers; progressive disclosure.
+### P3 — Ancho hub vs CRUD ✅
 
-### P3 — Ancho hub vs CRUD
+Todas las pantallas de producto usan `app-page-content-wide` (1200px); Metas, Valores y Procesos de contratación alineados.
 
-Desktop: hubs a 800px, CRUD a 1200px. Salto brusco al navegar; listas wide desperdician espacio en hubs.
+### P3 — `.summary-*` legacy ✅
 
-### P3 — Botones ad hoc
+`npm run audit:dedupe-css` sin bloques muertos; `hub-summary-value-unavailable` movido a `ui-patterns.css`.
 
 Coexisten: `btn-base`, `finanzas-add-transaction-button`, `empty-state-cta`, `finanzas-stats-retry-button`, items de dropdown. `ajustes-primary-button` migrado; `ajustes-danger-button` es extensión soft sobre `btn-base`.
 
@@ -123,8 +123,9 @@ Coexisten: `btn-base`, `finanzas-add-transaction-button`, `empty-state-cta`, `fi
 3. ~~**P1** — Unificar filas hub + CRUD (altura, padding)~~ ✅ parcial
 4. ~~**P1** — Recortar chrome vertical (tokens layout)~~ ✅ parcial
 5. ~~**P2** — Hub rows + dashboard layout compartidos; hub Finanzas acortado~~ ✅
-6. **P2** — Secciones en modales largos (Transacciones)
-7. **P3** — Ancho hub vs CRUD; limpiar `.summary-*` legacy en page CSS
+6. ~~**P2** — Secciones en modales largos (Transacciones)~~ ✅ parcial
+7. ~~**P3** — Ancho hub vs CRUD; limpiar `.summary-*` legacy~~ ✅
+8. **P3** — Botones ad hoc unificados
 
 ## Secciones auditadas
 

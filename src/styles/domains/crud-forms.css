@@ -18,6 +18,29 @@
   border-top: 1px solid var(--border-glass);
 }
 
+.crud-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.crud-form-section + .crud-form-section {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-glass);
+}
+
+.crud-form-section__fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.crud-form-section__fields.glass-group {
+  padding: var(--spacing-md);
+  gap: var(--spacing-md);
+}
+
 .crud-form-section-header {
   margin: var(--spacing-md) 0 var(--spacing-sm);
 }

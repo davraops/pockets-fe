@@ -467,11 +467,6 @@
   align-self: flex-start;
 }
 
-.hub-summary-value-unavailable {
-  color: var(--color-unavailable);
-  font-style: italic;
-}
-
 @media (max-width: 768px) {
   .finanzas-dashboard-panels,
   .finanzas-quick-actions {

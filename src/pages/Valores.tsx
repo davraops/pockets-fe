@@ -234,7 +234,7 @@ function Valores() {
 
   return (
     <div className="app-page-container">
-      <div className="app-page-content lifestyle-sub-content valores-content">
+      <div className="app-page-content app-page-content-wide crud-page-content lifestyle-sub-content valores-content">
         <LifestyleSubHeader
           title="Valores"
           context="Identidad"

@@ -1666,6 +1666,11 @@
   font-variant-numeric: tabular-nums;
 }
 
+.hub-summary-value-unavailable {
+  color: var(--color-unavailable);
+  font-style: italic;
+}
+
 .hub-summary-positive {
   color: var(--highlight-success-text);
 }

@@ -680,7 +680,7 @@ function ProcesosContratacion() {
 
   return (
     <div className="app-page-container">
-      <div className="app-page-content procesos-contratacion-content">
+      <div className="app-page-content app-page-content-wide crud-page-content procesos-contratacion-content">
         <UtilidadesSubHeader
           title="Procesos"
           context="Contratación"
