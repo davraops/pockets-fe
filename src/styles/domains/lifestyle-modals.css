@@ -15,6 +15,7 @@
   gap: var(--spacing-md);
   padding: var(--spacing-lg);
   border-bottom: 1px solid var(--border-glass-light);
+  flex-shrink: 0;
 }
 
 .lifestyle-modal__header-copy {
@@ -123,6 +124,15 @@
   flex-wrap: wrap;
 }
 
+.lifestyle-modal--form > form,
+.lifestyle-modal--form > .rutinas-modal-form {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
 .lifestyle-modal__btn {
   flex: 1;
   min-height: 44px;
@@ -149,6 +159,23 @@
 
   .lifestyle-modal--form {
     max-width: 100%;
+  }
+
+  .lifestyle-modal--form > form,
+  .lifestyle-modal--form > .rutinas-modal-form {
+    padding: var(--spacing-md) var(--spacing-lg);
+    padding-bottom: calc(var(--spacing-md) + var(--safe-bottom));
+    scroll-padding-bottom: calc(var(--spacing-xl) + var(--safe-bottom));
+  }
+
+  .lifestyle-modal__footer {
+    position: sticky;
+    bottom: 0;
+    margin-top: auto;
+    padding-top: var(--spacing-md);
+    background: color-mix(in srgb, var(--bg-glass) 94%, transparent);
+    backdrop-filter: var(--backdrop-blur-light);
+    -webkit-backdrop-filter: var(--backdrop-blur-light);
   }
 
   .lifestyle-modal__header {
