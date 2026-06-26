@@ -1182,13 +1182,28 @@
 }
 
 @media (max-width: 768px) {
+  body:has(.cuadernos-page) {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  .cuadernos-page.app-page-container {
+    height: var(--layout-chrome-min-height-mobile);
+    max-height: var(--layout-chrome-min-height-mobile);
+    min-height: var(--layout-chrome-min-height-mobile);
+    overflow: hidden;
+  }
+
   .cuadernos-page .app-page-content.cuadernos-shell {
+    flex: 1;
     flex-direction: column;
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
     padding-top: var(--layout-chrome-offset-top-mobile);
     padding-right: var(--spacing-sm);
     padding-left: var(--spacing-sm);
     padding-bottom: var(--layout-chrome-offset-bottom-mobile);
-    min-height: var(--layout-chrome-min-height-mobile);
     border-radius: var(--radius-lg);
   }
 
@@ -1196,11 +1211,12 @@
     --cuaderno-workspace-max-width: 100%;
   }
 
-  /* Lista fullscreen: solo jerarquía */
+  /* Lista fullscreen: un solo scroll en el panel de jerarquía */
   .cuadernos-shell--mobile-list,
   .cuadernos-shell--mobile-list .cuadernos-shell__panes {
     flex: 1;
     min-height: 0;
+    overflow: hidden;
   }
 
   .cuadernos-shell--mobile-list .cuadernos-sidebar {
@@ -1212,18 +1228,33 @@
     border-bottom: none;
     border-radius: var(--radius-md);
     margin-bottom: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .cuadernos-shell--mobile-list .cuadernos-sidebar__header {
+    overflow: visible;
+    z-index: 2;
   }
 
   .cuadernos-shell--mobile-list .cuadernos-sidebar__body {
-    flex: 1;
-    min-height: 0;
+    flex: none;
+    min-height: auto;
+    overflow: visible;
   }
 
-  /* Editor fullscreen: solo workspace */
+  .cuadernos-sidebar .utilidades-sub-menu {
+    z-index: 30;
+  }
+
+  /* Editor fullscreen: scroll único en el workspace */
   .cuadernos-shell--mobile-editor,
   .cuadernos-shell--mobile-editor .cuadernos-shell__panes {
     flex: 1;
     min-height: 0;
+    overflow: hidden;
   }
 
   .cuadernos-shell--mobile-editor .cuadernos-main {
@@ -1232,12 +1263,16 @@
     display: flex;
     flex-direction: column;
     padding: 0 0 var(--spacing-sm);
+    overflow: hidden;
   }
 
   .cuadernos-shell--mobile-editor .cuaderno-workspace {
     flex: 1;
     min-height: 0;
     max-width: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   .cuaderno-tree-row--sidebar .cuaderno-tree-row__drag[hidden] {

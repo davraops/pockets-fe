@@ -114,7 +114,23 @@
     overflow-x: auto;
     flex-wrap: nowrap;
     padding-bottom: var(--spacing-xs);
+    overscroll-behavior-x: contain;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .cuaderno-workspace--mobile .cuaderno-workspace__header-end::-webkit-scrollbar {
+    display: none;
+  }
+
+  .cuaderno-workspace--mobile .cuaderno-workspace__header {
+    background: color-mix(in srgb, var(--bg-glass) 94%, transparent);
+    backdrop-filter: var(--backdrop-blur-light);
+    -webkit-backdrop-filter: var(--backdrop-blur-light);
+  }
+
+  .cuaderno-workspace--mobile {
+    min-height: 0;
   }
 
   .cuaderno-workspace--mobile .cuaderno-workspace__action {
