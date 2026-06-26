@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "audit:mobile-css": "node scripts/audit-mobile-css.mjs",
     "audit:scroll-ownership": "node scripts/audit-scroll-ownership.mjs",
+    "audit:css-braces": "node scripts/audit-css-braces.mjs",
     "audit:dedupe-css": "node scripts/dedupe-page-css.mjs",
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test e2e/smoke",
