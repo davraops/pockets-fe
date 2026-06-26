@@ -702,7 +702,7 @@ function Fechas() {
                   </p>
                   <button
                     type="button"
-                    className="finanzas-stats-retry-button"
+                    className="btn-base btn-secondary btn-retry"
                     onClick={() => void loadEvents()}
                     aria-label="Reintentar cargar eventos"
                   >
@@ -759,7 +759,7 @@ function Fechas() {
                   </p>
                   <button
                     type="button"
-                    className="btn-base btn-secondary finanzas-stats-retry-button"
+                    className="btn-base btn-secondary btn-retry"
                     onClick={() => void loadEvents()}
                     aria-label="Reintentar cargar eventos"
                   >

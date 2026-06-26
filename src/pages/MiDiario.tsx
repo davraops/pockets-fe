@@ -374,7 +374,7 @@ function MiDiario() {
                 </p>
                 <button
                   type="button"
-                  className="btn-base btn-secondary finanzas-stats-retry-button"
+                  className="btn-base btn-secondary btn-retry"
                   onClick={() => void loadEntries()}
                   aria-label="Reintentar cargar entradas"
                 >

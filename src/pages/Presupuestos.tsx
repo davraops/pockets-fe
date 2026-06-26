@@ -706,7 +706,7 @@ function Presupuestos() {
                   </p>
                   <button
                     type="button"
-                    className="btn-base btn-secondary finanzas-stats-retry-button"
+                    className="btn-base btn-secondary btn-retry"
                     onClick={() => void reloadBudgets()}
                     aria-label="Reintentar cargar presupuestos"
                   >

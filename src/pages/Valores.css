@@ -146,46 +146,6 @@
   flex-wrap: wrap;
 }
 
-.valores-action,
-.valores-primary-button,
-.valores-secondary-button,
-.valores-danger-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  padding: 0.65rem 0.95rem;
-  border-radius: var(--radius-md);
-  border: 1px solid transparent;
-  font-family: var(--font-family);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-}
-
-.valores-action--value,
-.valores-primary-button {
-  background: color-mix(in srgb, #007aff 88%, #000 0%);
-  color: #fff;
-}
-
-.valores-action--belief {
-  background: color-mix(in srgb, #af52de 88%, #000 0%);
-  color: #fff;
-}
-
-.valores-secondary-button {
-  background: var(--bg-glass-light);
-  border-color: var(--border-glass);
-  color: var(--text-primary);
-}
-
-.valores-danger-button {
-  background: color-mix(in srgb, #ff3b30 12%, transparent);
-  border-color: color-mix(in srgb, #ff3b30 35%, var(--border-glass));
-  color: #ff3b30;
-}
-
 .valores-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -509,11 +469,7 @@
     padding: var(--spacing-md);
   }
 
-  .valores-actions {
-    flex-direction: column;
-  }
-
-  .valores-action {
+  .valores-actions .btn-base {
     width: 100%;
   }
 }

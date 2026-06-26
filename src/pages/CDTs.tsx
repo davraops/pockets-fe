@@ -578,7 +578,7 @@ function CDTs() {
                   </p>
                   <button
                     type="button"
-                    className="btn-base btn-secondary finanzas-stats-retry-button"
+                    className="btn-base btn-secondary btn-retry"
                     onClick={() => void loadCDTs()}
                     aria-label="Reintentar cargar CDTs"
                   >

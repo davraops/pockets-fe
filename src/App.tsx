@@ -82,6 +82,7 @@ function AppContent() {
   // Scroll to top cuando cambia la ruta
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+    document.querySelector('.hub-home-body')?.scrollTo({ top: 0, left: 0 })
   }, [location.pathname])
 
   return (

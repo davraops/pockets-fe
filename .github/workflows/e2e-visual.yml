@@ -1,0 +1,94 @@
+name: E2E Visual Regression
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-visual-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # Secrets: POCKETS_DOTENV (full pockets/.env), E2E_PASSWORD (default 123qweZ!)
+
+    env:
+      E2E_USERNAME: e2e
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+      CI: true
+
+    steps:
+      - name: Checkout pockets-fe
+        uses: actions/checkout@v4
+
+      - name: Checkout pockets backend
+        uses: actions/checkout@v4
+        with:
+          repository: davraops/pockets
+          path: pockets
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            pockets/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Install backend dependencies
+        working-directory: pockets
+        run: npm ci
+
+      - name: Configure backend environment
+        working-directory: pockets
+        run: printf '%s' "$POCKETS_DOTENV" > .env
+        env:
+          POCKETS_DOTENV: ${{ secrets.POCKETS_DOTENV }}
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start backend (offline stack)
+        working-directory: pockets
+        run: |
+          npm run offline:all &
+          for port in 7000 7001 7002; do
+            echo "Waiting for localhost:${port}..."
+            for attempt in $(seq 1 60); do
+              if nc -z localhost "$port" 2>/dev/null; then
+                echo "Port ${port} is up"
+                break
+              fi
+              if [ "$attempt" -eq 60 ]; then
+                echo "Timed out waiting for port ${port}"
+                exit 1
+              fi
+              sleep 2
+            done
+          done
+
+      - name: Reset E2E user
+        working-directory: pockets
+        run: npm run reset:e2e-user
+
+      - name: Run visual regression tests
+        run: npm run test:e2e:visual
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-visual-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

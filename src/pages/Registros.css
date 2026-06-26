@@ -410,10 +410,6 @@
   line-height: 1.5;
 }
 
-.utilidades-stats-retry-button-inline {
-  align-self: flex-start;
-}
-
 @media (max-width: 768px) {
   .utilidades-dashboard-panels {
     grid-template-columns: 1fr;

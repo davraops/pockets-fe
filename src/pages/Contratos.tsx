@@ -657,7 +657,7 @@ function Contratos() {
               </p>
               <button
                 type="button"
-                className="btn-base btn-secondary finanzas-stats-retry-button"
+                className="btn-base btn-secondary btn-retry"
                 onClick={() => void loadRecords()}
                 aria-label="Reintentar cargar contratos"
               >

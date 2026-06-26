@@ -153,9 +153,7 @@
     padding-left: var(--spacing-lg);
     position: sticky;
     top: 0;
-    max-height: calc(100vh - var(--layout-status-bar-height, 0px) - 8rem);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    align-self: start;
   }
 }
 

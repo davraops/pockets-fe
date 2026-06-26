@@ -15,6 +15,7 @@ import { api } from '../services/api'
 import { isDebugToolsEnabled } from '../utils/debugTools'
 import { useNotification } from '../contexts/NotificationContext'
 import FinanzasSubHeader from '../components/finanzas/FinanzasSubHeader'
+import CollapsibleAdviceBanner from '../components/CollapsibleAdviceBanner'
 import './AppPage.css'
 import './Deudas.css'
 
@@ -749,25 +750,24 @@ function Deudas() {
 
               {/* Consejo de Pago - HIG: Clear Feedback */}
               {debts.length > 0 && (
-                <div className="debts-advice-banner">
-                  <div className="debts-advice-icon">
-                    <AccountBalanceIcon />
-                  </div>
-                  <div className="debts-advice-content">
-                    <p className="debts-advice-text">
-                      <strong>Estrategia de pago:</strong> Siempre paga más del mínimo mensual y
-                      realiza abonos directos a capital para reducir la cantidad de pagos, nunca
-                      solo el monto mínimo. Además, nunca te endeudes por cosas que no vayan a
-                      generar más valor que la deuda misma.
-                    </p>
-                    <p className="debts-advice-text" style={{ marginTop: '0.75rem' }}>
-                      <strong>Antes de tomar cualquier crédito:</strong> Si vas a sacar un crédito,
-                      es mejor hacerlo con un banco. Siempre ten más de un banco a la mano y ponlos
-                      a competir para obtener la tasa de interés más baja. Evita las financieras,
-                      suelen tener condiciones menos favorables.
-                    </p>
-                  </div>
-                </div>
+                <CollapsibleAdviceBanner
+                  className="advice-banner--info"
+                  title="Estrategia de pago y crédito responsable"
+                  icon={<AccountBalanceIcon />}
+                >
+                  <p className="advice-banner__text">
+                    <strong>Estrategia de pago:</strong> Siempre paga más del mínimo mensual y
+                    realiza abonos directos a capital para reducir la cantidad de pagos, nunca
+                    solo el monto mínimo. Además, nunca te endeudes por cosas que no vayan a
+                    generar más valor que la deuda misma.
+                  </p>
+                  <p className="advice-banner__text">
+                    <strong>Antes de tomar cualquier crédito:</strong> Si vas a sacar un crédito,
+                    es mejor hacerlo con un banco. Siempre ten más de un banco a la mano y ponlos
+                    a competir para obtener la tasa de interés más baja. Evita las financieras,
+                    suelen tener condiciones menos favorables.
+                  </p>
+                </CollapsibleAdviceBanner>
               )}
 
               {debts.length === 0 ? (

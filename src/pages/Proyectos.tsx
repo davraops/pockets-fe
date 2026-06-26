@@ -651,7 +651,7 @@ function Proyectos() {
                   </p>
                   <button
                     type="button"
-                    className="btn-base btn-secondary finanzas-stats-retry-button"
+                    className="btn-base btn-secondary btn-retry"
                     onClick={() => void loadProjects()}
                     aria-label="Reintentar cargar proyectos"
                   >

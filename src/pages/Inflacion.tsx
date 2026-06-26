@@ -17,6 +17,7 @@ import {
 import { Line } from 'react-chartjs-2'
 import { useTheme } from '../contexts/ThemeContext'
 import { buildLineChartOptions, getChartThemeColors } from '../utils/chartTheme'
+import CollapsibleAdviceBanner from '../components/CollapsibleAdviceBanner'
 import './AppPage.css'
 import './Inflacion.css'
 
@@ -989,24 +990,22 @@ function Inflacion() {
         </div>
 
         {/* Mensaje editorial */}
-        <div className="inflacion-warning">
-          <div className="inflacion-warning-icon">
-            <TrendingDownIcon />
-          </div>
-          <div className="inflacion-warning-content">
-            <h2 className="inflacion-warning-title">El Monstruo de Jekyll Island</h2>
-            <p className="inflacion-warning-text">
-              &ldquo;La inflación es el impuesto más cruel, porque golpea a los que menos tienen. Es un
-              robo silencioso que destruye el poder adquisitivo de tu dinero mientras duermes. El
-              sistema bancario centralizado crea dinero de la nada, devaluando tu trabajo y tus
-              ahorros día a día.&rdquo;
-            </p>
-            <p className="inflacion-warning-quote">
-              &ldquo;No dejes que el monstruo te devore. Tu libertad financiera depende de tu capacidad
-              para protegerte.&rdquo;
-            </p>
-          </div>
-        </div>
+        <CollapsibleAdviceBanner
+          className="advice-banner--danger"
+          title="El Monstruo de Jekyll Island"
+          icon={<TrendingDownIcon />}
+        >
+          <p className="advice-banner__text">
+            &ldquo;La inflación es el impuesto más cruel, porque golpea a los que menos tienen. Es un
+            robo silencioso que destruye el poder adquisitivo de tu dinero mientras duermes. El
+            sistema bancario centralizado crea dinero de la nada, devaluando tu trabajo y tus
+            ahorros día a día.&rdquo;
+          </p>
+          <p className="advice-banner__quote">
+            &ldquo;No dejes que el monstruo te devore. Tu libertad financiera depende de tu capacidad
+            para protegerte.&rdquo;
+          </p>
+        </CollapsibleAdviceBanner>
 
         {/* Tips para combatir la inflación */}
         <div className="inflacion-tips">

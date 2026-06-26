@@ -153,9 +153,7 @@
   .utilidades-tool-aside {
     position: sticky;
     top: var(--layout-chrome-offset-top);
-    max-height: calc(100vh - var(--layout-chrome-offset-top) - var(--layout-chrome-offset-bottom) - 2rem);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    align-self: start;
   }
 }
 

@@ -655,7 +655,7 @@ function Rutinas() {
               </p>
               <button
                 type="button"
-                className="btn-base btn-secondary finanzas-stats-retry-button"
+                className="btn-base btn-secondary btn-retry"
                 onClick={() => void loadRoutines()}
                 aria-label="Reintentar cargar rutinas"
               >

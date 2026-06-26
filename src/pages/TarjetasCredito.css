@@ -1,56 +1,5 @@
 .tarjetas-credito-content {}
 
-.credit-warning-banner {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-md);
-  padding: var(--spacing-lg);
-  margin-bottom: var(--spacing-lg);
-  background: var(--badge-warning-bg);
-  backdrop-filter: var(--backdrop-blur);
-  -webkit-backdrop-filter: var(--backdrop-blur);
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 149, 0, 0.3);
-  box-shadow: var(--shadow-sm);
-  font-family: var(--font-family);
-}
-
-.credit-warning-icon {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--surface-credit-warning-accent);
-  margin-top: 2px;
-}
-
-.credit-warning-icon svg {
-  font-size: var(--font-size-xxl) !important;
-  width: 1.75rem !important;
-  height: 1.75rem !important;
-}
-
-.credit-warning-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.credit-warning-text {
-  font-size: var(--font-size-base);
-  line-height: 1.6;
-  color: var(--text-primary);
-  margin: 0;
-  font-family: var(--font-family);
-  letter-spacing: var(--letter-spacing-tight);
-}
-
-.credit-warning-text strong {
-  font-weight: var(--font-weight-bold);
-  color: var(--surface-credit-warning-accent-strong);
-}
-
 .benefit-icon {
   display: flex;
   align-items: center;
@@ -180,15 +129,6 @@
     padding-bottom: max(var(--spacing-md), env(safe-area-inset-bottom, 0px));
   }
 
-  .credit-warning-banner {
-    padding: var(--spacing-md);
-    gap: var(--spacing-sm);
-  }
-
-  .credit-warning-text {
-    font-size: var(--font-size-sm);
-  }
-
   .credit-card-warning {
     margin: 0;
     padding: var(--spacing-md);
@@ -213,18 +153,6 @@
 }
 
 @media (max-width: 480px) {
-  .credit-warning-banner {
-    padding: var(--spacing-sm);
-    gap: var(--spacing-xs);
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
-  }
-
-  .credit-warning-text {
-    font-size: var(--font-size-sm);
-  }
-
   .warning-title,
   .warning-subtitle,
   .tip-item {

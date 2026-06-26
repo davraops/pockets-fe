@@ -518,6 +518,56 @@ label .form-label-base--inline-icon {
   line-height: 1.6;
 }
 
+/* Semantic aliases — pair with btn-base + variant */
+.btn-retry--inline {
+  align-self: flex-start;
+}
+
+.btn-accent--lifestyle {
+  background: var(--section-lifestyle);
+  border-color: color-mix(in srgb, var(--section-lifestyle) 75%, var(--border-glass));
+  color: #fff;
+}
+
+.btn-accent--lifestyle:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--section-lifestyle) 88%, #000);
+  border-color: color-mix(in srgb, var(--section-lifestyle) 75%, var(--border-glass));
+}
+
+.btn-accent--blue {
+  background: var(--section-blue);
+  border-color: color-mix(in srgb, var(--section-blue) 75%, var(--border-glass));
+  color: #fff;
+}
+
+.btn-accent--blue:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--section-blue) 88%, #000);
+  border-color: color-mix(in srgb, var(--section-blue) 75%, var(--border-glass));
+}
+
+.btn-accent--purple {
+  background: var(--section-purple);
+  border-color: color-mix(in srgb, var(--section-purple) 75%, var(--border-glass));
+  color: #fff;
+}
+
+.btn-accent--purple:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--section-purple) 88%, #000);
+  border-color: color-mix(in srgb, var(--section-purple) 75%, var(--border-glass));
+}
+
+.btn-soft-danger {
+  background: color-mix(in srgb, var(--accent-danger) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent-danger) 35%, var(--border-glass));
+  color: var(--accent-danger);
+  box-shadow: none;
+}
+
+.btn-soft-danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-danger) 20%, transparent);
+  border-color: color-mix(in srgb, var(--accent-danger) 45%, var(--border-glass));
+}
+
 .input-error {
   border-color: var(--color-danger-border-medium) !important;
   background: var(--color-danger-bg-soft) !important;

@@ -7,7 +7,6 @@
   background: transparent;
   position: relative;
   overflow-x: hidden;
-  overflow-y: auto;
   margin-top: 0;
   margin-bottom: 0;
   transition: background var(--transition-base);

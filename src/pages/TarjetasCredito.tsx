@@ -15,6 +15,7 @@ import { useNotification } from '../contexts/NotificationContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import { emitTransactionSyncEvents } from '../utils/transactionMutation'
 import FinanzasSubHeader from '../components/finanzas/FinanzasSubHeader'
+import CollapsibleAdviceBanner from '../components/CollapsibleAdviceBanner'
 import './AppPage.css'
 import './TarjetasCredito.css'
 
@@ -1095,20 +1096,19 @@ function TarjetasCredito() {
               )}
 
               {/* Advertencia de Uso Responsable - HIG: Clear Feedback */}
-              <div className="credit-warning-banner">
-                <div className="credit-warning-icon">
-                  <WarningIcon />
-                </div>
-                <div className="credit-warning-content">
-                  <p className="credit-warning-text">
-                    <strong>Uso responsable:</strong> Las tarjetas de crédito operan con tasas de
-                    interés altas. Úsalas preferiblemente a una sola cuota o en compras sin
-                    intereses. Recuerda que este es dinero prestado, úsalo con prudencia y
-                    principalmente en emergencias. Aprovecha los beneficios y programas de
-                    recompensas de tus tarjetas.
-                  </p>
-                </div>
-              </div>
+              <CollapsibleAdviceBanner
+                className="advice-banner--warning"
+                title="Uso responsable de tarjetas de crédito"
+                icon={<WarningIcon />}
+              >
+                <p className="advice-banner__text">
+                  <strong>Uso responsable:</strong> Las tarjetas de crédito operan con tasas de
+                  interés altas. Úsalas preferiblemente a una sola cuota o en compras sin
+                  intereses. Recuerda que este es dinero prestado, úsalo con prudencia y
+                  principalmente en emergencias. Aprovecha los beneficios y programas de
+                  recompensas de tus tarjetas.
+                </p>
+              </CollapsibleAdviceBanner>
 
               {cards.length === 0 ? (
                 <div className="empty-state">

@@ -325,7 +325,11 @@ function Metas() {
               aria-label="Buscar metas"
             />
           </div>
-          <button type="button" className="metas-primary-button" onClick={openCreateModal}>
+          <button
+            type="button"
+            className="btn-base btn-accent btn-submit btn-accent--lifestyle"
+            onClick={openCreateModal}
+          >
             <AddIcon fontSize="small" aria-hidden="true" />
             Nueva meta
           </button>
@@ -336,7 +340,7 @@ function Metas() {
         ) : error ? (
           <div className="metas-empty-state">
             <p role="alert">{error}</p>
-            <button type="button" className="metas-secondary-button" onClick={() => void loadGoals()}>
+            <button type="button" className="btn-base btn-secondary btn-retry" onClick={() => void loadGoals()}>
               <RefreshIcon fontSize="small" aria-hidden="true" />
               Reintentar
             </button>
@@ -353,7 +357,11 @@ function Metas() {
                 : 'Crea una meta y agrega tareas para hacer seguimiento de tu progreso.'}
             </p>
             {!searchQuery ? (
-              <button type="button" className="metas-primary-button" onClick={openCreateModal}>
+              <button
+                type="button"
+                className="btn-base btn-accent btn-submit btn-accent--lifestyle empty-state-cta"
+                onClick={openCreateModal}
+              >
                 <AddIcon fontSize="small" aria-hidden="true" />
                 Crear primera meta
               </button>
@@ -438,7 +446,7 @@ function Metas() {
                       }
                     }}
                   />
-                  <button type="button" className="metas-secondary-button" onClick={handleAddTaskToForm}>
+                  <button type="button" className="btn-base btn-secondary btn-sm" onClick={handleAddTaskToForm}>
                     <AddIcon fontSize="small" aria-hidden="true" />
                     Agregar
                   </button>
@@ -466,10 +474,14 @@ function Metas() {
               </div>
 
               <div className="modal-actions-base metas-form-actions">
-                <button type="button" className="metas-secondary-button" onClick={closeFormModal}>
+                <button type="button" className="btn-base btn-secondary" onClick={closeFormModal}>
                   Cancelar
                 </button>
-                <button type="submit" className="metas-primary-button" disabled={isSaving}>
+                <button
+                  type="submit"
+                  className="btn-base btn-accent btn-submit btn-accent--lifestyle"
+                  disabled={isSaving}
+                >
                   {isSaving ? 'Guardando…' : editingGoalId ? 'Guardar cambios' : 'Crear meta'}
                 </button>
               </div>

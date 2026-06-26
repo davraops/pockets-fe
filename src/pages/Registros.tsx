@@ -74,7 +74,7 @@ function Registros() {
               </p>
               <button
                 type="button"
-                className="btn-base btn-secondary finanzas-stats-retry-button"
+                className="btn-base btn-secondary btn-retry"
                 onClick={() => void loadStats()}
                 aria-label="Reintentar cargar estadísticas"
               >
@@ -90,7 +90,7 @@ function Registros() {
                 <p>{statsWarning}</p>
                 <button
                   type="button"
-                  className="btn-base btn-secondary finanzas-stats-retry-button utilidades-stats-retry-button-inline"
+                  className="btn-base btn-secondary btn-retry btn-retry--inline"
                   onClick={() => void loadStats()}
                   aria-label="Reintentar cargar estadísticas"
                 >

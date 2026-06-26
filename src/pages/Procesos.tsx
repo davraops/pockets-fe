@@ -482,7 +482,7 @@ function Procesos() {
               {error.includes('Ajustes') ? (
                 <button
                   type="button"
-                  className="btn-base btn-secondary finanzas-stats-retry-button"
+                  className="btn-base btn-secondary btn-retry"
                   onClick={() => navigate('/ajustes')}
                   aria-label="Ir a Ajustes"
                 >
@@ -491,7 +491,7 @@ function Procesos() {
               ) : (
                 <button
                   type="button"
-                  className="btn-base btn-secondary finanzas-stats-retry-button"
+                  className="btn-base btn-secondary btn-retry"
                   onClick={() => void loadProcesos()}
                   aria-label="Reintentar cargar procesos"
                 >

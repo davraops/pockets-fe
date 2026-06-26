@@ -79,77 +79,6 @@
   line-height: 1.5;
 }
 
-/* Warning Message */
-.inflacion-warning {
-  background: var(--alert-warning-bg);
-  backdrop-filter: var(--backdrop-blur);
-  -webkit-backdrop-filter: var(--backdrop-blur);
-  border-radius: var(--radius-lg);
-  border: 2px solid var(--color-danger-border-medium);
-  padding: var(--spacing-xl);
-  margin-bottom: var(--spacing-xl);
-  box-shadow:
-    0 8px 32px 0 var(--color-danger-bg-medium),
-    var(--shadow-sm);
-  display: flex;
-  gap: var(--spacing-lg);
-  align-items: flex-start;
-}
-
-.inflacion-warning-icon {
-  flex-shrink: 0;
-  width: 56px;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-danger-bg-medium);
-  border-radius: 50%;
-  color: var(--color-danger-text);
-}
-
-.inflacion-warning-icon svg {
-  font-size: var(--font-size-hero) !important;
-  width: 2rem !important;
-  height: 2rem !important;
-}
-
-.inflacion-warning-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
-
-.inflacion-warning-title {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-danger-text-strong);
-  margin: 0;
-  font-family: var(--font-family);
-  letter-spacing: var(--letter-spacing-tight);
-}
-
-.inflacion-warning-text {
-  font-size: var(--font-size-base);
-  color: var(--text-primary);
-  margin: 0;
-  line-height: 1.6;
-  font-family: var(--font-family);
-  font-style: italic;
-}
-
-.inflacion-warning-quote {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--status-devalued-text);
-  margin: 0;
-  line-height: 1.5;
-  font-family: var(--font-family);
-  padding-top: var(--spacing-sm);
-  border-top: 1px solid rgba(255, 149, 0, 0.3);
-}
-
 /* Tips Section */
 .inflacion-tips {
   background: var(--bg-glass);
@@ -563,23 +492,6 @@
     height: 300px;
   }
 
-  .inflacion-warning {
-    flex-direction: column;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md);
-  }
-
-  .inflacion-warning-icon {
-    width: 48px;
-    height: 48px;
-  }
-
-  .inflacion-warning-icon svg {
-    font-size: var(--font-size-xl) !important;
-    width: var(--font-size-xl) !important;
-    height: var(--font-size-xl) !important;
-  }
-
   .inflacion-tips-grid {
     grid-template-columns: 1fr;
   }
@@ -587,18 +499,6 @@
 
   .inflacion-chart-wrapper {
     height: 250px;
-  }
-
-  .inflacion-warning-title {
-    font-size: var(--font-size-lg);
-  }
-
-  .inflacion-warning-text {
-    font-size: var(--font-size-sm);
-  }
-
-  .inflacion-warning-quote {
-    font-size: var(--font-size-base);
   }
 
   .inflacion-salary-stats {

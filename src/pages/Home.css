@@ -92,13 +92,13 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--spacing-lg);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .hub-home-main {
   min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   padding-right: 2px;
 }
 
@@ -106,7 +106,6 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .hub-home-aside-title {
@@ -123,8 +122,6 @@
 .hub-home-apps {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 .hub-home-apps .glass-group {
@@ -240,9 +237,6 @@
     padding-top: var(--spacing-md);
   }
 
-  .hub-home-apps {
-    max-height: min(50dvh, 420px);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

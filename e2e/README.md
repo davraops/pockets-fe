@@ -150,6 +150,24 @@ Tag `@regression` on regression specs. Default credentials (`e2e` / `123qweZ!`) 
 | Mobile viewport | `e2e/mobile/` | PR or pre-release |
 | PR / merge regression | `e2e/regression/` | Nightly or pre-release |
 | Nightly S3 | `archivos` with `E2E_PRESIGNED_UPLOAD=true` | Once per day on staging |
+| Visual regression | `e2e/visual/` (`test:e2e:visual`) | PR + push to `main` (see `.github/workflows/e2e-visual.yml`) |
+
+### Visual regression CI
+
+Workflow **E2E Visual Regression** runs on PRs and pushes to `main`. It checks out `davraops/pockets`, starts `offline:all`, resets the `e2e` user, then runs `npm run test:e2e:visual`.
+
+**Repository secrets required:**
+
+| Secret | Purpose |
+|--------|---------|
+| `POCKETS_DOTENV` | Full contents of `pockets/.env` (database, JWT, etc.) |
+| `E2E_PASSWORD` | Must match `reset:e2e-user` default (`123qweZ!`) unless the script is updated |
+
+After intentional layout changes, regenerate baselines locally and commit snapshot files:
+
+```bash
+npm run test:e2e:visual:update
+```
 
 ### Staging nightly (presigned S3)
 

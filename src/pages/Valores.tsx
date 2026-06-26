@@ -323,11 +323,19 @@ function Valores() {
         </div>
 
         <div className="valores-actions">
-          <button type="button" className="valores-action valores-action--value" onClick={() => openCreateModal('value')}>
+          <button
+            type="button"
+            className="btn-base btn-accent btn-submit btn-accent--blue"
+            onClick={() => openCreateModal('value')}
+          >
             <DiamondIcon fontSize="small" aria-hidden="true" />
             Nuevo valor
           </button>
-          <button type="button" className="valores-action valores-action--belief" onClick={() => openCreateModal('belief')}>
+          <button
+            type="button"
+            className="btn-base btn-accent btn-submit btn-accent--purple"
+            onClick={() => openCreateModal('belief')}
+          >
             <AutoStoriesIcon fontSize="small" aria-hidden="true" />
             Nueva creencia
           </button>
@@ -338,7 +346,7 @@ function Valores() {
         ) : error ? (
           <div className="valores-empty">
             <p role="alert">{error}</p>
-            <button type="button" className="valores-secondary-button" onClick={() => void loadEntries()}>
+            <button type="button" className="btn-base btn-secondary btn-retry" onClick={() => void loadEntries()}>
               <RefreshIcon fontSize="small" aria-hidden="true" />
               Reintentar
             </button>
@@ -358,11 +366,19 @@ function Valores() {
             </p>
             {!searchQuery && activeFilter === 'all' ? (
               <div className="valores-empty__actions">
-                <button type="button" className="valores-action valores-action--value" onClick={() => openCreateModal('value')}>
+                <button
+                  type="button"
+                  className="btn-base btn-accent btn-submit btn-accent--blue"
+                  onClick={() => openCreateModal('value')}
+                >
                   <AddIcon fontSize="small" aria-hidden="true" />
                   Crear valor
                 </button>
-                <button type="button" className="valores-action valores-action--belief" onClick={() => openCreateModal('belief')}>
+                <button
+                  type="button"
+                  className="btn-base btn-accent btn-submit btn-accent--purple"
+                  onClick={() => openCreateModal('belief')}
+                >
                   <AddIcon fontSize="small" aria-hidden="true" />
                   Crear creencia
                 </button>
@@ -454,10 +470,14 @@ function Valores() {
               </label>
 
               <div className="valores-form-actions">
-                <button type="button" className="valores-secondary-button" onClick={closeFormModal}>
+                <button type="button" className="btn-base btn-secondary" onClick={closeFormModal}>
                   Cancelar
                 </button>
-                <button type="submit" className="valores-primary-button" disabled={isSaving}>
+                <button
+                  type="submit"
+                  className={`btn-base btn-accent btn-submit ${formData.kind === 'belief' ? 'btn-accent--purple' : 'btn-accent--blue'}`}
+                  disabled={isSaving}
+                >
                   {isSaving ? 'Guardando…' : editingEntryId ? 'Guardar cambios' : 'Crear'}
                 </button>
               </div>
@@ -487,12 +507,12 @@ function Valores() {
               <p className="valores-detail-placeholder">Sin descripción</p>
             )}
             <div className="valores-detail-actions">
-              <button type="button" className="valores-secondary-button" onClick={() => openEditModal(selectedEntry)}>
+              <button type="button" className="btn-base btn-secondary" onClick={() => openEditModal(selectedEntry)}>
                 Editar
               </button>
               <button
                 type="button"
-                className="valores-danger-button"
+                className="btn-base btn-soft-danger"
                 onClick={() => void handleDelete(selectedEntry)}
               >
                 <DeleteIcon fontSize="small" aria-hidden="true" />

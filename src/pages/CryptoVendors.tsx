@@ -570,9 +570,14 @@ function CryptoVendors() {
             {editingId ? 'Editar Vendedor' : 'Agregar Vendedor'}
           </h2>
           <form onSubmit={handleSubmit} className="cryptovendors-form">
+            <section className="crud-form-section" aria-labelledby="cv-form-vendor">
+              <h3 className="crud-form-section-title" id="cv-form-vendor">
+                <StoreIcon className="form-label-icon" aria-hidden="true" />
+                Datos del vendedor
+              </h3>
+              <div className="crud-form-section__fields">
             <div className="form-group-base form-group-base--compact">
               <label htmlFor="name" className="form-label-base form-label-base--inline">
-                <StoreIcon className="form-label-icon" />
                 Nombre del Vendedor *
               </label>
               <input
@@ -586,13 +591,15 @@ function CryptoVendors() {
                 required
               />
             </div>
+              </div>
+            </section>
 
-            <div className="crud-form-section-divider">
-              <h3 className="cryptovendors-form-subsection-title">
-                <PersonIcon className="form-label-icon" />
-                Información de Contacto
+            <section className="crud-form-section" aria-labelledby="cv-form-contact">
+              <h3 className="crud-form-section-title" id="cv-form-contact">
+                <PersonIcon className="form-label-icon" aria-hidden="true" />
+                Información de contacto
               </h3>
-            </div>
+              <div className="crud-form-section__fields">
 
             <div className="crud-form-row">
               <div className="form-group-base form-group-base--compact">
@@ -661,12 +668,15 @@ function CryptoVendors() {
               </div>
             </div>
 
-            <div className="crud-form-section-divider">
-              <h3 className="cryptovendors-form-subsection-title">
-                <CurrencyBitcoinIcon className="form-label-icon" />
-                Criptomonedas Aceptadas
+              </div>
+            </section>
+
+            <section className="crud-form-section" aria-labelledby="cv-form-crypto">
+              <h3 className="crud-form-section-title" id="cv-form-crypto">
+                <CurrencyBitcoinIcon className="form-label-icon" aria-hidden="true" />
+                Criptomonedas aceptadas
               </h3>
-            </div>
+              <div className="crud-form-section__fields">
 
             <div className="form-group-base form-group-base--compact">
               <label className="form-label-base form-label-base--inline">Selecciona las criptomonedas aceptadas</label>
@@ -726,12 +736,15 @@ function CryptoVendors() {
               </div>
             </div>
 
-            <div className="crud-form-section-divider">
-              <h3 className="cryptovendors-form-subsection-title">
-                <PercentIcon className="form-label-icon" />
-                Descuentos (Opcional)
+              </div>
+            </section>
+
+            <section className="crud-form-section" aria-labelledby="cv-form-discount">
+              <h3 className="crud-form-section-title" id="cv-form-discount">
+                <PercentIcon className="form-label-icon" aria-hidden="true" />
+                Descuentos (opcional)
               </h3>
-            </div>
+              <div className="crud-form-section__fields">
 
             <div className="crud-form-row">
               <div className="form-group-base form-group-base--compact">
@@ -786,17 +799,20 @@ function CryptoVendors() {
               />
             </div>
 
+              </div>
+            </section>
+
             <div className="cryptovendors-form-actions">
               {editingId && (
                 <button
                   type="button"
                   onClick={handleCancelEdit}
-                  className="cryptovendors-form-button cryptovendors-form-button-secondary"
+                  className="btn-base btn-secondary"
                 >
                   Cancelar
                 </button>
               )}
-              <button type="submit" className="cryptovendors-form-button cryptovendors-form-button-primary">
+              <button type="submit" className="btn-base btn-accent btn-submit">
                 {editingId ? 'Actualizar' : 'Agregar'}
               </button>
             </div>

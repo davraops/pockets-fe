@@ -463,10 +463,6 @@
   line-height: 1.5;
 }
 
-.finanzas-stats-retry-button-inline {
-  align-self: flex-start;
-}
-
 @media (max-width: 768px) {
   .finanzas-dashboard-panels,
   .finanzas-quick-actions {

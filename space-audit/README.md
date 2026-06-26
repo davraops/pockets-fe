@@ -88,7 +88,13 @@ Todas las pantallas de producto usan `app-page-content-wide` (1200px); Metas, Va
 
 `npm run audit:dedupe-css` sin bloques muertos; `hub-summary-value-unavailable` movido a `ui-patterns.css`.
 
-Coexisten: `btn-base`, `finanzas-add-transaction-button`, `empty-state-cta`, `finanzas-stats-retry-button`, items de dropdown. `ajustes-primary-button` migrado; `ajustes-danger-button` es extensión soft sobre `btn-base`.
+### P3 — Botones ad hoc ✅ (parcial)
+
+Escala unificada en `shared.css`: `btn-retry` / `btn-retry--inline`, `btn-accent--lifestyle|blue|purple`, `btn-soft-danger`. `finanzas-stats-retry-button` eliminado; Metas/Valores/CryptoVendors migrados. `empty-state-cta` = spacing-only (usar con `btn-base btn-accent`).
+
+### P0 — Scroll ownership ✅ (2026-06-25)
+
+Home, hubs de sección y utilidades sin scroll anidado competidor. Ver [scroll-ownership.md](./scroll-ownership.md). CI: `npm run audit:scroll-ownership`, `npm run test:e2e:audit`.
 
 ## Pantallas de referencia (space)
 
@@ -125,7 +131,9 @@ Coexisten: `btn-base`, `finanzas-add-transaction-button`, `empty-state-cta`, `fi
 5. ~~**P2** — Hub rows + dashboard layout compartidos; hub Finanzas acortado~~ ✅
 6. ~~**P2** — Secciones en modales largos (Transacciones)~~ ✅ parcial
 7. ~~**P3** — Ancho hub vs CRUD; limpiar `.summary-*` legacy~~ ✅
-8. **P3** — Botones ad hoc unificados
+8. ~~**P3** — Botones ad hoc unificados~~ ✅ parcial (`btn-retry`, `btn-accent--*`, `btn-soft-danger`, `empty-state-cta` spacing-only)
+9. ~~**P2** — Banners colapsables (Deudas, Tarjetas, Inflación)~~ ✅
+10. ~~**CI visual**~~ ✅ `.github/workflows/e2e-visual.yml`
 
 ## Secciones auditadas
 

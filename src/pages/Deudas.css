@@ -1,57 +1,5 @@
 .deudas-content {}
 
-/* Debts Advice Banner - HIG: Clear Feedback */
-.debts-advice-banner {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md) var(--spacing-lg);
-  background: var(--surface-info-banner-bg);
-  backdrop-filter: var(--backdrop-blur-light);
-  -webkit-backdrop-filter: var(--backdrop-blur-light);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--surface-info-banner-border);
-  margin-bottom: var(--spacing-lg);
-  box-shadow:
-    var(--surface-info-banner-shadow),
-    var(--shadow-sm);
-  font-family: var(--font-family);
-}
-
-.debts-advice-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  color: var(--surface-info-icon-color);
-  font-size: var(--font-size-xl);
-  background: var(--surface-info-icon-bg);
-  border-radius: var(--radius-sm);
-  padding: var(--spacing-xs);
-}
-
-.debts-advice-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.debts-advice-text {
-  margin: 0;
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-regular);
-  color: var(--text-primary);
-  line-height: 1.6;
-  letter-spacing: var(--letter-spacing-normal);
-  font-family: var(--font-family);
-}
-
-.debts-advice-text strong {
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-}
-
 /* Debts List - HIG: Efficient Information Presentation */
 .crud-card-row--debt.crud-card-row--paid-off {
   border-left-color: var(--highlight-success-text);
@@ -152,21 +100,7 @@
     padding-bottom: max(var(--spacing-md), env(safe-area-inset-bottom, 0px));
   }
 
-  .debts-advice-banner {
-    padding: var(--spacing-sm) var(--spacing-md);
-    gap: var(--spacing-sm);
-  }
-
-  .debts-advice-icon {
-    width: 28px;
-    height: 28px;
-    font-size: var(--font-size-lg);
-  }
-
-  .debts-advice-text {
-    font-size: var(--font-size-sm);
-  }
-.modal-close {
+  .modal-close {
     width: 44px;
     height: 44px;
     min-width: 44px;
@@ -177,23 +111,5 @@
 @media (max-width: 480px) {
   .deudas-content {
     padding: 0 var(--spacing-sm);
-  }
-
-  .debts-advice-banner {
-    flex-direction: column;
-    padding: var(--spacing-sm);
-    gap: var(--spacing-xs);
-  }
-
-  .debts-advice-icon {
-    width: 24px;
-    height: 24px;
-    font-size: var(--font-size-base);
-    align-self: flex-start;
-  }
-
-  .debts-advice-text {
-    font-size: var(--font-size-sm);
-    line-height: 1.5;
   }
 }
