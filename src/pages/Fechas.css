@@ -64,16 +64,6 @@
   width: 100%;
 }
 
-.fechas-section-title {
-  margin: 0;
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
-  font-family: var(--font-family);
-}
-
 .fechas-event-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
@@ -405,12 +395,6 @@
 /* Modals */
 .fechas-modal {
   max-width: min(720px, calc(100vw - 2rem));
-}
-
-.fechas-modal-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
 }
 
 .fechas-form-notice {

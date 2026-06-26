@@ -16,6 +16,7 @@ import './AppPage.css'
 import ModalOverlay from '../components/ModalOverlay'
 import ListSkeleton from '../components/ListSkeleton'
 import './Notificaciones.css'
+import { SEMANTIC_UI_COLORS } from '../constants/designTokens'
 
 interface NotificationAPI {
   id: string
@@ -307,13 +308,13 @@ function Notificaciones() {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'urgent':
-        return '#FF3B30'
+        return SEMANTIC_UI_COLORS.danger
       case 'high':
-        return '#FF9500'
+        return SEMANTIC_UI_COLORS.warning
       case 'normal':
-        return '#007AFF'
+        return SEMANTIC_UI_COLORS.info
       case 'low':
-        return '#8E8E93'
+        return SEMANTIC_UI_COLORS.neutral
       default:
         return '#8E8E93'
     }
@@ -531,7 +532,7 @@ function Notificaciones() {
                           )}
                         </button>
                         <button
-                          className="notificaciones-item-action-button notificaciones-item-delete-button"
+                          className="btn-icon btn-icon--danger"
                           onClick={() => handleDelete(notification.id)}
                           aria-label="Eliminar"
                           type="button"
@@ -571,7 +572,7 @@ function Notificaciones() {
                 </button>
               </div>
 
-              <div className="notificaciones-detail-content">
+              <div className="modal-panel-content notificaciones-detail-content">
                 <div className="debug-options">
                   <button
                     className="debug-option-button create-demo"

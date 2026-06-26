@@ -877,10 +877,6 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-md) 0;
 }
 
 .empleados-detail-section-icon {
@@ -992,27 +988,6 @@
   font-style: italic;
 }
 
-.empleados-detail-list-item-delete {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: transparent;
-  border: 1px solid var(--btn-icon-border);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  color: var(--btn-icon-color);
-  padding: 0;
-}
-
-.empleados-detail-list-item-delete:hover {
-  background: var(--btn-danger-hover-bg);
-  border-color: var(--btn-danger-hover-border);
-  color: var(--btn-danger-hover-text);
-}
-
 /* Page Title */
 .empleados-page-title {
   font-size: var(--font-size-2xl);
@@ -1034,14 +1009,6 @@
 .empleados-items-section,
 .empleados-save-section {
   margin-bottom: var(--spacing-xl);
-}
-
-.empleados-section-title {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0;
-  margin-bottom: var(--spacing-md);
 }
 
 .empleados-section-header {
@@ -1080,10 +1047,6 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-md) 0;
 }
 
 .empleados-form-actions {
@@ -1091,38 +1054,6 @@
   gap: var(--spacing-sm);
   margin-top: var(--spacing-md);
   justify-content: flex-end;
-}
-
-.empleados-form-button {
-  padding: var(--spacing-sm) var(--spacing-lg);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  font-family: var(--font-family);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  border: none;
-}
-
-.empleados-form-button-primary {
-  background: var(--btn-primary-bg);
-  color: var(--btn-primary-text);
-}
-
-.empleados-form-button-primary:hover {
-  background: var(--btn-primary-hover-bg);
-  transform: translateY(var(--motion-lift-sm));
-  box-shadow: var(--btn-primary-shadow-hover);
-}
-
-.empleados-form-button-secondary {
-  background: var(--bg-glass);
-  color: var(--text-primary);
-  border: 1px solid var(--border-glass);
-}
-
-.empleados-form-button-secondary:hover {
-  background: var(--bg-glass-hover);
 }
 
 /* Items List */
@@ -1267,9 +1198,9 @@
 }
 
 .empleados-item-action-button-delete:hover {
-  background: rgba(255, 59, 48, 0.1);
-  border-color: #FF3B30;
-  color: #FF3B30;
+  background: var(--color-danger-bg-soft);
+  border-color: var(--color-danger-solid);
+  color: var(--color-danger-solid);
 }
 
 /* Save Section */

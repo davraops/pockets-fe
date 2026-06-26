@@ -126,11 +126,17 @@
 
 .lifestyle-modal--form > form,
 .lifestyle-modal--form > .rutinas-modal-form {
+  display: flex;
+  flex-direction: column;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
+}
+
+.lifestyle-modal--form .lifestyle-modal__footer,
+.lifestyle-modal--form .rutinas-modal-form-actions {
+  flex-shrink: 0;
+  margin-top: 0;
 }
 
 .lifestyle-modal__btn {
@@ -159,23 +165,6 @@
 
   .lifestyle-modal--form {
     max-width: 100%;
-  }
-
-  .lifestyle-modal--form > form,
-  .lifestyle-modal--form > .rutinas-modal-form {
-    padding: var(--spacing-md) var(--spacing-lg);
-    padding-bottom: calc(var(--spacing-md) + var(--safe-bottom));
-    scroll-padding-bottom: calc(var(--spacing-xl) + var(--safe-bottom));
-  }
-
-  .lifestyle-modal__footer {
-    position: sticky;
-    bottom: 0;
-    margin-top: auto;
-    padding-top: var(--spacing-md);
-    background: color-mix(in srgb, var(--bg-glass) 94%, transparent);
-    backdrop-filter: var(--backdrop-blur-light);
-    -webkit-backdrop-filter: var(--backdrop-blur-light);
   }
 
   .lifestyle-modal__header {
@@ -208,7 +197,4 @@
     text-align: left;
   }
 
-  .lifestyle-modal__footer {
-    padding-bottom: var(--safe-bottom);
-  }
 }

@@ -549,7 +549,7 @@ function CriptoWallet() {
                 ×
               </button>
             </div>
-            <form className="modal-form" onSubmit={handleWalletSubmit}>
+            <form className="modal-form" onSubmit={handleWalletSubmit}><div className="modal-panel__scroll">
               <div className="form-group-base">
                 <label htmlFor="wallet_name" className="form-label-base">
                   Nombre de la Wallet
@@ -611,17 +611,17 @@ function CriptoWallet() {
                     {formErrors.address}
                   </span>
                 )}
-              </div>
+              </div></div>
 
-              <div className="modal-actions">
+              <div className="modal-actions-base">
                 <button
                   type="button"
-                  className="modal-button secondary"
+                  className="btn-base btn-secondary"
                   onClick={handleCloseWalletModal}
                 >
                   Cancelar
                 </button>
-                <button type="submit" className="modal-button primary" disabled={isLoading}>
+                <button type="submit" className="btn-base btn-accent btn-submit" disabled={isLoading}>
                   {isLoading ? 'Guardando...' : isEditMode ? 'Actualizar' : 'Crear'}
                 </button>
               </div>
@@ -736,10 +736,10 @@ function CriptoWallet() {
                 </button>
               </div>
             </div>
-            <div className="modal-actions">
+            <div className="modal-actions-base">
               <button
                 type="button"
-                className="modal-button secondary"
+                className="btn-base btn-secondary"
                 onClick={() => setIsDebugModalOpen(false)}
               >
                 Cerrar

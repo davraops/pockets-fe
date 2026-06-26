@@ -39,7 +39,7 @@
     min-height: 44px;
   }
 
-  .modal-button {
+  .modal-actions-base .btn-base {
     font-size: var(--font-size-base);
   }
 

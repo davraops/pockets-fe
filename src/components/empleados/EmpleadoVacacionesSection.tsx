@@ -110,7 +110,7 @@ function EmpleadoVacacionesSection({ employee, onSync }: EmpleadoVacacionesSecti
   return (
     <>
       <div className="empleados-detail-section">
-        <h3 className="empleados-detail-section-title">
+        <h3 className="app-subsection-title app-subsection-title--plain empleados-detail-section-title">
           <EventAvailableIcon className="empleados-detail-section-icon" />
           Vacaciones Disponibles
         </h3>
@@ -126,7 +126,7 @@ function EmpleadoVacacionesSection({ employee, onSync }: EmpleadoVacacionesSecti
           />
           <button
             type="button"
-            className="empleados-form-button empleados-form-button-primary"
+            className="btn-base btn-accent btn-submit"
             onClick={() => void handleSaveAvailableDays()}
           >
             Guardar
@@ -135,7 +135,7 @@ function EmpleadoVacacionesSection({ employee, onSync }: EmpleadoVacacionesSecti
       </div>
 
       <div className="empleados-detail-section">
-        <h3 className="empleados-detail-section-title">
+        <h3 className="app-subsection-title app-subsection-title--plain empleados-detail-section-title">
           <EventAvailableIcon className="empleados-detail-section-icon" />
           Vacaciones Tomadas
         </h3>
@@ -172,7 +172,7 @@ function EmpleadoVacacionesSection({ employee, onSync }: EmpleadoVacacionesSecti
           </div>
           <button
             type="button"
-            className="empleados-form-button empleados-form-button-primary"
+            className="btn-base btn-accent btn-submit"
             onClick={() => void handleAddVacation()}
           >
             Agregar Vacaciones
@@ -197,7 +197,7 @@ function EmpleadoVacacionesSection({ employee, onSync }: EmpleadoVacacionesSecti
                 </div>
                 <button
                   type="button"
-                  className="empleados-detail-list-item-delete"
+                  className="btn-icon btn-icon--danger"
                   onClick={() => void handleDeleteVacation(index)}
                   aria-label="Eliminar vacaciones"
                 >

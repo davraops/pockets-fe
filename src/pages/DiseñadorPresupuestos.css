@@ -20,14 +20,6 @@
   margin-bottom: var(--spacing-xl);
 }
 
-.diseñador-section-title {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0;
-  margin-bottom: var(--spacing-md);
-}
-
 /* Form */
 .diseñador-form {
   background: var(--bg-glass);
@@ -146,37 +138,6 @@
   background: var(--surface-muted-bg);
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-sm);
-}
-
-.diseñador-item-actions {
-  display: flex;
-  gap: var(--spacing-xs);
-}
-
-.diseñador-item-action-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: transparent;
-  border: 1px solid var(--btn-icon-border);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  color: var(--btn-icon-color);
-}
-
-.diseñador-item-action-button:hover {
-  background: var(--btn-icon-hover-bg);
-  color: var(--btn-icon-hover-color);
-  border-color: var(--btn-icon-hover-border);
-}
-
-.diseñador-item-action-button-delete:hover {
-  background: var(--btn-danger-hover-bg);
-  border-color: var(--btn-danger-hover-border);
-  color: var(--btn-danger-hover-text);
 }
 
 /* Totals Section */
@@ -550,7 +511,7 @@
     flex-wrap: wrap;
   }
 
-  .diseñador-item-actions {
+  .app-control-group.diseñador-item-actions {
     justify-content: flex-end;
     margin-top: var(--spacing-sm);
   }

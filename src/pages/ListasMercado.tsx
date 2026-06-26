@@ -605,9 +605,9 @@ function ListasMercado() {
                             </span>
                           </div>
                         </div>
-                        <div className="listas-item-actions">
+                        <div className="app-control-group listas-item-actions">
                           <button
-                            className="listas-item-action-button"
+                            className="btn-icon"
                             onClick={() => handleEdit(item)}
                             aria-label="Editar"
                             type="button"
@@ -615,7 +615,7 @@ function ListasMercado() {
                             <EditIcon />
                           </button>
                           <button
-                            className="listas-item-action-button listas-item-action-button-delete"
+                            className="btn-icon btn-icon--danger"
                             onClick={() => handleDelete(item.id)}
                             aria-label="Eliminar"
                             type="button"
@@ -683,7 +683,8 @@ function ListasMercado() {
                 </button>
               </div>
               <div className="modal-panel-content">
-                <form onSubmit={handleSubmit} className="listas-form">
+                <form onSubmit={handleSubmit} className="listas-form" noValidate>
+                  <div className="modal-panel__scroll">
                   <div className="form-group-base form-group-base--compact">
                     <label htmlFor="name" className="form-label-base form-label-base--inline">
                       Nombre del Producto *
@@ -811,6 +812,8 @@ function ListasMercado() {
                     </div>
                   </div>
 
+                  </div>
+
                   <div className="listas-form-actions">
                     <button
                       type="button"
@@ -837,7 +840,7 @@ function ListasMercado() {
         {(lists.length > 0 || listsLoadError) && (
           <div className="listas-saved-section">
             <div className="listas-section-header">
-              <h2 className="listas-section-title">
+              <h2 className="app-section-title">
                 Listas Guardadas{lists.length > 0 ? ` (${lists.length})` : ''}
               </h2>
               <button
@@ -899,7 +902,7 @@ function ListasMercado() {
                       )}
                     </div>
                     <button
-                      className="listas-saved-delete"
+                      className="btn-icon btn-icon--danger"
                       onClick={() => handleDeleteList(list.id, list.name)}
                       aria-label="Eliminar lista"
                       type="button"

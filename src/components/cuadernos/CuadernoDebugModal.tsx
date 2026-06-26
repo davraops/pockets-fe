@@ -113,8 +113,8 @@ function CuadernoDebugModal({ onClose, onReload, onClearList }: CuadernoDebugMod
             </button>
           </div>
         </div>
-        <div className="modal-actions">
-          <button type="button" className="modal-button secondary" onClick={onClose}>
+        <div className="modal-actions-base">
+          <button type="button" className="btn-base btn-secondary" onClick={onClose}>
             Cerrar
           </button>
         </div>

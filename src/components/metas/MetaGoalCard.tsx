@@ -88,17 +88,17 @@ function MetaGoalCard({
             </ul>
           )}
 
-          <div className="metas-goal-card__actions">
-            <button type="button" className="metas-icon-button" onClick={onEdit} aria-label="Editar meta">
-              <EditIcon fontSize="small" />
+          <div className="app-control-group metas-goal-card__actions">
+            <button type="button" className="btn-icon" onClick={onEdit} aria-label="Editar meta">
+              <EditIcon fontSize="small" aria-hidden="true" />
             </button>
             <button
               type="button"
-              className="metas-icon-button metas-icon-button--danger"
+              className="btn-icon btn-icon--danger"
               onClick={onDelete}
               aria-label="Eliminar meta"
             >
-              <DeleteIcon fontSize="small" />
+              <DeleteIcon fontSize="small" aria-hidden="true" />
             </button>
           </div>
         </div>

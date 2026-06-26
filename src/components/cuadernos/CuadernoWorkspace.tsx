@@ -786,10 +786,10 @@ const CuadernoWorkspace = forwardRef<CuadernoWorkspaceHandle, CuadernoWorkspaceP
               </p>
             )}
             <div className="cuaderno-data-panel__actions">
-              <button type="button" className="modal-button secondary" onClick={() => setShowDataPanel(false)}>
+              <button type="button" className="btn-base btn-secondary" onClick={() => setShowDataPanel(false)}>
                 Cerrar
               </button>
-              <button type="button" className="modal-button primary" onClick={applyDataDraft}>
+              <button type="button" className="btn-base btn-accent btn-submit" onClick={applyDataDraft}>
                 Aplicar al editor
               </button>
             </div>

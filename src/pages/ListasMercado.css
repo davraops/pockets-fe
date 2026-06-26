@@ -185,14 +185,6 @@
   margin-bottom: var(--spacing-xl);
 }
 
-.listas-section-title {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0;
-  margin-bottom: var(--spacing-md);
-}
-
 .listas-section-header {
   display: flex;
   align-items: center;
@@ -487,37 +479,6 @@
   color: var(--accent-primary);
 }
 
-.listas-item-actions {
-  display: flex;
-  gap: var(--spacing-xs);
-}
-
-.listas-item-action-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: transparent;
-  border: 1px solid var(--btn-icon-border);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  color: var(--btn-icon-color);
-}
-
-.listas-item-action-button:hover {
-  background: var(--btn-icon-hover-bg);
-  color: var(--btn-icon-hover-color);
-  border-color: var(--btn-icon-hover-border);
-}
-
-.listas-item-action-button-delete:hover {
-  background: rgba(255, 59, 48, 0.1);
-  border-color: #FF3B30;
-  color: #FF3B30;
-}
-
 /* Save Section */
 .listas-save-form {
   display: flex;
@@ -641,13 +602,6 @@
   border-bottom: 1px solid var(--border-glass-light);
 }
 
-.listas-modal-title {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
 .listas-modal-close {
   display: flex;
   align-items: center;
@@ -758,9 +712,9 @@
 }
 
 .listas-list-delete:hover {
-  background: rgba(255, 59, 48, 0.1);
-  border-color: #FF3B30;
-  color: #FF3B30;
+  background: var(--color-danger-bg-soft);
+  border-color: var(--color-danger-solid);
+  color: var(--color-danger-solid);
 }
 
 /* Listas Guardadas Section */
@@ -874,27 +828,6 @@
   margin: 0;
 }
 
-.listas-saved-delete {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: transparent;
-  border: 1px solid var(--btn-icon-border);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  color: var(--btn-icon-color);
-  flex-shrink: 0;
-}
-
-.listas-saved-delete:hover {
-  background: rgba(255, 59, 48, 0.1);
-  border-color: #FF3B30;
-  color: #FF3B30;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .listas-page-title {
@@ -910,7 +843,7 @@
     align-items: stretch;
   }
 
-  .listas-item-actions {
+  .app-control-group.listas-item-actions {
     justify-content: flex-end;
     margin-top: var(--spacing-sm);
   }
@@ -936,13 +869,12 @@
   .listas-modal-overlay {
     align-items: flex-end;
     justify-content: stretch;
-    padding: 0;
-    padding-top: var(--safe-top);
+    padding: var(--modal-overlay-gap-top) 0 0;
   }
 
   .listas-modal {
     max-width: 100%;
-    max-height: min(92dvh, calc(100dvh - var(--safe-top)));
+    max-height: var(--modal-max-height);
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     margin: 0;
     animation: ui-sheet-up 0.32s cubic-bezier(0.32, 0.72, 0, 1);
@@ -974,13 +906,6 @@
   .listas-saved-item {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .listas-saved-delete {
-    align-self: flex-end;
-    margin-top: var(--spacing-sm);
-    width: var(--touch-target-min);
-    height: var(--touch-target-min);
   }
 }
 

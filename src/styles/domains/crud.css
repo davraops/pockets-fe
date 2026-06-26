@@ -244,8 +244,12 @@
   pointer-events: none;
 }
 
-.detail-content {
+.detail-content,
+.app-detail-fields {
   padding: var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .detail-section {
@@ -381,7 +385,9 @@
 
 .detail-actions {
   display: flex;
-  gap: var(--spacing-md);
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
   padding: var(--spacing-lg) var(--spacing-xl);
   margin: 0;
   border-top: 1px solid var(--border-glass);
@@ -389,8 +395,18 @@
   border-radius: 0 0 32px 32px;
 }
 
+.detail-button:not(.delete) {
+  flex: 1 1 0;
+  min-width: min(100%, 8rem);
+}
+
+.detail-button.delete {
+  flex: 0 1 auto;
+  min-width: min(100%, 10rem);
+  margin-left: auto;
+}
+
 .detail-button {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -421,14 +437,15 @@
 }
 
 .detail-button.delete {
-  background: var(--color-danger-border-soft);
-  color: var(--text-on-accent);
+  background: var(--color-danger-bg-soft);
+  color: var(--color-danger-text-strong);
   border: 1px solid var(--color-danger-border-medium);
 }
 
 .detail-button.delete:hover:not(:disabled) {
-  background: var(--color-danger-border-medium);
-  border-color: var(--color-danger-border-medium);
+  background: var(--color-danger-solid);
+  color: #fff;
+  border-color: var(--color-danger-solid);
   box-shadow: var(--shadow-sm);
 }
 
@@ -439,6 +456,11 @@
 
 .detail-button:focus-visible {
   outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.detail-button.delete:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-danger-outline-color);
   outline-offset: var(--focus-outline-offset);
 }
 

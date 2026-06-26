@@ -120,7 +120,7 @@ function UiReadiness() {
         </section>
 
         <section className="ui-readiness-section">
-          <h2 className="ui-readiness-section-title">Dimensiones</h2>
+          <h2 className="app-subsection-title app-subsection-title--plain">Dimensiones</h2>
           <div className="ui-readiness-dimensions">
             {DIMENSIONS.map(d => (
               <div key={d.label} className="ui-readiness-dimension">
@@ -138,7 +138,7 @@ function UiReadiness() {
         </section>
 
         <section className="ui-readiness-section">
-          <h2 className="ui-readiness-section-title">Métricas (código)</h2>
+          <h2 className="app-subsection-title app-subsection-title--plain">Métricas (código)</h2>
           <div className="ui-readiness-token-grid">
             {METRICS.map(m => (
               <div key={m.label} className="ui-readiness-token-card">
@@ -154,7 +154,7 @@ function UiReadiness() {
         </section>
 
         <section className="ui-readiness-section">
-          <h2 className="ui-readiness-section-title">Arquitectura CSS</h2>
+          <h2 className="app-subsection-title app-subsection-title--plain">Arquitectura CSS</h2>
           <p className="ui-readiness-section-desc">
             Sin CSS Modules (migración demasiado disruptiva). Patrones compartidos por capas;
             cada página conserva solo estilos únicos.
@@ -178,7 +178,7 @@ function UiReadiness() {
 
         {DESIGN_TOKEN_GROUPS.map(group => (
           <section key={group.id} className="ui-readiness-section">
-            <h2 className="ui-readiness-section-title">Tokens — {group.label}</h2>
+            <h2 className="app-subsection-title app-subsection-title--plain">Tokens — {group.label}</h2>
             <div className="ui-readiness-token-grid">
               {group.tokens.map(token => (
                 <div key={token.name} className="ui-readiness-token-card">
@@ -207,7 +207,7 @@ function UiReadiness() {
         ))}
 
         <section className="ui-readiness-section">
-          <h2 className="ui-readiness-section-title">Componentes — shared.css</h2>
+          <h2 className="app-subsection-title app-subsection-title--plain">Componentes — shared.css</h2>
           <p className="ui-readiness-section-desc">
             Clases del design system base. Toolbar y modales viven en ui-patterns.css.
           </p>
@@ -247,7 +247,7 @@ function UiReadiness() {
         </section>
 
         <section className="ui-readiness-section">
-          <h2 className="ui-readiness-section-title">Hallazgos prioritarios</h2>
+          <h2 className="app-subsection-title app-subsection-title--plain">Hallazgos prioritarios</h2>
           <ul className="ui-readiness-findings">
             {FINDINGS.map((f, i) => (
               <li key={i} className="ui-readiness-finding">

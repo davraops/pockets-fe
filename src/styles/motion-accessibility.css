@@ -53,7 +53,6 @@
   .crud-hub-row:hover:not(:disabled),
   .crud-transaction-row:hover:not(:disabled),
   .detail-button:hover:not(:disabled),
-  .modal-button:hover:not(:disabled),
   .hub-logout-button:hover:not(:disabled) {
     transform: none;
   }
@@ -78,7 +77,6 @@
   .crud-transaction-row,
   .detail-button,
   .empty-state-cta,
-  .modal-button,
   .hub-card,
   .password-toggle-button {
     transition-duration: 0.01ms !important;
@@ -98,9 +96,7 @@
   .crud-transaction-row:hover:not(:disabled),
   .detail-button:hover:not(:disabled),
   .detail-button:active:not(:disabled),
-  .empty-state-cta:hover:not(:disabled),
-  .modal-button:hover:not(:disabled),
-  .modal-button:active:not(:disabled) {
+  .empty-state-cta:hover:not(:disabled) {
     transform: none !important;
   }
 

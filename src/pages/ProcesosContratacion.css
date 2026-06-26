@@ -251,7 +251,7 @@
 }
 
 .procesos-contratacion-item-action-button-danger {
-  color: #FF3B30;
+  color: var(--color-danger-solid);
   border-color: rgba(255, 59, 48, 0.3);
 }
 
@@ -533,14 +533,6 @@
   border-bottom: 1px solid var(--border-glass-light);
 }
 
-.procesos-contratacion-modal-title {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0;
-  font-family: var(--font-family);
-}
-
 .procesos-contratacion-modal-close {
   display: flex;
   align-items: center;
@@ -567,9 +559,20 @@
 }
 
 .procesos-contratacion-modal-content {
-  padding: var(--spacing-lg);
-  overflow-y: auto;
+  padding: 0;
+  overflow: hidden;
   flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.procesos-contratacion-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* Form */
@@ -583,16 +586,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
-}
-
-.procesos-contratacion-form-section-title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-sm) 0;
-  font-family: var(--font-family);
-  padding-bottom: var(--spacing-xs);
-  border-bottom: 1px solid var(--border-glass-light);
 }
 
 .procesos-contratacion-form-group {
@@ -804,7 +797,7 @@
   background: transparent;
   border: none;
   border-radius: var(--radius-sm);
-  color: #FF3B30;
+  color: var(--color-danger-solid);
   cursor: pointer;
   transition: background-color var(--transition-fast);
   padding: 0;
@@ -899,55 +892,9 @@
   display: flex;
   gap: var(--spacing-md);
   justify-content: flex-end;
-  padding-top: var(--spacing-lg);
-  border-top: 1px solid var(--border-glass-light);
-}
-
-.procesos-contratacion-form-button {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
+  flex-shrink: 0;
   padding: var(--spacing-md) var(--spacing-lg);
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  font-family: var(--font-family);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.procesos-contratacion-form-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.procesos-contratacion-form-button-primary {
-  background: var(--accent-primary);
-  color: white;
-}
-
-.procesos-contratacion-form-button-primary:hover:not(:disabled) {
-  background: var(--accent-primary-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-.procesos-contratacion-form-button-secondary {
-  background: var(--bg-glass-light);
-  color: var(--text-primary);
-  border: 1px solid var(--border-glass);
-}
-
-.procesos-contratacion-form-button-secondary:hover:not(:disabled) {
-  background: var(--bg-glass);
-  border-color: var(--border-glass-hover);
-}
-
-.procesos-contratacion-form-button-icon {
-  font-size: 1.125rem !important;
-  width: 1.125rem !important;
-  height: 1.125rem !important;
+  border-top: 1px solid var(--border-glass-light);
 }
 
 /* Responsive */
@@ -966,10 +913,6 @@
     padding: var(--spacing-md);
   }
 
-  .procesos-contratacion-modal-title {
-    font-size: var(--font-size-lg);
-  }
-
   .procesos-contratacion-modal-content {
     padding: var(--spacing-md);
     overflow-y: auto;
@@ -982,11 +925,6 @@
 
   .procesos-contratacion-form-section {
     gap: var(--spacing-sm);
-  }
-
-  .procesos-contratacion-form-section-title {
-    font-size: var(--font-size-base);
-    margin-bottom: var(--spacing-xs);
   }
 
   .procesos-contratacion-form-group {
@@ -1107,7 +1045,7 @@
     border-top: 1px solid var(--border-glass-light);
   }
 
-  .procesos-contratacion-form-button {
+  .procesos-contratacion-form-actions .btn-base {
     width: 100%;
     justify-content: center;
     padding: var(--spacing-md);
@@ -1205,7 +1143,7 @@
 }
 
 .procesos-contratacion-debug-option-button.procesos-contratacion-debug-option-delete:hover:not(:disabled) {
-  border-color: #FF3B30;
+  border-color: var(--color-danger-solid);
 }
 
 .procesos-contratacion-debug-option-icon {
@@ -1566,7 +1504,7 @@
     flex-direction: column;
   }
 
-  .procesos-contratacion-detail-actions .procesos-contratacion-form-button {
+  .procesos-contratacion-detail-actions .btn-base {
     width: 100%;
   }
 }
@@ -1681,17 +1619,9 @@
   color: var(--accent-primary);
 }
 
-.procesos-contratacion-agenda-section-title {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0;
-  font-family: var(--font-family);
+.procesos-contratacion-agenda-section-header .app-section-title {
   flex: 1;
-}
-
-[data-theme='light'] .procesos-contratacion-agenda-section-title {
-  color: rgba(0, 0, 0, 0.9);
+  margin-bottom: 0;
 }
 
 .procesos-contratacion-agenda-section-count {

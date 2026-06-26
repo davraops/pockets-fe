@@ -384,13 +384,7 @@
 }
 
 .patrimonio-modal__section-title {
-  margin: 0 0 var(--spacing-sm);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
-  font-family: var(--font-family);
+  margin-bottom: var(--spacing-xs);
 }
 
 .patrimonio-modal__info-list {
@@ -469,10 +463,6 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-md) 0;
 }
 
 /* Debug modal */

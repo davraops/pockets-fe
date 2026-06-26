@@ -45,8 +45,8 @@ function VehiculoFormModal({
             ×
           </button>
         </div>
-        <div className="modal-panel-content vehiculos-modal__body">
-          <form onSubmit={onSubmit} className="vehiculos-form" noValidate>
+        <form onSubmit={onSubmit} className="vehiculos-form vehiculos-modal__form" noValidate>
+          <div className="modal-panel__scroll vehiculos-modal__body">
             <div className="form-group-base form-group-base--compact">
               <label htmlFor="name" className="form-label-base form-label-base--inline">
                 <DirectionsCarIcon className="form-label-icon" />
@@ -233,7 +233,7 @@ function VehiculoFormModal({
             </div>
 
             <div className="crud-form-section-divider">
-              <h3 className="vehiculos-form-subsection-title">
+              <h3 className="app-form-block-title vehiculos-form-subsection-title">
                 <SecurityIcon className="form-label-icon" />
                 Seguro
               </h3>
@@ -309,7 +309,7 @@ function VehiculoFormModal({
             </div>
 
             <div className="crud-form-section-divider">
-              <h3 className="vehiculos-form-subsection-title">
+              <h3 className="app-form-block-title vehiculos-form-subsection-title">
                 <BuildIcon className="form-label-icon" />
                 Mantenimiento
               </h3>
@@ -372,7 +372,7 @@ function VehiculoFormModal({
             </div>
 
             <div className="crud-form-section-divider">
-              <h3 className="vehiculos-form-subsection-title">
+              <h3 className="app-form-block-title vehiculos-form-subsection-title">
                 <DescriptionIcon className="form-label-icon" />
                 Documentos
               </h3>
@@ -460,6 +460,7 @@ function VehiculoFormModal({
                 placeholder="Ej: Vehículo en buen estado, mantenimiento al día"
               />
             </div>
+          </div>
 
             <div className="modal-actions-base vehiculos-modal__footer">
               <button type="button" className="btn-base btn-secondary vehiculos-modal__btn" onClick={onCancel}>
@@ -469,8 +470,7 @@ function VehiculoFormModal({
                 {editingId ? 'Guardar cambios' : 'Agregar vehículo'}
               </button>
             </div>
-          </form>
-        </div>
+        </form>
       </div>
     </ModalOverlay>
   )

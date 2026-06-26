@@ -898,18 +898,20 @@ function Inflacion() {
           </button>
         </div>
 
-        {/* Page Title */}
-        <h1 className="app-page-title">Inflación</h1>
-        <p className="inflacion-page-subtitle">
-          Calculadora de devaluación y predictor de inflación
-        </p>
+        <header className="app-page-header">
+          <h1 className="app-page-title">Inflación</h1>
+          <p className="app-page-subtitle">
+            Calculadora de devaluación y predictor de inflación
+          </p>
+        </header>
 
+        <div className="app-content-sections">
         {/* Calculador de Devaluación */}
-        <div className="inflacion-calculator">
-          <h2 className="inflacion-section-title">Calculador de devaluación</h2>
+        <section className="inflacion-calculator" aria-labelledby="inflacion-calculator-heading">
+          <h2 className="app-section-title" id="inflacion-calculator-heading">Calculador de devaluación</h2>
           <div className="inflacion-calculator-inputs">
             <div className="inflacion-input-group">
-              <label htmlFor="amount" className="inflacion-label">
+              <label htmlFor="amount" className="form-label-base">
                 Monto inicial (COP)
               </label>
               <input
@@ -924,7 +926,7 @@ function Inflacion() {
               />
             </div>
             <div className="inflacion-input-group">
-              <label htmlFor="years" className="inflacion-label">
+              <label htmlFor="years" className="form-label-base">
                 Años
               </label>
               <input
@@ -964,12 +966,12 @@ function Inflacion() {
               ]}
             />
           )}
-        </div>
+        </section>
 
         {/* Predictor de Inflación */}
-        <div className="inflacion-predictor">
-          <h2 className="inflacion-section-title">Predictor de inflación</h2>
-          <p className="inflacion-predictor-description">
+        <section className="inflacion-predictor" aria-labelledby="inflacion-predictor-heading">
+          <h2 className="app-section-title" id="inflacion-predictor-heading">Predictor de inflación</h2>
+          <p className="app-section-lead">
             Proyección basada en la tendencia histórica reciente:
           </p>
           <CrudSummaryStrip
@@ -980,14 +982,14 @@ function Inflacion() {
               tone: 'expense' as const,
             }))}
           />
-        </div>
+        </section>
 
         {/* Gráfico Histórico */}
-        <div className="inflacion-chart-container">
+        <section className="inflacion-chart-container" aria-label="Gráfico histórico de inflación">
           <div className="inflacion-chart-wrapper">
             <Line data={chartData} options={chartOptions} />
           </div>
-        </div>
+        </section>
 
         {/* Mensaje editorial */}
         <CollapsibleAdviceBanner
@@ -1008,80 +1010,80 @@ function Inflacion() {
         </CollapsibleAdviceBanner>
 
         {/* Tips para combatir la inflación */}
-        <div className="inflacion-tips">
-          <h2 className="inflacion-section-title">Armas contra el monstruo</h2>
+        <section className="inflacion-tips" aria-labelledby="inflacion-tips-heading">
+          <h2 className="app-section-title" id="inflacion-tips-heading">Armas contra el monstruo</h2>
           <div className="inflacion-tips-grid">
             <div className="inflacion-tip-card">
               <div className="inflacion-tip-icon">💰</div>
-              <h3 className="inflacion-tip-title">Invierte, No Ahorres</h3>
-              <p className="inflacion-tip-description">
+              <h3 className="app-form-block-title inflacion-tip-title">Invierte, No Ahorres</h3>
+              <p className="app-caption app-caption inflacion-tip-description">
                 El dinero bajo el colchón pierde valor cada día. Invierte en activos que se
                 aprecien: acciones, bienes raíces, criptomonedas, o negocios propios.
               </p>
             </div>
             <div className="inflacion-tip-card">
               <div className="inflacion-tip-icon">🌍</div>
-              <h3 className="inflacion-tip-title">Diversifica Geográficamente</h3>
-              <p className="inflacion-tip-description">
+              <h3 className="app-form-block-title inflacion-tip-title">Diversifica Geográficamente</h3>
+              <p className="app-caption inflacion-tip-description">
                 No pongas todos tus huevos en una canasta. Diversifica en diferentes monedas y
                 países para protegerte de la devaluación local.
               </p>
             </div>
             <div className="inflacion-tip-card">
               <div className="inflacion-tip-icon">⚡</div>
-              <h3 className="inflacion-tip-title">Activos Reales</h3>
-              <p className="inflacion-tip-description">
+              <h3 className="app-form-block-title inflacion-tip-title">Activos Reales</h3>
+              <p className="app-caption inflacion-tip-description">
                 Prioriza activos tangibles: oro, plata, propiedades, o activos digitales escasos.
                 Estos mantienen su valor cuando el dinero se devalúa.
               </p>
             </div>
             <div className="inflacion-tip-card">
               <div className="inflacion-tip-icon">📈</div>
-              <h3 className="inflacion-tip-title">Educación Financiera</h3>
-              <p className="inflacion-tip-description">
+              <h3 className="app-form-block-title inflacion-tip-title">Educación Financiera</h3>
+              <p className="app-caption inflacion-tip-description">
                 Conoce cómo funciona el sistema. Lee sobre economía, finanzas y la historia del
                 dinero. El conocimiento es tu mejor defensa.
               </p>
             </div>
             <div className="inflacion-tip-card">
               <div className="inflacion-tip-icon">🚫</div>
-              <h3 className="inflacion-tip-title">Evita Deudas en Moneda Local</h3>
-              <p className="inflacion-tip-description">
+              <h3 className="app-form-block-title inflacion-tip-title">Evita Deudas en Moneda Local</h3>
+              <p className="app-caption inflacion-tip-description">
                 Si debes, que sea en moneda estable o mejor aún, invierte en activos que se aprecien
                 más rápido que la inflación.
               </p>
             </div>
             <div className="inflacion-tip-card">
               <div className="inflacion-tip-icon">💎</div>
-              <h3 className="inflacion-tip-title">Bitcoin y Cripto</h3>
-              <p className="inflacion-tip-description">
+              <h3 className="app-form-block-title inflacion-tip-title">Bitcoin y Cripto</h3>
+              <p className="app-caption inflacion-tip-description">
                 Considera Bitcoin y otras criptomonedas como reserva de valor. Son escasas,
                 descentralizadas y no pueden ser infladas por gobiernos.
               </p>
             </div>
             <div className="inflacion-tip-card">
               <div className="inflacion-tip-icon">🏠</div>
-              <h3 className="inflacion-tip-title">Bienes Raíces</h3>
-              <p className="inflacion-tip-description">
+              <h3 className="app-form-block-title inflacion-tip-title">Bienes Raíces</h3>
+              <p className="app-caption inflacion-tip-description">
                 Los inmuebles históricamente mantienen y aumentan su valor. Además, puedes generar
                 ingresos pasivos con alquileres.
               </p>
             </div>
             <div className="inflacion-tip-card">
               <div className="inflacion-tip-icon">⚔️</div>
-              <h3 className="inflacion-tip-title">Mantén el Combate</h3>
-              <p className="inflacion-tip-description">
+              <h3 className="app-form-block-title inflacion-tip-title">Mantén el Combate</h3>
+              <p className="app-caption inflacion-tip-description">
                 La inflación es constante. Revisa y ajusta tu estrategia regularmente. No te
                 relajes, el monstruo nunca duerme.
               </p>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Sección Salario Mínimo */}
-        <div className="inflacion-salary-section">
-          <h2 className="inflacion-section-title">Salario Mínimo en Colombia</h2>
-          <p className="inflacion-salary-description">
+        <section className="inflacion-salary-section" aria-labelledby="inflacion-salary-heading">
+          <h2 className="app-section-title" id="inflacion-salary-heading">Salario Mínimo en Colombia</h2>
+          <p className="app-section-lead">
             La evolución del salario mínimo vs la inflación. ¿Realmente mantiene el poder
             adquisitivo?
           </p>
@@ -1144,7 +1146,7 @@ function Inflacion() {
 
           {/* Gráfico Comparativo Salario Mínimo vs Inflación */}
           <div className="inflacion-salary-chart-container">
-            <h3 className="inflacion-subsection-title">
+            <h3 className="app-subsection-title app-subsection-title--plain">
               Evolución del Salario Mínimo vs Inflación
             </h3>
             <div className="inflacion-salary-chart-wrapper">
@@ -1154,7 +1156,7 @@ function Inflacion() {
 
           {/* Análisis de Poder Adquisitivo */}
           <div className="inflacion-purchasing-power">
-            <h3 className="inflacion-subsection-title">Análisis de Poder Adquisitivo</h3>
+            <h3 className="app-subsection-title app-subsection-title--plain">Análisis de Poder Adquisitivo</h3>
             <div className="inflacion-purchasing-power-content">
               <p className="inflacion-analysis-text">
                 El salario mínimo en Colombia ha aumentado nominalmente, pero cuando se compara con
@@ -1201,11 +1203,11 @@ function Inflacion() {
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Efecto del Salario Mínimo en la Economía */}
-        <div className="inflacion-economics-section">
-          <h2 className="inflacion-section-title">¿Quién Paga el Aumento del Salario Mínimo?</h2>
+        <section className="inflacion-economics-section" aria-labelledby="inflacion-economics-heading">
+          <h2 className="app-section-title" id="inflacion-economics-heading">¿Quién Paga el Aumento del Salario Mínimo?</h2>
           <div className="inflacion-economics-content">
             <div className="inflacion-economics-warning">
               <div className="inflacion-economics-icon">⚠️</div>
@@ -1224,7 +1226,7 @@ function Inflacion() {
             </div>
 
             <div className="inflacion-economics-explanation">
-              <h3 className="inflacion-subsection-title">El Efecto Cascada</h3>
+              <h3 className="app-subsection-title app-subsection-title--plain">El Efecto Cascada</h3>
               <div className="inflacion-economics-steps">
                 <div className="inflacion-economics-step">
                   <div className="inflacion-economics-step-number">1</div>
@@ -1280,7 +1282,7 @@ function Inflacion() {
             </div>
 
             <div className="inflacion-economics-conclusion">
-              <h3 className="inflacion-subsection-title">La Paradoja</h3>
+              <h3 className="app-subsection-title app-subsection-title--plain">La Paradoja</h3>
               <p className="inflacion-conclusion-text">
                 El aumento del salario mínimo puede generar un efecto perverso: mientras intenta
                 ayudar a los más vulnerables, termina generando inflación que afecta a toda la
@@ -1294,6 +1296,7 @@ function Inflacion() {
               </p>
             </div>
           </div>
+        </section>
         </div>
       </div>
     </div>

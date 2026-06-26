@@ -53,8 +53,8 @@ function EmpleadoFormModal({
             ×
           </button>
         </div>
-        <div className="modal-panel-content empleados-modal__body">
-          <form onSubmit={onSubmit} className="empleados-form" noValidate>
+        <form onSubmit={onSubmit} className="empleados-form empleados-modal__form" noValidate>
+          <div className="modal-panel__scroll empleados-modal__body">
             <div className="form-group-base form-group-base--compact">
               <label htmlFor="name" className="form-label-base form-label-base--inline">
                 <PersonIcon className="form-label-icon" />
@@ -244,7 +244,7 @@ function EmpleadoFormModal({
             </div>
 
             <div className="crud-form-section-divider">
-              <h3 className="empleados-form-subsection-title">
+              <h3 className="app-form-block-title empleados-form-subsection-title">
                 <ContactEmergencyIcon className="form-label-icon" />
                 Contacto de Emergencia
               </h3>
@@ -301,7 +301,7 @@ function EmpleadoFormModal({
             </div>
 
             <div className="crud-form-section-divider">
-              <h3 className="empleados-form-subsection-title">
+              <h3 className="app-form-block-title empleados-form-subsection-title">
                 <AccountBalanceWalletIcon className="form-label-icon" />
                 Deudas pendientes
               </h3>
@@ -376,6 +376,7 @@ function EmpleadoFormModal({
                 />
               </div>
             </div>
+          </div>
 
             <div className="modal-actions-base empleados-modal__footer">
               <button type="button" className="btn-base btn-secondary empleados-modal__btn" onClick={onCancel}>
@@ -385,8 +386,7 @@ function EmpleadoFormModal({
                 {editingId ? 'Guardar cambios' : 'Agregar empleado'}
               </button>
             </div>
-          </form>
-        </div>
+        </form>
       </div>
     </ModalOverlay>
   )

@@ -138,11 +138,6 @@
   cursor: not-allowed;
 }
 
-.notificaciones-item-delete-button:hover:not(:disabled) {
-  color: var(--color-danger-solid);
-  background: var(--color-danger-bg-soft);
-}
-
 .notificaciones-item-action-icon {
   font-size: var(--font-size-base) !important;
   width: var(--font-size-base) !important;

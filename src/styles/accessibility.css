@@ -1,4 +1,17 @@
-/* P19 — Visual accessibility: focus, contrast, touch targets */
+/* P19 + Principio 5 — Accesibilidad WCAG: skip-link, foco, contraste, touch targets */
+
+/* Texto solo para lectores de pantalla (WCAG 1.1.1 / 4.1.2) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 
 .skip-link {
   position: absolute;
@@ -22,6 +35,28 @@
 .skip-link:focus-visible {
   top: var(--spacing-md);
   outline: var(--focus-outline-width-contrast) solid var(--focus-outline-color-strong);
+  outline-offset: var(--focus-outline-offset);
+}
+
+/* Teclado — anillo de foco visible (WCAG 2.4.7); solo :focus-visible, no al clic */
+.btn-base:focus-visible,
+.btn-icon:focus-visible,
+.modal-panel-close:focus-visible,
+.modal-close:focus-visible,
+.app-toolbar-button:focus-visible,
+.app-icon:focus-visible,
+.detail-button:focus-visible,
+.detail-action-button:focus-visible,
+.notification-close:focus-visible,
+.progressive-flow__step-marker:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.btn-icon--danger:focus-visible,
+.btn-danger-solid:focus-visible,
+.detail-button.delete:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-danger-outline-color);
   outline-offset: var(--focus-outline-offset);
 }
 
@@ -53,6 +88,8 @@
   }
 
   .btn-base:focus-visible,
+  .btn-icon:focus-visible,
+  .modal-panel-close:focus-visible,
   .form-input-base:focus-visible,
   .form-textarea-base:focus-visible,
   .form-select-base:focus-visible,

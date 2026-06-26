@@ -528,7 +528,8 @@ function MiDiario() {
 
             {(isEditMode || !selectedEntry) ? (
               <form onSubmit={handleSubmit} className="midiario-modal-form" noValidate>
-                <div className="form-group-base">
+                <div className="lifestyle-modal__scroll">
+                  <div className="form-group-base">
                   <label htmlFor="entry_date" className="midiario-form-label">
                     Fecha *
                   </label>
@@ -572,6 +573,7 @@ function MiDiario() {
                       {formErrors.content}
                     </span>
                   )}
+                </div>
                 </div>
 
                 <div className="modal-actions-base lifestyle-modal__footer">

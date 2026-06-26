@@ -42,6 +42,7 @@ function RutinaFormModalBody({
 }: RutinaFormModalBodyProps) {
   return (
     <form onSubmit={onSubmit} className="rutinas-modal-form" noValidate>
+      <div className="lifestyle-modal__scroll">
       {isEditing ? (
         <div className="rutinas-warning-message" role="note">
           <div className="rutinas-warning-icon" aria-hidden="true">
@@ -216,6 +217,7 @@ function RutinaFormModalBody({
       <p className="rutinas-form-help-text">
         La hora y duración son opcionales; te ayudan a organizar el día en Mi Día.
       </p>
+      </div>
 
       <div className="rutinas-modal-form-actions">
         <button

@@ -347,7 +347,7 @@ function UxReadiness() {
         </section>
 
         <section className="ui-readiness-section">
-          <h2 className="ui-readiness-section-title">Métricas transversales</h2>
+          <h2 className="app-subsection-title app-subsection-title--plain">Métricas transversales</h2>
           <div className="ux-readiness-metrics">
             {METRICS.map(m => (
               <div key={m.label} className={`ux-readiness-metric ux-readiness-metric-${m.status}`}>
@@ -359,7 +359,7 @@ function UxReadiness() {
         </section>
 
         <section className="ui-readiness-section">
-          <h2 className="ui-readiness-section-title">Secciones auditadas</h2>
+          <h2 className="app-subsection-title app-subsection-title--plain">Secciones auditadas</h2>
           <p className="ui-readiness-section-desc">
             Score UX por área de la app. Se audita sección por sección.
           </p>
@@ -390,7 +390,7 @@ function UxReadiness() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Finanzas — 5 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Finanzas — 5 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Hub + 16 sub-módulos. Auditoría: <code>ux-readiness/finanzas.md</code> (2026-06-22).{' '}
                 <Link to="/finanzas" className="ux-readiness-link">
@@ -416,14 +416,14 @@ function UxReadiness() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             {FINANZAS_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           {FINANZAS_OPEN.length === 0 ? (
             <p className="ui-readiness-section-desc">Sin hallazgos abiertos — sección referencia UX.</p>
           ) : (
@@ -441,7 +441,7 @@ function UxReadiness() {
             </ul>
           )}
 
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas</h3>
           <ul className="ux-readiness-bullet-list">
             {FINANZAS_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -452,7 +452,7 @@ function UxReadiness() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Utilidades — 5 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Utilidades — 5 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Hub + 8 sub-módulos. Auditoría: <code>ux-readiness/registros.md</code> (2026-06-22).{' '}
                 <Link to="/registros" className="ux-readiness-link">
@@ -478,14 +478,14 @@ function UxReadiness() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             {UTILIDADES_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           {UTILIDADES_OPEN.length === 0 ? (
             <p className="ui-readiness-section-desc">Sin hallazgos abiertos — sección referencia UX.</p>
           ) : (
@@ -503,7 +503,7 @@ function UxReadiness() {
             </ul>
           )}
 
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas</h3>
           <ul className="ux-readiness-bullet-list">
             {UTILIDADES_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -514,7 +514,7 @@ function UxReadiness() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Lifestyle — 5 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Lifestyle — 5 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Hub + 4 sub-módulos. Auditoría: <code>ux-readiness/tiempo.md</code> (2026-06-22).{' '}
                 <Link to="/tiempo" className="ux-readiness-link">
@@ -540,14 +540,14 @@ function UxReadiness() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             {LIFESTYLE_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           {LIFESTYLE_OPEN.length === 0 ? (
             <p className="ui-readiness-section-desc">Sin hallazgos abiertos — sección referencia UX.</p>
           ) : (
@@ -565,7 +565,7 @@ function UxReadiness() {
             </ul>
           )}
 
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas</h3>
           <ul className="ux-readiness-bullet-list">
             {LIFESTYLE_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -576,7 +576,7 @@ function UxReadiness() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Notificaciones — 5 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Notificaciones — 5 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Bandeja con filtros. Auditoría: <code>ux-readiness/notificaciones.md</code> (2026-06-22).{' '}
                 <Link to="/notificaciones" className="ux-readiness-link">
@@ -602,14 +602,14 @@ function UxReadiness() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             {NOTIFICACIONES_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           {NOTIFICACIONES_OPEN.length === 0 ? (
             <p className="ui-readiness-section-desc">Sin hallazgos abiertos.</p>
           ) : (
@@ -627,7 +627,7 @@ function UxReadiness() {
             </ul>
           )}
 
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas</h3>
           <ul className="ux-readiness-bullet-list">
             {NOTIFICACIONES_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -638,7 +638,7 @@ function UxReadiness() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Justicia — 4.8 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Justicia — 4.8 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Hub + Procesos judiciales. Auditoría: <code>ux-readiness/justicia.md</code> (2026-06-22).{' '}
                 <Link to="/justicia" className="ux-readiness-link">
@@ -664,14 +664,14 @@ function UxReadiness() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             {JUSTICIA_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           <ul className="ui-readiness-findings">
             {JUSTICIA_OPEN.map((f, i) => (
               <li key={i} className="ui-readiness-finding">
@@ -685,7 +685,7 @@ function UxReadiness() {
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas</h3>
           <ul className="ux-readiness-bullet-list">
             {JUSTICIA_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -696,7 +696,7 @@ function UxReadiness() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Trabajo — 5 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Trabajo — 5 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Hub + Contratos + Actividades. Auditoría: <code>ux-readiness/trabajo.md</code> (2026-06-22).{' '}
                 <Link to="/trabajo" className="ux-readiness-link">
@@ -722,14 +722,14 @@ function UxReadiness() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             {TRABAJO_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           {TRABAJO_OPEN.length === 0 ? (
             <p className="ui-readiness-section-desc">Sin hallazgos abiertos — P3–P5 completados.</p>
           ) : (
@@ -747,7 +747,7 @@ function UxReadiness() {
             </ul>
           )}
 
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas</h3>
           <ul className="ux-readiness-bullet-list">
             {TRABAJO_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -758,7 +758,7 @@ function UxReadiness() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Home — 4.8 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Home — 4.8 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Hub raíz / launcher. Auditoría: <code>ux-readiness/home.md</code> (2026-06-22).{' '}
                 <Link to="/" className="ux-readiness-link">
@@ -784,14 +784,14 @@ function UxReadiness() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             {HOME_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos (P3)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos (P3)</h3>
           {HOME_OPEN.length === 0 ? (
             <p className="ui-readiness-section-desc">Sin hallazgos abiertos — P3 completados.</p>
           ) : (
@@ -809,7 +809,7 @@ function UxReadiness() {
             </ul>
           )}
 
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas</h3>
           <ul className="ux-readiness-bullet-list">
             {HOME_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -820,7 +820,7 @@ function UxReadiness() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Login — 5 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Login — 5 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Referencia de formularios para el resto de la app. Auditoría:{' '}
                 <code>ux-readiness/login.md</code> (2026-06-22).{' '}
@@ -847,7 +847,7 @@ function UxReadiness() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             <li>Validación custom con aria-invalid, aria-describedby, role=&quot;alert&quot;</li>
             <li>Submit bloqueado con aria-busy + spinner durante login</li>
@@ -858,7 +858,7 @@ function UxReadiness() {
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos (P3)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos (P3)</h3>
           {LOGIN_OPEN.length === 0 ? (
             <p className="ui-readiness-section-desc">Sin hallazgos abiertos — P3 completados.</p>
           ) : (
@@ -876,7 +876,7 @@ function UxReadiness() {
             </ul>
           )}
 
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas</h3>
           <ul className="ux-readiness-bullet-list">
             {LOGIN_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -885,7 +885,7 @@ function UxReadiness() {
         </section>
 
         <section className="ui-readiness-section">
-          <h2 className="ui-readiness-section-title">Prioridades globales</h2>
+          <h2 className="app-subsection-title app-subsection-title--plain">Prioridades globales</h2>
           <ul className="ui-readiness-findings">
             {FINDINGS.map((f, i) => (
               <li key={i} className="ui-readiness-finding">
@@ -901,7 +901,7 @@ function UxReadiness() {
         </section>
 
         <section className="ui-readiness-section">
-          <h2 className="ui-readiness-section-title">Patrones de referencia</h2>
+          <h2 className="app-subsection-title app-subsection-title--plain">Patrones de referencia</h2>
           <p className="ui-readiness-section-desc">
             Archivos a copiar al refactorizar formularios y feedback en otras pantallas.
           </p>

@@ -269,7 +269,7 @@ function Valores() {
           }
         />
 
-        <section className="valores-hero" aria-label="Resumen de valores y creencias">
+        <section className="valores-hero app-row-between" aria-label="Resumen de valores y creencias">
           <div className="valores-hero__copy">
             <SpaIcon className="valores-hero__icon" aria-hidden="true" />
             <div>
@@ -386,7 +386,7 @@ function Valores() {
             ) : null}
           </div>
         ) : (
-          <div className="valores-grid">
+          <div className="app-grid-cards valores-grid">
             {visibleEntries.map(entry => (
               <ValorEntryCard
                 key={entry.id}
@@ -403,20 +403,21 @@ function Valores() {
         <ModalOverlay onClose={closeFormModal}>
           <div className="valores-modal" onClick={event => event.stopPropagation()}>
             <div className="valores-modal-header">
-              <h2 className="valores-modal-title">
+              <h2 className="modal-panel-title">
                 {editingEntryId
                   ? `Editar ${getPersonalValueKindLabel(formData.kind).toLowerCase()}`
                   : formData.kind === 'belief'
                     ? 'Nueva creencia'
                     : 'Nuevo valor'}
               </h2>
-              <button type="button" className="valores-icon-button" onClick={closeFormModal} aria-label="Cerrar">
-                <CloseIcon />
+              <button type="button" className="modal-panel-close" onClick={closeFormModal} aria-label="Cerrar">
+                <CloseIcon aria-hidden="true" />
               </button>
             </div>
 
             <form className="valores-form" onSubmit={event => void handleSubmit(event)}>
-              <fieldset className="valores-kind-picker">
+              <div className="modal-panel__scroll valores-modal__body">
+              <fieldset className="app-grid-2 valores-kind-picker">
                 <legend>Tipo</legend>
                 <label className={`valores-kind-option${formData.kind === 'value' ? ' valores-kind-option--active' : ''}`}>
                   <input
@@ -468,18 +469,21 @@ function Valores() {
                   rows={4}
                 />
               </label>
+              </div>
 
-              <div className="valores-form-actions">
-                <button type="button" className="btn-base btn-secondary" onClick={closeFormModal}>
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className={`btn-base btn-accent btn-submit ${formData.kind === 'belief' ? 'btn-accent--purple' : 'btn-accent--blue'}`}
-                  disabled={isSaving}
-                >
-                  {isSaving ? 'Guardando…' : editingEntryId ? 'Guardar cambios' : 'Crear'}
-                </button>
+              <div className="modal-actions-base app-action-bar">
+                <div className="app-action-bar__cluster">
+                  <button type="button" className="btn-base btn-secondary" onClick={closeFormModal}>
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className={`btn-base btn-accent btn-submit ${formData.kind === 'belief' ? 'btn-accent--purple' : 'btn-accent--blue'}`}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? 'Guardando…' : editingEntryId ? 'Guardar cambios' : 'Crear'}
+                  </button>
+                </div>
               </div>
             </form>
           </div>
@@ -493,12 +497,13 @@ function Valores() {
             onClick={event => event.stopPropagation()}
           >
             <div className="valores-detail-header">
-              <span className="valores-detail-kind">{getPersonalValueKindLabel(selectedEntry.kind)}</span>
-              <button type="button" className="valores-icon-button" onClick={closeDetailModal} aria-label="Cerrar">
-                <CloseIcon />
+              <span className="app-group-label valores-detail-kind">{getPersonalValueKindLabel(selectedEntry.kind)}</span>
+              <button type="button" className="modal-panel-close" onClick={closeDetailModal} aria-label="Cerrar">
+                <CloseIcon aria-hidden="true" />
               </button>
             </div>
-            <h2 className="valores-detail-title">{selectedEntry.title}</h2>
+            <div className="valores-detail__body">
+            <h2 className="app-section-title valores-detail-title">{selectedEntry.title}</h2>
             {selectedEntry.description ? (
               <p className="valores-detail-description">
                 {selectedEntry.kind === 'belief' ? `“${selectedEntry.description}”` : selectedEntry.description}
@@ -506,13 +511,16 @@ function Valores() {
             ) : (
               <p className="valores-detail-placeholder">Sin descripción</p>
             )}
-            <div className="valores-detail-actions">
-              <button type="button" className="btn-base btn-secondary" onClick={() => openEditModal(selectedEntry)}>
-                Editar
-              </button>
+            </div>
+            <div className="modal-actions-base app-action-bar app-action-bar--stack-mobile">
+              <div className="app-action-bar__cluster">
+                <button type="button" className="btn-base btn-secondary" onClick={() => openEditModal(selectedEntry)}>
+                  Editar
+                </button>
+              </div>
               <button
                 type="button"
-                className="btn-base btn-soft-danger"
+                className="btn-base btn-soft-danger app-action-bar__destructive"
                 onClick={() => void handleDelete(selectedEntry)}
               >
                 <DeleteIcon fontSize="small" aria-hidden="true" />

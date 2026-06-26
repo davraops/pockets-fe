@@ -1228,7 +1228,7 @@ function TarjetasCredito() {
                 </ul>
               </div>
             </div>
-            <form className="modal-form" onSubmit={handleSubmit}>
+            <form className="modal-form" onSubmit={handleSubmit}><div className="modal-panel__scroll">
               <div className="form-group-base">
                 <label htmlFor="nombre" className="form-label-base">Nombre</label>
                 <input
@@ -1366,12 +1366,12 @@ function TarjetasCredito() {
                 {formErrors.beneficios && (
                   <span className="error-message">{formErrors.beneficios}</span>
                 )}
-              </div>
-              <div className="modal-actions">
-                <button type="button" className="modal-button cancel" onClick={handleCloseModal}>
+              </div></div>
+              <div className="modal-actions-base">
+                <button type="button" className="btn-base btn-secondary" onClick={handleCloseModal}>
                   Cancelar
                 </button>
-                <button type="submit" className="modal-button submit">
+                <button type="submit" className="btn-base btn-accent btn-submit">
                   Agregar
                 </button>
               </div>
@@ -1513,7 +1513,7 @@ function TarjetasCredito() {
                 </div>
               </>
             ) : (
-              <form className="modal-form" onSubmit={handleSubmit}>
+              <form className="modal-form" onSubmit={handleSubmit}><div className="modal-panel__scroll">
                 <div className="form-group-base">
                   <label htmlFor="edit-nombre" className="form-label-base">Nombre</label>
                   <input
@@ -1654,16 +1654,16 @@ function TarjetasCredito() {
                   {formErrors.beneficios && (
                     <span className="error-message">{formErrors.beneficios}</span>
                   )}
-                </div>
-                <div className="modal-actions">
+                </div></div>
+                <div className="modal-actions-base">
                   <button
                     type="button"
-                    className="modal-button cancel"
+                    className="btn-base btn-secondary"
                     onClick={() => setIsEditMode(false)}
                   >
                     Cancelar
                   </button>
-                  <button type="submit" className="modal-button submit">
+                  <button type="submit" className="btn-base btn-accent btn-submit">
                     Guardar Cambios
                   </button>
                 </div>
@@ -1726,10 +1726,10 @@ function TarjetasCredito() {
                 </button>
               </div>
             </div>
-            <div className="modal-actions">
+            <div className="modal-actions-base">
               <button
                 type="button"
-                className="modal-button cancel"
+                className="btn-base btn-secondary"
                 onClick={() => setIsDebugModalOpen(false)}
               >
                 Cerrar
@@ -1768,10 +1768,10 @@ function TarjetasCredito() {
                 </ul>
               )}
             </div>
-            <div className="modal-actions">
+            <div className="modal-actions-base">
               <button
                 type="button"
-                className="modal-button cancel"
+                className="btn-base btn-secondary"
                 onClick={() => setIsBenefitsModalOpen(false)}
               >
                 Cerrar

@@ -774,8 +774,8 @@ function Fechas() {
                 <p className="empty-subtext">Prueba con otro término o limpia la búsqueda</p>
               </div>
             ) : hasSearch ? (
-              <section className="fechas-section" aria-label="Resultados de búsqueda">
-                <h2 className="fechas-section-title">Resultados</h2>
+              <section className="fechas-section app-content-section" aria-label="Resultados de búsqueda">
+                <h2 className="app-group-label">Resultados</h2>
                 <div className="fechas-event-grid">
                   {searchResultEvents.map(event => renderEventCard(event))}
                 </div>
@@ -790,10 +790,10 @@ function Fechas() {
               periodGroups.map(group => (
                 <section
                   key={group.id}
-                  className="fechas-section"
+                  className="fechas-section app-content-section"
                   aria-label={group.label}
                 >
-                  <h2 className="fechas-section-title">{group.label}</h2>
+                  <h2 className="app-group-label">{group.label}</h2>
                   <div
                     className={`fechas-event-grid${group.id === 'past' ? ' fechas-event-grid--past' : ''}`}
                   >
@@ -832,14 +832,16 @@ function Fechas() {
               </div>
 
               <form onSubmit={handleSubmit} className="fechas-modal-form" noValidate>
-                <FechasEventFormFields
-                  formData={formData}
-                  formErrors={formErrors}
-                  tituloRef={tituloRef}
-                  fechaRef={fechaRef}
-                  onChange={handleChange}
-                  onRecurrencePreset={handleRecurrencePreset}
-                />
+                <div className="lifestyle-modal__scroll">
+                  <FechasEventFormFields
+                    formData={formData}
+                    formErrors={formErrors}
+                    tituloRef={tituloRef}
+                    fechaRef={fechaRef}
+                    onChange={handleChange}
+                    onRecurrencePreset={handleRecurrencePreset}
+                  />
+                </div>
 
                 <div className="modal-actions-base lifestyle-modal__footer">
                   <button
@@ -893,16 +895,18 @@ function Fechas() {
 
               {isEditMode ? (
                 <form onSubmit={handleSubmit} className="fechas-modal-form" noValidate>
-                  <FechasEventFormFields
-                    formData={formData}
-                    formErrors={formErrors}
-                    tituloRef={tituloRef}
-                    fechaRef={fechaRef}
-                    onChange={handleChange}
-                    onRecurrencePreset={handleRecurrencePreset}
-                    tituloErrorId="edit-titulo-error"
-                    fechaErrorId="edit-fecha-error"
-                  />
+                  <div className="lifestyle-modal__scroll">
+                    <FechasEventFormFields
+                      formData={formData}
+                      formErrors={formErrors}
+                      tituloRef={tituloRef}
+                      fechaRef={fechaRef}
+                      onChange={handleChange}
+                      onRecurrencePreset={handleRecurrencePreset}
+                      tituloErrorId="edit-titulo-error"
+                      fechaErrorId="edit-fecha-error"
+                    />
+                  </div>
 
                   <div className="modal-actions-base lifestyle-modal__footer">
                     <button

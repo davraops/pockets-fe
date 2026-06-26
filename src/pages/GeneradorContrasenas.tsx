@@ -200,7 +200,7 @@ function GeneradorContrasenas() {
 
             <section className="generador-section" aria-labelledby="generador-length-heading">
               <div className="generador-section-head">
-                <h3 id="generador-length-heading" className="generador-section-title">
+                <h3 id="generador-length-heading" className="app-panel-heading">
                   Longitud
                 </h3>
                 <span className="generador-length-value">{options.length}</span>
@@ -224,7 +224,7 @@ function GeneradorContrasenas() {
             </section>
 
             <section className="generador-section" aria-labelledby="generador-charset-heading">
-              <h3 id="generador-charset-heading" className="generador-section-title">
+              <h3 id="generador-charset-heading" className="app-panel-heading">
                 Caracteres
               </h3>
               <div className="generador-chips" role="group" aria-label="Tipos de carácter">

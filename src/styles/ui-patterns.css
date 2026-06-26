@@ -25,6 +25,563 @@
   }
 }
 
+/* ─── Principio 1: Jerarquía ───
+   Metáfora: pantalla = libro → título de pantalla → capítulos → secciones → detalle.
+   Tres palancas (priorizar lo que el usuario ve primero vs lo que scrollea):
+
+   1. Tipografía — tamaño + peso (.app-page-title … .app-caption)
+   2. Contraste   — primary → secondary → tertiary (--text-*)
+   3. Espaciado   — proximidad = relación (.app-page-header, .app-content-sections) → Principio 6
+
+   Niveles tipográficos:
+   L1  .app-page-title              — pantalla (h1)
+   L2  .app-page-subtitle           — intro bajo el título
+   L3  .app-section-title           — bloques principales de contenido (h2)
+   L4  .app-subsection-title        — sub-bloques / secciones de formulario (h3)
+   L4b .app-subsection-title--plain — sub-bloque sin divisor (detalle, auditorías)
+   L4c .app-form-block-title       — bloque compacto en formularios modales
+   L4d .app-field-group-label      — etiqueta overline en paneles de detalle
+   L4e .app-panel-heading           — encabezado compacto en paneles (sm)
+   L5  .app-group-label             — agrupadores de lista, periodos, filtros
+   L6  .modal-title / .modal-panel-title — encabezado de modal
+   L7  .crud-form-section-title     — grupos compactos dentro de formularios
+   L8  .crud-row-title              — títulos de fila / tarjeta en listas
+   L9  .form-label-base             — etiquetas de campo
+   L10 .app-caption                 — meta, hints, texto terciario
+*/
+
+/* Espaciado — capítulo y sección */
+.app-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  width: 100%;
+}
+
+.app-page-header .app-page-title {
+  margin-bottom: 0;
+}
+
+.app-content-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+  width: 100%;
+}
+
+.app-content-sections > * {
+  margin-bottom: 0;
+}
+
+.app-section-lead {
+  margin: calc(-1 * var(--spacing-xs)) 0 var(--spacing-lg);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.5;
+  color: var(--text-secondary);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.app-page-subtitle {
+  margin: 0 0 var(--spacing-lg) 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.45;
+  color: var(--text-secondary);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.app-page-header .app-page-subtitle {
+  margin-bottom: var(--spacing-md);
+}
+
+.app-section-title {
+  margin: 0 0 var(--spacing-md) 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.3;
+  color: var(--text-primary);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.app-subsection-title {
+  margin: 0 0 var(--spacing-md) 0;
+  padding-bottom: var(--spacing-xs);
+  border-bottom: 1px solid var(--border-glass-light);
+  font-family: var(--font-family);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.35;
+  color: var(--text-primary);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.app-subsection-title--plain {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.app-form-block-title {
+  margin: 0 0 var(--spacing-md) 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.35;
+  color: var(--text-primary);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.app-field-group-label {
+  margin: 0 0 var(--spacing-sm);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.app-panel-heading {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.35;
+  color: var(--text-primary);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.app-group-label {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.app-content-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+.app-caption {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.45;
+  color: var(--text-tertiary);
+}
+
+/* ─── Principio 2: Divulgación progresiva ───
+   Secuenciar flujos largos en pasos; orientar (dónde estoy / cuántos faltan).
+   Patrones:
+   - ProgressiveFlow + ProgressiveFlowNav — formularios multi-paso en modales
+   - advice-banner / CollapsibleAdviceBanner — contenido editorial colapsable
+   - .progressive-reveal — campos condicionales (checkbox → bloque relacionado)
+   - Tarjetas expandibles — detalle bajo demanda en listas
+*/
+
+.progressive-flow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  width: 100%;
+}
+
+.progressive-flow__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--border-glass-light);
+}
+
+.progressive-flow__counter {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.progressive-flow__progress {
+  width: 100%;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--text-tertiary) 16%, var(--bg-glass-light));
+  overflow: hidden;
+}
+
+.progressive-flow__progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent-primary);
+  transition: width var(--transition-base);
+}
+
+.progressive-flow__step-title {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.3;
+  color: var(--text-primary);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.progressive-flow__step-desc {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.progressive-flow__step-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin: var(--spacing-xs) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.progressive-flow__step-marker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-glass);
+  background: var(--bg-glass-light);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.progressive-flow__step-marker--current {
+  border-color: color-mix(in srgb, var(--accent-primary) 45%, var(--border-glass));
+  background: color-mix(in srgb, var(--accent-primary) 10%, var(--bg-glass-light));
+  color: var(--text-primary);
+}
+
+.progressive-flow__step-marker--done {
+  color: var(--text-secondary);
+}
+
+.progressive-flow__step-marker-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.1rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+.progressive-flow__step-marker-label {
+  font-weight: var(--font-weight-medium);
+}
+
+.progressive-flow__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  width: 100%;
+  min-width: 0;
+}
+
+.progressive-flow__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.progressive-flow__nav.modal-actions-base {
+  justify-content: space-between;
+}
+
+.progressive-flow__nav-primary {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.progressive-flow__nav-spacer {
+  flex: 1;
+  min-width: 0;
+}
+
+.progressive-reveal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  animation: progressive-reveal-in var(--transition-base) ease-out;
+}
+
+@keyframes progressive-reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .progressive-flow__step-marker-label {
+    display: none;
+  }
+
+  .progressive-flow__step-marker--current .progressive-flow__step-marker-label {
+    display: inline;
+  }
+
+  .progressive-flow__nav,
+  .progressive-flow__nav-primary {
+    width: 100%;
+  }
+
+  .progressive-flow__nav-primary .btn-base {
+    flex: 1 1 auto;
+  }
+}
+
+/* ─── Principio 3: Consistencia ───
+   Mismos patrones → misma apariencia y comportamiento en todo el producto.
+   Desviarse solo con justificación explícita.
+
+   Acciones primarias     → .btn-base .btn-accent .btn-submit
+   Acciones secundarias   → .btn-base .btn-secondary
+   Pie de modal           → .modal-actions-base + .btn-base
+   Toolbar circular       → .app-toolbar-button + .app-toolbar-icon
+   Cierre de modal panel  → .modal-panel-close
+   Icono compacto en fila → .btn-icon [.btn-icon--danger]
+   Formularios largos     → .form-input-base, .form-label-base
+*/
+
+/* ─── Principio 4: Contraste ───
+   Contraste estratégico: lo crítico destaca; lo secundario se retira.
+   Desviarse del nivel asignado solo con justificación.
+
+   Texto
+   Alto      → .text-primary / --text-primary        (contenido principal)
+   Medio     → .text-secondary / --text-secondary    (soporte, labels)
+   Bajo      → .text-tertiary / .app-caption         (meta, hints)
+
+   Acciones (par con Principio 3)
+   Crítico   → .btn-danger-solid                     (eliminar irreversible)
+   Alto      → .btn-accent .btn-submit                (confirmar, guardar)
+   Medio     → .btn-danger | .btn-soft-danger        (peligro en contexto)
+   Bajo      → .btn-secondary                        (cancelar, mantener)
+   Icono     → .btn-icon--danger                     (eliminar en fila)
+
+   Superficies
+   Crítico   → .semantic-alert-danger, .app-callout-danger
+   Advertencia → .semantic-alert-warning, .form-alert-banner
+   Éxito     → .semantic-surface-success
+*/
+
+/* ─── Principio 5: Accesibilidad (WCAG) ───
+   Diseños inclusivos para usuarios con discapacidades visuales y motoras.
+
+   Texto alternativo     → alt en <img>; aria-label en botones solo-icono; aria-hidden en iconos decorativos
+   Touch targets         → min 44×44px (--touch-target-min) en controles táctiles
+   Tecnologías asistencia → role="dialog" + aria-modal (ModalOverlay); aria-live en toasts
+   Teclado               → skip-link (#main-content); focus trap en modales; :focus-visible
+   Contraste             → --text-* + prefers-contrast: more en accessibility.css
+
+   Patrones canónicos
+   Saltar contenido      → .skip-link (App.tsx → #main-content)
+   Solo lectores         → .sr-only
+   Modal accesible       → ModalOverlay + useModalAccessibility
+   Campo etiquetado      → form-label-base + htmlFor / aria-describedby
+   Icono decorativo      → aria-hidden="true" en SVG/MUI icons dentro de botones con aria-label
+*/
+
+/* ─── Principio 6: Proximidad ───
+   Lo relacionado va junto; lo que interrumpe el flujo, separado.
+   Escala de cercanía (gap / margin):
+
+   Ajustado   → --spacing-xs / sm   (.app-control-group)     campos relacionados, iconos en fila
+   Grupo      → --spacing-md        (.app-action-bar__cluster) acciones del mismo flujo
+   Capítulo   → --spacing-xl        (.app-content-sections)    bloques no relacionados
+   Zona       → border-top + pad    (.modal-actions-base)      pie de modal vs cuerpo
+
+   Patrones canónicos
+   Controles relacionados   → .app-control-group
+   Pie formulario/modal     → .modal-actions-base (+ cluster cancel+guardar)
+   Salir vs avanzar         → .app-action-bar__exit | .progressive-flow__nav (cancel ‖ back+next)
+   Destructivo separado     → .detail-button.delete { margin-left: auto } | .app-action-bar__destructive
+   Campos hermanos          → .form-group-base, .crud-form-row
+   Bloques de página        → .app-content-section > .app-content-section
+*/
+
+.app-control-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.app-control-group--comfortable {
+  gap: var(--spacing-sm);
+}
+
+.app-action-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.app-action-bar__cluster {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.app-action-bar__exit,
+.app-action-bar__destructive {
+  margin-left: auto;
+}
+
+@media (max-width: 768px) {
+  .app-action-bar--stack-mobile {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .app-action-bar--stack-mobile .app-action-bar__exit,
+  .app-action-bar--stack-mobile .app-action-bar__destructive {
+    margin-left: 0;
+  }
+}
+
+/* ─── Principio 7: Alineación ───
+   Cuadrícula y ejes consistentes → lectura predecible y aspecto profesional.
+
+   Shell de página     → .app-page-content-wide (max-width centrado)
+   Columna vertical    → .app-stack / .crud-page-content / .app-content-sections
+   Formulario 2 cols   → .app-grid-2 (.crud-form-row)
+   Tarjetas responsivas → .app-grid-cards
+   Auto-fill compacto  → .app-grid-auto
+   Fila toolbar        → .app-toolbar / .app-row-between
+   Label | valor       → .detail-row + .detail-label + .detail-value
+   Lista iOS           → .glass-group
+
+   Texto: títulos y cuerpo alineados a inicio (izquierda en LTR); montos y metadatos a .detail-value { text-align: right }.
+*/
+
+.app-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+}
+
+.app-stack--center {
+  align-items: center;
+  text-align: center;
+}
+
+.app-grid-2,
+.crud-form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-md);
+  align-items: start;
+  width: 100%;
+}
+
+.app-grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--layout-grid-card-min, 16.25rem)), 1fr));
+  gap: var(--spacing-sm);
+  align-items: stretch;
+  width: 100%;
+}
+
+.app-grid-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--layout-grid-auto-min, 9.375rem)), 1fr));
+  gap: var(--spacing-md);
+  align-items: stretch;
+  width: 100%;
+}
+
+.app-row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.app-row-start {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.app-detail-fields {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .app-grid-2,
+  .crud-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .app-grid-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-page-subtitle {
+    margin-bottom: var(--spacing-lg);
+    font-size: var(--font-size-sm);
+  }
+
+  .app-section-title,
+  .modal-title,
+  .modal-panel-title {
+    font-size: var(--font-size-lg);
+  }
+
+  .app-subsection-title {
+    margin-bottom: var(--spacing-sm);
+    font-size: var(--font-size-base);
+  }
+}
+
 /* ─── Empty state icon ─── */
 .empty-state-icon,
 .empty-icon {
@@ -275,8 +832,13 @@
   border-color: var(--accent-primary);
 }
 
+.debug-option-button.delete-all {
+  border-color: var(--color-danger-border-soft);
+}
+
 .debug-option-button.delete-all:hover:not(:disabled) {
-  border-color: #FF3B30;
+  border-color: var(--color-danger-solid);
+  background: var(--color-danger-bg-soft);
 }
 
 .debug-option-info {
@@ -429,10 +991,10 @@
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   z-index: 2000;
-  padding: 2rem;
+  padding: var(--modal-overlay-gap-top) var(--modal-overlay-gap-x) var(--modal-overlay-gap-bottom);
   overflow-y: auto;
   overscroll-behavior: contain;
   animation: ui-fade-in 0.2s ease;
@@ -441,7 +1003,6 @@
 .modal-overlay > .modal-panel,
 .modal-overlay > .modal-content,
 .modal-overlay > .crud-form-panel-shell {
-  margin: auto;
   flex-shrink: 0;
 }
 
@@ -469,7 +1030,7 @@
     0 0 0 1px rgba(10, 132, 255, 0.1);
   width: 100%;
   max-width: 500px;
-  max-height: min(90vh, calc(100dvh - 4rem));
+  max-height: var(--modal-max-height);
   overflow-y: auto;
   animation: ui-slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -565,67 +1126,27 @@
 }
 
 
-.modal-form {
-  padding: var(--spacing-xl);
+.modal-form:not(:has(> .modal-panel__scroll)) {
+  padding: var(--modal-inset-y) var(--modal-inset-x);
 }
 
+.modal-form:has(> .modal-panel__scroll) {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+/* @deprecated — use .modal-actions-base (shared.css) */
 .modal-actions {
   display: flex;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding-top: 1.5rem;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg) var(--spacing-xl);
   border-top: 1px solid var(--border-glass);
+  flex-shrink: 0;
 }
-
-.modal-button {
-  flex: 1;
-  padding: 0.875rem 1.5rem;
-  border-radius: 12px;
-  border: none;
-  font-size: var(--font-size-base);
-  font-weight: 500;
-  font-family: var(--font-family);
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  letter-spacing: -0.01em;
-}
-
-.modal-button.cancel {
-  background: var(--btn-secondary-bg);
-  color: var(--text-primary);
-}
-
-.modal-button.cancel:hover {
-  background: var(--btn-secondary-bg-hover);
-}
-
-.modal-button.submit {
-  background: var(--btn-success-gradient);
-  color: var(--text-primary);
-  border: 1px solid var(--btn-success-border);
-  box-shadow: var(--btn-success-shadow);
-}
-
-.modal-button.submit:hover {
-  background: var(--btn-success-gradient-hover);
-  border-color: rgba(52, 199, 89, 0.8);
-  box-shadow: var(--btn-success-shadow-hover);
-}
-
-.modal-button:active {
-  transform: translateY(0);
-}
-
-.modal-button.delete-confirm {
-  background: var(--color-danger, var(--color-danger-solid));
-  color: #fff;
-  border: 1px solid transparent;
-}
-
-.modal-button.delete-confirm:hover {
-  background: var(--color-danger-hover, #e0352b);
-}
-
 
 .confirm-dialog-body {
   padding: var(--spacing-md) var(--spacing-lg) var(--spacing-lg);
@@ -643,7 +1164,7 @@
     max-width: 100%;
     margin: 0;
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-    max-height: min(92dvh, calc(100dvh - var(--safe-top)));
+    max-height: var(--modal-max-height);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -655,22 +1176,54 @@
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   }
 
-  .modal-form {
+  .modal-form:has(> .modal-panel__scroll) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .modal-form > .modal-panel__scroll {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: var(--spacing-lg) var(--spacing-md);
-    scroll-padding-bottom: 5rem;
+    scroll-padding-bottom: var(--spacing-lg);
+  }
+
+  .modal-panel__scroll,
+  .lifestyle-modal__scroll,
+  .modal-form > .modal-panel__scroll,
+  .modal-panel > form > .modal-panel__scroll,
+  .modal-panel-content > form > .modal-panel__scroll,
+  .modal-panel > form > .modal-panel-content {
+    padding: var(--spacing-md) var(--spacing-lg);
+    scroll-padding-bottom: var(--spacing-lg);
+  }
+
+  .modal-panel > form > .modal-actions-base,
+  .modal-panel > form > [class*='-modal__footer'],
+  .modal-panel > form > [class*='-form-actions'],
+  .modal-panel > form > [class*='-modal__actions'],
+  .modal-panel > form > .crud-form-panel-actions,
+  .modal-panel-content > form > .modal-actions-base,
+  .modal-panel-content > form > [class*='-modal__footer'],
+  .modal-panel-content > form > [class*='-form-actions'],
+  .modal-panel-content > form > .crud-form-panel-actions {
+    padding-bottom: calc(var(--spacing-md) + var(--safe-bottom));
+    background: color-mix(in srgb, var(--bg-glass) 94%, transparent);
+    backdrop-filter: var(--backdrop-blur-light);
+    -webkit-backdrop-filter: var(--backdrop-blur-light);
   }
 
   .modal-actions,
+  .modal-actions-base,
   .detail-actions {
     flex-shrink: 0;
-    position: sticky;
-    bottom: 0;
-    z-index: 1;
-    margin-top: auto;
+    position: static;
+    margin-top: 0;
     padding: var(--spacing-md) var(--spacing-lg);
     padding-bottom: calc(var(--spacing-md) + var(--safe-bottom));
     background: var(--bg-glass-lighter);
@@ -678,9 +1231,11 @@
     -webkit-backdrop-filter: var(--backdrop-blur-light);
     flex-direction: column;
     gap: var(--spacing-sm);
+    border-top: 1px solid var(--border-glass-light);
   }
 
-  .modal-actions .modal-button,
+  .modal-actions .btn-base,
+  .modal-actions-base .btn-base,
   .detail-actions .detail-button {
     width: 100%;
     min-height: var(--touch-target-min);
@@ -704,7 +1259,7 @@
   box-shadow: var(--shadow-xl);
   width: 100%;
   max-width: 600px;
-  max-height: min(90vh, calc(100dvh - 4rem));
+  max-height: var(--modal-max-height);
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -725,7 +1280,7 @@
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
-  padding: var(--spacing-lg);
+  padding: var(--modal-inset-y) var(--modal-inset-x);
   border-bottom: 1px solid var(--border-glass-light);
   background: var(--bg-glass-lighter);
 }
@@ -743,10 +1298,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  min-height: 36px;
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
   background: transparent;
   border: none;
   border-radius: var(--radius-sm);
@@ -763,10 +1318,89 @@
 }
 
 .modal-panel-content {
-  padding: var(--spacing-lg);
+  padding: var(--modal-inset-y) var(--modal-inset-x);
   overflow-y: auto;
   flex: 1;
   min-height: 0;
+}
+
+/* ─── Modal scroll ownership (fields scroll, actions stay visible) ─── */
+.modal-panel__scroll,
+.lifestyle-modal__scroll,
+.modal-form > .modal-panel__scroll,
+.modal-panel > form > .modal-panel__scroll,
+.modal-panel-content > form > .modal-panel__scroll {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--modal-inset-y) var(--modal-inset-x);
+  scroll-padding-bottom: var(--spacing-lg);
+}
+
+.modal-panel > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.modal-panel > form > .modal-panel-content,
+.modal-panel > form > .modal-panel__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modal-panel-content:has(> form) {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+.modal-panel-content > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.modal-panel > .modal-actions-base,
+.modal-panel > [class*='-modal__footer']:not(.modal-panel-content [class*='-modal__footer']),
+.modal-panel > form > .modal-actions-base,
+.modal-panel > form > [class*='-modal__footer'],
+.modal-panel > form > [class*='-form-actions'],
+.modal-panel > form > [class*='-modal__actions'],
+.modal-panel > form > .crud-form-panel-actions,
+.modal-panel-content > form > .modal-actions-base,
+.modal-panel-content > form > [class*='-modal__footer'],
+.modal-panel-content > form > [class*='-form-actions'],
+.modal-panel-content > form > .crud-form-panel-actions {
+  flex-shrink: 0;
+}
+
+.modal-panel > form > .modal-actions-base,
+.modal-panel > form > [class*='-modal__footer'],
+.modal-panel > form > [class*='-form-actions'],
+.modal-panel > form > [class*='-modal__actions'],
+.modal-panel > form > .crud-form-panel-actions,
+.modal-panel-content > form > .modal-actions-base,
+.modal-panel-content > form > [class*='-modal__footer'],
+.modal-panel-content > form > [class*='-form-actions'],
+.modal-panel-content > form > .crud-form-panel-actions {
+  border-top: 1px solid var(--border-glass-light);
+  padding: var(--spacing-md) var(--modal-inset-x);
 }
 
 .modal-panel-loading,
@@ -961,11 +1595,17 @@
 }
 
 @media (max-width: 768px){
+  :root {
+    --modal-overlay-gap-top: calc(var(--safe-top) + var(--spacing-md));
+    --modal-overlay-gap-bottom: 0px;
+    --modal-available-height: calc(100dvh - var(--modal-overlay-gap-top) - var(--spacing-md));
+    --modal-max-height: min(92dvh, var(--modal-available-height));
+  }
+
   .modal-overlay {
     align-items: flex-end;
     justify-content: stretch;
-    padding: 0;
-    padding-top: var(--safe-top);
+    padding: var(--modal-overlay-gap-top) 0 0;
     overflow: hidden;
   }
 
@@ -978,19 +1618,19 @@
     width: 100%;
     max-width: 100%;
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-    max-height: min(92dvh, calc(100dvh - var(--safe-top)));
+    max-height: var(--modal-max-height);
     animation: ui-sheet-up 0.32s cubic-bezier(0.32, 0.72, 0, 1);
   }
 
   .modal-panel {
     max-width: 100%;
-    max-height: min(92dvh, calc(100dvh - var(--safe-top)));
+    max-height: var(--modal-max-height);
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   }
 
   .modal-panel--fullscreen,
   .modal-panel-lg.modal-panel--fullscreen {
-    max-height: calc(100dvh - var(--safe-top));
+    max-height: calc(100dvh - var(--modal-overlay-gap-top));
     border-radius: 0;
   }
 

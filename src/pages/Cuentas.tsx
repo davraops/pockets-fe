@@ -881,6 +881,7 @@ function Cuentas() {
               </button>
             </div>
             <form className="modal-form" onSubmit={handleSubmit}>
+              <div className="modal-panel__scroll">
               <div className="form-group-base">
                 <label htmlFor="nombre" className="form-label-base">Nombre</label>
                 <input
@@ -942,11 +943,12 @@ function Cuentas() {
                   placeholder="0.00"
                 />
               </div>
-              <div className="modal-actions">
-                <button type="button" className="modal-button cancel" onClick={handleCloseModal}>
+              </div>
+              <div className="modal-actions-base">
+                <button type="button" className="btn-base btn-secondary" onClick={handleCloseModal}>
                   Cancelar
                 </button>
-                <button type="submit" className="modal-button submit">
+                <button type="submit" className="btn-base btn-accent btn-submit">
                   Agregar
                 </button>
               </div>
@@ -1024,6 +1026,7 @@ function Cuentas() {
               </>
             ) : (
               <form className="modal-form" onSubmit={handleSubmit}>
+                <div className="modal-panel__scroll">
                 <div className="form-group-base">
                   <label htmlFor="edit-nombre" className="form-label-base">Nombre</label>
                   <input
@@ -1091,15 +1094,16 @@ function Cuentas() {
                   </div>
                   <p className="form-hint">El balance no se puede modificar</p>
                 </div>
-                <div className="modal-actions">
+                </div>
+                <div className="modal-actions-base">
                   <button
                     type="button"
-                    className="modal-button cancel"
+                    className="btn-base btn-secondary"
                     onClick={() => setIsEditMode(false)}
                   >
                     Cancelar
                   </button>
-                  <button type="submit" className="modal-button submit">
+                  <button type="submit" className="btn-base btn-accent btn-submit">
                     Guardar Cambios
                   </button>
                 </div>
@@ -1149,10 +1153,10 @@ function Cuentas() {
                 </button>
               </div>
             </div>
-            <div className="modal-actions">
+            <div className="modal-actions-base">
               <button
                 type="button"
-                className="modal-button cancel"
+                className="btn-base btn-secondary"
                 onClick={() => setIsDebugModalOpen(false)}
               >
                 Cerrar

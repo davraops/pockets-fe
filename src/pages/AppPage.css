@@ -95,27 +95,7 @@
   max-width: 22rem;
 }
 
-/* App Page Subtitle - HIG: Typography */
-.app-page-subtitle {
-  font-size: var(--font-size-base);
-  color: var(--text-secondary);
-  margin: 0;
-  line-height: 1.6;
-  font-family: var(--font-family);
-}
-
-/* Page Title - uses ui-patterns .app-page-title */
-
-/* Page Subtitle - Unified style */
-.app-page-subtitle {
-  font-size: var(--font-size-base);
-  color: var(--text-secondary);
-  margin: 0;
-  margin-bottom: var(--spacing-lg);
-  letter-spacing: var(--letter-spacing-tight);
-  font-family: var(--font-family);
-  line-height: 1.5;
-}
+/* App Page Subtitle - HIG: Typography — definido en ui-patterns.css */
 
 /* Content Container - Wide layout for CRUD / data-heavy pages */
 .app-page-content-wide,
@@ -146,10 +126,6 @@
     padding: 2rem 1.5rem;
     border-radius: 24px;
   }
-
-  .app-page-subtitle {
-    font-size: var(--font-size-sm);
-  }
 }@media (max-width: 480px){
   /* Remove margin-top since StatusBar is hidden on mobile (moved to Footer) */
   .app-page-container {
@@ -165,10 +141,6 @@
   .glass-content {
     padding: 1.5rem 1.25rem;
     border-radius: 20px;
-  }
-
-  .app-page-subtitle {
-    font-size: var(--font-size-sm);
   }
 }
 

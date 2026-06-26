@@ -220,12 +220,9 @@
 }
 
 .procesos-detail-section-title {
-  margin: 0 0 var(--spacing-sm);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
 }
 
 .procesos-detail-grid {

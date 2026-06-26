@@ -96,7 +96,7 @@ function E2e() {
         </section>
 
         <section className="ui-readiness-section">
-          <h2 className="ui-readiness-section-title">Resumen</h2>
+          <h2 className="app-subsection-title app-subsection-title--plain">Resumen</h2>
           <div className="ui-readiness-token-grid">
             {E2E_METRICS.map(metric => (
               <div key={metric.label} className="ui-readiness-token-card">
@@ -120,7 +120,7 @@ function E2e() {
         </section>
 
         <section className="ui-readiness-section">
-          <h2 className="ui-readiness-section-title">Comandos</h2>
+          <h2 className="app-subsection-title app-subsection-title--plain">Comandos</h2>
           <div className="e2e-commands">
             {E2E_COMMANDS.map(item => (
               <div key={item.command} className="e2e-command-row">
@@ -132,7 +132,7 @@ function E2e() {
         </section>
 
         <section className="ui-readiness-section">
-          <h2 className="ui-readiness-section-title">Prerrequisitos</h2>
+          <h2 className="app-subsection-title app-subsection-title--plain">Prerrequisitos</h2>
           <ul className="e2e-flow-list">
             {E2E_PREREQUISITES.map(item => (
               <li key={item}>{item}</li>
@@ -142,7 +142,7 @@ function E2e() {
 
         {E2E_SUITE_GROUPS.map(group => (
           <section key={group.kind} className="ui-readiness-section">
-            <h2 className="ui-readiness-section-title">{group.label}</h2>
+            <h2 className="app-subsection-title app-subsection-title--plain">{group.label}</h2>
             <p className="ui-readiness-section-desc">
               {group.description} Comando: <code>{group.command}</code>
             </p>
@@ -155,7 +155,7 @@ function E2e() {
         ))}
 
         <section className="ui-readiness-section">
-          <h2 className="ui-readiness-section-title">CI recomendado</h2>
+          <h2 className="app-subsection-title app-subsection-title--plain">CI recomendado</h2>
           <div className="ux-readiness-sections-table">
             <div className="ux-readiness-sections-header">
               <span>Job</span>
@@ -173,7 +173,7 @@ function E2e() {
         </section>
 
         <section className="ui-readiness-section">
-          <h2 className="ui-readiness-section-title">Fixtures compartidos</h2>
+          <h2 className="app-subsection-title app-subsection-title--plain">Fixtures compartidos</h2>
           <ul className="e2e-flow-list">
             <li>
               <strong>e2e/fixtures/auth.ts</strong> — loginViaUi, credenciales por defecto e2e /

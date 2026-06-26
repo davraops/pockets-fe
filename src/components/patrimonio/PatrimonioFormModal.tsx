@@ -51,8 +51,8 @@ function PatrimonioFormModal({
             ×
           </button>
         </div>
-        <div className="modal-panel-content patrimonio-modal__body">
-          <form onSubmit={onSubmit} className="patrimonio-form" noValidate>
+        <form onSubmit={onSubmit} className="patrimonio-form patrimonio-modal__form" noValidate>
+          <div className="modal-panel__scroll patrimonio-modal__body">
             <div className="form-group-base form-group-base--compact">
               <label htmlFor="name" className="form-label-base form-label-base--inline">
                 <InventoryIcon className="form-label-icon" />
@@ -271,7 +271,7 @@ function PatrimonioFormModal({
             </div>
 
             <div className="crud-form-section-divider">
-              <h3 className="patrimonio-form-subsection-title">
+              <h3 className="app-form-block-title patrimonio-form-subsection-title">
                 <SecurityIcon className="form-label-icon" />
                 Seguro
               </h3>
@@ -343,6 +343,7 @@ function PatrimonioFormModal({
                 placeholder="Notas adicionales"
               />
             </div>
+          </div>
 
             <div className="modal-actions-base patrimonio-modal__footer">
               <button
@@ -356,8 +357,7 @@ function PatrimonioFormModal({
                 {editingId ? 'Guardar cambios' : 'Agregar ítem'}
               </button>
             </div>
-          </form>
-        </div>
+        </form>
       </div>
     </ModalOverlay>
   )

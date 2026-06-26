@@ -566,7 +566,7 @@ function CryptoVendors() {
 
         {/* Formulario para agregar vendedor */}
         <div className="cryptovendors-form-section">
-          <h2 className="cryptovendors-section-title">
+          <h2 className="app-section-title">
             {editingId ? 'Editar Vendedor' : 'Agregar Vendedor'}
           </h2>
           <form onSubmit={handleSubmit} className="cryptovendors-form">
@@ -680,7 +680,7 @@ function CryptoVendors() {
 
             <div className="form-group-base form-group-base--compact">
               <label className="form-label-base form-label-base--inline">Selecciona las criptomonedas aceptadas</label>
-              <div className="cryptovendors-crypto-grid">
+              <div className="app-grid-auto cryptovendors-crypto-grid">
                 {CRYPTO_OPTIONS.map(crypto => (
                   <label key={crypto} className="cryptovendors-crypto-checkbox">
                     <input
@@ -822,7 +822,7 @@ function CryptoVendors() {
         {vendors.length > 0 && (
           <div className="cryptovendors-list-section">
             <div className="cryptovendors-section-header">
-              <h2 className="cryptovendors-section-title">
+              <h2 className="app-section-title">
                 Vendedores ({vendors.length})
               </h2>
               <button
@@ -901,9 +901,9 @@ function CryptoVendors() {
                       )}
                     </div>
                   </div>
-                  <div className="cryptovendors-item-actions">
+                  <div className="app-control-group cryptovendors-item-actions">
                     <button
-                      className="cryptovendors-item-action-button"
+                      className="btn-icon"
                       onClick={() => handleEdit(vendor)}
                       aria-label="Editar"
                       type="button"
@@ -911,7 +911,7 @@ function CryptoVendors() {
                       <EditIcon />
                     </button>
                     <button
-                      className="cryptovendors-item-action-button cryptovendors-item-action-button-delete"
+                      className="btn-icon btn-icon--danger"
                       onClick={() => handleDelete(vendor.id)}
                       aria-label="Eliminar"
                       type="button"
@@ -955,11 +955,11 @@ function CryptoVendors() {
                     required
                   />
                 </div>
-                <div className="cryptovendors-form-actions">
+                <div className="modal-actions-base cryptovendors-form-actions">
                   <button
                     type="button"
                     onClick={() => setShowSaveModal(false)}
-                    className="cryptovendors-form-button cryptovendors-form-button-secondary"
+                    className="btn-base btn-secondary"
                   >
                     Cancelar
                   </button>
@@ -967,7 +967,7 @@ function CryptoVendors() {
                     type="button"
                     onClick={handleSaveRecord}
                     disabled={isSaving || !listName.trim()}
-                    className="cryptovendors-form-button cryptovendors-form-button-primary"
+                    className="btn-base btn-accent btn-submit"
                   >
                     {isSaving ? 'Guardando...' : loadedRecordId ? 'Actualizar' : 'Guardar'}
                   </button>
@@ -1030,7 +1030,7 @@ function CryptoVendors() {
                             Cargar
                           </button>
                           <button
-                            className="cryptovendors-record-action-button cryptovendors-record-action-button-delete"
+                            className="btn-base btn-soft-danger"
                             onClick={() => handleDeleteRecord(record.id, record.name)}
                             type="button"
                           >

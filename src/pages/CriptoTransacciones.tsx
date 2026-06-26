@@ -969,7 +969,7 @@ function CriptoTransacciones() {
                 <CloseIcon />
               </button>
             </div>
-            <form className="modal-form" onSubmit={handleCryptoSubmit}>
+            <form className="modal-form" onSubmit={handleCryptoSubmit}><div className="modal-panel__scroll">
               <div className="form-group-base">
                 <label htmlFor="crypto_name" className="form-label-base">
                   Criptomoneda
@@ -1129,10 +1129,10 @@ function CriptoTransacciones() {
                   <option value="EUR">EUR</option>
                   <option value="COP">COP</option>
                 </select>
-              </div>
+              </div></div>
 
-              <div className="modal-actions">
-                <button type="submit" className="modal-button primary" disabled={isLoading}>
+              <div className="modal-actions-base">
+                <button type="submit" className="btn-base btn-accent btn-submit" disabled={isLoading}>
                   {isLoading ? 'Guardando...' : isEditMode ? 'Actualizar' : 'Crear'}
                 </button>
               </div>
@@ -1266,10 +1266,10 @@ function CriptoTransacciones() {
                 </button>
               </div>
             </div>
-            <div className="modal-actions">
+            <div className="modal-actions-base">
               <button
                 type="button"
-                className="modal-button secondary"
+                className="btn-base btn-secondary"
                 onClick={() => setIsDebugModalOpen(false)}
               >
                 Cerrar

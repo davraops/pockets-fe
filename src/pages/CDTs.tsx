@@ -730,7 +730,7 @@ function CDTs() {
                 ×
               </button>
             </div>
-            <form className="modal-form" onSubmit={handleSubmit}>
+            <form className="modal-form" onSubmit={handleSubmit}><div className="modal-panel__scroll">
               <div className="form-group">
                 <label htmlFor="nombre" className="form-label">
                   Nombre
@@ -853,13 +853,13 @@ function CDTs() {
                   className="form-input"
                   placeholder="Ej: Banco Popular, TRI, Banco de Bogotá"
                 />
-              </div>
+              </div></div>
 
-              <div className="modal-actions">
-                <button type="button" className="modal-button secondary" onClick={handleCloseModal}>
+              <div className="modal-actions-base">
+                <button type="button" className="btn-base btn-secondary" onClick={handleCloseModal}>
                   Cancelar
                 </button>
-                <button type="submit" className="modal-button primary" disabled={isLoading}>
+                <button type="submit" className="btn-base btn-accent btn-submit" disabled={isLoading}>
                   {isLoading ? 'Guardando...' : 'Guardar'}
                 </button>
               </div>
@@ -958,7 +958,7 @@ function CDTs() {
                 ×
               </button>
             </div>
-            <form className="modal-form" onSubmit={handleSubmit}>
+            <form className="modal-form" onSubmit={handleSubmit}><div className="modal-panel__scroll">
               <div className="form-group">
                 <label htmlFor="edit-nombre" className="form-label">
                   Nombre
@@ -1081,17 +1081,17 @@ function CDTs() {
                   className="form-input"
                   placeholder="Ej: Banco Popular, TRI, Banco de Bogotá"
                 />
-              </div>
+              </div></div>
 
-              <div className="modal-actions">
+              <div className="modal-actions-base">
                 <button
                   type="button"
-                  className="modal-button secondary"
+                  className="btn-base btn-secondary"
                   onClick={handleCloseDetailModal}
                 >
                   Cancelar
                 </button>
-                <button type="submit" className="modal-button primary" disabled={isLoading}>
+                <button type="submit" className="btn-base btn-accent btn-submit" disabled={isLoading}>
                   {isLoading ? 'Guardando...' : 'Guardar'}
                 </button>
               </div>
@@ -1147,10 +1147,10 @@ function CDTs() {
                 </button>
               </div>
             </div>
-            <div className="modal-actions">
+            <div className="modal-actions-base">
               <button
                 type="button"
-                className="modal-button secondary"
+                className="btn-base btn-secondary"
                 onClick={() => setIsDebugModalOpen(false)}
               >
                 Cerrar

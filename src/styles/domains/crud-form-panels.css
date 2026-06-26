@@ -9,7 +9,7 @@
   box-shadow: var(--shadow-xl);
   width: min(100%, calc(100vw - 2rem));
   max-width: min(640px, calc(100vw - 2rem));
-  max-height: min(90vh, calc(100dvh - 4rem));
+  max-height: var(--modal-max-height);
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -42,14 +42,9 @@
 }
 
 .crud-form-panel-section-title {
-
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-md) 0;
-  padding-bottom: var(--spacing-xs);
-  border-bottom: 2px solid var(--border-glass);
-
+  /* Alias de .app-subsection-title — borde más marcado en paneles CRUD */
+  border-bottom-width: 2px;
+  border-bottom-color: var(--border-glass);
 }
 
 .crud-form-panel-button-icon {
@@ -208,7 +203,7 @@
   .crud-form-panel-shell {
     width: 100%;
     max-width: 100%;
-    max-height: min(92dvh, calc(100dvh - var(--safe-top)));
+    max-height: var(--modal-max-height);
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   }
 

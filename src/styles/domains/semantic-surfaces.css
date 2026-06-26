@@ -39,6 +39,29 @@
   box-shadow: var(--alert-warning-shadow);
 }
 
+.semantic-alert-danger {
+  background: var(--color-danger-bg-soft);
+  border: 1px solid var(--color-danger-border-medium);
+  border-radius: var(--radius-md);
+  color: var(--color-danger-text-strong);
+  box-shadow: var(--shadow-sm);
+}
+
+.app-callout-danger {
+  padding: var(--spacing-lg);
+  background: var(--color-danger-bg-soft);
+  border: 1px solid var(--color-danger-border-soft);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  line-height: 1.5;
+}
+
+.app-callout-danger strong {
+  color: var(--accent-warning-text);
+  font-weight: var(--font-weight-semibold);
+}
+
 .semantic-tab-active {
   background: var(--tab-active-bg);
   color: var(--tab-active-text);

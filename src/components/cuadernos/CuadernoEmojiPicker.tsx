@@ -66,7 +66,7 @@ function CuadernoEmojiPicker({ icon, overCover = false, onChange, disabled = fal
           <div className="cuaderno-emoji-picker__scroll">
             {CUADERNO_EMOJI_CATEGORIES.map(category => (
               <section key={category.id} className="cuaderno-emoji-picker__section">
-                <h3 className="cuaderno-emoji-picker__section-title">{category.label}</h3>
+                <h3 className="app-group-label cuaderno-emoji-picker__section-title">{category.label}</h3>
                 <div className="cuaderno-emoji-picker__grid" role="listbox" aria-label={category.label}>
                   {category.emojis.map(option => (
                     <button

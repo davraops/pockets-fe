@@ -1766,7 +1766,7 @@ function Transacciones() {
                 </p>
               </div>
             ) : (
-              <form className="modal-form" onSubmit={handleSubmit}>
+              <form className="modal-form" onSubmit={handleSubmit}><div className="modal-panel__scroll">
                 <section className="crud-form-section" aria-labelledby="tx-form-classification">
                   <h3 className="crud-form-section-title" id="tx-form-classification">
                     Clasificación
@@ -2133,13 +2133,13 @@ function Transacciones() {
                       />
                     )}
                   </section>
-                )}
+                )}</div>
 
-                <div className="modal-actions">
-                  <button type="button" className="modal-button cancel" onClick={handleCloseModal}>
+                <div className="modal-actions-base">
+                  <button type="button" className="btn-base btn-secondary" onClick={handleCloseModal}>
                     Cancelar
                   </button>
-                  <button type="submit" className="modal-button submit">
+                  <button type="submit" className="btn-base btn-accent btn-submit">
                     {isEditMode
                       ? 'Guardar Cambios'
                       : formData.addToPatrimonio
@@ -2243,10 +2243,10 @@ function Transacciones() {
                 </button>
               </div>
             </div>
-            <div className="modal-actions">
+            <div className="modal-actions-base">
               <button
                 type="button"
-                className="modal-button cancel"
+                className="btn-base btn-secondary"
                 onClick={() => setIsDebugModalOpen(false)}
               >
                 Cerrar

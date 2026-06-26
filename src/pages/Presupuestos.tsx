@@ -12,6 +12,7 @@ import { api } from '../services/api'
 import { devError, devLog, isDebugToolsEnabled, isDestructiveDebugEnabled } from '../utils/debugTools'
 import { subscribeFinanceEvent } from '../utils/financeEvents'
 import { emitTransactionSyncEvents } from '../utils/transactionMutation'
+import { SEMANTIC_UI_COLORS } from '../constants/designTokens'
 import { useNotification } from '../contexts/NotificationContext'
 import { useConfirm } from '../contexts/ConfirmContext'
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
@@ -489,10 +490,10 @@ function Presupuestos() {
 
   // Función para obtener el color de la barra de progreso basado en el porcentaje
   const getProgressColor = (percentage: number, isOver: boolean): string => {
-    if (isOver) return '#FF3B30' // Rojo si está sobre presupuesto
-    if (percentage >= 80) return '#FF9500' // Naranja si está cerca del límite
-    if (percentage >= 50) return '#FFCC00' // Amarillo si está a la mitad
-    return '#34C759' // Verde si está bien
+    if (isOver) return SEMANTIC_UI_COLORS.danger
+    if (percentage >= 80) return SEMANTIC_UI_COLORS.warning
+    if (percentage >= 50) return '#FFCC00'
+    return SEMANTIC_UI_COLORS.success
   }
 
   // Función combinada para obtener el color del presupuesto (mantiene compatibilidad)
@@ -895,7 +896,7 @@ function Presupuestos() {
               <h2 className="modal-title" id="modal-title-nuevo-presupuesto">Nuevo Presupuesto</h2>
               <button className="modal-close" onClick={handleCloseModal} aria-label="Cerrar modal">×</button>
             </div>
-            <form className="modal-form" onSubmit={handleSubmit}>
+            <form className="modal-form" onSubmit={handleSubmit}><div className="modal-panel__scroll">
               <div className="form-group">
                 <label htmlFor="nombre">Nombre</label>
                 <input
@@ -964,12 +965,12 @@ function Presupuestos() {
                 {formErrors.montoMaximo && (
                   <span className="error-message">{formErrors.montoMaximo}</span>
                 )}
-              </div>
-              <div className="modal-actions">
-                <button type="button" className="modal-button cancel" onClick={handleCloseModal}>
+              </div></div>
+              <div className="modal-actions-base">
+                <button type="button" className="btn-base btn-secondary" onClick={handleCloseModal}>
                   Cancelar
                 </button>
-                <button type="submit" className="modal-button submit">
+                <button type="submit" className="btn-base btn-accent btn-submit">
                   Agregar
                 </button>
               </div>
@@ -1122,7 +1123,7 @@ function Presupuestos() {
                 </div>
               </>
             ) : (
-              <form className="modal-form" onSubmit={handleSubmit}>
+              <form className="modal-form" onSubmit={handleSubmit}><div className="modal-panel__scroll">
                 <div className="form-group">
                   <label htmlFor="edit-nombre">Nombre</label>
                   <input
@@ -1191,16 +1192,16 @@ function Presupuestos() {
                   {formErrors.montoMaximo && (
                     <span className="error-message">{formErrors.montoMaximo}</span>
                   )}
-                </div>
-                <div className="modal-actions">
+                </div></div>
+                <div className="modal-actions-base">
                   <button
                     type="button"
-                    className="modal-button cancel"
+                    className="btn-base btn-secondary"
                     onClick={() => setIsEditMode(false)}
                   >
                     Cancelar
                   </button>
-                  <button type="submit" className="modal-button submit">
+                  <button type="submit" className="btn-base btn-accent btn-submit">
                     Guardar Cambios
                   </button>
                 </div>
@@ -1268,10 +1269,10 @@ function Presupuestos() {
                 </button>
               </div>
             </div>
-            <div className="modal-actions">
+            <div className="modal-actions-base">
               <button
                 type="button"
-                className="modal-button cancel"
+                className="btn-base btn-secondary"
                 onClick={() => setIsDebugModalOpen(false)}
               >
                 Cerrar
@@ -1328,10 +1329,10 @@ function Presupuestos() {
                 </button>
               </div>
             </div>
-            <div className="modal-actions">
+            <div className="modal-actions-base">
               <button
                 type="button"
-                className="modal-button cancel"
+                className="btn-base btn-secondary"
                 onClick={() => setIsDeleteModalOpen(false)}
               >
                 Cancelar
@@ -1413,10 +1414,10 @@ function Presupuestos() {
                 </div>
               )}
             </div>
-            <div className="modal-actions">
+            <div className="modal-actions-base">
               <button
                 type="button"
-                className="modal-button cancel"
+                className="btn-base btn-secondary"
                 onClick={() => setIsDeletedBudgetsModalOpen(false)}
               >
                 Cerrar

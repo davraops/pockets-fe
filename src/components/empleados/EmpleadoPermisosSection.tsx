@@ -77,7 +77,7 @@ function EmpleadoPermisosSection({ employee, onSync }: EmpleadoPermisosSectionPr
 
   return (
     <div className="empleados-detail-section">
-      <h3 className="empleados-detail-section-title">
+      <h3 className="app-subsection-title app-subsection-title--plain empleados-detail-section-title">
         <EventBusyIcon className="empleados-detail-section-icon" />
         Permisos
       </h3>
@@ -127,7 +127,7 @@ function EmpleadoPermisosSection({ employee, onSync }: EmpleadoPermisosSectionPr
         </div>
         <button
           type="button"
-          className="empleados-form-button empleados-form-button-primary"
+          className="btn-base btn-accent btn-submit"
           onClick={() => void handleAddPermission()}
         >
           Agregar Permiso
@@ -154,7 +154,7 @@ function EmpleadoPermisosSection({ employee, onSync }: EmpleadoPermisosSectionPr
               </div>
               <button
                 type="button"
-                className="empleados-detail-list-item-delete"
+                className="btn-icon btn-icon--danger"
                 onClick={() => void handleDeletePermission(index)}
                 aria-label="Eliminar permiso"
               >

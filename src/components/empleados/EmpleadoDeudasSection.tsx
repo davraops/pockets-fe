@@ -151,7 +151,7 @@ function EmpleadoDeudasSection({ employee, onSync }: EmpleadoDeudasSectionProps)
 
   return (
     <div className="empleados-detail-section empleados-deudas-section">
-      <h3 className="empleados-detail-section-title">
+      <h3 className="app-subsection-title app-subsection-title--plain empleados-detail-section-title">
         <AccountBalanceWalletIcon className="empleados-detail-section-icon" />
         Deudas pendientes
       </h3>
@@ -332,7 +332,7 @@ function EmpleadoDeudasSection({ employee, onSync }: EmpleadoDeudasSectionProps)
 
       <button
         type="button"
-        className="empleados-form-button empleados-form-button-primary"
+        className="btn-base btn-accent btn-submit"
         onClick={() => void handleSave()}
         disabled={!isDirty}
       >

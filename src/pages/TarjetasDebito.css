@@ -40,10 +40,6 @@
   cursor: not-allowed;
 }
 
-.delete-warning-content {
-  padding: 1.5rem;
-}
-
 .warning-text {
   font-size: var(--font-size-sm);
   color: var(--text-primary);

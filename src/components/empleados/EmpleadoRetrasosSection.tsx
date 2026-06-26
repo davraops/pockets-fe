@@ -77,7 +77,7 @@ function EmpleadoRetrasosSection({ employee, onSync }: EmpleadoRetrasosSectionPr
 
   return (
     <div className="empleados-detail-section">
-      <h3 className="empleados-detail-section-title">
+      <h3 className="app-subsection-title app-subsection-title--plain empleados-detail-section-title">
         <EventBusyIcon className="empleados-detail-section-icon" />
         Retrasos
       </h3>
@@ -126,7 +126,7 @@ function EmpleadoRetrasosSection({ employee, onSync }: EmpleadoRetrasosSectionPr
         </div>
         <button
           type="button"
-          className="empleados-form-button empleados-form-button-primary"
+          className="btn-base btn-accent btn-submit"
           onClick={() => void handleAddDelay()}
         >
           Agregar Retraso
@@ -153,7 +153,7 @@ function EmpleadoRetrasosSection({ employee, onSync }: EmpleadoRetrasosSectionPr
               </div>
               <button
                 type="button"
-                className="empleados-detail-list-item-delete"
+                className="btn-icon btn-icon--danger"
                 onClick={() => void handleDeleteDelay(index)}
                 aria-label="Eliminar retraso"
               >

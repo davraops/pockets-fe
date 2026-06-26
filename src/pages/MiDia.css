@@ -15,16 +15,6 @@
   margin-top: var(--spacing-md);
 }
 
-.midia-section-title {
-  margin: 0;
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
-  font-family: var(--font-family);
-}
-
 .midia-routine-row {
   align-items: flex-start;
   cursor: default;

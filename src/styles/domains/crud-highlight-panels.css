@@ -26,7 +26,7 @@
 
   background: linear-gradient(135deg, rgba(255, 59, 48, 0.2) 0%, rgba(255, 59, 48, 0.15) 100%);
   border: 2px solid rgba(255, 59, 48, 0.5);
-  color: #FF3B30;
+  color: var(--color-danger-solid);
 
 }
 
@@ -266,7 +266,7 @@
 .crud-priority-high.crud-highlight-panel-breakdown-value,
 .crud-highlight-panel-breakdown-value.crud-priority-high {
 
-  color: #FF3B30;
+  color: var(--color-danger-solid);
 
 }
 

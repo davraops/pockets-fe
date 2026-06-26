@@ -78,13 +78,13 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
             <div className="confirm-dialog-body">
               <p className="confirm-dialog-message">{pending.message}</p>
             </div>
-            <div className="modal-actions">
-              <button type="button" className="modal-button cancel" onClick={() => close(false)}>
+            <div className="modal-actions-base">
+              <button type="button" className="btn-base btn-secondary" onClick={() => close(false)}>
                 {cancelLabel}
               </button>
               <button
                 type="button"
-                className={`modal-button ${variant === 'danger' ? 'delete-confirm' : 'submit'}`}
+                className={`btn-base ${variant === 'danger' ? 'btn-danger-solid' : 'btn-accent btn-submit'}`}
                 onClick={() => close(true)}
               >
                 {confirmLabel}

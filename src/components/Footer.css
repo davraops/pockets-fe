@@ -97,7 +97,7 @@ body:has([class*="-modal-overlay"]:not([style*="display: none"])) .app-footer {
   position: absolute;
   top: 2px;
   right: 2px;
-  background: #ff3b30;
+  background: var(--color-danger-solid);
   color: white;
   font-size: 0.625rem;
   font-weight: 700;

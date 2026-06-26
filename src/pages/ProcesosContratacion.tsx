@@ -9,7 +9,6 @@ import BusinessIcon from '@mui/icons-material/Business'
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import EventIcon from '@mui/icons-material/Event'
-import SaveIcon from '@mui/icons-material/Save'
 import CloseIcon from '@mui/icons-material/Close'
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import TodayIcon from '@mui/icons-material/Today'
@@ -44,6 +43,7 @@ import type {
   ProcesoClosureReason,
 } from '../components/procesosContratacion/procesoContratacionTypes'
 import CrudSummaryStrip from '../components/crud/CrudSummaryStrip'
+import { ProgressiveFlow, ProgressiveFlowNav } from '../components/ProgressiveFlow'
 import UtilidadesSubHeader from '../components/utilidades/UtilidadesSubHeader'
 import { api } from '../services/api'
 import { useNotification } from '../contexts/NotificationContext'
@@ -55,6 +55,39 @@ import {
 import { getTranslatedErrorMessage } from '../utils/errorTranslations'
 import './AppPage.css'
 import './ProcesosContratacion.css'
+
+const PROCESO_FORM_STEPS = [
+  {
+    id: 'basico',
+    title: 'Información básica',
+    description: 'Nombre del proceso, empresa y descripción del rol',
+  },
+  {
+    id: 'contacto',
+    title: 'Contacto',
+    description: 'Persona, canal de contacto y agencia',
+  },
+  {
+    id: 'compensacion',
+    title: 'Compensación',
+    description: 'Rango salarial, negociación y beneficios',
+  },
+  {
+    id: 'seguimiento',
+    title: 'Seguimiento',
+    description: 'Pasos del proceso, entrevistas e interacciones',
+  },
+] as const
+
+function canAdvanceProcesoFormStep(
+  step: number,
+  data: { name: string; company: string }
+): boolean {
+  if (step === 0) {
+    return data.name.trim().length > 0 && data.company.trim().length > 0
+  }
+  return true
+}
 
 function ProcesosContratacion() {
   const { showNotification } = useNotification()
@@ -77,6 +110,7 @@ function ProcesosContratacion() {
   const [isPastExpanded, setIsPastExpanded] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
+  const [formStep, setFormStep] = useState(0)
   const [formData, setFormData] = useState({
     name: '',
     contact: '',
@@ -336,11 +370,13 @@ function ProcesosContratacion() {
       payToLeadingZen: data.payToLeadingZen || false,
     })
     setEditingId(proceso.id)
+    setFormStep(0)
     setShowFormModal(true)
   }
 
   const handleCancelEdit = () => {
     setEditingId(null)
+    setFormStep(0)
     setFormData({
       name: '',
       contact: '',
@@ -372,6 +408,7 @@ function ProcesosContratacion() {
 
   const handleOpenCreateModal = () => {
     setEditingId(null)
+    setFormStep(0)
     setFormData({
       name: '',
       contact: '',
@@ -794,7 +831,7 @@ function ProcesosContratacion() {
                 <div className="procesos-contratacion-agenda-section">
                   <div className="procesos-contratacion-agenda-section-header">
                     <TodayIcon className="procesos-contratacion-agenda-section-icon" />
-                    <h2 className="procesos-contratacion-agenda-section-title">Hoy</h2>
+                    <h2 className="app-section-title">Hoy</h2>
                     <span className="procesos-contratacion-agenda-section-count">
                       {getTodayInterviews().length}
                     </span>
@@ -839,7 +876,7 @@ function ProcesosContratacion() {
                     type="button"
                   >
                     <ScheduleIcon className="procesos-contratacion-agenda-section-icon" />
-                    <h2 className="procesos-contratacion-agenda-section-title">Próximas</h2>
+                    <h2 className="app-section-title">Próximas</h2>
                     <span className="procesos-contratacion-agenda-section-count">
                       {getUpcomingInterviews().length}
                     </span>
@@ -894,7 +931,7 @@ function ProcesosContratacion() {
                     type="button"
                   >
                     <HistoryIcon className="procesos-contratacion-agenda-section-icon" />
-                    <h2 className="procesos-contratacion-agenda-section-title">Pasadas</h2>
+                    <h2 className="app-section-title">Pasadas</h2>
                     <span className="procesos-contratacion-agenda-section-count">
                       {getPastInterviews().length}
                     </span>
@@ -1009,7 +1046,7 @@ function ProcesosContratacion() {
                   onClick={e => e.stopPropagation()}
                 >
                   <div className="procesos-contratacion-modal-header">
-                    <h2 className="procesos-contratacion-modal-title">
+                    <h2 className="modal-panel-title">
                       {editingId ? 'Editar Proceso' : 'Nuevo Proceso de Contratación'}
                     </h2>
                     <button
@@ -1023,12 +1060,14 @@ function ProcesosContratacion() {
                   </div>
                   <div className="procesos-contratacion-modal-content">
                     <form className="procesos-contratacion-form" onSubmit={handleSubmit}>
-                      {/* Información Básica */}
+                      <div className="modal-panel__scroll">
+                      <ProgressiveFlow
+                        steps={PROCESO_FORM_STEPS}
+                        currentStep={formStep}
+                        aria-label="Formulario de proceso de contratación"
+                      >
+                      {formStep === 0 ? (
                       <div className="procesos-contratacion-form-section">
-                        <h3 className="procesos-contratacion-form-section-title">
-                          Información Básica
-                        </h3>
-
                         <div className="procesos-contratacion-form-group">
                           <label htmlFor="name" className="procesos-contratacion-form-label">
                             Nombre del Proceso *
@@ -1087,11 +1126,10 @@ function ProcesosContratacion() {
                           </p>
                         </div>
                       </div>
+                      ) : null}
 
-                      {/* Contacto */}
+                      {formStep === 1 ? (
                       <div className="procesos-contratacion-form-section">
-                        <h3 className="procesos-contratacion-form-section-title">Contacto</h3>
-
                         <div className="procesos-contratacion-form-group">
                           <label htmlFor="contact" className="procesos-contratacion-form-label">
                             <PersonIcon className="procesos-contratacion-form-label-icon" />
@@ -1139,8 +1177,8 @@ function ProcesosContratacion() {
                           </label>
                         </div>
 
-                        {formData.hasAgency && (
-                          <div className="procesos-contratacion-form-group">
+                        {formData.hasAgency ? (
+                          <div className="procesos-contratacion-form-group progressive-reveal">
                             <label
                               htmlFor="agencyName"
                               className="procesos-contratacion-form-label"
@@ -1158,7 +1196,7 @@ function ProcesosContratacion() {
                               placeholder="Ej: Agencia de Talento Digital"
                             />
                           </div>
-                        )}
+                        ) : null}
 
                         <div className="procesos-contratacion-form-group">
                           <label className="procesos-contratacion-form-checkbox-label">
@@ -1174,11 +1212,11 @@ function ProcesosContratacion() {
                           </label>
                         </div>
                       </div>
+                      ) : null}
 
-                      {/* Compensación */}
+                      {formStep === 2 ? (
+                      <>
                       <div className="procesos-contratacion-form-section">
-                        <h3 className="procesos-contratacion-form-section-title">Compensación</h3>
-
                         <div className="procesos-contratacion-form-salary-container">
                           <div className="procesos-contratacion-form-salary-card">
                             <label className="procesos-contratacion-form-label">
@@ -1277,10 +1315,8 @@ function ProcesosContratacion() {
                         </div>
                       </div>
 
-                      {/* Beneficios */}
                       <div className="procesos-contratacion-form-section">
-                        <h3 className="procesos-contratacion-form-section-title">Beneficios</h3>
-
+                        <h3 className="app-panel-heading">Beneficios</h3>
                         <div className="procesos-contratacion-form-group">
                           <label className="procesos-contratacion-form-label">
                             Lista de Beneficios
@@ -1327,13 +1363,13 @@ function ProcesosContratacion() {
                           )}
                         </div>
                       </div>
+                      </>
+                      ) : null}
 
-                      {/* Pasos de Contratación */}
+                      {formStep === 3 ? (
+                      <>
                       <div className="procesos-contratacion-form-section">
-                        <h3 className="procesos-contratacion-form-section-title">
-                          Pasos de Contratación
-                        </h3>
-
+                        <h3 className="app-panel-heading">Pasos de contratación</h3>
                         <div className="procesos-contratacion-form-group">
                           <label className="procesos-contratacion-form-label">
                             <CheckCircleIcon className="procesos-contratacion-form-label-icon" />
@@ -1409,12 +1445,8 @@ function ProcesosContratacion() {
                         </div>
                       </div>
 
-                      {/* Fechas de Entrevistas */}
                       <div className="procesos-contratacion-form-section">
-                        <h3 className="procesos-contratacion-form-section-title">
-                          Fechas de Entrevistas
-                        </h3>
-
+                        <h3 className="app-panel-heading">Fechas de entrevistas</h3>
                         <div className="procesos-contratacion-form-group">
                           <label className="procesos-contratacion-form-label">
                             <EventIcon className="procesos-contratacion-form-label-icon" />
@@ -1466,12 +1498,8 @@ function ProcesosContratacion() {
                         </div>
                       </div>
 
-                      {/* Interacciones */}
                       <div className="procesos-contratacion-form-section">
-                        <h3 className="procesos-contratacion-form-section-title">
-                          Interacciones con Contacto
-                        </h3>
-
+                        <h3 className="app-panel-heading">Interacciones con contacto</h3>
                         <div className="procesos-contratacion-form-group">
                           <label className="procesos-contratacion-form-label">
                             <ChatIcon className="procesos-contratacion-form-label-icon" />
@@ -1540,29 +1568,26 @@ function ProcesosContratacion() {
                           )}
                         </div>
                       </div>
+                      </>
+                      ) : null}
+                      </ProgressiveFlow>
 
-                      {/* Botones de Acción */}
-                      <div className="procesos-contratacion-form-actions">
-                        <button
-                          type="button"
-                          onClick={handleCancelEdit}
-                          className="procesos-contratacion-form-button procesos-contratacion-form-button-secondary"
-                        >
-                          Cancelar
-                        </button>
-                        <button
-                          type="submit"
-                          disabled={isSaving}
-                          className="procesos-contratacion-form-button procesos-contratacion-form-button-primary"
-                        >
-                          <SaveIcon className="procesos-contratacion-form-button-icon" />
-                          {isSaving
-                            ? 'Guardando...'
-                            : editingId
-                              ? 'Actualizar Proceso'
-                              : 'Crear Proceso'}
-                        </button>
                       </div>
+
+                      <ProgressiveFlowNav
+                        currentStep={formStep}
+                        totalSteps={PROCESO_FORM_STEPS.length}
+                        onBack={() => setFormStep(step => Math.max(0, step - 1))}
+                        onNext={() =>
+                          setFormStep(step =>
+                            Math.min(PROCESO_FORM_STEPS.length - 1, step + 1)
+                          )
+                        }
+                        canAdvance={canAdvanceProcesoFormStep(formStep, formData)}
+                        isSaving={isSaving}
+                        onCancel={handleCancelEdit}
+                        submitLabel={editingId ? 'Actualizar Proceso' : 'Crear Proceso'}
+                      />
                     </form>
                   </div>
                 </div>
@@ -1603,7 +1628,7 @@ function ProcesosContratacion() {
               >
                 <div className="procesos-contratacion-modal" onClick={e => e.stopPropagation()}>
                   <div className="procesos-contratacion-modal-header">
-                    <h2 className="procesos-contratacion-modal-title">🐛 Debug - Procesos</h2>
+                    <h2 className="modal-panel-title">🐛 Debug - Procesos</h2>
                     <button
                       className="procesos-contratacion-modal-close"
                       onClick={() => setIsDebugModalOpen(false)}
@@ -1650,10 +1675,10 @@ function ProcesosContratacion() {
                       </button>
                     </div>
 
-                    <div className="procesos-contratacion-form-actions">
+                    <div className="modal-actions-base">
                       <button
                         type="button"
-                        className="procesos-contratacion-form-button procesos-contratacion-form-button-secondary"
+                        className="btn-base btn-secondary"
                         onClick={() => setIsDebugModalOpen(false)}
                       >
                         Cerrar

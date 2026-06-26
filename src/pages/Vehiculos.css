@@ -323,7 +323,7 @@
     align-items: stretch;
   }
 
-  .vehiculos-form-button {
+  .vehiculos-form-actions .btn-base {
     width: 100%;
     min-height: var(--touch-target-min);
     justify-content: center;
@@ -541,14 +541,6 @@
   margin-bottom: var(--spacing-xl);
 }
 
-.vehiculos-section-title {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0;
-  margin-bottom: var(--spacing-md);
-}
-
 .vehiculos-section-header {
   display: flex;
   align-items: center;
@@ -585,10 +577,6 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-md) 0;
 }
 
 .vehiculos-form-actions {
@@ -596,38 +584,6 @@
   gap: var(--spacing-sm);
   margin-top: var(--spacing-md);
   justify-content: flex-end;
-}
-
-.vehiculos-form-button {
-  padding: var(--spacing-sm) var(--spacing-lg);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  font-family: var(--font-family);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  border: none;
-}
-
-.vehiculos-form-button-primary {
-  background: var(--btn-primary-bg);
-  color: var(--btn-primary-text);
-}
-
-.vehiculos-form-button-primary:hover {
-  background: var(--btn-primary-hover-bg);
-  transform: translateY(var(--motion-lift-sm));
-  box-shadow: var(--btn-primary-shadow-hover);
-}
-
-.vehiculos-form-button-secondary {
-  background: var(--bg-glass);
-  color: var(--text-primary);
-  border: 1px solid var(--border-glass);
-}
-
-.vehiculos-form-button-secondary:hover {
-  background: var(--bg-glass-hover);
 }
 
 /* Items List */
@@ -761,9 +717,9 @@
 }
 
 .vehiculos-item-action-button-delete:hover {
-  background: rgba(255, 59, 48, 0.1);
-  border-color: #FF3B30;
-  color: #FF3B30;
+  background: var(--color-danger-bg-soft);
+  border-color: var(--color-danger-solid);
+  color: var(--color-danger-solid);
 }
 
 /* Save Section */
@@ -845,10 +801,6 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-md) 0;
 }
 
 .vehiculos-detail-section-icon {
@@ -957,25 +909,4 @@
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   font-style: italic;
-}
-
-.vehiculos-detail-list-item-delete {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: transparent;
-  border: 1px solid var(--btn-icon-border);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  color: var(--btn-icon-color);
-  padding: 0;
-}
-
-.vehiculos-detail-list-item-delete:hover {
-  background: var(--btn-danger-hover-bg);
-  border-color: var(--btn-danger-hover-border);
-  color: var(--btn-danger-hover-text);
 }

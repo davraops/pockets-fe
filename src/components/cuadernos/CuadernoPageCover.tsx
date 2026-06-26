@@ -40,7 +40,7 @@ function CuadernoPageCover({ cover, isEditing, onCoverChange }: CuadernoPageCove
       <div className="cuaderno-cover-picker__scroll">
         {CUADERNO_PAGE_COVER_CATEGORIES.map(category => (
           <section key={category.id} className="cuaderno-cover-picker__section">
-            <h3 className="cuaderno-cover-picker__section-title">{category.label}</h3>
+            <h3 className="app-group-label cuaderno-cover-picker__section-title">{category.label}</h3>
             <div className="cuaderno-cover-picker__grid" role="listbox" aria-label={category.label}>
               {category.covers.map(option => (
                 <button

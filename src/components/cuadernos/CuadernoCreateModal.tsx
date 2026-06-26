@@ -77,6 +77,7 @@ function CuadernoCreateModal({
         </div>
 
         <form className="cuaderno-create-modal__form" onSubmit={onSubmit} noValidate>
+          <div className="modal-panel__scroll">
           <div className="form-group-base cuaderno-create-modal__title-group">
             <label htmlFor="titulo" className="cuaderno-create-modal__label">
               Título
@@ -168,7 +169,7 @@ function CuadernoCreateModal({
                   <div className="cuaderno-cover-picker__scroll">
                     {CUADERNO_PAGE_COVER_CATEGORIES.map(category => (
                       <section key={category.id} className="cuaderno-cover-picker__section">
-                        <h3 className="cuaderno-cover-picker__section-title">{category.label}</h3>
+                        <h3 className="app-group-label cuaderno-cover-picker__section-title">{category.label}</h3>
                         <div className="cuaderno-cover-picker__grid" role="listbox" aria-label={category.label}>
                           {category.covers.map(option => (
                             <button
@@ -195,6 +196,7 @@ function CuadernoCreateModal({
             <p className="cuaderno-create-modal__hint">
               Icono y portada son opcionales — si no eliges, se asignan al azar.
             </p>
+          </div>
           </div>
 
           <div className="cuaderno-create-modal__actions">

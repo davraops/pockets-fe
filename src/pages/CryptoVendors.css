@@ -106,14 +106,6 @@
   width: 100%;
 }
 
-.cryptovendors-section-title {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0;
-  margin-bottom: var(--spacing-md);
-}
-
 .cryptovendors-section-header {
   display: flex;
   align-items: center;
@@ -153,38 +145,6 @@
   gap: var(--spacing-sm);
   margin-top: var(--spacing-md);
   justify-content: flex-end;
-}
-
-.cryptovendors-form-button {
-  padding: var(--spacing-sm) var(--spacing-lg);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  font-family: var(--font-family);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  border: none;
-}
-
-.cryptovendors-form-button-primary {
-  background: var(--btn-primary-bg);
-  color: var(--btn-primary-text);
-}
-
-.cryptovendors-form-button-primary:hover {
-  background: var(--btn-primary-hover-bg);
-  transform: translateY(var(--motion-lift-sm));
-  box-shadow: var(--btn-primary-shadow-hover);
-}
-
-.cryptovendors-form-button-secondary {
-  background: var(--bg-glass);
-  color: var(--text-primary);
-  border: 1px solid var(--border-glass);
-}
-
-.cryptovendors-form-button-secondary:hover {
-  background: var(--bg-glass-hover);
 }
 
 /* Items List */
@@ -300,35 +260,8 @@
   color: var(--accent-primary);
 }
 
-.cryptovendors-form-subsection-title {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-md) 0;
-}
-
 .cryptovendors-crypto-grid {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
   margin-top: var(--spacing-xs);
-}
-
-@media (min-width: 600px) {
-  .cryptovendors-crypto-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  }
-}
-
-@media (max-width: 768px) {
-  .cryptovendors-crypto-grid {
-    display: flex;
-    flex-direction: column;
-  }
 }
 
 .cryptovendors-crypto-checkbox {
@@ -379,37 +312,6 @@
 [data-theme='dark'] .cryptovendors-crypto-checkbox:has(input[type="checkbox"]:checked) {
   background: rgba(10, 132, 255, 0.15);
   border-color: #0A84FF;
-}
-
-.cryptovendors-item-actions {
-  display: flex;
-  gap: var(--spacing-xs);
-}
-
-.cryptovendors-item-action-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: transparent;
-  border: 1px solid var(--btn-icon-border);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  color: var(--btn-icon-color);
-}
-
-.cryptovendors-item-action-button:hover {
-  background: var(--btn-icon-hover-bg);
-  color: var(--btn-icon-hover-color);
-  border-color: var(--btn-icon-hover-border);
-}
-
-.cryptovendors-item-action-button-delete:hover {
-  background: rgba(255, 59, 48, 0.1);
-  border-color: #FF3B30;
-  color: #FF3B30;
 }
 
 /* Save Section */
@@ -535,13 +437,6 @@
   border-bottom: 1px solid var(--border-glass-light);
 }
 
-.cryptovendors-modal-title {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
 .cryptovendors-modal-close {
   display: flex;
   align-items: center;
@@ -665,12 +560,6 @@
   border-color: var(--border-glass-hover);
 }
 
-.cryptovendors-record-action-button-delete:hover {
-  background: rgba(255, 59, 48, 0.1);
-  border-color: #FF3B30;
-  color: #FF3B30;
-}
-
 .cryptovendors-lists-list {
   display: flex;
   flex-direction: column;
@@ -748,9 +637,9 @@
 }
 
 .cryptovendors-list-delete:hover {
-  background: rgba(255, 59, 48, 0.1);
-  border-color: #FF3B30;
-  color: #FF3B30;
+  background: var(--color-danger-bg-soft);
+  border-color: var(--color-danger-solid);
+  color: var(--color-danger-solid);
 }
 
 /* Responsive */
@@ -772,7 +661,7 @@
     align-items: stretch;
   }
 
-  .cryptovendors-item-actions {
+  .app-control-group.cryptovendors-item-actions {
     justify-content: flex-end;
     margin-top: var(--spacing-sm);
   }
@@ -804,7 +693,7 @@
 
   .cryptovendors-modal {
     max-width: 100%;
-    max-height: min(92dvh, calc(100dvh - var(--safe-top)));
+    max-height: var(--modal-max-height);
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     margin: 0;
     animation: ui-sheet-up 0.32s cubic-bezier(0.32, 0.72, 0, 1);

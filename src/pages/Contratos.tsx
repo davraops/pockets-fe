@@ -730,8 +730,9 @@ function Contratos() {
               </div>
               <div className="modal-panel-content">
                 <form className="crud-form-panel" onSubmit={handleSubmit} noValidate>
+                  <div className="modal-panel__scroll">
                   <div className="crud-form-panel-section">
-                    <h3 className="crud-form-panel-section-title">Información Básica</h3>
+                    <h3 className="app-subsection-title crud-form-panel-section-title">Información Básica</h3>
                     
                     <div className="form-group-base form-group-base--compact">
                       <label htmlFor="name" className="form-label-base form-label-base--inline">
@@ -838,7 +839,7 @@ function Contratos() {
                   </div>
 
                   <div className="crud-form-panel-section">
-                    <h3 className="crud-form-panel-section-title">Compensación</h3>
+                    <h3 className="app-subsection-title crud-form-panel-section-title">Compensación</h3>
 
                     <div className="form-group-base form-group-base--compact">
                       <label htmlFor="salary" className="form-label-base form-label-base--inline">
@@ -912,7 +913,7 @@ function Contratos() {
                   </div>
 
                   <div className="crud-form-panel-section">
-                    <h3 className="crud-form-panel-section-title">Beneficios y Condiciones</h3>
+                    <h3 className="app-subsection-title crud-form-panel-section-title">Beneficios y Condiciones</h3>
 
                     <div className="form-group-base form-group-base--compact">
                       <label htmlFor="benefits" className="form-label-base form-label-base--inline">
@@ -979,7 +980,7 @@ function Contratos() {
                   </div>
 
                   <div className="crud-form-panel-section">
-                    <h3 className="crud-form-panel-section-title">Agencia</h3>
+                    <h3 className="app-subsection-title crud-form-panel-section-title">Agencia</h3>
 
                     <div className="form-group-base form-group-base--compact">
                       <label className="crud-form-checkbox-label">
@@ -1012,6 +1013,8 @@ function Contratos() {
                         />
                       </div>
                     )}
+                  </div>
+
                   </div>
 
                   <div className="crud-form-panel-actions">

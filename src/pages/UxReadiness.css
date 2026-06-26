@@ -134,10 +134,7 @@
 }
 
 .ux-readiness-subsection-title {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: var(--spacing-lg) 0 var(--spacing-sm);
+  margin-top: var(--spacing-lg);
 }
 
 .ux-readiness-bullet-list {

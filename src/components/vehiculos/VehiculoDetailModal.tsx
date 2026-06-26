@@ -45,7 +45,7 @@ function VehiculoDetailModal({
 
         <div className="modal-panel-content vehiculos-modal__body">
           <div className="vehiculos-detail-section">
-            <h3 className="vehiculos-detail-section-title">Información básica</h3>
+            <h3 className="app-subsection-title app-subsection-title--plain vehiculos-detail-section-title">Información básica</h3>
             <div className="vehiculos-detail-grid">
               {vehicle.data.brand && vehicle.data.model ? (
                 <div className="vehiculos-detail-item">

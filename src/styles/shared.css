@@ -100,6 +100,20 @@
   box-shadow: var(--shadow-md);
 }
 
+/* Contraste alto — acciones destructivas irreversibles (Principio 4) */
+.btn-danger-solid {
+  background: var(--color-danger-solid);
+  color: #fff;
+  border-color: var(--color-danger-solid);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-danger-solid:hover:not(:disabled) {
+  background: var(--color-danger-text-strong);
+  border-color: var(--color-danger-text-strong);
+  box-shadow: var(--shadow-md);
+}
+
 /* Secondary Button (Cancel, neutral) */
 .btn-secondary {
   background: var(--btn-secondary-bg);
@@ -130,6 +144,48 @@
   padding: var(--spacing-xs) var(--spacing-md);
   font-size: var(--font-size-xs);
   border-radius: var(--radius-sm);
+}
+
+/* Icon-only control — tarjetas, filas, acciones compactas */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  background: var(--bg-glass-light);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.btn-icon:hover:not(:disabled) {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-glass-hover);
+  color: var(--text-primary);
+}
+
+.btn-icon:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-icon--danger {
+  color: var(--color-danger-solid);
+}
+
+.btn-icon--danger:hover:not(:disabled) {
+  color: var(--color-danger-text-strong);
+  border-color: var(--color-danger-border-soft);
+  background: var(--color-danger-bg-soft);
 }
 
 @media (max-width: 768px) {
@@ -224,8 +280,7 @@
     flex-wrap: wrap;
   }
 
-  .modal-actions-base .btn-base,
-  .modal-actions-base .modal-button {
+  .modal-actions-base .btn-base {
     flex: 1 1 calc(50% - var(--spacing-sm));
     min-height: var(--touch-target-min);
   }
@@ -557,15 +612,15 @@ label .form-label-base--inline-icon {
 }
 
 .btn-soft-danger {
-  background: color-mix(in srgb, var(--accent-danger) 12%, transparent);
-  border-color: color-mix(in srgb, var(--accent-danger) 35%, var(--border-glass));
-  color: var(--accent-danger);
+  background: var(--color-danger-bg-soft);
+  border-color: var(--color-danger-border-soft);
+  color: var(--color-danger-text-strong);
   box-shadow: none;
 }
 
 .btn-soft-danger:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--accent-danger) 20%, transparent);
-  border-color: color-mix(in srgb, var(--accent-danger) 45%, var(--border-glass));
+  background: var(--color-danger-bg-soft-hover);
+  border-color: var(--color-danger-border-medium);
 }
 
 .input-error {

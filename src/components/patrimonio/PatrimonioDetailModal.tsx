@@ -50,7 +50,7 @@ function PatrimonioDetailModal({
         <div className="modal-panel-content patrimonio-modal__body">
           {sections.map(section => (
             <section key={section.title} className="patrimonio-modal__section">
-              <h3 className="patrimonio-modal__section-title">{section.title}</h3>
+              <h3 className="app-group-label patrimonio-modal__section-title">{section.title}</h3>
               <dl className="patrimonio-modal__info-list">
                 {section.fields.map(field => (
                   <div key={field.label} className="patrimonio-modal__info-item">

@@ -851,7 +851,7 @@ function Deudas() {
               <strong>💡 Nota:</strong> Para registrar deudas de tarjetas de crédito, hazlo desde la
               sección <strong>Tarjetas Crédito</strong> en Finanzas.
             </div>
-            <form className="modal-form" onSubmit={handleSubmit}>
+            <form className="modal-form" onSubmit={handleSubmit}><div className="modal-panel__scroll">
               <div className="form-group-base">
                 <label htmlFor="concepto" className="form-label-base">Concepto *</label>
                 <input
@@ -1008,12 +1008,12 @@ function Deudas() {
                     placeholder="0"
                   />
                 </div>
-              )}
-              <div className="modal-actions">
-                <button type="button" className="modal-button cancel" onClick={handleCloseModal}>
+              )}</div>
+              <div className="modal-actions-base">
+                <button type="button" className="btn-base btn-secondary" onClick={handleCloseModal}>
                   Cancelar
                 </button>
-                <button type="submit" className="modal-button submit">
+                <button type="submit" className="btn-base btn-accent btn-submit">
                   Agregar
                 </button>
               </div>
@@ -1192,7 +1192,7 @@ function Deudas() {
                 </div>
               </>
             ) : (
-              <form className="modal-form" onSubmit={handleSubmit}>
+              <form className="modal-form" onSubmit={handleSubmit}><div className="modal-panel__scroll">
                 <div className="form-group-base">
                   <label htmlFor="edit-concepto" className="form-label-base">Concepto *</label>
                   <input
@@ -1349,16 +1349,16 @@ function Deudas() {
                       placeholder="0"
                     />
                   </div>
-                )}
-                <div className="modal-actions">
+                )}</div>
+                <div className="modal-actions-base">
                   <button
                     type="button"
-                    className="modal-button cancel"
+                    className="btn-base btn-secondary"
                     onClick={() => setIsEditMode(false)}
                   >
                     Cancelar
                   </button>
-                  <button type="submit" className="modal-button submit">
+                  <button type="submit" className="btn-base btn-accent btn-submit">
                     Guardar Cambios
                   </button>
                 </div>
@@ -1408,10 +1408,10 @@ function Deudas() {
                 </button>
               </div>
             </div>
-            <div className="modal-actions">
+            <div className="modal-actions-base">
               <button
                 type="button"
-                className="modal-button cancel"
+                className="btn-base btn-secondary"
                 onClick={() => setIsDebugModalOpen(false)}
               >
                 Cerrar

@@ -93,7 +93,7 @@ function VehiculoEventosSection({ vehicle, onSync }: VehiculoEventosSectionProps
 
   return (
     <div className="vehiculos-detail-section">
-      <h3 className="vehiculos-detail-section-title">
+      <h3 className="app-subsection-title app-subsection-title--plain vehiculos-detail-section-title">
         <ReportProblemIcon className="vehiculos-detail-section-icon" />
         Eventos
       </h3>
@@ -195,7 +195,7 @@ function VehiculoEventosSection({ vehicle, onSync }: VehiculoEventosSectionProps
         </div>
         <button
           type="button"
-          className="vehiculos-form-button vehiculos-form-button-primary"
+          className="btn-base btn-accent btn-submit"
           onClick={() => void handleAddEvent()}
         >
           Agregar Evento
@@ -240,7 +240,7 @@ function VehiculoEventosSection({ vehicle, onSync }: VehiculoEventosSectionProps
               </div>
               <button
                 type="button"
-                className="vehiculos-detail-list-item-delete"
+                className="btn-icon btn-icon--danger"
                 onClick={() => void handleDeleteEvent(index)}
                 aria-label="Eliminar evento"
               >

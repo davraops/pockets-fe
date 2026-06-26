@@ -975,7 +975,7 @@ function SpaceAudit() {
         </section>
 
         <section className="ui-readiness-section">
-          <h2 className="ui-readiness-section-title">vs otras auditorías</h2>
+          <h2 className="app-subsection-title app-subsection-title--plain">vs otras auditorías</h2>
           <div className="space-audit-compare">
             {RELATED_AUDITS.map(a => (
               <div key={a.name} className="space-audit-compare-card">
@@ -1005,7 +1005,7 @@ function SpaceAudit() {
         </section>
 
         <section className="ui-readiness-section">
-          <h2 className="ui-readiness-section-title">Dimensiones</h2>
+          <h2 className="app-subsection-title app-subsection-title--plain">Dimensiones</h2>
           <div className="ui-readiness-dimensions">
             {DIMENSIONS.map(d => (
               <div key={d.label} className="ui-readiness-dimension">
@@ -1023,7 +1023,7 @@ function SpaceAudit() {
         </section>
 
         <section className="ui-readiness-section">
-          <h2 className="ui-readiness-section-title">Métricas de layout</h2>
+          <h2 className="app-subsection-title app-subsection-title--plain">Métricas de layout</h2>
           <div className="ux-readiness-metrics">
             {METRICS.map(m => (
               <div
@@ -1038,7 +1038,7 @@ function SpaceAudit() {
         </section>
 
         <section className="ui-readiness-section">
-          <h2 className="ui-readiness-section-title">Patrones de fila (inconsistencia)</h2>
+          <h2 className="app-subsection-title app-subsection-title--plain">Patrones de fila (inconsistencia)</h2>
           <p className="ui-readiness-section-desc">
             Tres implementaciones para “lista clicable con título + metadata”. Misma intención,
             distinto padding, altura y contenedor.
@@ -1062,7 +1062,7 @@ function SpaceAudit() {
         </section>
 
         <section className="ui-readiness-section">
-          <h2 className="ui-readiness-section-title">Demo — acciones en toolbar</h2>
+          <h2 className="app-subsection-title app-subsection-title--plain">Demo — acciones en toolbar</h2>
           <p className="ui-readiness-section-desc">
             Hoy la mayoría de CRUD solo muestran back + ⋮. Finanzas hub sí tiene CTA prominente.
           </p>
@@ -1087,7 +1087,7 @@ function SpaceAudit() {
         </section>
 
         <section className="ui-readiness-section">
-          <h2 className="ui-readiness-section-title">Secciones auditadas</h2>
+          <h2 className="app-subsection-title app-subsection-title--plain">Secciones auditadas</h2>
           <p className="ui-readiness-section-desc">
             Score de espacio/legibilidad por área. Se audita sección por sección.
           </p>
@@ -1118,7 +1118,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Login — 5 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Login — 5 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Referencia de layout y densidad. Auditoría:{' '}
                 <code>space-audit/login.md</code> (2026-06-22). UX:{' '}
@@ -1149,7 +1149,7 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Métricas de layout</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Métricas de layout</h3>
           <div className="ux-readiness-metrics">
             {LOGIN_LAYOUT_METRICS.map(m => (
               <div
@@ -1162,21 +1162,21 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             {LOGIN_STRENGTHS.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
           <ul className="ux-readiness-bullet-list">
             {LOGIN_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           {LOGIN_OPEN.length === 0 ? (
             <p className="ui-readiness-section-desc">Sin hallazgos abiertos — Login referencia de layout.</p>
           ) : (
@@ -1194,7 +1194,7 @@ function SpaceAudit() {
             </ul>
           )}
 
-          <h3 className="ux-readiness-subsection-title">Patrones a exportar</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Patrones a exportar</h3>
           <ul className="ux-readiness-bullet-list">
             <li>Card centrada con max-width acotado para tareas de un objetivo</li>
             <li>CTA full-width con misma altura que inputs (52px “comfortable”)</li>
@@ -1202,7 +1202,7 @@ function SpaceAudit() {
             <li>Notas secundarias en tertiary — nunca compiten con el CTA</li>
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
           <ul className="ux-readiness-bullet-list">
             {LOGIN_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -1213,7 +1213,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Home — 5 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Home — 5 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Hub raíz / launcher. Auditoría: <code>space-audit/home.md</code> (2026-06-22). UX:{' '}
                 <Link to="/ux-readiness" className="ux-readiness-link">
@@ -1243,7 +1243,7 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Métricas de layout</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Métricas de layout</h3>
           <div className="ux-readiness-metrics">
             {HOME_LAYOUT_METRICS.map(m => (
               <div
@@ -1256,21 +1256,21 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             {HOME_STRENGTHS.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
           <ul className="ux-readiness-bullet-list">
             {HOME_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           {HOME_OPEN.length === 0 ? (
             <p className="ui-readiness-section-desc">Sin hallazgos abiertos.</p>
           ) : (
@@ -1288,7 +1288,7 @@ function SpaceAudit() {
             </ul>
           )}
 
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
           <ul className="ux-readiness-bullet-list">
             {HOME_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -1299,7 +1299,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Finanzas hub — 4.0 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Finanzas hub — 4.0 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Hub de sección con resumen + CTA + lista iOS. Auditoría:{' '}
                 <code>space-audit/finanzas.md</code> (2026-06-22). Product:{' '}
@@ -1330,7 +1330,7 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Métricas de layout</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Métricas de layout</h3>
           <div className="ux-readiness-metrics">
             {FINANZAS_LAYOUT_METRICS.map(m => (
               <div
@@ -1343,21 +1343,21 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             {FINANZAS_STRENGTHS.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
           <ul className="ux-readiness-bullet-list">
             {FINANZAS_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           {FINANZAS_OPEN.length === 0 ? (
             <p className="ui-readiness-section-desc">Sin hallazgos abiertos.</p>
           ) : (
@@ -1375,7 +1375,7 @@ function SpaceAudit() {
             </ul>
           )}
 
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
           <ul className="ux-readiness-bullet-list">
             {FINANZAS_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -1386,7 +1386,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Transacciones — 4.2 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Transacciones — 4.2 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 CRUD principal de Finanzas. Auditoría: <code>space-audit/transacciones.md</code>{' '}
                 (2026-06-22).{' '}
@@ -1413,7 +1413,7 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Métricas de layout</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Métricas de layout</h3>
           <div className="ux-readiness-metrics">
             {TRANSACCIONES_LAYOUT_METRICS.map(m => (
               <div
@@ -1426,21 +1426,21 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             {TRANSACCIONES_STRENGTHS.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
           <ul className="ux-readiness-bullet-list">
             {TRANSACCIONES_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           <ul className="ux-readiness-findings">
             {TRANSACCIONES_OPEN.map((f, i) => (
               <li key={i} className="ui-readiness-finding space-audit-finding-open">
@@ -1454,7 +1454,7 @@ function SpaceAudit() {
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
           <ul className="ux-readiness-bullet-list">
             {TRANSACCIONES_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -1465,7 +1465,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Cuentas — 4.0 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Cuentas — 4.0 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 CRUD de cuentas bancarias. Auditoría: <code>space-audit/cuentas.md</code>{' '}
                 (2026-06-22).{' '}
@@ -1492,7 +1492,7 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Métricas de layout</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Métricas de layout</h3>
           <div className="ux-readiness-metrics">
             {CUENTAS_LAYOUT_METRICS.map(m => (
               <div
@@ -1505,21 +1505,21 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             {CUENTAS_STRENGTHS.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
           <ul className="ux-readiness-bullet-list">
             {CUENTAS_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           <ul className="ux-readiness-findings">
             {CUENTAS_OPEN.map((f, i) => (
               <li key={i} className="ui-readiness-finding space-audit-finding-open">
@@ -1533,7 +1533,7 @@ function SpaceAudit() {
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
           <ul className="ux-readiness-bullet-list">
             {CUENTAS_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -1544,7 +1544,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Deudas — 3.9 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Deudas — 3.9 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 CRUD de deudas y créditos. Auditoría: <code>space-audit/deudas.md</code>{' '}
                 (2026-06-22).{' '}
@@ -1571,7 +1571,7 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Métricas de layout</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Métricas de layout</h3>
           <div className="ux-readiness-metrics">
             {DEUDAS_LAYOUT_METRICS.map(m => (
               <div
@@ -1584,21 +1584,21 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             {DEUDAS_STRENGTHS.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
           <ul className="ux-readiness-bullet-list">
             {DEUDAS_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           <ul className="ux-readiness-findings">
             {DEUDAS_OPEN.map((f, i) => (
               <li key={i} className="ui-readiness-finding space-audit-finding-open">
@@ -1612,7 +1612,7 @@ function SpaceAudit() {
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
           <ul className="ux-readiness-bullet-list">
             {DEUDAS_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -1623,7 +1623,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Presupuestos — 4.0 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Presupuestos — 4.0 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 CRUD de presupuestos. Auditoría: <code>space-audit/presupuestos.md</code>{' '}
                 (2026-06-22).{' '}
@@ -1650,7 +1650,7 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Métricas de layout</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Métricas de layout</h3>
           <div className="ux-readiness-metrics">
             {PRESUPUESTOS_LAYOUT_METRICS.map(m => (
               <div
@@ -1663,21 +1663,21 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             {PRESUPUESTOS_STRENGTHS.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
           <ul className="ux-readiness-bullet-list">
             {PRESUPUESTOS_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           <ul className="ux-readiness-findings">
             {PRESUPUESTOS_OPEN.map((f, i) => (
               <li key={i} className="ui-readiness-finding space-audit-finding-open">
@@ -1691,7 +1691,7 @@ function SpaceAudit() {
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
           <ul className="ux-readiness-bullet-list">
             {PRESUPUESTOS_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -1702,7 +1702,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Me Deben — 3.9 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Me Deben — 3.9 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 CRUD de personas que deben. Auditoría: <code>space-audit/me-deben.md</code>{' '}
                 (2026-06-22).{' '}
@@ -1729,7 +1729,7 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Métricas de layout</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Métricas de layout</h3>
           <div className="ux-readiness-metrics">
             {ME_DEBEN_LAYOUT_METRICS.map(m => (
               <div
@@ -1742,21 +1742,21 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             {ME_DEBEN_STRENGTHS.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
           <ul className="ux-readiness-bullet-list">
             {ME_DEBEN_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           <ul className="ux-readiness-findings">
             {ME_DEBEN_OPEN.map((f, i) => (
               <li key={i} className="ui-readiness-finding space-audit-finding-open">
@@ -1770,7 +1770,7 @@ function SpaceAudit() {
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
           <ul className="ux-readiness-bullet-list">
             {ME_DEBEN_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -1781,7 +1781,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Tarjetas de crédito — 3.9 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Tarjetas de crédito — 3.9 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 CRUD de tarjetas de crédito. Auditoría:{' '}
                 <code>space-audit/tarjetas-credito.md</code> (2026-06-22).{' '}
@@ -1808,7 +1808,7 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Métricas de layout</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Métricas de layout</h3>
           <div className="ux-readiness-metrics">
             {TARJETAS_CREDITO_LAYOUT_METRICS.map(m => (
               <div
@@ -1821,21 +1821,21 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             {TARJETAS_CREDITO_STRENGTHS.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
           <ul className="ux-readiness-bullet-list">
             {TARJETAS_CREDITO_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           <ul className="ux-readiness-findings">
             {TARJETAS_CREDITO_OPEN.map((f, i) => (
               <li key={i} className="ui-readiness-finding space-audit-finding-open">
@@ -1849,7 +1849,7 @@ function SpaceAudit() {
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
           <ul className="ux-readiness-bullet-list">
             {TARJETAS_CREDITO_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -1860,7 +1860,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Tarjetas de débito — 4.0 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Tarjetas de débito — 4.0 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 CRUD de tarjetas de débito. Auditoría:{' '}
                 <code>space-audit/tarjetas-debito.md</code> (2026-06-22).{' '}
@@ -1887,7 +1887,7 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Métricas de layout</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Métricas de layout</h3>
           <div className="ux-readiness-metrics">
             {TARJETAS_DEBITO_LAYOUT_METRICS.map(m => (
               <div
@@ -1900,21 +1900,21 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             {TARJETAS_DEBITO_STRENGTHS.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
           <ul className="ux-readiness-bullet-list">
             {TARJETAS_DEBITO_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           <ul className="ux-readiness-findings">
             {TARJETAS_DEBITO_OPEN.map((f, i) => (
               <li key={i} className="ui-readiness-finding space-audit-finding-open">
@@ -1928,7 +1928,7 @@ function SpaceAudit() {
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
           <ul className="ux-readiness-bullet-list">
             {TARJETAS_DEBITO_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -1939,7 +1939,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Subscripciones — 4.0 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Subscripciones — 4.0 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 CRUD de subscripciones. Auditoría: <code>space-audit/subscripciones.md</code>{' '}
                 (2026-06-22). Cierra sub-hub crédito.{' '}
@@ -1966,7 +1966,7 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Métricas de layout</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Métricas de layout</h3>
           <div className="ux-readiness-metrics">
             {SUBSCRIPCIONES_LAYOUT_METRICS.map(m => (
               <div
@@ -1979,21 +1979,21 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             {SUBSCRIPCIONES_STRENGTHS.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
           <ul className="ux-readiness-bullet-list">
             {SUBSCRIPCIONES_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           <ul className="ux-readiness-findings">
             {SUBSCRIPCIONES_OPEN.map((f, i) => (
               <li key={i} className="ui-readiness-finding space-audit-finding-open">
@@ -2007,7 +2007,7 @@ function SpaceAudit() {
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
           <ul className="ux-readiness-bullet-list">
             {SUBSCRIPCIONES_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -2018,7 +2018,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">CDTs — 4.0 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">CDTs — 4.0 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 CRUD de certificados de depósito. Auditoría: <code>space-audit/cdts.md</code>{' '}
                 (2026-06-22). Sub-hub ahorro.{' '}
@@ -2045,7 +2045,7 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Métricas de layout</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Métricas de layout</h3>
           <div className="ux-readiness-metrics">
             {CDTS_LAYOUT_METRICS.map(m => (
               <div
@@ -2058,21 +2058,21 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             {CDTS_STRENGTHS.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
           <ul className="ux-readiness-bullet-list">
             {CDTS_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           <ul className="ux-readiness-findings">
             {CDTS_OPEN.map((f, i) => (
               <li key={i} className="ui-readiness-finding space-audit-finding-open">
@@ -2086,7 +2086,7 @@ function SpaceAudit() {
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
           <ul className="ux-readiness-bullet-list">
             {CDTS_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -2097,7 +2097,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Inflación — 3.8 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Inflación — 3.8 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Calculadora y contenido editorial. Auditoría: <code>space-audit/inflacion.md</code>{' '}
                 (2026-06-22). Cierra sub-hub ahorro.{' '}
@@ -2124,7 +2124,7 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Métricas de layout</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Métricas de layout</h3>
           <div className="ux-readiness-metrics">
             {INFLACION_LAYOUT_METRICS.map(m => (
               <div
@@ -2137,21 +2137,21 @@ function SpaceAudit() {
             ))}
           </div>
 
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             {INFLACION_STRENGTHS.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
           <ul className="ux-readiness-bullet-list">
             {INFLACION_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           <ul className="ux-readiness-findings">
             {INFLACION_OPEN.map((f, i) => (
               <li key={i} className="ui-readiness-finding space-audit-finding-open">
@@ -2165,7 +2165,7 @@ function SpaceAudit() {
             ))}
           </ul>
 
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
           <ul className="ux-readiness-bullet-list">
             {INFLACION_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -2176,7 +2176,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Cripto Wallet — 4.0 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Cripto Wallet — 4.0 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 CRUD de wallets. Auditoría: <code>space-audit/cripto-wallet.md</code> (2026-06-22).{' '}
                 <Link to="/finanzas/cripto-wallet" className="ux-readiness-link">
@@ -2197,7 +2197,7 @@ function SpaceAudit() {
               </div>
             ))}
           </div>
-          <h3 className="ux-readiness-subsection-title">Métricas de layout</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Métricas de layout</h3>
           <div className="ux-readiness-metrics">
             {CRIPTO_WALLET_LAYOUT_METRICS.map(m => (
               <div key={m.label} className={`ux-readiness-metric ux-readiness-metric-${m.status}`}>
@@ -2206,19 +2206,19 @@ function SpaceAudit() {
               </div>
             ))}
           </div>
-          <h3 className="ux-readiness-subsection-title">Fortalezas verificadas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Fortalezas verificadas</h3>
           <ul className="ux-readiness-bullet-list">
             {CRIPTO_WALLET_STRENGTHS.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
-          <h3 className="ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
           <ul className="ux-readiness-bullet-list">
             {CRIPTO_WALLET_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
-          <h3 className="ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Plan de pruebas (layout)</h3>
           <ul className="ux-readiness-bullet-list">
             {CRIPTO_WALLET_TEST_PLAN.map(item => (
               <li key={item}>{item}</li>
@@ -2229,7 +2229,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Mi Cripto — 3.9 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Mi Cripto — 3.9 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Posiciones y movimientos. Auditoría: <code>space-audit/cripto-transacciones.md</code>{' '}
                 <Link to="/finanzas/cripto-transacciones" className="ux-readiness-link">
@@ -2250,7 +2250,7 @@ function SpaceAudit() {
               </div>
             ))}
           </div>
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           <ul className="ux-readiness-findings">
             {CRIPTO_TRANSACCIONES_OPEN.map((f, i) => (
               <li key={i} className="ui-readiness-finding space-audit-finding-open">
@@ -2261,7 +2261,7 @@ function SpaceAudit() {
               </li>
             ))}
           </ul>
-          <h3 className="ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
           <ul className="ux-readiness-bullet-list">
             {CRIPTO_TRANSACCIONES_RESOLVED.map(item => (
               <li key={item}>{item}</li>
@@ -2272,7 +2272,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Vendedores cripto — 3.7 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Vendedores cripto — 3.7 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Formulario + lista. Auditoría: <code>space-audit/crypto-vendors.md</code>. Cierra sub-hub cripto.{' '}
                 <Link to="/finanzas/crypto-vendors" className="ux-readiness-link">
@@ -2293,7 +2293,7 @@ function SpaceAudit() {
               </div>
             ))}
           </div>
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           <ul className="ux-readiness-findings">
             {CRYPTO_VENDORS_OPEN.map((f, i) => (
               <li key={i} className="ui-readiness-finding space-audit-finding-open">
@@ -2304,7 +2304,7 @@ function SpaceAudit() {
               </li>
             ))}
           </ul>
-          <h3 className="ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
           <ul className="ux-readiness-bullet-list">
             {CRYPTO_VENDORS_RESOLVED.map(item => (
               <li key={item}>{item}</li>
@@ -2315,7 +2315,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Proyectos — 4.0 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Proyectos — 4.0 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Proyectos de ahorro. <code>space-audit/proyectos.md</code>{' '}
                 <Link to="/finanzas/proyectos" className="ux-readiness-link">Ver →</Link>
@@ -2333,7 +2333,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Listas de mercado — 4.0 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Listas de mercado — 4.0 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Lista de compras. <code>space-audit/listas-mercado.md</code>{' '}
                 <Link to="/finanzas/listas-mercado" className="ux-readiness-link">Ver →</Link>
@@ -2351,7 +2351,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Diseñador presupuestos — 3.8 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Diseñador presupuestos — 3.8 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Cierra pantallas sueltas Finanzas. <code>space-audit/disenador-presupuestos.md</code>{' '}
                 <Link to="/finanzas/diseñador-presupuestos" className="ux-readiness-link">Ver →</Link>
@@ -2359,13 +2359,13 @@ function SpaceAudit() {
             </div>
             <span className="ux-readiness-login-score">3.8</span>
           </div>
-          <h3 className="ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Resueltos (2026-06-22)</h3>
           <ul className="ux-readiness-bullet-list">
             {DISENADOR_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
-          <h3 className="ux-readiness-subsection-title">Hallazgos abiertos</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Hallazgos abiertos</h3>
           <ul className="ux-readiness-findings">
             {DISENADOR_OPEN.map((f, i) => (
               <li key={i} className="ui-readiness-finding space-audit-finding-open">
@@ -2381,7 +2381,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Utilidades (Registros) — 3.8 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Utilidades (Registros) — 3.8 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Hub de utilidades. <code>space-audit/registros.md</code>{' '}
                 <Link to="/registros" className="ux-readiness-link">Ver →</Link>
@@ -2399,20 +2399,20 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Registros — CRUD y herramientas</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Registros — CRUD y herramientas</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 6 CRUD + 2 herramientas. Docs: cuadernos, secretos, archivos, empleados, vehículos, patrimonio, calculadora, generador-contrasenas.
               </p>
             </div>
             <span className="ux-readiness-login-score">3.9</span>
           </div>
-          <h3 className="ux-readiness-subsection-title">CRUD resueltos (2026-06-22)</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">CRUD resueltos (2026-06-22)</h3>
           <ul className="ux-readiness-bullet-list">
             {REGISTROS_CRUD_RESOLVED.map(item => (
               <li key={item}>{item}</li>
             ))}
           </ul>
-          <h3 className="ux-readiness-subsection-title">Herramientas</h3>
+          <h3 className="app-form-block-title ux-readiness-subsection-title">Herramientas</h3>
           <ul className="ux-readiness-bullet-list">
             {REGISTROS_TOOLS_RESOLVED.map(item => (
               <li key={item}>{item}</li>
@@ -2423,7 +2423,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Trabajo — 3.9 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Trabajo — 3.9 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Hub + Contratos + Actividades. <code>space-audit/trabajo.md</code>{' '}
                 <Link to="/trabajo" className="ux-readiness-link">Ver →</Link>
@@ -2441,7 +2441,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Lifestyle (Tiempo) — 3.9 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Lifestyle (Tiempo) — 3.9 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Hub + 4 pantallas. <code>space-audit/tiempo.md</code>{' '}
                 <Link to="/tiempo" className="ux-readiness-link">Ver →</Link>
@@ -2459,7 +2459,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Ajustes — 4.0 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Ajustes — 4.0 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Hub de configuración. <code>space-audit/ajustes.md</code>{' '}
                 <Link to="/ajustes" className="ux-readiness-link">Ver →</Link>
@@ -2477,7 +2477,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Justicia — 3.9 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Justicia — 3.9 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Hub + Procesos judiciales. <code>space-audit/justicia.md</code>,{' '}
                 <code>procesos.md</code>{' '}
@@ -2496,7 +2496,7 @@ function SpaceAudit() {
         <section className="ui-readiness-section ux-readiness-login-section">
           <div className="ux-readiness-login-header">
             <div>
-              <h2 className="ui-readiness-section-title">Notificaciones — 4.0 / 5</h2>
+              <h2 className="app-subsection-title app-subsection-title--plain">Notificaciones — 4.0 / 5</h2>
               <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
                 Bandeja de alertas. <code>space-audit/notificaciones.md</code>{' '}
                 <Link to="/notificaciones" className="ux-readiness-link">Ver →</Link>
@@ -2530,7 +2530,7 @@ function SpaceAudit() {
         </section>
 
         <section className="ui-readiness-section">
-          <h2 className="ui-readiness-section-title">Diagnóstico en una frase</h2>
+          <h2 className="app-subsection-title app-subsection-title--plain">Diagnóstico en una frase</h2>
           <p className="ui-readiness-section-desc" style={{ marginBottom: 0 }}>
             Mucho glass y padding, poca señal sobre qué hacer primero; los números y las listas
             cambian de forma según la pantalla aunque el contenido sea el mismo tipo de dato.

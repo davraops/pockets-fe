@@ -681,7 +681,7 @@ function MeDeben() {
               <h2 className="modal-title" id="modal-title-nuevo-deudor">Nuevo Deudor</h2>
               <button className="modal-close" onClick={handleCloseModal} aria-label="Cerrar modal">×</button>
             </div>
-            <form className="modal-form" onSubmit={handleSubmit}>
+            <form className="modal-form" onSubmit={handleSubmit}><div className="modal-panel__scroll">
               <div className="form-group">
                 <label htmlFor="nombreDeudor">Nombre del Deudor *</label>
                 <input
@@ -746,12 +746,12 @@ function MeDeben() {
                 {formErrors.totalPagado && (
                   <span className="error-message">{formErrors.totalPagado}</span>
                 )}
-              </div>
-              <div className="modal-actions">
-                <button type="button" className="modal-button cancel" onClick={handleCloseModal}>
+              </div></div>
+              <div className="modal-actions-base">
+                <button type="button" className="btn-base btn-secondary" onClick={handleCloseModal}>
                   Cancelar
                 </button>
-                <button type="submit" className="modal-button submit">
+                <button type="submit" className="btn-base btn-accent btn-submit">
                   Agregar
                 </button>
               </div>
@@ -857,7 +857,7 @@ function MeDeben() {
                 </div>
               </>
             ) : (
-              <form className="modal-form" onSubmit={handleSubmit}>
+              <form className="modal-form" onSubmit={handleSubmit}><div className="modal-panel__scroll">
                 <div className="form-group">
                   <label htmlFor="edit-nombreDeudor">Nombre del Deudor *</label>
                   <input
@@ -919,16 +919,16 @@ function MeDeben() {
                 >
                   <strong>💡 Nota:</strong> El total pagado solo se puede actualizar desde el
                   registro de transacciones.
-                </div>
-                <div className="modal-actions">
+                </div></div>
+                <div className="modal-actions-base">
                   <button
                     type="button"
-                    className="modal-button cancel"
+                    className="btn-base btn-secondary"
                     onClick={() => setIsEditMode(false)}
                   >
                     Cancelar
                   </button>
-                  <button type="submit" className="modal-button submit">
+                  <button type="submit" className="btn-base btn-accent btn-submit">
                     Guardar Cambios
                   </button>
                 </div>
@@ -978,10 +978,10 @@ function MeDeben() {
                 </button>
               </div>
             </div>
-            <div className="modal-actions">
+            <div className="modal-actions-base">
               <button
                 type="button"
-                className="modal-button cancel"
+                className="btn-base btn-secondary"
                 onClick={() => setIsDebugModalOpen(false)}
               >
                 Cerrar

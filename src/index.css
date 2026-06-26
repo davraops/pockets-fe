@@ -68,6 +68,17 @@ button {
   /* Layout */
   --layout-max-width-hub: 800px;
   --layout-max-width-wide: 1200px;
+  --layout-grid-gap-md: var(--spacing-md);
+  --layout-grid-gap-sm: var(--spacing-sm);
+  --layout-grid-card-min: 16.25rem;
+  --layout-grid-auto-min: 9.375rem;
+  --modal-inset-x: var(--spacing-xl);
+  --modal-inset-y: var(--spacing-lg);
+  --modal-overlay-gap-top: calc(var(--layout-chrome-offset-top) + var(--spacing-md));
+  --modal-overlay-gap-bottom: var(--spacing-xl);
+  --modal-overlay-gap-x: var(--spacing-xl);
+  --modal-available-height: calc(100dvh - var(--modal-overlay-gap-top) - var(--modal-overlay-gap-bottom));
+  --modal-max-height: min(90vh, var(--modal-available-height));
   --layout-status-bar-height: 44px;
   --layout-footer-height: 60px;
   --layout-footer-height-mobile: calc(100px + var(--safe-bottom));

@@ -698,8 +698,8 @@ function Rutinas() {
         ) : routineGroups.length > 0 ? (
           <div className="rutinas-sections">
             {routineGroups.map(group => (
-              <section key={group.key} className="rutinas-section" aria-label={group.label}>
-                <h2 className="rutinas-section-title">{group.label}</h2>
+              <section key={group.key} className="rutinas-section app-content-section" aria-label={group.label}>
+                <h2 className="app-group-label">{group.label}</h2>
                 <div className="glass-group">
                   {group.routines.map(routine => (
                     <RutinaListRow
@@ -804,7 +804,7 @@ function Rutinas() {
                 </button>
               </div>
 
-              <div className="rutinas-detail-content">
+              <div className="modal-panel-content rutinas-detail-content">
                 <div className="debug-options">
                   <button
                     className="debug-option-button create-demo"

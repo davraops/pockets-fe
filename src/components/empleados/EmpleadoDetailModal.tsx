@@ -58,7 +58,7 @@ function EmpleadoDetailModal({
 
         <div className="modal-panel-content empleados-modal__body">
           <div className="empleados-detail-section">
-            <h3 className="empleados-detail-section-title">Información básica</h3>
+            <h3 className="app-subsection-title app-subsection-title--plain empleados-detail-section-title">Información básica</h3>
             <div className="empleados-detail-grid">
               {employee.data.identification ? (
                 <div className="empleados-detail-item">

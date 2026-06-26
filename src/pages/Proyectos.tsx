@@ -18,6 +18,7 @@ import ListSkeleton from '../components/ListSkeleton'
 import FinanzasSubHeader from '../components/finanzas/FinanzasSubHeader'
 import './AppPage.css'
 import './Proyectos.css'
+import { SEMANTIC_UI_COLORS } from '../constants/designTokens'
 
 // Interfaz que coincide con la respuesta de la API (campos en inglés)
 interface ProjectAPI {
@@ -512,11 +513,11 @@ function Proyectos() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return '#34C759'
+        return SEMANTIC_UI_COLORS.success
       case 'cancelled':
-        return '#FF3B30'
+        return SEMANTIC_UI_COLORS.danger
       default:
-        return '#00C7BE'
+        return SEMANTIC_UI_COLORS.teal
     }
   }
 
@@ -800,7 +801,7 @@ function Proyectos() {
                 ×
               </button>
             </div>
-            <form className="modal-form" onSubmit={handleSubmit}>
+            <form className="modal-form" onSubmit={handleSubmit}><div className="modal-panel__scroll">
               <div className="form-group-base">
                 <label htmlFor="nombre" className="form-label-base">Nombre del Proyecto</label>
                 <input
@@ -916,12 +917,12 @@ function Proyectos() {
                 {formErrors.fechaFin && (
                   <span className="error-message">{formErrors.fechaFin}</span>
                 )}
-              </div>
-              <div className="modal-actions">
-                <button type="button" className="modal-button cancel" onClick={handleCloseModal}>
+              </div></div>
+              <div className="modal-actions-base">
+                <button type="button" className="btn-base btn-secondary" onClick={handleCloseModal}>
                   Cancelar
                 </button>
-                <button type="submit" className="modal-button submit">
+                <button type="submit" className="btn-base btn-accent btn-submit">
                   Agregar
                 </button>
               </div>
@@ -1061,7 +1062,7 @@ function Proyectos() {
                 </div>
               </>
             ) : (
-              <form className="modal-form" onSubmit={handleSubmit}>
+              <form className="modal-form" onSubmit={handleSubmit}><div className="modal-panel__scroll">
                 <div className="form-group-base">
                   <label htmlFor="edit-nombre" className="form-label-base">Nombre del Proyecto</label>
                   <input
@@ -1197,16 +1198,16 @@ function Proyectos() {
                       automáticamente.
                     </p>
                   )}
-                </div>
-                <div className="modal-actions">
+                </div></div>
+                <div className="modal-actions-base">
                   <button
                     type="button"
-                    className="modal-button cancel"
+                    className="btn-base btn-secondary"
                     onClick={() => setIsEditMode(false)}
                   >
                     Cancelar
                   </button>
-                  <button type="submit" className="modal-button submit">
+                  <button type="submit" className="btn-base btn-accent btn-submit">
                     Guardar Cambios
                   </button>
                 </div>
@@ -1257,10 +1258,10 @@ function Proyectos() {
                 </button>
               </div>
             </div>
-            <div className="modal-actions">
+            <div className="modal-actions-base">
               <button
                 type="button"
-                className="modal-button cancel"
+                className="btn-base btn-secondary"
                 onClick={() => setIsDebugModalOpen(false)}
               >
                 Cerrar

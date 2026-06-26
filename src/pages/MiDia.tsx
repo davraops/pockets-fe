@@ -315,7 +315,7 @@ function MiDia() {
             <>
               {pending.length > 0 ? (
                 <div className="midia-subsection">
-                  <h2 className="midia-section-title">
+                  <h2 className="app-group-label">
                     Pendientes{hasSearch ? '' : ` (${pending.length})`}
                   </h2>
                   <div className="glass-group">
@@ -334,7 +334,7 @@ function MiDia() {
 
               {completed.length > 0 ? (
                 <div className="midia-subsection">
-                  <h2 className="midia-section-title">
+                  <h2 className="app-group-label">
                     Completadas{hasSearch ? '' : ` (${completed.length})`}
                   </h2>
                   <div className="glass-group">
@@ -355,7 +355,7 @@ function MiDia() {
 
         {!isLoading && !error && (hasSearch ? filteredWeek.length > 0 : weekRoutines.length > 0) ? (
           <section className="midia-section" aria-label="Rutinas de la semana">
-            <h2 className="midia-section-title">
+            <h2 className="app-group-label">
               Esta semana ({hasSearch ? filteredWeek.length : weekRoutines.length})
             </h2>
             <div className="glass-group">

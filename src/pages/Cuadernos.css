@@ -884,7 +884,7 @@
 /* Create modal */
 .cuaderno-create-modal {
   max-width: 26rem;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .cuaderno-create-modal__header {
@@ -923,7 +923,12 @@
 }
 
 .cuaderno-create-modal__form {
-  padding: 0 var(--spacing-lg) var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
 }
 
 .cuaderno-create-modal__title-group {

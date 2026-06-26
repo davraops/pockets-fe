@@ -385,7 +385,7 @@
   .archivos-viewer-modal {
     width: 100%;
     max-width: 100%;
-    max-height: min(92dvh, calc(100dvh - var(--safe-top)));
+    max-height: var(--modal-max-height);
   }
 
   .archivos-viewer-modal__frame {

@@ -643,12 +643,6 @@
 .cuaderno-emoji-picker__section-title {
   margin: 0 0 var(--spacing-xs);
   padding: 0 var(--spacing-xs);
-  font-family: var(--font-family);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
 .cuaderno-emoji-picker__grid {
@@ -1047,13 +1041,7 @@
 }
 
 .cuaderno-cover-picker__section-title {
-  margin: 0 0 var(--spacing-xs);
-  font-family: var(--font-family);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  margin-bottom: var(--spacing-xs);
 }
 
 .cuaderno-cover-picker__grid {

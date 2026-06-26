@@ -1,16 +1,6 @@
 /* CRUD form layout — shared across hub pages */
 
-.crud-form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-md);
-}
-
-@media (max-width: 768px) {
-  .crud-form-row {
-    grid-template-columns: 1fr;
-  }
-}
+/* 2-column grid: .app-grid-2 + .crud-form-row (Principio 7 — ui-patterns.css) */
 
 .crud-form-section-divider {
   margin: var(--spacing-lg) 0 var(--spacing-md) 0;

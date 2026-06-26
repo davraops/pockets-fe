@@ -72,7 +72,8 @@ function ProcesoContratacionCloseModal({
           </button>
         </div>
 
-        <form className="modal-panel-content proceso-contratacion-close-modal__body" onSubmit={handleSubmit}>
+        <form className="proceso-contratacion-close-modal__form" onSubmit={handleSubmit}>
+          <div className="modal-panel__scroll modal-panel-content proceso-contratacion-close-modal__body">
           {stagnant ? (
             <p className="proceso-contratacion-close-modal__hint" role="status">
               Este proceso lleva más de una semana sin seguimiento reciente.
@@ -161,6 +162,8 @@ function ProcesoContratacionCloseModal({
               rows={3}
               placeholder="Contexto adicional del cierre"
             />
+          </div>
+
           </div>
 
           <div className="modal-actions-base proceso-contratacion-close-modal__footer">

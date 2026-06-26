@@ -1070,7 +1070,7 @@ function TarjetasDebito() {
                 ×
               </button>
             </div>
-            <form className="modal-form" onSubmit={handleSubmit}>
+            <form className="modal-form" onSubmit={handleSubmit}><div className="modal-panel__scroll">
               <div className="form-group-base">
                 <label htmlFor="nombre" className="form-label-base">Nombre</label>
                 <input
@@ -1157,12 +1157,12 @@ function TarjetasDebito() {
                     ? 'Marcada como tarjeta virtual. Desmarca para cambiarla a física.'
                     : 'Marcada como tarjeta física. Marca para cambiarla a virtual.'}
                 </p>
-              </div>
-              <div className="modal-actions">
-                <button type="button" className="modal-button cancel" onClick={handleCloseModal}>
+              </div></div>
+              <div className="modal-actions-base">
+                <button type="button" className="btn-base btn-secondary" onClick={handleCloseModal}>
                   Cancelar
                 </button>
-                <button type="submit" className="modal-button submit">
+                <button type="submit" className="btn-base btn-accent btn-submit">
                   Agregar
                 </button>
               </div>
@@ -1259,7 +1259,7 @@ function TarjetasDebito() {
                 </div>
               </>
             ) : (
-              <form className="modal-form" onSubmit={handleSubmit}>
+              <form className="modal-form" onSubmit={handleSubmit}><div className="modal-panel__scroll">
                 <div className="form-group-base">
                   <label htmlFor="edit-nombre" className="form-label-base">Nombre</label>
                   <input
@@ -1345,16 +1345,16 @@ function TarjetasDebito() {
                       ? 'Marcada como tarjeta virtual. Desmarca para cambiarla a física.'
                       : 'Marcada como tarjeta física. Marca para cambiarla a virtual.'}
                   </p>
-                </div>
-                <div className="modal-actions">
+                </div></div>
+                <div className="modal-actions-base">
                   <button
                     type="button"
-                    className="modal-button cancel"
+                    className="btn-base btn-secondary"
                     onClick={() => setIsEditMode(false)}
                   >
                     Cancelar
                   </button>
-                  <button type="submit" className="modal-button submit">
+                  <button type="submit" className="btn-base btn-accent btn-submit">
                     Guardar Cambios
                   </button>
                 </div>
@@ -1374,7 +1374,7 @@ function TarjetasDebito() {
                 ×
               </button>
             </div>
-            <div className="delete-warning-content">
+            <div className="app-callout-danger">
               <p className="warning-text">
                 Esta tarjeta tiene <strong>{affectedSubscriptions.length} subscripción(es)</strong>{' '}
                 asociada(s) que también serán eliminadas.
@@ -1408,17 +1408,17 @@ function TarjetasDebito() {
                 </p>
               </div>
             </div>
-            <div className="modal-actions">
+            <div className="modal-actions-base">
               <button
                 type="button"
-                className="modal-button cancel"
+                className="btn-base btn-secondary"
                 onClick={() => setIsDeleteConfirmModalOpen(false)}
               >
                 Cancelar
               </button>
               <button
                 type="button"
-                className="modal-button delete-confirm"
+                className="btn-base btn-danger-solid"
                 onClick={performDeleteCard}
                 disabled={isLoading}
               >
@@ -1470,10 +1470,10 @@ function TarjetasDebito() {
                 </button>
               </div>
             </div>
-            <div className="modal-actions">
+            <div className="modal-actions-base">
               <button
                 type="button"
-                className="modal-button cancel"
+                className="btn-base btn-secondary"
                 onClick={() => setIsDebugModalOpen(false)}
               >
                 Cerrar

@@ -139,7 +139,7 @@ function ProcesoDetailModal({
           </section>
 
           <section className="procesos-detail-section">
-            <h3 className="procesos-detail-section-title">Información del expediente</h3>
+            <h3 className="app-field-group-label procesos-detail-section-title">Información del expediente</h3>
             <div className="procesos-detail-grid">
               <div className="procesos-detail-item">
                 <span className="procesos-detail-label">Radicado</span>
@@ -164,7 +164,7 @@ function ProcesoDetailModal({
 
           {proceso.parties?.length ? (
             <section className="procesos-detail-section">
-              <h3 className="procesos-detail-section-title">Partes del proceso</h3>
+              <h3 className="app-field-group-label procesos-detail-section-title">Partes del proceso</h3>
               <div className="procesos-parties-list">
                 {proceso.parties.map(party => {
                   const isUserParty = proceso.userRoles?.includes(party.role)
@@ -182,13 +182,13 @@ function ProcesoDetailModal({
             </section>
           ) : proceso.sujetosProcesales ? (
             <section className="procesos-detail-section">
-              <h3 className="procesos-detail-section-title">Sujetos procesales</h3>
+              <h3 className="app-field-group-label procesos-detail-section-title">Sujetos procesales</h3>
               <p className="procesos-detail-value">{proceso.sujetosProcesales}</p>
             </section>
           ) : null}
 
           <section className="procesos-detail-section procesos-detail-section--tracking">
-            <h3 className="procesos-detail-section-title">Seguimiento y alertas</h3>
+            <h3 className="app-field-group-label procesos-detail-section-title">Seguimiento y alertas</h3>
             <p className="procesos-tracking-intro">
               {proceso.isTracked
                 ? 'Recibirás notificaciones cuando haya nuevas actuaciones en este proceso.'
@@ -218,7 +218,7 @@ function ProcesoDetailModal({
           <section className="procesos-detail-section procesos-detail-section--actuaciones">
             <div className="procesos-actuaciones-header">
               <div>
-                <h3 className="procesos-detail-section-title">Actuaciones</h3>
+                <h3 className="app-field-group-label procesos-detail-section-title">Actuaciones</h3>
                 <p className="procesos-actuaciones-meta">
                   {isLoadingActuaciones
                     ? 'Cargando historial…'

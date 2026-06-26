@@ -31,6 +31,8 @@ export const DESIGN_TOKEN_GROUPS: DesignTokenGroup[] = [
     tokens: [
       { name: '--layout-max-width-hub', kind: 'length', sample: '800px', description: 'Hubs, StatusBar' },
       { name: '--layout-max-width-wide', kind: 'length', sample: '1200px', description: 'CRUD / tablas' },
+  { name: '--layout-grid-gap-md', kind: 'spacing', sample: '1rem', description: 'Gap cuadrícula formularios' },
+  { name: '--layout-grid-card-min', kind: 'length', sample: '16.25rem', description: 'Ancho mínimo tarjeta en grid' },
     ],
   },
   {
@@ -246,10 +248,122 @@ export const DESIGN_TOKEN_GROUPS: DesignTokenGroup[] = [
 /** Flat list of all documented token names */
 export const ALL_DOCUMENTED_TOKENS = DESIGN_TOKEN_GROUPS.flatMap(g => g.tokens.map(t => t.name))
 
+/** Principio 1 — Jerarquía visual (ui-patterns.css) */
+export const VISUAL_HIERARCHY_LEVELS = [
+  { level: 'L1', className: 'app-page-title', role: 'Título de pantalla', cues: '3xl · bold · primary' },
+  { level: 'L2', className: 'app-page-subtitle', role: 'Intro de pantalla', cues: 'base · normal · secondary' },
+  { level: '—', className: 'app-page-header', role: 'Agrupa L1+L2', cues: 'espaciado tight' },
+  { level: 'L3', className: 'app-section-title', role: 'Capítulo / bloque principal', cues: 'xl · semibold · primary' },
+  { level: '—', className: 'app-section-lead', role: 'Lead bajo capítulo', cues: 'base · normal · secondary' },
+  { level: 'L4', className: 'app-subsection-title', role: 'Sección de formulario', cues: 'lg · semibold · divisor' },
+  { level: 'L5', className: 'app-group-label', role: 'Agrupador de lista', cues: 'xs · uppercase · tertiary' },
+  { level: 'L6', className: 'modal-panel-title', role: 'Título de modal', cues: 'xl · semibold · primary' },
+  { level: 'L8', className: 'crud-row-title', role: 'Título de fila', cues: 'lg · medium · primary' },
+  { level: 'L9', className: 'form-label-base', role: 'Etiqueta de campo', cues: 'sm · medium · secondary' },
+  { level: 'L10', className: 'app-caption', role: 'Meta / hint', cues: 'sm · normal · tertiary' },
+  { level: '—', className: 'app-content-sections', role: 'Ritmo entre capítulos', cues: 'gap xl' },
+] as const
+
+export const PROGRESSIVE_DISCLOSURE_PATTERNS = [
+  {
+    id: 'progressive-flow',
+    component: 'ProgressiveFlow + ProgressiveFlowNav',
+    use: 'Formularios multi-paso con orientación (paso X de Y)',
+  },
+  {
+    id: 'advice-banner',
+    component: 'CollapsibleAdviceBanner',
+    use: 'Contenido editorial / advertencias colapsables',
+  },
+  {
+    id: 'progressive-reveal',
+    className: 'progressive-reveal',
+    use: 'Campos condicionales tras checkbox o selección',
+  },
+  {
+    id: 'expandable-card',
+    component: 'MetaGoalCard, crud-inset-row',
+    use: 'Detalle bajo demanda en listas',
+  },
+] as const
+
+/** Principio 3 — Patrones canónicos (usar siempre; desviar solo con justificación) */
+export const CONSISTENCY_CANONICAL_PATTERNS = [
+  { role: 'Acción primaria', classes: 'btn-base btn-accent btn-submit' },
+  { role: 'Acción secundaria / cancelar', classes: 'btn-base btn-secondary' },
+  { role: 'Pie de modal', classes: 'modal-actions-base + btn-base' },
+  { role: 'Toolbar', classes: 'app-toolbar-button + app-toolbar-icon' },
+  { role: 'Cerrar modal panel', classes: 'modal-panel-close' },
+  { role: 'Icono en fila/tarjeta', classes: 'btn-icon [.btn-icon--danger]' },
+  { role: 'Campo de formulario', classes: 'form-input-base + form-label-base' },
+] as const
+
+/** Colores semánticos para gráficos / inline styles — sincronizar con `src/index.css` */
+export const SEMANTIC_UI_COLORS = {
+  danger: '#ff3b30',
+  success: '#34c759',
+  warning: '#ff9500',
+  info: '#007aff',
+  neutral: '#8e8e93',
+  teal: '#00c7be',
+} as const
+
+/** Principio 4 — Niveles de contraste (texto, acción, superficie) */
+export const CONTRAST_LEVELS = [
+  { tier: 'text-high', role: 'Contenido principal', classes: 'text-primary', token: '--text-primary' },
+  { tier: 'text-mid', role: 'Soporte / labels', classes: 'text-secondary', token: '--text-secondary' },
+  { tier: 'text-low', role: 'Meta / hints', classes: 'app-caption', token: '--text-tertiary' },
+  { tier: 'action-critical', role: 'Eliminar irreversible', classes: 'btn-base btn-danger-solid', token: '--color-danger-solid' },
+  { tier: 'action-high', role: 'Confirmar / guardar', classes: 'btn-base btn-accent btn-submit', token: '--accent-primary-solid' },
+  { tier: 'action-mid', role: 'Peligro en contexto', classes: 'btn-base btn-danger | btn-soft-danger', token: '--accent-danger' },
+  { tier: 'action-low', role: 'Cancelar / mantener', classes: 'btn-base btn-secondary', token: '--btn-secondary-bg' },
+  { tier: 'icon-danger', role: 'Eliminar en fila', classes: 'btn-icon btn-icon--danger', token: '--color-danger-solid' },
+  { tier: 'surface-critical', role: 'Alertas de borrado', classes: 'semantic-alert-danger | app-callout-danger', token: '--color-danger-bg-soft' },
+  { tier: 'surface-warning', role: 'Advertencias', classes: 'semantic-alert-warning | form-alert-banner', token: '--alert-warning-border' },
+] as const
+
+/** Principio 5 — Patrones de accesibilidad WCAG */
+export const ACCESSIBILITY_PATTERNS = [
+  { wcag: '2.4.1', pattern: 'skip-link → #main-content', file: 'App.tsx + accessibility.css' },
+  { wcag: '1.1.1', pattern: 'alt en imágenes; aria-label en botones icono', classes: 'sr-only' },
+  { wcag: '2.4.7', pattern: 'Anillo :focus-visible en controles interactivos', file: 'accessibility.css' },
+  { wcag: '2.1.1', pattern: 'Focus trap + Escape en modales', component: 'ModalOverlay + useModalAccessibility' },
+  { wcag: '2.5.5', pattern: 'Touch target ≥ 44px', token: '--touch-target-min' },
+  { wcag: '1.4.3', pattern: 'Contraste texto/fondo + prefers-contrast: more', file: 'accessibility.css' },
+  { wcag: '4.1.3', pattern: 'Toasts con aria-live="polite"', component: 'NotificationContainer' },
+  { wcag: '1.3.1', pattern: 'Labels asociados a campos', classes: 'form-label-base + htmlFor' },
+  { wcag: '2.3.3', pattern: 'Animaciones respetan prefers-reduced-motion', file: 'motion-accessibility.css' },
+] as const
+
+/** Principio 6 — Proximidad visual (elementos relacionados juntos) */
+export const PROXIMITY_PATTERNS = [
+  { spacing: 'tight', token: '--spacing-xs', classes: 'app-control-group', use: 'Iconos / toggles en la misma fila' },
+  { spacing: 'group', token: '--spacing-sm', classes: 'app-action-bar__cluster', use: 'Cancelar + Guardar; Anterior + Siguiente' },
+  { spacing: 'section', token: '--spacing-xl', classes: 'app-content-sections', use: 'Capítulos de página no relacionados' },
+  { spacing: 'zone', token: 'border-top', classes: 'modal-actions-base', use: 'Pie de modal separado del cuerpo' },
+  { pattern: 'exit-separated', classes: 'app-action-bar__exit | progressive-flow__nav', use: 'Salir/cancelar lejos de avanzar' },
+  { pattern: 'destructive-separated', classes: 'detail-button.delete | app-action-bar__destructive', use: 'Eliminar aparte de editar' },
+  { pattern: 'field-siblings', classes: 'form-group-base, crud-form-row', use: 'Label + input; columnas hermanas' },
+  { pattern: 'page-blocks', classes: 'app-content-section', use: 'Bloque cohesivo con gap sm interno' },
+] as const
+
+/** Principio 7 — Alineación y cuadrícula */
+export const ALIGNMENT_PATTERNS = [
+  { axis: 'page', classes: 'app-page-content-wide + crud-page-content', token: '--layout-max-width-wide' },
+  { axis: 'column', classes: 'app-stack | app-content-sections', use: 'Contenido apilado, stretch horizontal' },
+  { axis: 'form-2col', classes: 'app-grid-2 | crud-form-row', token: '--layout-grid-gap-md' },
+  { axis: 'cards', classes: 'app-grid-cards', token: '--layout-grid-card-min' },
+  { axis: 'auto-fill', classes: 'app-grid-auto', token: '--layout-grid-auto-min' },
+  { axis: 'toolbar', classes: 'app-toolbar | app-row-between', use: 'Título/acciones en extremos' },
+  { axis: 'detail', classes: 'detail-row + detail-label + detail-value', use: 'Label izq · valor der' },
+  { axis: 'list', classes: 'glass-group', use: 'Filas alineadas en contenedor iOS' },
+] as const
+
 export const CSS_ARCHITECTURE_LAYERS = [
   { layer: 1, file: 'src/index.css', role: 'Tokens globales + tema (data-theme)' },
-  { layer: 2, file: 'src/styles/shared.css', role: 'Botones, formularios, motion + accessibility' },
-  { layer: 3, file: 'src/styles/ui-patterns.css', role: 'Toolbar, modales, glass-group' },
+  { layer: 2, file: 'src/styles/shared.css', role: 'Botones, formularios, motion' },
+  { layer: 2, file: 'src/styles/accessibility.css', role: 'Skip-link, sr-only, focus-visible, prefers-contrast' },
+  { layer: 3, file: 'src/styles/ui-patterns.css', role: 'Jerarquía visual, toolbar, modales, glass-group' },
   { layer: 4, file: 'src/styles/domains/crud.css', role: 'Dropdown, detail panel, loader, empty state' },
   { layer: 5, file: 'src/styles/domains/crud-list-rows.css', role: 'Filas inset + jerarquía row-content/title' },
   { layer: 6, file: 'src/styles/domains/crud-row-slots.css', role: 'Slots, acentos y modificadores crud-row-*' },

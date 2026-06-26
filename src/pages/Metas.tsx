@@ -313,7 +313,7 @@ function Metas() {
           }
         />
 
-        <div className="metas-toolbar">
+        <div className="app-row-start metas-toolbar">
           <div className="metas-search">
             <SearchIcon className="metas-search-icon" aria-hidden="true" />
             <input
@@ -348,10 +348,10 @@ function Metas() {
         ) : filteredGoals.length === 0 ? (
           <div className="metas-empty-state">
             <FlagIcon className="metas-empty-icon" aria-hidden="true" />
-            <p className="metas-empty-title">
+            <p className="empty-text">
               {searchQuery ? 'No hay metas que coincidan con tu búsqueda' : 'Aún no tienes metas'}
             </p>
-            <p className="metas-empty-subtitle">
+            <p className="empty-subtext">
               {searchQuery
                 ? 'Prueba con otro término o crea una meta nueva.'
                 : 'Crea una meta y agrega tareas para hacer seguimiento de tu progreso.'}
@@ -368,7 +368,7 @@ function Metas() {
             ) : null}
           </div>
         ) : (
-          <div className="metas-goal-list">
+          <div className="app-content-section metas-goal-list">
             {filteredGoals.map(goal => (
               <MetaGoalCard
                 key={goal.id}
@@ -391,7 +391,7 @@ function Metas() {
         <ModalOverlay onClose={closeFormModal}>
           <div className="modal-panel metas-modal" onClick={event => event.stopPropagation()}>
             <div className="metas-modal-header">
-              <h2 className="metas-modal-title modal-panel-title">
+              <h2 className="modal-panel-title">
                 {editingGoalId ? 'Editar meta' : 'Nueva meta'}
               </h2>
               <button
@@ -400,14 +400,14 @@ function Metas() {
                 onClick={closeFormModal}
                 aria-label="Cerrar"
               >
-                <CloseIcon />
+                <CloseIcon aria-hidden="true" />
               </button>
             </div>
 
-            <div className="metas-modal__body">
             <form className="metas-form" onSubmit={event => void handleSubmit(event)}>
+              <div className="modal-panel__scroll metas-modal__body">
               <label className="metas-field">
-                <span>Título *</span>
+                <span className="form-label-base">Título *</span>
                 <input
                   type="text"
                   value={formData.title}
@@ -418,7 +418,7 @@ function Metas() {
               </label>
 
               <label className="metas-field">
-                <span>Descripción</span>
+                <span className="form-label-base">Descripción</span>
                 <textarea
                   value={formData.description}
                   onChange={event =>
@@ -430,7 +430,7 @@ function Metas() {
               </label>
 
               <div className="metas-field">
-                <span>Tareas</span>
+                <span className="form-label-base">Tareas</span>
                 <div className="metas-form-task-input">
                   <input
                     type="text"
@@ -459,7 +459,7 @@ function Metas() {
                         <span>{task.title}</span>
                         <button
                           type="button"
-                          className="metas-icon-button metas-icon-button--danger"
+                          className="btn-icon btn-icon--danger"
                           onClick={() => handleRemoveTaskFromForm(index)}
                           aria-label={`Quitar tarea ${task.title}`}
                         >
@@ -473,20 +473,23 @@ function Metas() {
                 )}
               </div>
 
-              <div className="modal-actions-base metas-form-actions">
-                <button type="button" className="btn-base btn-secondary" onClick={closeFormModal}>
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="btn-base btn-accent btn-submit btn-accent--lifestyle"
-                  disabled={isSaving}
-                >
-                  {isSaving ? 'Guardando…' : editingGoalId ? 'Guardar cambios' : 'Crear meta'}
-                </button>
+              </div>
+
+              <div className="modal-actions-base app-action-bar">
+                <div className="app-action-bar__cluster">
+                  <button type="button" className="btn-base btn-secondary" onClick={closeFormModal}>
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn-base btn-accent btn-submit btn-accent--lifestyle"
+                    disabled={isSaving}
+                  >
+                    {isSaving ? 'Guardando…' : editingGoalId ? 'Guardar cambios' : 'Crear meta'}
+                  </button>
+                </div>
               </div>
             </form>
-            </div>
           </div>
         </ModalOverlay>
       ) : null}

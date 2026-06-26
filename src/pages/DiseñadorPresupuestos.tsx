@@ -486,7 +486,7 @@ function DiseñadorPresupuestos() {
 
         {/* Formulario para agregar items */}
         <div className="diseñador-form-section">
-          <h2 className="diseñador-section-title">
+          <h2 className="app-section-title">
             {editingId ? 'Editar Item' : 'Agregar Item'}
           </h2>
           <form onSubmit={handleSubmit} className="diseñador-form">
@@ -569,7 +569,7 @@ function DiseñadorPresupuestos() {
         {/* Lista de items */}
         {items.length > 0 && (
           <div className="diseñador-items-section">
-            <h2 className="diseñador-section-title">Items Agregados ({items.length})</h2>
+            <h2 className="app-section-title">Items Agregados ({items.length})</h2>
             <div className="diseñador-items-list">
               {items.map(item => (
                 <div key={item.id} className="diseñador-item">
@@ -582,9 +582,9 @@ function DiseñadorPresupuestos() {
                       <span className="diseñador-item-category">{item.category}</span>
                     </div>
                   </div>
-                  <div className="diseñador-item-actions">
+                  <div className="app-control-group diseñador-item-actions">
                     <button
-                      className="diseñador-item-action-button"
+                      className="btn-icon"
                       onClick={() => handleEdit(item)}
                       aria-label="Editar"
                       type="button"
@@ -592,7 +592,7 @@ function DiseñadorPresupuestos() {
                       <EditIcon />
                     </button>
                     <button
-                      className="diseñador-item-action-button diseñador-item-action-button-delete"
+                      className="btn-icon btn-icon--danger"
                       onClick={() => handleDelete(item.id)}
                       aria-label="Eliminar"
                       type="button"
@@ -609,7 +609,7 @@ function DiseñadorPresupuestos() {
         {/* Totales por categoría */}
         {categoryTotals.length > 0 && (
           <div className="diseñador-totals-section">
-            <h2 className="diseñador-section-title">Totales por Categoría</h2>
+            <h2 className="app-section-title">Totales por Categoría</h2>
             <div className="diseñador-totals-list">
               {categoryTotals.map(catTotal => (
                 <div key={catTotal.category} className="diseñador-total-item">
@@ -636,7 +636,7 @@ function DiseñadorPresupuestos() {
         {(drafts.length > 0 || draftsLoadError) && (
           <div className="diseñador-drafts-section">
             <div className="diseñador-section-header">
-              <h2 className="diseñador-section-title">
+              <h2 className="app-section-title">
                 Borradores Guardados{drafts.length > 0 ? ` (${drafts.length})` : ''}
               </h2>
               <button
@@ -724,7 +724,7 @@ function DiseñadorPresupuestos() {
         {/* Guardar borrador */}
         {items.length > 0 && (
           <div className="diseñador-save-section">
-            <h2 className="diseñador-section-title">Guardar Borrador</h2>
+            <h2 className="app-section-title">Guardar Borrador</h2>
             <div className="diseñador-save-form">
               <input
                 type="text"
